@@ -1,0 +1,903 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\captionsetup{font=small,labelfont=bf}
+\newcommand{\base}{\textbf}
+\graphicspath{{run_figures/}{./}}
+\input{report_values.tex}
+
+\title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
+\large \texttt{Tuning\_test\_06*} --- progress report}
+\author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
+\date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts; decisive feedback-free re-spin shows the
+boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate)}
+
+\begin{document}
+\maketitle
+\vspace{-0.6cm}
+
+\part{Tuning away the high TOA imbalance}
+\emph{We set out to cut the AWI--ESM3 PI-control's $+1.5$\,W/m$^2$ TOA imbalance. Every effective lever does it by
+\textbf{cooling} the model, and the aggressive coupling/ocean-mixing levers cut the imbalance hardest --- but push the
+planet too cold against ERA5. This part documents that trade-off across 22 runs and traces the aggressive lever to a
+Southern-Ocean ocean-convection mechanism.}
+
+\section{Goal \& setup}
+Reduce the net top-of-atmosphere (TOA) radiative imbalance of the AWI--ESM3 pre-industrial control so it
+equilibrates faster, \emph{without} degrading the CMIP6-normalised performance index (CMPI, \texttt{part4})
+or inflating the 2\,m-temperature RMSE vs ERA5 (\texttt{part8}). 22 experiments, each a 30-year segment
+(model years 1350--1379) of the CORE3/TCO95 configuration (FESOM2 CORE3 mesh, OpenIFS TCO95/A096, LPJ-GUESS),
+all branched from one \textbf{Baseline}. The baseline PI-control still drifts with a positive TOA imbalance of
+$\approx+1.5$\,W/m$^2$ (energy \emph{into} the system --- the signature of unequilibrated spin-up and/or ongoing
+ocean heat uptake). \textbf{A caution on the target.} The tuning levers change the model's \emph{equilibrium}, not
+its rate of approach, so ``lower imbalance'' is a useful \emph{ranking} objective but not automatically ``more
+equilibrated'': a low-imbalance-but-cold state is not obviously better than a high-imbalance-but-unbiased one. This
+is why the campaign's real aim (\S\ref{sec:rec}) is a \emph{warm-floor} state where the imbalance is cut by a
+\emph{moderate} lever, not by cooling into a cold bias --- i.e.\ we treat imbalance and 2\,m-T bias as joint targets,
+not imbalance alone.
+
+\textbf{Structural note.} Almost every non-baseline run also carries a \emph{common melt-pond shift}
+(\texttt{albpnd}\,$0.2\!\to\!0.28$, \texttt{rfracmax}\,$1.0\!\to\!0.75$, \texttt{pndaspect}\,$0.8\!\to\!1.3$).
+Differences below are each run's \emph{distinguishing} change on top of that.
+
+\textbf{Three parts.} \textbf{(I)} evaluates the 22 imbalance-tuning runs and exposes the imbalance$\leftrightarrow$cold-bias
+trade-off, tracing the aggressive lever to a Southern-Ocean mechanism. \textbf{(II)} shows that the cold bias which
+makes that lever costly is largely \emph{not} the tuning but a \textbf{structural} LPJ-GUESS boreal-forest collapse
+(\S\ref{sec:lpjg}) --- a \emph{counter-lever}: fixing it warms the NH high latitudes, buying the RMSE headroom to spend
+the aggressive global cooling on the imbalance. A decisive feedback-free experiment pins that fix to vegetation, not
+climate. \textbf{(III)} combines them into a work plan: raise the structural warm floor, then cut the imbalance
+(\S\ref{sec:rec}).
+
+\section{Headline: the imbalance\,$\leftrightarrow$\,cold-bias trade-off}
+Every lever that meaningfully lowers the TOA imbalance does so by \emph{cooling} the model, which worsens the
+cold bias against ERA5. Two families separate cleanly: the sea-ice/albedo/melt-pond changes move gently
+down-left (small imbalance gain, small bias cost); the coupling + ocean-mixing changes cut the imbalance hard
+(30--57\,\%) but push the planet $1.7$--$2.1$\,K too cold.
+
+\textbf{The cold-bias axis is two things at once.} It mixes (i) a \emph{shared structural floor} --- every run,
+including the baseline and the ``clean'' melt-pond runs, carries a strong Siberia/N.\ Canada cold bias that is
+\emph{not} a tuning artefact but an LPJ-GUESS boreal-forest-cover bug (\S\ref{sec:lpjg}); and (ii) the \emph{differential},
+tuning-induced global cooling that the aggressive runs add on top. The structural floor is the same for all
+points and is independently fixable; the tuning only moves runs vertically relative to it. This is why the
+``warming lever'' in \S\ref{sec:rec} is the LPJG fix, not another atmospheric retune.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.84\textwidth]{plots/summary_scatter_official.png}
+\caption{Net TOA imbalance (30-yr mean, \texttt{part2}) vs 2\,m-T RMSD against ERA5 (\texttt{part8}).
+Dotted lines = baseline; lower-left is better. Colour = parameter family.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{plots/summary_TOA_timeseries.png}
+\caption{Annual global-mean net TOA imbalance, all 22 runs (independent CDO calculation; matches \texttt{part2}).
+None has flattened within 30\,yr, so treat the mean level as a \emph{ranking}, not a final equilibrium value.}
+\end{figure}
+
+\section{Master metric table (all 22 runs, sorted by TOA imbalance)}
+\begin{center}\small
+\begin{tabular}{l r r r r r}
+\toprule
+Run & TOA imb.\ [W/m$^2$] & vs base & 2m RMSD [K] & 2m bias [K] & CMPI \\
+\midrule
+06V\_1hcpl\_mospp\_kpplow\_entstpc3\_1 & 0.655 & $-57\%$ & 2.671 & $-2.124$ & 0.803 \\
+06T\_1hcpl\_mospp\_kpplow             & 0.952 & $-38\%$ & 2.385 & $-1.791$ & 0.773 \\
+06O5\_1hcpl\_mospp\_kv002             & 0.968 & $-37\%$ & 2.511 & $-1.904$ & 0.788 \\
+06O\_1hcpl\_mospp                     & 0.978 & $-36\%$ & 2.389 & $-1.774$ & 0.772 \\
+06O4\_1hcpl\_mospp\_kv0012            & 1.007 & $-34\%$ & 2.387 & $-1.807$ & 0.781 \\
+06U\_1hcpl\_mospp\_kpplow\_openw0075  & 1.020 & $-33\%$ & 2.422 & $-1.845$ & 0.776 \\
+06M\_1hcpl                            & 1.062 & $-31\%$ & 2.315 & $-1.658$ & 0.773 \\
+06P\_entstpc3\_1                      & 1.091 & $-29\%$ & 2.076 & $-1.358$ & 0.759 \\
+06H\_combo\_g\_rvice018               & 1.220 & $-20\%$ & 2.082 & $-1.394$ & 0.757 \\
+06G\_stronger\_meltpond               & 1.274 & $-17\%$ & 1.990 & $-1.274$ & 0.753 \\
+06L\_extra\_strong\_meltpond          & 1.320 & $-14\%$ & 2.050 & $-1.332$ & 0.751 \\
+06E\_rvice018\_ggaussb\_m06           & 1.335 & $-13\%$ & 1.969 & $-1.231$ & 0.754 \\
+06D\_HRlike                           & 1.377 & $-10\%$ & 1.892 & $-1.146$ & 0.750 \\
+06F\_lrdalb\_true                     & 1.378 & $-10\%$ & 1.962 & $-1.219$ & 0.752 \\
+06N\_mospp                            & 1.382 & $-10\%$ & 2.011 & $-1.310$ & 0.751 \\
+06C\_albpnd028\_rfrac075\_pndaspect13 & 1.391 & $-9\%$  & 1.884 & $-1.109$ & 0.751 \\
+06Q\_ralbsead0045                     & 1.397 & $-9\%$  & 1.891 & $-1.154$ & 0.748 \\
+06S\_evp0                             & 1.419 & $-7\%$  & 1.935 & $-1.191$ & 0.745 \\
+06R\_openwater\_albedo0075            & 1.443 & $-6\%$  & 1.860 & $-1.127$ & 0.744 \\
+06B\_albpnd028\_rfrac075              & 1.447 & $-5\%$  & 1.847 & $-1.062$ & 0.741 \\
+06A\_albpnd028                        & 1.457 & $-5\%$  & 1.811 & $-1.004$ & 0.748 \\
+\textbf{06\_Baseline}                 & \textbf{1.531} & -- & \textbf{1.717} & \textbf{$-0.939$} & \textbf{\CMPIBASE} \\
+\bottomrule
+\end{tabular}
+\end{center}
+{\footnotesize TOA = 30-yr global-mean net TOA from \texttt{part2\_rad\_balance.py}. RMSD/bias from \texttt{part8}
+methodology (cos-lat weighted, model$-$ERA5, yrs 1354--1379); cross-checked vs the tool's on-figure values
+(baseline 1.717 vs 1.721; 06V 2.671 vs 2.678). CMPI from \texttt{part4\_cmpi.py}: $<1$ = better than CMIP6
+ensemble-mean error; lower is better.}
+
+The per-run distinguishing parameter change (which knob each \texttt{06*} run alters on top of the common melt-pond
+shift) is catalogued in App.~\ref{app:params}.
+
+\clearpage
+\section{Core diagnostics: radiation, 2\,m temperature, CMPI}
+
+\subsection{Radiation budget (\texttt{part2})}\label{sec:rad}
+Surface net flux tracks TOA to within $\approx0.1$\,W/m$^2$ in every run --- i.e.\ the atmospheric column stores
+essentially no energy on these multi-year means, as expected. Note this does \emph{not} by itself localise the
+\emph{cause}: a TOA\,$\approx$\,surface match is equally consistent with a genuine TOA radiative error and with
+ocean heat uptake / unequilibrated spin-up drift passing cleanly through the surface (\S\ref{sec:so},
+\S\ref{sub:withwithout}). What it rules out is an atmosphere-only bookkeeping leak, so the imbalance and the surface
+energy budget can be read interchangeably. Baseline $\approx+1.53$\,W/m$^2$; the coupling+mixing stack drives it
+down to $+0.66$\,W/m$^2$ (06V).
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{@{}c@{\hskip2pt}c@{}}
+\includegraphics[width=0.47\textwidth]{Tuning_test_06_Baseline/radiation_budget.png} &
+\includegraphics[width=0.47\textwidth]{Tuning_test_06A_fesomA_albpnd028/radiation_budget.png} \\
+\footnotesize Baseline (TOA 1.53) & \footnotesize 06A albpnd0.28 (1.46) \\
+\includegraphics[width=0.47\textwidth]{Tuning_test_06H_fesomH_combo_g_rvice018/radiation_budget.png} &
+\includegraphics[width=0.47\textwidth]{Tuning_test_06P_fesomP_entstpc3_1/radiation_budget.png} \\
+\footnotesize 06H meltpond+rvice (1.22) & \footnotesize 06P entstpc3 (1.09) \\
+\includegraphics[width=0.47\textwidth]{Tuning_test_06O_1hcpl_mospp/radiation_budget.png} &
+\includegraphics[width=0.47\textwidth]{Tuning_test_06V_1hcpl_mospp_kpplow_entstpc3_1/radiation_budget.png} \\
+\footnotesize 06O 1hcpl+mospp (0.98) & \footnotesize 06V (most aggressive, 0.66) \\
+\end{tabular}
+\caption{\texttt{part2} radiation budget: grey = net TOA, blue = net surface, dark = their difference (W/m$^2$).}
+\end{figure}
+
+\clearpage
+\subsection{2\,m temperature bias vs ERA5 (\texttt{part8})}
+Baseline: cold over NH continents, warm over the Southern Ocean and tropical upwelling. The aggressive coupling
+runs remove the Southern-Ocean warm bias but turn the whole planet cold (06V is cold almost everywhere).
+\emph{Caveat:} this is PI-control vs present-day ERA5, so $\approx0.5$--$0.7$\,K of global cold offset is
+physically expected; the coupling runs' $-1.7$ to $-2.1$\,K is clearly too much, the melt-pond family
+($-1.0$ to $-1.4$\,K) is more defensible.
+
+The deep \textbf{Siberia / N.\ Canada cold lobe is present in \emph{every} panel} --- baseline and the clean
+melt-pond runs included --- and barely changes between them: it is the structural LPJ-GUESS forest-cover signal
+(\S\ref{sec:lpjg}), not a product of the imbalance tuning. The aggressive coupling runs add a broad, near-global cooling
+\emph{on top} of that fixed lobe.
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{@{}c@{\hskip2pt}c@{}}
+\includegraphics[width=0.47\textwidth]{Tuning_test_06_Baseline/t2m_vs_ERA5.png} &
+\includegraphics[width=0.47\textwidth]{Tuning_test_06A_fesomA_albpnd028/t2m_vs_ERA5.png} \\
+\footnotesize Baseline (RMSD 1.72, bias $-0.94$) & \footnotesize 06A (1.81, $-1.00$) \\
+\includegraphics[width=0.47\textwidth]{Tuning_test_06H_fesomH_combo_g_rvice018/t2m_vs_ERA5.png} &
+\includegraphics[width=0.47\textwidth]{Tuning_test_06D_HRlike/t2m_vs_ERA5.png} \\
+\footnotesize 06H (2.08, $-1.39$) & \footnotesize 06D HRlike (1.89, $-1.15$) \\
+\includegraphics[width=0.47\textwidth]{Tuning_test_06O_1hcpl_mospp/t2m_vs_ERA5.png} &
+\includegraphics[width=0.47\textwidth]{Tuning_test_06V_1hcpl_mospp_kpplow_entstpc3_1/t2m_vs_ERA5.png} \\
+\footnotesize 06O (2.39, $-1.77$) & \footnotesize 06V (2.67, $-2.12$) \\
+\end{tabular}
+\caption{\texttt{part8} 2\,m air-temperature bias (model $-$ ERA5), EqualEarth, $\pm8$\,K scale.}
+\end{figure}
+
+\clearpage
+\subsection{CMPI (\texttt{part4})}\label{sec:cmpi}
+CMPI integrates 13 fields (siconc, tas, clt, pr, rlut, uas, vas, ua@300, zg@500, zos, mlotst, thetao, so) over
+regions/seasons, normalised against 30 CMIP6 models; \textbf{$<1$ = better than the CMIP6 ensemble-mean error}.
+Run on a subset spanning the trade-off front (now complete for all 22 runs).
+
+\textbf{How to read this (important).} CMPI here compares a \emph{PI-control} run to \emph{present-day}
+observations, so a moderate global cold offset --- and hence some CMPI rise --- is \emph{expected} and is not
+by itself a disqualifier. The informative question is not ``did CMPI go up?'' but ``\emph{where} did the error
+change, and is that consistent with the parameter that was altered?'' A sea-ice-albedo change should move
+\texttt{siconc} in the polar regions and little else; if it instead degrades the tropics, that is a red flag.
+The per-variable / per-region breakdown below is the tool for that judgement; the global number is a summary,
+not a verdict.
+
+\begin{center}\small
+\begin{tabular}{l r r r}
+\toprule
+Run & CMPI & TOA imb. & 2m RMSD \\
+\midrule
+06\_Baseline          & 0.745 & 1.531 & 1.717 \\
+06A\_albpnd028        & 0.748 & 1.457 & 1.811 \\
+06D\_HRlike           & 0.750 & 1.377 & 1.892 \\
+06H\_combo\_g\_rvice018 & 0.757 & 1.220 & 2.082 \\
+06O\_1hcpl\_mospp     & 0.772 & 0.978 & 2.389 \\
+06T\_1hcpl\_mospp\_kpplow & 0.773 & 0.952 & 2.385 \\
+06V\_..\_entstpc3\_1  & 0.803 & 0.655 & 2.671 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\CMPIFIG
+
+\subsubsection{Where does the error change? (per-variable / per-region)}
+The maps below show each run's CMPI fractional error \emph{minus baseline} (red = worse, blue = better).
+This is where the PI-vs-PD caveat earns its keep: the global CMPI rises monotonically
+(0.745\,$\to$\,0.803), but the \emph{pattern} of change tells a much more favourable story for the targeted
+tunings.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{plots/cmpi_breakdown_by_variable.png}\\[2pt]
+\includegraphics[width=0.74\textwidth]{plots/cmpi_breakdown_by_region.png}
+\caption{Change in CMPI fractional error vs Baseline, by variable (top) and region (bottom).}
+\end{figure}
+
+\textbf{Reading the breakdown:}
+\begin{itemize}\itemsep1pt
+\item \textbf{06A / 06D (melt-pond):} improve \texttt{siconc} ($-0.02$/$-0.08$) with essentially \emph{zero}
+collateral elsewhere and a flat region map --- a cleanly targeted change. These should be regarded as
+``no degradation where it matters,'' despite the tiny global CMPI uptick.
+\item \textbf{06O / 06T (mospp\,+\,kpplow):} genuinely \emph{improve} the ocean interior (\texttt{thetao},
+\texttt{so}: $\approx-0.04$/$-0.05$), \texttt{siconc} and \texttt{clt} --- exactly where ocean-mixing should act.
+But they \emph{degrade} \texttt{tas}/\texttt{zg}/\texttt{rlut} ($+0.16$ to $+0.26$) and even their own target
+\texttt{mlotst} ($+0.17$), and the region map reddens \emph{everywhere incl.\ tropics and Ni\~no-3.4} --- i.e.\
+the cooling leaks well beyond where an ocean-mixing parameter has any business acting. \emph{That} is the
+warning sign, more than the global number.
+\item \textbf{06V (+entstpc3):} largest, most widespread atmospheric degradation (\texttt{tas} $+0.45$,
+\texttt{zg} $+0.46$); the deep-convection change destabilises the whole atmospheric column.
+\end{itemize}
+
+\clearpage
+\section{Southern-Ocean mechanism (adapted from a270234's notebooks)}\label{sec:so}
+To see \emph{why} the ocean-mixing/coupling levers act as they do, two of a270234's Weddell-Sea diagnostics
+(\texttt{mld\_sic\_sit\_compare}, \texttt{temp\_fesom\_core3\_WWS}) were re-pointed at the coupled
+\texttt{Tuning\_test\_06} runs (same CORE3 mesh). Panels show the Baseline absolute field plus each run
+\emph{minus} Baseline, austral winter (September), yr1370--79. (The \texttt{temp\_fesom\_core3\_WWS} tripyview
+transect could not decode these runs' pre-1582 \texttt{gregorian} calendar, so an equivalent pyfesom2
+depth--latitude section was used.)
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.82\textwidth]{plots/mld_winter_antarctic.png}
+\caption{Antarctic September mixed-layer depth (MLD3): Baseline \emph{absolute} (top-left, own scale), others $=$
+\emph{anomaly} vs Baseline on a symmetric $\pm70$\,m diverging scale (98th-pctile auto-scale; the intense
+Weddell/Ross convection core saturates it). The mixing runs (06N/O/T/V) restructure the Weddell/Ross winter mixing
+relative to Baseline, whereas melt-pond (06A) barely changes it. Deep open-ocean winter mixing there is FESOM
+``open-ocean convection'' that ventilates warm deep water --- a known driver of the Southern-Ocean warm bias
+(Heuz\'e et al.\ 2013; Heuz\'e 2021) and of TOA imbalance.}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.82\textwidth]{plots/temp_wws_section_tuning.png}
+\caption{West Weddell Sea (50--30$^{\circ}$W) September potential-temperature section: Baseline absolute and
+anomalies. The ventilated mid-column cools in the mixing runs (less convective entrainment of warm deep water to the
+surface), consistent with suppressed open-ocean convection; note that suppressing convection should leave the
+\emph{deepest} water trapped/warmer rather than colder, and a near-surface edge warm anomaly is also present ---
+i.e.\ the signal is a redistribution between layers, not uniform subsurface cooling.}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.92\textwidth]{plots/sit_winter_antarctic.png}
+\caption{Antarctic September sea-ice \emph{thickness} (Baseline absolute, top-left; others $=$ anomaly vs Baseline).
+Thickness --- not concentration --- is the honest growth diagnostic here: winter concentration is already near
+$1$ over most of the pack, so it \emph{saturates} and cannot register added ice, whereas thickness is unbounded. The
+mixing runs (06O/06T/06V) thicken the pack broadly (positive/red anomaly over the Weddell and Ross sectors),
+consistent with suppressed open-ocean convection insulating and stratifying the surface; melt-pond (06A) barely
+changes it. (The concentration version, \texttt{sic\_winter\_antarctic.png}, shows only the ice-edge shifts for the
+reason above.)}
+\end{figure}
+
+\textbf{Mechanism.} The mospp / weaker-KPP changes reduce Weddell-Sea open-ocean winter convection, cooling the
+subsurface and letting sea ice grow --- improving \texttt{thetao}/\texttt{so}/\texttt{siconc} (consistent with the
+CMPI breakdown) and removing the Southern-Ocean surface warm bias. Spurious open-ocean deep convection in the
+Weddell/Ross gyres is the canonical CMIP Antarctic bias (Heuz\'e et al.\ 2013; Heuz\'e 2021, which evaluates AWI--CM
+in the multi-model set; Mohrmann et al.\ 2021 for the polynya surface expression), and open-ocean Weddell convection
+is a real-but-rare mode that models over-express (de Lavergne et al.\ 2014) --- so damping it is physically the right
+direction. The \emph{proximate radiative} closure is defensible: more winter ice $\to$ higher albedo $\to$ less
+absorbed SW $\to$ lower imbalance. We are more cautious about the ``reduced ocean heat uptake'' half of the chain:
+suppressing convection also \emph{traps} heat at depth, which can \emph{increase} deep ocean-heat-content drift, so
+the net uptake change is not established here --- it should be pinned to an OHC-tendency diagnostic before being
+asserted. The cost is that the surface cooling propagates globally into the atmosphere (\texttt{tas}/\texttt{zg}),
+the broad cold bias seen in \texttt{part8}.
+
+\textbf{Counter-literature (a compensating-error risk this campaign must own).} \S\ref{sec:so} attributes the SO warm
+bias and its removal almost entirely to \emph{ocean} convection, but Hyder et al.\ (2018, \emph{Nat.\ Commun.})
+trace the leading $40$--$60$\textdegree S warm-SST bias primarily to \emph{atmospheric} net surface-heat-flux errors
+dominated by shortwave/cloud biases, and warn that a small \emph{net} flux bias is often achieved by
+\emph{compensating} component errors. The two coexist at different scales --- broad atmospheric-SW warmth vs.\
+localised Weddell/Ross deep-convection anomalies --- and our mixing levers act only on the ocean branch. If part of
+the bias is atmospheric-SW in origin, the ocean-mixing lever is partly compensating for an atmospheric error, which
+is \emph{exactly} the ``cooling leaks beyond where the parameter should act'' failure mode flagged for these runs in
+\S\ref{sec:cmpi} (the region map reddens into the tropics/Ni\~no-3.4). This tension is the report's own evidence
+pointing at Hyder; it strengthens, not weakens, the case for treating aggressive ocean-mixing tunings as
+provisional.
+
+\clearpage
+\part{Counter-tuning the NH cold bias --- the structural floor}
+\emph{The cold bias that makes Part~I's aggressive lever expensive is largely \textbf{not} the tuning: it is a
+structural LPJ-GUESS boreal-forest collapse that every run inherits. That makes it a \textbf{counter-lever} --- fixing
+it warms the NH high latitudes at essentially unchanged imbalance, buying the RMSE headroom to spend the aggressive
+global cooling on the imbalance. This part attributes the bias with a clean WITH-vs-WITHOUT-LPJG experiment, resolves
+its two mechanisms and a residual, and --- with a decisive feedback-free spin-up --- pins the fix to vegetation
+competition, not climate.}
+
+\section{The NH high-latitude cold bias is a structural LPJ-GUESS problem}\label{sec:lpjg}
+The runs carry a severe near-surface \textbf{cold bias over Siberia and northern Canada} (visible in every
+\texttt{part8} map). This chapter documents a working investigation into whether the coupled dynamic vegetation
+(LPJ-GUESS) is responsible --- motivated by the idea that fixing it could be a \emph{warming} lever to offset the
+imbalance-tuning cold bias, and by prior EC-Earth experience that LPJG drives such boreal biases.
+
+\subsection{Symptom: boreal needleleaf replaced by grass}
+Dominant-PFT maps (tool \texttt{part26}) for the HTESSEL spin-up (the reference, run with the same atmosphere but
+\emph{without} atmosphere$\leftrightarrow$LPJG feedback) vs the coupled runs show boreal needleleaf giving way to
+C3 grass over Siberia / N.\ Canada. Tree-dominant fraction north of 50\textdegree N: \textbf{20.1\,\% (spin-up)
+$\to$ 16.8\,\% (baseline) $\to$ 11.4\,\% (06V)} --- progressively worse with the more aggressive (colder) runs.
+\emph{Caveat on the prior:} DGVMs disagree substantially on boreal tree-vs-grass partitioning, and real boreal
+forest is genuinely open with substantial non-tree ground cover (Jiang et al.\ 2012), so ``grass over Siberia'' is
+not \emph{automatically} a bug. What makes the establishment-failure reading defensible here is the \emph{magnitude}:
+the coupled state reaches cvh\,$\approx$\,0.02--0.05 with \emph{no closed canopy anywhere} (FORESTFPC$=0$,
+\S\ref{sec:workplan}), an outlier well below the $\sim0.4$--$0.7$ closed-taiga range (MODIS VCF), not merely a
+grass-leaning partition.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.98\textwidth]{plots/pft_boreal_compare.png}
+\caption{Dominant PFT, boreal belt: HTESSEL spin-up (reference) vs coupled baseline vs 06V. Needleleaf (blues)
+thins and C3 grass (yellow) expands across central/eastern Siberia in the coupled runs.}
+\end{figure}
+
+\subsection{Is it grass growing, or trees dying? And is it a year-1 jump or a slow drift?}
+Belt-mean (55--75\textdegree N) needleleaf LAI is essentially \emph{conserved} over the baseline run (0.40$\to$0.37,
+trend $\approx$0), while C3 grass LAI \emph{rises} (0.65$\to$0.83, $+$0.10/dec): the signal is \textbf{grass
+growing}, with needleleaf loss only regional (E.\ Siberia) and offset by gains in the milder west. The coupled
+run is initialised directly from the spin-up's year-3850 LPJG state, and baseline year-1350 boreal LAI
+(tree 0.407, grass 0.649) is \emph{identical} to the spin-up end-state (0.401 / 0.669) --- so there is
+\textbf{no wholesale year-1 collapse}; the degraded, grass-heavy state is \emph{inherited from the spin-up}.
+Within 1350--1379 the boreal 2\,m temperature is at its (cold) level from year one and does \emph{not} drift
+down (trend $+$0.42\,K/dec, noisy) --- consistent with a memory-less atmosphere that equilibrates to the surface
+state within a year rather than a slow vegetation runaway. (These are belt-mean \emph{LAI} diagnostics; as
+\S\ref{sub:withwithout} shows, the quantity that actually matters is not LAI-per-tile but the forest \emph{cover fraction}.)
+
+\subsection{The decisive test: a clean WITH-vs-WITHOUT-LPJG pair (CORE3, 30\,yr)}\label{sub:withwithout}
+The earlier control was confounded by the ocean (core2 vs core3). We removed that confound: a purpose-built
+\textbf{no-LPJG AWI-CM3-develop reference} --- \emph{same} CORE3 ocean, \emph{same} TCO95 atmosphere and matched
+component branches, HTESSEL\,+\,prescribed satellite vegetation, a full 30-yr PI-control (model years 1350--1379,
+\texttt{awicm3\_noLPJG\_CORE3\_30y}) --- differs from the LPJG Baseline in \textbf{LPJG alone}, so the 2\,m-T
+difference is now a clean attribution. Its net TOA imbalance is $+1.73$\,W/m$^2$ (\texttt{part2}), near the
+warm/high-imbalance end of Fig.~1 --- confirming the LPJG signal is a near-surface \emph{land} effect, orthogonal
+to the TOA tuning of \S2. \textbf{Crucially, it beats the LPJG Baseline on \emph{both} skill metrics: global 2\,m-T RMSD vs ERA5 1.514\,K
+(bias $-0.76$\,K, \texttt{part8}) vs 1.717/$-0.94$, and CMPI 0.738 (\texttt{part4}) vs 0.745} --- at higher
+(warmer) imbalance. Removing LPJG improves the global temperature fit \emph{and} the multivariate skill score
+\emph{while} the imbalance changes by only $+0.2$\,W/m$^2$ ($+1.73$ vs $+1.53$) --- within the inter-run drift of
+these unequilibrated 30-yr segments (\S\ref{sec:caveats}), so the warming lever is real \emph{and costs essentially
+no imbalance to within that uncertainty} (not, strictly, ``zero''). Over the final decade, boreal DJF:
+\begin{itemize}\itemsep1pt
+\item \textbf{Forest cover collapses.} Siberian high-veg cover \texttt{cvh}: \textbf{0.63 (no LPJG) $\to$ 0.02
+(LPJG)} (pan-boreal 0.49\,$\to$\,0.07). LPJG passes essentially no forest to the atmosphere.
+\item \textbf{And it is genuinely colder --- confound gone.} With the ocean held fixed, the LPJG run is
+unambiguously \textbf{$-3.1$\,K} colder over Siberia in DJF ($-30.4$ vs $-27.4$\textdegree C).
+\item \textbf{Snow-masking (spring albedo)} operates as before: forest removal brightens the snow season
+(MAM \textbf{+0.077}). This is the canonical boreal-forest climate mechanism --- a masked snowpack lowers albedo and
+warms high latitudes, and its removal cools most in spring (Bonan, Pollard \& Thompson 1992; Betts 2000; Bonan 2008),
+with tree/canopy cover setting the snow-albedo-feedback magnitude that many models misrepresent (Loranty et al.\
+2014; Chapin et al.\ 2005) --- so a model that loses its forest gets exactly this feedback wrong. But it is a
+\emph{sunlight} effect and cannot explain the equally-cold polar night (\S\ref{sub:seasonality}).
+\end{itemize}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/djf_roughness_inversion_maps.png}
+\caption{DJF WITH$-$WITHOUT LPJG, boreal NH (final decade, land-masked). Forest-cover collapse (\texttt{cvh}, top-left,
+brown) is spatially co-located with the cold anomaly (top-mid), a \emph{stronger} low-level inversion
+(T$_{925}-$T$_{2m}$, top-right) and surface decoupling (T$_{2m}-$T$_{skt}$, bottom-left), at \emph{unchanged} cloud
+(bottom-mid). LW-down (bottom-right) is modestly reduced over the cold interior.}
+\end{figure}
+
+\subsection{Seasonality: which months carry the cold effect}\label{sub:seasonality}
+Resolving the same clean CORE3 WITH$-$WITHOUT pair by \emph{month} (boreal box 55--70\textdegree N, Siberia + N.\ America,
+final decade) shows the LPJG cold effect is \textbf{present in every month except high summer}. The WITH$-$WITHOUT
+2\,m-T difference is negative from September through June and only vanishes in July--August
+($-0.1$/$-0.2$\,K), peaking in the \emph{shoulder/dark} seasons: \textbf{November $-3.9$\,K, April $-3.3$\,K},
+with DJF $-2.4$\,K and MAM $-2.5$\,K (annual box-mean $-2.0$\,K). \textbf{This is the key seasonal fingerprint}: a
+pure snow-albedo (sunlit) mechanism would confine the cold to the bright spring, yet the effect is
+\emph{as large in near-sunless November/December} --- which is exactly what motivates the winter
+roughness$\to$inversion mechanism of \S\ref{sub:roughness}. The near-zero July--August signal also confirms the
+growing-season atmosphere is unaffected (consistent with JJA gates being cleared, \S\ref{sub:withwithout}).
+Overlaid is the independent \textbf{OIFS--AMIP} run (\S\ref{sub:amipgen}: observed-SST, no-LPJG, PI 1870--79) --- it
+tracks the \emph{warm} WITHOUT curve (annual $-7.6$ vs $-6.3$\,\textdegree C; DJF $-25.6$ vs $-24.9$; MAM even milder),
+confirming that a feedback-free, realistically-forced boreal climate is warm, and that the forcing we drive the
+decisive offline re-spin with (\S\ref{sub:amipgen}) is \emph{not} itself cold-biased.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/nolpjg_seasonal_cycle.png}
+\caption{Boreal (55--70\textdegree N, Siberia+Canada) monthly climatology. \emph{Left:} 2\,m-T annual cycle ---
+WITHOUT LPJG (green, clean CORE3 reference), WITH LPJG (red, coupled), and the OIFS--AMIP obs-SST no-LPJG forcing
+run (blue); blue bars = WITH$-$WITHOUT [K, right axis], negative (LPJG colder) in every month bar July--August,
+strongest in Nov/Apr. \emph{Right:} surface albedo ($1-$SSR/SSRD); LPJG brightens the snow season (spring/autumn),
+the sunlit part of the bias. (AMIP emits no down-welling SW, so it appears on the temperature panel only. WITH/WITHOUT
+are model years 1370--79; AMIP is obs-SST 1870--79 --- both $\sim$PI.)}
+\end{figure}
+
+\subsection{A second, winter mechanism: roughness $\to$ inversion}\label{sub:roughness}
+Snow-albedo needs sunlight, yet the cold bias is as strong in DJF as in MAM. The missing forest acts a second way,
+in the dark. OpenIFS roughness length is cover-weighted by \texttt{cvh}, and needleleaf forest ($z_{0m}=2.0$\,m) is
+$20$--$60\times$ rougher than the tundra/grass ($0.034$--$0.10$\,m, \texttt{susveg\_mod.F90}) that replaces it. A
+smoother surface couples less efficiently to the atmosphere; in polar night the stable boundary layer (SBL) decouples
+and the surface radiatively cools, deepening the near-surface inversion. That surface--atmosphere coupling strength in
+the SBL controls screen temperature and inversion depth is well established (Holtslag et al.\ 2013; Sandu et al.\
+2013); we assemble the specific vegetation-roughness\,$\to$\,SBL-decoupling\,$\to$\,screen-T chain from the
+land-surface and SBL literatures rather than a single published result, so it is presented as a mechanism the data
+then test, not a settled citation. \textbf{The data show exactly this fingerprint}
+(DJF Siberia, LPJG\,$-$\,no-LPJG): a \textbf{+2.1\,K stronger} low-level inversion (T$_{925}-$T$_{2m}$), a
+\textbf{+0.7\,K stronger} surface inversion (T$_{2m}-$T$_{skt}$), \textbf{unchanged cloud} ($\Delta\approx0.00$) and
+\textbf{$-4.7$\,W/m$^2$ less} down-welling longwave --- a decoupled, radiatively-cooling stable surface, not a
+cloud/radiation artefact. Spatially over boreal land the forest-loss pattern \emph{is} the inversion pattern:
+area-weighted $r(\Delta\texttt{cvh},\Delta\text{inv})=-0.60$, $r(\Delta\texttt{cvh},\Delta\text{sfc-decouple})=-0.68$,
+$r(\Delta T_{2m},\Delta\text{inv})=-0.83$, while the negative control $r(\Delta\texttt{cvh},\Delta\text{cloud})=-0.05$
+is $\approx0$ --- a real mechanism, not a shared trend. Regression lever: \textbf{restoring \texttt{cvh} by $+0.4$
+warms DJF screen-T by $\sim+1.2$\,K} through roughness alone and weakens the inversion by $\sim0.7$\,K --- additive
+to the spring/albedo warming. This slope-based estimate inherits the scatter of the underlying correlation
+($r=0.63$, so $<40\%$ of grid-cell variance explained); read it as $\sim+1.2\pm0.5$\,K, an order-of-magnitude lever
+rather than a precise prediction. The \emph{direction} and existence of the effect rest on the WITH$-$WITHOUT
+experimental design (\S\ref{sub:withwithout}), not on this regression.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/djf_roughness_scatter.png}
+\caption{DJF boreal-land, WITH$-$WITHOUT LPJG (final decade). Forest loss (negative $\Delta$\texttt{cvh}) tracks the
+cold ($\Delta T_{2m}$, left), the stronger inversion (middle) and, transitively, cold\,$\leftrightarrow$\,inversion
+(right, $r=-0.83$). Colour = cos-lat weight.}
+\end{figure}
+
+\subsection{How much does the LPJG fix buy? (vs ERA5)}\label{sub:levervsera5}
+Against ERA5 the current Baseline is \textbf{$-4.5$\,K} too cold over Siberia in DJF. The lever helps but does not
+close it: a realistic partial fix ($+1$\,K) leaves $-3.5$\,K, and \emph{full} forest restoration (the no-LPJG run
+itself --- the ceiling) reaches \textbf{$-1.4$\,K}. So vegetation/roughness accounts for $\sim$3\,K, roughly
+two-thirds of the Siberian DJF cold bias, and boreal-land RMSD falls 4.4\,$\to$\,3.3\,K --- but a residual $\sim$1.5\,K
+survives \emph{even with perfect forest}.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/djf_bias_vs_era5.png}
+\caption{DJF 2\,m-T bias vs ERA5, boreal NH (final decade): current LPJG Baseline (left, model output), an
+\textbf{illustrative} $+1$\,K roughness lever (middle --- a uniform $+1$\,K offset applied to the Baseline, \emph{not}
+a simulation), and full forest restoration = the no-LPJG run (right, model output). The lever panel only visualises
+the magnitude of a plausible partial fix; the load-bearing comparison is left vs right, which shows a residual cold
+survives even full forest restoration.}
+\end{figure}
+
+\subsection{The residual driver: an over-strong stable-boundary-layer inversion}\label{sub:residual}
+Diagnosing that residual in the \emph{full-forest} run (vegetation thereby ruled out) against ERA5 (DJFM, boreal
+land) points to a single process. The model's low-level inversion is \textbf{+1.4\,K too strong}
+(T$_{925}-$T$_{2m}$: model $+5.6$ vs ERA5 $+4.2$\,K), and the excess is \textbf{entirely surface-trapped} --- the
+$925$--$1000$\,hPa inversion bias is $+0.07$\,K ($\approx0$), so all the extra cooling sits in the lowest layer.
+Spatially this inversion-excess explains \textbf{$r=+0.76$} of \emph{where} the model is too cold; the Siberian
+High (MSLP bias $+0.15$\,hPa, $r=0.27$) and cloud-\emph{fraction} (bias $+0.07$, $r=0.00$) are ruled out. A
+too-strong wintertime polar inversion is a real, observationally-benchmarked model bias (Medeiros et al.\ 2011;
+Zhang et al.\ 2011), which supports reading the ``$+1.4$\,K too strong'' residual as genuine. That surface-trapped
+signature, with circulation and cloud-fraction eliminated, is also the textbook fingerprint of a \textbf{stable
+boundary layer that under-mixes} --- the IFS-family ``too-stable'' winter cold bias (Sandu et al.\ 2013). Its lever
+is the OpenIFS stable-BL turbulent mixing --- the ``long-tail'' stability functions / minimum stable diffusion whose
+lineage runs Louis (1979) $\to$ Beljaars \& Viterbo (1998) --- \emph{orthogonal} to the vegetation fix.
+
+\textbf{Two counters this diagnosis must own} (both align with the report's own ``compensating error'' worry).
+\emph{(a) The mixing fix is a documented compensating error:} enhanced long-tail stable mixing is stronger than
+LES/observations justify and is retained only because reducing it degrades the large-scale flow --- it improves 2\,m
+temperature but deepens cyclones and harms low cloud (Sandu et al.\ 2013; Holtslag et al.\ 2013), so Phase~1B must
+check the storm-track/low-cloud climatology (which CMPI/\texttt{part8} will not catch cleanly). \emph{(b) The inversion
+may be a cloud-phase problem:} Pithan et al.\ (2014) attribute much of the modelled Arctic wintertime cold bias to
+missing mixed-phase low cloud (a LW, cloud-\emph{phase} effect) --- our null control ruled out cloud \emph{fraction}
+but not phase, so we scope the residual claim to ``given cloud fraction is unbiased'' and flag a cloud-phase /
+LW$\downarrow$ test as a prerequisite. Likewise the $r=+0.76$ residual-to-inversion match is suggestive, not proof
+that the ``fourth lever'' is truly orthogonal.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/djf_second_driver.png}
+\caption{Second-driver search: full-forest (no-LPJG) run DJFM vs ERA5, boreal NH. Residual cold (top-left) matches
+the inversion-excess (top-right, $r=+0.76$); MSLP (bottom-left) and cloud (bottom-right) biases are diffuse and
+uncorrelated.}
+\end{figure}
+
+\textbf{Near-complete attribution.} The two mechanisms close the boreal DJF cold bias between them: of the
+$\approx-4.5$\,K Siberian bias vs ERA5, the LPJG forest-cover collapse (snow-albedo in spring, roughness in winter)
+contributes $\approx-3$\,K, and the over-strong stable-BL inversion the remaining $\approx-1.4$\,K. Two
+\emph{orthogonal} levers --- the LPJG establishment fix and enhanced stable-BL mixing --- therefore target
+essentially the entire bias. (The veg cooling is also a \emph{stable} offset, not a runaway: over 20\,yr the LPJG
+run carries more/thicker Arctic ice as a bounded mean offset with no amplifying sea-ice drift.)
+
+\subsection{Working conclusion \& lever}
+LPJ-GUESS sends essentially no boreal \emph{forest cover} to OpenIFS (cvh $\sim0.6\to0.02$ over Siberia,
+\S\ref{sub:withwithout}), so the canopy no longer masks snow (spring albedo, \S\ref{sub:withwithout}) \emph{nor}
+roughens the surface (winter inversion, \S\ref{sub:roughness}) --- a physically robust driver of the
+Siberia/N.\ Canada cold bias, consistent with the EC-Earth family in which LPJ-GUESS is interactively coupled
+(D\"oscher et al.\ 2022) and in which dynamic vegetation-cover / effective-LAI improves high-latitude spring climate
+through the snow-albedo coupling (Alessandri et al.\ 2017). Source trace (verified): LPJG computes the high-veg fraction and
+exports it over OASIS as \texttt{GUE\_FRAH}$\to$\texttt{cvh} (\texttt{framework.cpp::computeDailyLAIandFPCforIFS};
+\texttt{namcouple} line 120). With the AWI setting \texttt{iftreefracca=1} (\texttt{global.ins}:151), cvh is the
+summed tree \emph{crown area}$\times$density (no 0.05 clamp --- that constant is dead code; \texttt{natural\_frac}$=1$
+over PI land), so cvh$\approx$0.05 means boreal tree cover is genuinely $\sim$5\%. The establishment gates
+(\texttt{gdd5min\_est=500}, \texttt{twmin\_est=5}) are \emph{not} the blocker --- they are cleared across the boreal ---
+so this is a \textbf{tree-vs-grass competition failure} (grass out-produces trees at canopy closure; settled in
+\S\ref{sub:decisive}), with the degraded state \emph{inherited from the LPJG spin-up}, not a coupled runaway. Seasonally (\S\ref{sub:seasonality})
+the LPJG cold effect spans September--June (DJF $-2.4$, MAM $-2.5$\,K over the boreal box)
+and vanishes only in July--August --- i.e.\ it is a cold-season, not a growing-season, effect. The co-equal
+\emph{sunless} late-autumn/winter part --- which pure snow-albedo cannot explain --- is now
+resolved (\S\ref{sub:withwithout}--\ref{sub:residual}): it is the roughness$\to$inversion effect of the lost
+forest (\S\ref{sub:roughness}) plus a model-intrinsic over-strong stable-BL inversion (\S\ref{sub:residual}).
+
+\textbf{Fixes}: (1) tune the boreal \textbf{tree-vs-grass competition} (\texttt{greff\_min}, C3-grass competitiveness,
+cold-tree photosynthesis \texttt{pstemp\_low}) --- \emph{not} the establishment gates, which are correct
+(\S\ref{sub:decisive}) --- and re-do the LPJG spin-up; highest value, cheap to screen offline by checking cvh recovers
+toward the MODIS pattern; (2) revisit \texttt{iftreefracca}/crown allometry; (3) a woody stem-area floor on the
+snow-masking fraction in OpenIFS
+(\texttt{surfbc\_ctl\_mod.F90}:389--391 / \texttt{surfrad\_ctl\_mod.F90}:650--655) --- but this only bites once (1)
+raises cvh, since the masked-snow tile is weighted by cvh itself. Fixes (1)--(3) are the physically-grounded
+\emph{warming lever} of \S\ref{sec:rec} and buy $\sim$3\,K (\S\ref{sub:levervsera5}). \textbf{A fourth, orthogonal
+lever} attacks the residual $\sim$1.4\,K (\S\ref{sub:residual}): \emph{enhanced stable-boundary-layer mixing} in
+OpenIFS (VDF stability functions / minimum stable diffusion), which would relax the over-strong surface inversion.
+Together (1)--(4) target essentially the entire boreal DJF cold bias.
+
+\subsection{Decisive test: competition, not climate}\label{sub:decisive}
+Is the boreal forest deficit a \emph{climate} problem (fix the atmosphere) or an \emph{LPJG-internal} tree-vs-grass
+competition problem (fix the vegetation)? We answered it directly with a \textbf{feedback-free} experiment: a clean
+OpenIFS--AMIP run (prescribed observed SST, no coupled ocean/LPJG cold feedback; $\sim$PI 1870--79) generated a
+realistic daily forcing, which drove a 2000-yr standalone LPJG re-spin on a \emph{dense} 11\,538-cell gridlist
+(build detail in \S\ref{sub:amipgen}). Fig.~\ref{fig:decisive} puts that forcing (top) beside the equilibrium
+vegetation it produced (bottom). \textbf{The forcing is \emph{not} growing-season-cold}: over the Siberian box the
+warmest-month T2m is $14.7$\,\textdegree C (100\% of cells clear the \texttt{twmin\_est}$=+5$ gate) and GDD5 is $730$
+(76\% clear $500$) --- establishment is climatically permitted essentially everywhere trees should be. \textbf{Yet the
+spin-up under-vegetates and grass wins}: cvh$=0.21$ (far below the $0.4$--$0.7$ closed-taiga range),
+\texttt{GRASSFPC}$=0.37 > \texttt{TREEFPC}=0.21$, and \emph{no closed canopy forms anywhere} (FORESTFPC$=0$), with grass
+filling exactly the East-Siberian interior. On a dense gridlist this cannot be dismissed as under-sampling.
+\textbf{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one} --- so the primary
+counter-lever is the vegetation model (boreal \texttt{greff\_min}, C3-grass competitiveness, \texttt{pstemp\_low}), not
+another atmospheric retune. The one climate co-limit is the deep-winter cold ($-28.3$\,\textdegree C box mean,
+$<-40$ in NE Siberia) that gates out evergreens on $\sim40\%$ of cells --- but climatically-permitted \emph{larch}
+(no cold gate) fails there too (BNS cover $0.035$), so the winter warming of Phase~1B is only a \emph{secondary} aid.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/v3_decisive_climate_vs_veg.png}
+\caption{\textbf{Decisive climate-vs-competition test} (NH boreal, equilibrium yr 3900). \emph{Top:} the
+feedback-free obs-SST $\sim$PI OIFS--AMIP forcing that drove the standalone LPJG re-spin --- warmest-month T2m
+(vs \texttt{twmin\_est}$=+5$), annual GDD5 (vs $500$), coldest-month T2m (vs evergreen \texttt{tcmin\_est}$=-30$).
+\emph{Bottom:} the equilibrium vegetation it produced --- cvh, \texttt{TREEFPC}, \texttt{GRASSFPC}. The growing-season
+forcing clears the gates across the boreal, yet the spin-up yields cvh$\approx0.2$ with grass dominating the
+East-Siberian interior and no closed canopy --- grass out-competes trees under an adequate climate. The only climate
+co-limit is the deep-winter cold (top-right, NE Siberia), but climatically-permitted larch fails there too.}
+\label{fig:decisive}
+\end{figure}
+
+\part{The path forward: raise the floor, then tune}
+\emph{Parts~I--II give the strategy: the imbalance can only be cut by cooling, and cooling is only affordable once the
+structural NH cold floor is raised. So first fix the floor (vegetation competition + stable-BL mixing), \textbf{then}
+spend a moderate cooling lever to reach surface balance --- now without the RMSE blow-up. First the caveats that
+condition this, then the recommendation and a phased plan.}
+
+\section{Caveats}\label{sec:caveats}
+\begin{enumerate}\itemsep1pt
+\item \textbf{06D ``HRlike'' has no HR-specific namelist change} --- only the common pond shift (identical to 06C);
+its metrics confirm this. If a resolution/timestep/viscosity change was intended, it is not in the namelists.
+\item \textbf{Filename convention.} These runs write \texttt{atm\_remapped\_1m\_<var>\_YYYY-YYYY.nc} (no
+\texttt{\_1m\_} infix). I added backward-compatible fallbacks to \texttt{part2}, \texttt{part8} and the CMPI
+preprocessing; existing configs are unaffected.
+\item \textbf{Accumulation period} for these XIOS runs is \textbf{3600\,s} (not the 21600\,s of the old HR config);
+configs use \texttt{accumulation\_period=3600} (verified: tsr\,$\to\approx240$\,W/m$^2$).
+\item None of the runs is at equilibrium within 30\,yr --- numbers are a ranking, not final values.
+\end{enumerate}
+
+\section{Recommendation \& synthesis}\label{sec:rec}
+Reading global CMPI/RMSD as a guide rather than a gate (the PI-vs-PD offset is expected), the picture is:
+\begin{itemize}\itemsep1pt
+\item The \textbf{melt-pond / albedo family (06A--06D, etc.)} are \emph{clean}: they improve sea ice where they
+should and leave everything else essentially untouched. Their imbalance gain is modest ($5$--$20\%$) but it comes
+with no unexpected collateral --- safe building blocks.
+\item The \textbf{ocean-mixing / coupling family (06O/T)} delivers the only large imbalance reductions
+($30$--$38\%$) \emph{and} genuinely improves the ocean interior and sea ice --- but the cooling leaks into the
+atmosphere globally (incl.\ tropics), which is degradation in places the parameter should not reach. That makes
+them promising but not yet ``free.''
+\item \textbf{06V} pushes too far: the \texttt{ENTSTPC3} convection change degrades \texttt{tas}/\texttt{zg}
+everywhere --- not recommended as-is.
+\end{itemize}
+Best-balanced single steps: \textbf{06P} ($-29\%$, well-localised) and \textbf{06H} ($-20\%$).
+
+\textbf{Synthesis --- and where the warming lever comes from.} The two arcs join here. The imbalance can only be
+cut substantially by cooling levers (ocean mixing/coupling), so every combo tried so far overshoots into cold
+bias. But \S\ref{sec:lpjg} shows the shared Siberia/N.\ Canada cold lobe is \emph{not} a tuning artefact, and a
+purpose-built clean no-LPJG CORE3 reference (\S\ref{sub:withwithout}) now \emph{quantifies} it: of the $\approx-4.5$\,K
+Siberian DJF bias vs ERA5, $\approx-3$\,K is the LPJG forest-cover collapse (via snow-albedo in spring \emph{and}
+surface roughness in winter, \S\ref{sub:roughness}) and $\approx-1.4$\,K is a model-intrinsic over-strong stable-BL
+inversion (\S\ref{sub:residual}). The clean run is \emph{better} than the Baseline globally (RMSD 1.514 vs 1.717\,K)
+at \emph{near-unchanged} imbalance ($+0.2$\,W/m$^2$, within drift) --- indicating both are \emph{warming levers
+largely orthogonal to} the TOA tuning. That reframes
+the path forward:
+\begin{enumerate}\itemsep1pt
+\item Fix the LPJG boreal forest-cover bug (establishment limits \texttt{gdd5min\_est}/\texttt{twmin\_est} and/or
+zero-LAI stem snow-masking --- see the companion note) and re-do the spin-up; this warms the NH high latitudes in
+\emph{every} run, lowering the shared RMSD floor by $\approx$3\,K in the worst region.
+\item Attack the residual with \emph{enhanced stable-BL mixing} in OpenIFS (\S\ref{sub:residual}) --- an
+independent knob that relaxes the surface-trapped winter inversion.
+\item On that warmer baseline, apply a \emph{moderate} mixing/coupling setting (06O-like, not 06V) for the
+imbalance, plus the clean melt-pond changes --- the cooling it adds is then offset rather than additive.
+\item Re-judge on the \emph{pattern} of CMPI change (\S\ref{sub:withwithout} method), not the global value, since
+the PI-vs-PD offset is expected.
+\end{enumerate}
+In short: don't chase the imbalance with ever-colder atmospheres; remove the structural cold bias first, then the
+moderate cooling needed for the imbalance becomes affordable.
+
+\section{Work plan: a systematic path to a warm-floor, surface-balanced PI control}\label{sec:workplan}
+\textbf{Two revised targets.} (i) net \emph{surface} energy balance $|F_\mathrm{sfc}|\lesssim0.3$\,W/m$^2$ ---
+\emph{not} TOA. Surface and TOA net flux track to within $\approx0.1$\,W/m$^2$ in every run (\S\ref{sec:rad}); they
+are one problem, so a surface-zero target is equivalent to TOA\,$\approx-0.1$\,W/m$^2$, marginally stricter than
+TOA$=0$. (ii) global 2\,m-T bias vs ERA5 $\approx-1.3$\,\textdegree C --- the physically-expected PI-minus-present-day
+offset, \emph{not} zero: a run that reaches $-1.3$\,\textdegree C is \emph{correct}, not cold-biased.
+
+\textbf{Ordering principle.} The imbalance can only be cut by cooling, and every cooling lever over-cools if applied
+to today's cold-biased base. So we \emph{first} raise the warm floor with two structural fixes that are
+\emph{orthogonal to the TOA balance} (they change the land surface and BL mixing, not the radiation budget ---
+\S\ref{sub:withwithout} showed the no-LPJG floor sits at \emph{near-unchanged} imbalance, $+0.2$\,W/m$^2$ within
+drift), \emph{then} spend a
+\emph{moderate} cooling lever to reach surface balance, now affordable because the floor is $\sim3$--$4$\,K warmer
+where it was worst. Phases 1A/1B are independent (parallel); Phase 2 depends on both; Phase 3 gates.
+
+\subsection{Phase 1A --- Restore boreal tree cover (LPJG establishment)}
+\textbf{Literature \& observational basis --- what realistic trees require (so we don't green the tundra).} The
+observed arctic/boreal treeline sits near the July $10$\,\textdegree C isotherm (K\"oppen), refined by K\"orner \&
+Paulsen (2004) to a growing-season mean of $\sim6$--$7$\,\textdegree C over $\sim90$ days, with the northern boreal
+limit at $\lesssim30$ days $>10$\,\textdegree C. \textbf{Crucially, LPJG's current gates are already the standard,
+treeline-calibrated values} (Smith et al.\ 2001; Sitch et al.\ 2003 --- byte-identical to the canonical
+\texttt{global.ins}): BNE/BINE \texttt{twmin\_est}$=5$ (already \emph{below} the $10$\,\textdegree C isotherm) and
+\texttt{gdd5min\_est}$=500$ sit essentially \emph{at} the observed treeline --- so loosening them risks trees north
+of the real treeline. Two further realism facts constrain the fix: (i) NE Siberia's forest is $\sim$80\,\% \emph{larch}
+(deciduous \texttt{BNS}), because evergreen conifers cannot survive its extreme winters (Kharuk et al.; Herzschuh
+2020, \emph{Glob.\ Ecol.\ Biogeogr.}\ 29, 198--206, the deciduous-vs-evergreen distribution paper) --- LPJG already
+encodes this (BNE/BINE \texttt{tcmin\_surv}$=-31$ excludes them; BNS has \emph{no} cold gate and
+\texttt{gdd5min\_est}$=350$), so the realistic tree there is larch, and it is \emph{already permitted}. (ii) Closed
+taiga tree cover is $\sim0.4$--$0.7$ (MODIS VCF), falling below $0.2$ at the taiga--tundra ecotone --- the spatial
+shape cvh must reproduce.
+
+\textbf{Larch caveat.} The realistic NE-Siberian tree is \emph{deciduous} larch, whose leafless winter canopy masks
+little snow --- so the spring \emph{albedo} mechanism is genuinely weaker over the larch zone (though it retains full
+force over the evergreen west Eurasia / N.\ America). This only re-weights the two mechanisms, it does not soften the
+conclusion: the \emph{roughness} mechanism survives (even leafless, larch is $\gg$ rougher than grass/tundra), and the
+seasonality fingerprint (\S\ref{sub:seasonality}) shows the LPJG cold effect is co-equal in the \emph{sunless}
+Nov--Jan months --- i.e.\ the dark-season roughness/inversion part is what carries the larch zone.
+
+\textbf{The coupled winter cold is a self-inflicted trap, not the trigger.} At the cells where prescribed veg has
+forest but LPJG does not (1785 boreal-land cells), the growing-season gates are already cleared in every run
+(JJA $\ge12$\,\textdegree C, GDD5 $>500$); only the winter \texttt{tcmin\_est}$=-30$ evergreen gate binds. But against
+the \emph{forested} WITHOUT-LPJG climate it excludes evergreens on just $23\%$ of cells ($\approx$ERA5's $22\%$),
+vs $43\%$ in the degraded WITH-LPJG run --- the missing forest's own $-3.3$\,\textdegree C winter cooling doubles the
+exclusion. So it is a \textbf{bistable trap} seeded by the under-forested spin-up, not a climate trigger.
+
+\textbf{The decisive test settles it (\S\ref{sub:decisive}): competition, not climate} --- so Phase 1A's lever is the
+\textbf{competition parameters}, not the establishment gates: boreal \texttt{greff\_min} (0.03 BNE / 0.09 BINE,BNS),
+C3-grass competitiveness, and cold-tree photosynthesis \texttt{pstemp\_low}$=10$\,\textdegree C. Robustly, trees
+\emph{do} establish (nonzero density) and fire is never involved (burnt fraction $=0$ despite BLAZE) --- the failure
+is canopy-closure/productivity competition, not a gate or a fire problem. Phase-1B winter warming
+(\S\ref{sub:phase1b}) is a \emph{secondary} aid, only on the coldest evergreen-gated cells.
+
+\textbf{Why not just relax the gates?} The summer gates are not binding (above), so loosening them cannot help; and
+the \emph{one} binding gate --- the winter \texttt{tcmin\_est} --- correctly excludes evergreens from the
+extreme-cold larch zone, so relaxing it would plant \emph{unrealistic} evergreens where even ERA5 says larch. The
+fix is therefore the winter \emph{climate}, not the limits. (Keep \texttt{iftreefracca 1}, \texttt{global.ins}:150:
+cvh is the summed tree \emph{crown area}, so it tracks establishment success directly.)
+
+\textbf{Screen \& deploy.} Tune the competition knobs on the cheap standalone LPJG spin-up (the OIFS--AMIP forcing of
+\S\ref{sub:decisive}; minutes--hours of wall-time), targeting the MODIS-VCF pattern ($\sim0.4$--$0.7$ closed taiga,
+$<0.2$ at the ecotone, larch winning the cold NE) and a closed canopy (FORESTFPC$>0$, tree NPP $>$ grass NPP) ---
+\emph{not} merely a higher global mean. On a passing screen, re-do the coupled LPJG spin-up, regenerate the restart,
+and carry it into Phase 2.
+
+\subsection{Execution: the clean AMIP--noLPJG forcing generator}\label{sub:amipgen}
+The decisive test (\S\ref{sub:decisive}) needs a \emph{feedback-free} climate to drive it --- reusing coupled-LPJG
+output would carry the very cold bias we are testing. We therefore built a dedicated \textbf{OpenIFS--AMIP} generator
+at TCO95 (\texttt{oifsamip-cy48}, git-aligned to \texttt{awiesm3-develop}): AMIP prescribes observed SST/sea-ice, so
+the atmosphere has no coupled ocean/LPJG feedback. Building and running it required fixing three esm-tools bugs (a
+FESOM-less crash, missing XIOS/coupling compile flags, a missing WAM date-preprocessing recipe --- all committed \&
+pushed; detail in App.~\ref{app:impl}). A 10-yr $\sim$PI decade (1870--79 observed SST, GHG fixed 1850) produced the
+daily forcing. \emph{One methodological catch worth recording:} the first re-spin came out barren everywhere because
+the XIOS field-def de-accumulated fluxes over the 6\,h \texttt{freq\_op} cadence instead of the true
+\texttt{NFRHIS$\times$TSTEP}$=1$\,h period, making \texttt{rsns}/\texttt{rlns}/\texttt{pr} exactly 6$\times$ too low
+(net SW $28$ vs $166$\,W/m$^2$) --- fixed by a validated $\times6$ patch and, at root, by templating the divisor from
+esm-tools. \textbf{Expected payoff} of the whole Phase~1A (\S\ref{sub:levervsera5}): $\approx-3$\,K off the Siberian
+DJF bias, $\approx-0.2$\,K global RMSD, at near-unchanged imbalance.
+
+\subsection{Phase 1B --- Enhance stable-boundary-layer mixing (OpenIFS)}\label{sub:phase1b}
+\textbf{Change.} The residual $\approx1.4$\,K surface-trapped inversion (\S\ref{sub:residual}) is relaxed by
+strengthening stable-BL turbulent mixing in the EDMF K-diffusion scheme via the ``long-tail'' (LTG) stability
+functions --- lengthening the tail keeps mixing non-zero at large Richardson number and weakens the over-strong
+surface inversion. There is no namelist for the stable branch, so this is $\sim$2 single-line OpenIFS source edits
+(minimum stable mixing length \texttt{ZLMIN} and the LTG coefficient \texttt{ZCB}) plus recompile; the exact
+file:line targets and secondary companions are in App.~\ref{app:impl}. \emph{Bear the documented side-effects in
+mind} (\S\ref{sub:residual}): long-tail mixing beyond the observational range can deepen cyclones and degrade low
+cloud, so verify the storm-track/low-cloud climatology, and pre-test cloud phase / LW$\downarrow$ (Pithan et al.\
+2014) since the residual may be partly a cloud-microphysics rather than turbulence error.
+
+\textbf{Test.} Change \emph{one} knob first (\texttt{ZLMIN}) to keep attribution clean; scan 2--3 values with short
+(1--5\,yr) coupled sensitivity runs of the no-LPJG reference. \textbf{Gate:} the DJFM low-level inversion bias
+(\texttt{djf\_second\_driver.py}) moves from $+1.4$\,K toward ERA5's $+4.2$\,K level and the residual boreal cold
+shrinks, \emph{without} eroding legitimate inversions or warming the tropics (judge globally via \texttt{part8}/CMPI
+pattern). \textbf{Risk:} over-mixing warms too broadly / degrades low cloud --- mitigate with small steps and
+global CMPI-pattern judging.
+
+\subsection{Phase 2 --- Moderate imbalance tuning on the warm floor}
+With the floor raised (1A$+$1B) and global skill already better than Baseline (RMSD $1.514$, CMPI $0.738$;
+\S\ref{sub:withwithout}), spend a \emph{moderate} cooling lever to bring the \emph{surface} budget to zero. Build the
+combined config in layers, cleanest-first:
+\begin{center}\small
+\begin{tabular}{l l r r l}
+\toprule
+layer & lever(s) & $\Delta$TOA [W/m$^2$] & raw bias [K] & rationale \\
+\midrule
+base      & melt-pond (06A--06C; opt.\ 06G) & $-0.08$ to $-0.26$ & $-1.0$ to $-1.3$ & collateral-free \\
+localised & 06P (\texttt{ENTSTPC3})         & $-0.44$ ($-29\%$)  & $-1.36$ & best efficiency $\sim1.05$\,W/m$^2$/K \\
+moderate  & 06O (\texttt{1hcpl}+\texttt{mospp}) & $-0.55$ ($-36\%$) & $-1.77$ & improves ocean/ice; \emph{not} 06V \\
+\midrule
+(spare)   & $+$\texttt{kpplow} $=$ 06T      & $-0.58$ ($-38\%$)  & $-1.79$ & if more cut needed \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Why this stops short of 06V.} 06V (\texttt{entstpc3}$+$\texttt{kpplow} all stacked) gives the biggest cut
+($-57\%$) but overshoots to $-2.1$\,K and degrades \texttt{tas}/\texttt{zg}/\texttt{rlut} in \emph{every} region
+including the tropics. The base$+$06P$+$06O stack cuts $\sim1.0$--$1.1$\,W/m$^2$ of surface imbalance (reference
+surface $+1.52\to\sim0.4$--$0.5$; iterate the coupling strength or add \texttt{kpplow} to close the last $\sim0.4$).
+\textbf{Cold-bias accounting:} the $\sim-1.7$\,K raw cooling of the coupling lever, applied on a floor lifted
+$\sim3$--$4$\,K where the bias was worst (and $\sim0.2$--$0.4$\,K globally), lands the global mean near the target
+$-1.3$\,\textdegree C rather than the $-1.8$ to $-2.1$\,\textdegree C the same lever produces today.
+
+\subsection{Phase 3 --- Verification protocol and decision gates}
+Run the combined config 30\,yr (evaluate the last decade). Judge with the \texttt{reval} toolchain \emph{plus} the DJF
+driver diagnostics:
+\begin{center}\small
+\begin{tabular}{l l l}
+\toprule
+target & metric (tool) & accept \\
+\midrule
+surface balance   & \texttt{part2} ``Surface total''             & $|F_\mathrm{sfc}|\lesssim0.3$\,W/m$^2$ (TOA\,$\approx-0.1$) \\
+cold bias         & \texttt{part8} 2\,m bias vs ERA5            & $-1.3\pm0.3$\,\textdegree C; RMSD $\le$ ref.\ $1.51$ \\
+multivariate skill& \texttt{part4} CMPI                          & $\le$ Baseline $0.745$; \emph{pattern}, not just global \\
+no new regionals  & CMPI by region (esp.\ tropics)             & no family-typical global cooling leak \\
+driver check      & \texttt{djf\_second\_driver.py} / \texttt{...roughness...} & inversion bias $\to$ ERA5; cvh restored \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Iteration \& critical path.} Each axis adjusts independently (the floor fixes are orthogonal to the imbalance
+lever): too cold $\to$ back off coupling; imbalance too high $\to$ add \texttt{kpplow}; inversion too strong $\to$ raise
+\texttt{ZLMIN}. Phases 1A and 1B run in parallel now (both cheap/offline); 1A's coupled re-spin is the long pole, and
+the Phase-2 run starts once the re-spun restart and the chosen stable-BL build are both in hand.
+
+\vspace{4pt}
+{\footnotesize All scripts, data, figures and this report live in \texttt{/work/bb1469/a270092/eval/}\,:
+\texttt{data/MASTER\_metrics.csv}, \texttt{data/cmpi\_by\_variable.csv}, \texttt{data/cmpi\_by\_region.csv}, \texttt{configs/},
+\texttt{plots/}, \texttt{run\_figures/<run>/}, \texttt{notebooks/}. Tool: \texttt{release\_evaluation\_tool2}
+(reval env); per-run diags via \texttt{part2\_rad\_balance.py} / \texttt{part8\_t2m\_vs\_era5.py} /
+\texttt{part4\_cmpi.py}.}
+
+\appendix
+\section{Parameter catalogue (distinguishing change per run)}\label{app:params}
+\begin{center}\footnotesize
+\begin{tabular}{l l l l}
+\toprule
+Run & Change (file/namelist) & Baseline\,$\to$\,New & Process \\
+\midrule
+06A & \texttt{albpnd} (\texttt{namelist.ice}) & $0.2\to0.28$ & melt-pond albedo \\
+06B & +\,\texttt{rfracmax} & $1.0\to0.75$ & pond water retention \\
+06C & +\,\texttt{pndaspect} & $0.8\to1.3$ & pond depth:area (=common pond) \\
+06D \emph{HRlike} & (only common pond shift) & -- & \textcolor{red}{no other diff found} \\
+06G & \texttt{albpnd/rfracmax/pndaspect} & $0.35/0.6/1.6$ & stronger meltpond \\
+06L & \texttt{albpnd/rfracmax/pndaspect} & $0.4/0.55/1.8$ & extra-strong meltpond \\
+06H & strong pond + \texttt{RVICE} (\texttt{\&NAMCLDP}) & $0.16\to0.18$ & meltpond + cloud-ice fall speed \\
+06Q & \texttt{albw/albocn} & $0.1\to0.045$ & open-water/ocean albedo \\
+06R & \texttt{albw/albocn} & $0.1\to0.075$ & open-water/ocean albedo \\
+06S & \texttt{whichevp} (\texttt{\&ice\_dyn}) & $1\to0$ & sea-ice rheology mEVP$\to$EVP \\
+06E & \texttt{RVICE}+\texttt{GGAUSSB} (\texttt{\&NAMGWWMS}) & $0.18$; $-0.5\to-0.6$ & cloud-ice + gravity-wave \\
+06F & \texttt{LRDALB} (\texttt{NALBEDOSCHEME=3}) & F\,$\to$\,T & diagnosed surface albedo \\
+06P & \texttt{ENTSTPC3} (\texttt{\&NAMCUMF}) & absent\,$\to$\,1 & deep-convection entrainment \\
+06N & \texttt{use\_momix} (\texttt{namelist.tra}) & F\,$\to$\,T & near-surface ocean mixing (mospp) \\
+06M & OASIS coupling period + LAG & $7200\to3600$\,s & atmos$\leftrightarrow$ocean 2h$\to$1h (1hcpl) \\
+06O & 1hcpl + mospp & -- & coupling + mixing \\
+06O4 & O + \texttt{momix\_kv} & $0.01\to0.012$ & + larger M-O mixing \\
+06O5 & O + \texttt{momix\_kv} & $0.01\to0.02$ & + even larger mixing \\
+06T & O + KPP-low (\texttt{kpp\_av0/kv0} $0.005\to0.003$, bckg $\downarrow10\times$) & -- & + weaker KPP mixing \\
+06U & T + open-water albedo $0.075$ & -- & combo \\
+06V & T + \texttt{ENTSTPC3=1} & -- & combo (most aggressive) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Implementation \& lab-notebook detail}\label{app:impl}
+Operational detail moved here to keep the work-plan science legible. Retained for reproducibility.
+
+\textbf{A.1 esm-tools fixes for the AMIP--noLPJG generator (\S\ref{sub:amipgen}).} Model tree \texttt{oifsamip-cy48}
+git-aligned to \texttt{awiesm3-develop} (oifs \texttt{local\_combined\_fixes}\,@\,1303a90, oasis \texttt{afac6a3},
+xios\,\texttt{2.5.3}) + bundle/field patches. Three bugs fixed, committed \& pushed (commit \texttt{9921d95b}, branch
+\texttt{development\_interactiv\_mesh\_awiesm3}, and a follow-up for the WAM recipe):
+\begin{itemize}\itemsep0pt
+\item \texttt{xios.yaml} dereferenced the \texttt{fesom} namespace via \texttt{choose\_fesom.*} and crashed \emph{any}
+FESOM-less setup --- now gated on \texttt{"\$((\;'fesom' in config\;))"}.
+\item \texttt{oifsamip.yaml} never overrode the OIFS \texttt{comp\_command}, so the binary compiled \emph{without} XIOS
+or coupling despite \texttt{LXIOS:TRUE} --- now adds \texttt{--with-cplng2 --with-oifs-xios --build-type=release}
+(like awicm3/awiesm3).
+\item WAM aborted (\texttt{CDATEA}$\neq$\texttt{CDATEF}) at any start year $\neq$1990 because the OIFS
+\texttt{preprocess} step (\texttt{change\_icm\_date.sh}, which re-dates ICMGG/ICMSH/wave init files) never ran:
+\texttt{oifsamip.yaml} lacked \texttt{prepcompute\_recipe:\;\$\{oifs.prepcompute\_recipe\}} and fell back to the
+default recipe with no preprocess step. Added (matches \texttt{awicm3.yaml}).
+\end{itemize}
+Runscript \texttt{oifsamip-cy48-levante-TCO95L91\_lpjgforcing.yaml} overrides XIOS output to
+\texttt{file\_def\_lpjg\_spinup} + \texttt{field\_def\_lpjg\_safe}, emitting daily
+\texttt{tas,tasmin,tasmax,pr,rsns,rlns,sfcWind} + \texttt{tdps,ps,psl,clt,prsn,evspsbl,prw,sd,rsn}.
+\emph{esm\_master gotcha:} the single-component target is \texttt{recomp-<setup>/oifs-48r1} (the \emph{component}
+name); the alias \texttt{/oifs} silently falls back to the setup and doubles the path
+(\texttt{oifsamip-cy48/oifsamip-cy48}).
+
+\textbf{A.2 Flux-accumulation fix (\S\ref{sub:amipgen}), at root.} The de-accumulation divisor in
+\texttt{field\_def\_lpjg\_safe.xml} was the hard-coded \texttt{/21600} (6\,h). It is now templated:
+\texttt{field\_def\_lpjg\_safe.xml.j2} uses \texttt{/\{\{oifs.flux\_accumulation\_period\}\}}, with
+\texttt{oifs.flux\_accumulation\_period} defaulting to \texttt{\$\{oifs.time\_step\}} ($=$\,NFRHIS$\times$TSTEP; with
+NFRHIS$=$1 this is the timestep). A validated $\times6$ scalar patch
+(\texttt{AMIP\_noLPJG\_1d\_1870-1879\_TCO95\_PI\_fluxfix.nc}) corrected the existing forcing without a rerun.
+
+\textbf{A.3 Phase-1B OpenIFS source edits (\S\ref{sub:phase1b}).} Paths under
+\texttt{oifs-48r1/ifs-source/arpifs/phys\_ec/}:
+\begin{center}\small
+\begin{tabular}{l l l l l}
+\toprule
+knob & file:line & current & proposed & effect \\
+\midrule
+\texttt{ZLMIN} & \texttt{vdfexcu.F90}:201 & $30$\,m & $40$--$50$\,m & min stable mixing length \\
+\texttt{ZCB}   & \texttt{vdfexcu.F90}:190 & $5.0$ & $3.0$--$4.0$ & LTG $b$: lower $\Rightarrow$ longer tail $\Rightarrow$ more $K$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Secondary companions if needed: the $0.1$ / $300$\,m stable mixing-length limits (\texttt{vdfexcu.F90}:374,376) and the
+surface-layer constants \texttt{RCHETA}/\texttt{RCHETB}/\texttt{RCHBHDL} (\texttt{surf/module/suvexcs\_mod.F90}, mirror
+in \texttt{suvdfs.F90}).
+
+\section*{References}
+{\footnotesize\setlength{\parindent}{0pt}\setlength{\parskip}{2.5pt}
+Alessandri, A.\ et al.\ (2017). Multi-scale enhancement of climate prediction over land by increasing the model
+sensitivity to vegetation variability in EC-Earth. \emph{Clim.\ Dyn.}\ 49, 1215--1237.\par
+Beljaars, A.C.M.\ \& Viterbo, P.\ (1998). Role of the boundary layer in a numerical weather prediction model. In
+\emph{Clear and Cloudy Boundary Layers}, KNAW, 287--304.\par
+Betts, R.A.\ (2000). Offset of the potential carbon sink from boreal forestation by decreases in surface albedo.
+\emph{Nature} 408, 187--190.\par
+Bonan, G.B.\ (2008). Forests and climate change: forcings, feedbacks, and the climate benefits of forests.
+\emph{Science} 320, 1444--1449.\par
+Bonan, G.B., Pollard, D.\ \& Thompson, S.L.\ (1992). Effects of boreal forest vegetation on global climate.
+\emph{Nature} 359, 716--718.\par
+Chapin, F.S.\ et al.\ (2005). Role of land-surface changes in Arctic summer warming. \emph{Science} 310, 657--660.\par
+de Lavergne, C.\ et al.\ (2014). Cessation of deep convection in the open Southern Ocean under anthropogenic climate
+change. \emph{Nat.\ Clim.\ Change} 4, 278--282.\par
+D\"oscher, R.\ et al.\ (2022). The EC-Earth3 Earth system model for CMIP6. \emph{Geosci.\ Model Dev.}\ 15,
+2973--3020.\par
+Herzschuh, U.\ (2020). Legacy of the Last Glacial on the present-day distribution of deciduous versus evergreen
+boreal forests. \emph{Glob.\ Ecol.\ Biogeogr.}\ 29, 198--206.\par
+Heuz\'e, C.\ (2021). Antarctic bottom water and North Atlantic deep water in CMIP6 models. \emph{Ocean Sci.}\ 17,
+59--90.\par
+Heuz\'e, C.\ et al.\ (2013). Southern Ocean bottom water characteristics in CMIP5 models. \emph{Geophys.\ Res.\
+Lett.}\ 40, 1409--1414.\par
+Holtslag, A.A.M.\ et al.\ (2013). Stable atmospheric boundary layers and diurnal cycles: challenges for weather and
+climate models. \emph{Bull.\ Am.\ Meteorol.\ Soc.}\ 94, 1691--1706.\par
+Hyder, P.\ et al.\ (2018). Critical Southern Ocean climate model biases traced to atmospheric model cloud errors.
+\emph{Nat.\ Commun.}\ 9, 3625.\par
+Jiang, Y.\ et al.\ (2012). [Boreal tree/grass fraction spread across dynamic global vegetation models.]
+\emph{Ecol.\ Evol.}\ (structural-uncertainty reference; details to verify).\par
+K\"orner, C.\ \& Paulsen, J.\ (2004). A world-wide study of high altitude treeline temperatures. \emph{J.\
+Biogeogr.}\ 31, 713--732.\par
+Loranty, M.M.\ et al.\ (2014). Vegetation controls on northern high-latitude snow-albedo feedback. \emph{Glob.\
+Change Biol.}\ 20, 594--606.\par
+Louis, J.-F.\ (1979). A parametric model of vertical eddy fluxes in the atmosphere. \emph{Bound.-Layer Meteorol.}\
+17, 187--202.\par
+Medeiros, B.\ et al.\ (2011). Arctic inversion strength in climate models. \emph{J.\ Climate} 24, 4733--4740.\par
+Mohrmann, M., Heuz\'e, C.\ \& Swart, S.\ (2021). Southern Ocean polynyas in CMIP6 models. \emph{The Cryosphere} 15,
+4281--4313.\par
+Pithan, F., Medeiros, B.\ \& Mauritsen, T.\ (2014). Mixed-phase clouds cause climate model biases in Arctic
+wintertime temperature inversions. \emph{Clim.\ Dyn.}\ 43, 289--303.\par
+Sandu, I.\ et al.\ (2013). Why is it so difficult to represent stably stratified conditions in numerical weather
+prediction models? \emph{J.\ Adv.\ Model.\ Earth Syst.}\ 5, 117--133.\par
+Sitch, S.\ et al.\ (2003). Evaluation of ecosystem dynamics, plant geography and terrestrial carbon cycling in the
+LPJ dynamic global vegetation model. \emph{Glob.\ Change Biol.}\ 9, 161--185.\par
+Smith, B.\ et al.\ (2001). Representation of vegetation dynamics in the modelling of terrestrial ecosystems.
+\emph{Glob.\ Ecol.\ Biogeogr.}\ 10, 621--637.\par
+Smith, B.\ et al.\ (2014). Implications of incorporating N cycling and N limitations on primary production in an
+individual-based dynamic vegetation model. \emph{Biogeosciences} 11, 2027--2054.\par
+Zhang, Y.\ et al.\ (2011). On the computation of planetary boundary-layer height / polar inversion strength in
+climate models. \emph{J.\ Climate} 24, 5167--5186.\par
+\vspace{2pt}\emph{Citations added in response to internal review (rev.\ 2026-07-06); bibliographic details for
+Beljaars \& Viterbo 1998, Jiang et al.\ 2012, Medeiros et al.\ 2011 and Zhang et al.\ 2011 to be page-verified.}
+}
+
+\end{document}
