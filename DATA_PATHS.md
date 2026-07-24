@@ -57,6 +57,55 @@ Earlier, superseded spin-ups (documented for provenance):
 .../LR_1000y_spinup           # old sparse/cold-sampled LR spin-up (inconclusive)
 ```
 
+### 6. Coupled CRUNCEP3-initialized branch follow-up (2026-07-24) — 50-year regional land/ocean split check
+
+Coupled AWI-ESM3 + LPJ-GUESS run started from the CRUNCEP3-based vegetation state
+and followed for 50 model years. Used to test whether the boreal-forest problem
+remains purely a vegetation-competition issue once the system is allowed to
+adjust in coupled mode.
+
+```
+/work/bb1469/a270270/runtime/awiesm3-v3.4/<CRUNCEP3-initialized-coupled-branch-directory>
+  run_13500101-13591231/work/run*/output/fpc.out   # LPJ shards for year 1350
+  run_13600101-13691231/work/run*/output/fpc.out   # LPJ shards for year 1360
+  run_13900101-13991231/work/run*/output/fpc.out   # LPJ shards for year 1399
+  outdata/oifs/atm_remapped_1m_2t_1350-1359.nc     # via per-year files atm_remapped_1m_2t_1350-1350.nc ... 1359-1359.nc
+  outdata/oifs/atm_remapped_1m_2t_1390-1399.nc     # via per-year files atm_remapped_1m_2t_1390-1390.nc ... 1399-1399.nc
+```
+
+Actual directory name on disk (internal alias in quotes):
+
+```
+"Tuning_test_080a_lpjguess_Baseline_coupled_fromCRUNCEP"
+```
+
+Generated diagnostics provenance (original generation directory):
+
+```
+/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/plots/diff_from_amip_and_era5/
+  treefpc_coupled_cruncep3_init_y10_minus_y0_nh.png
+  treefpc_coupled_cruncep3_init_y50_minus_y0_nh.png
+  t2m_seasonal_bias_coupled_cruncep3_init_vs_cruncep3_nh.png
+  t2m_seasonal_bias_coupled_cruncep3_init_1390_1399_vs_cruncep3_nh.png
+  t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_DJF.png
+  t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_MAM.png
+  t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_JJA.png
+  t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_SON.png
+  net_radiation_panel_baseline_A_to_V_07A_to_C_HRgoal_LRpi_last30.png
+```
+
+The same figure set has been copied into this investigation repository at:
+
+```
+/work/ab0995/a270270/analysis/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/plots/
+```
+
+Working interpretation and proposed next runs:
+
+```
+/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/next_experiment_design_coupled_cruncep3_init_followup.md
+```
+
 ## Observations
 ```
 ERA5 (2m T, seasonal):  /work/ab0246/a270092/obs/era5/netcdf/T2M_{DJF,JJA,DJFM,...}.nc
@@ -92,3 +141,4 @@ reval (release_evaluation_tool2): /work/ab0246/a270092/software/release_evaluati
   C3-grass competitiveness, cold-tree `pstemp_low=10`.
 - OpenIFS stable-BL (Phase 1B): `ZLMIN` (`vdfexcu.F90:201`), `ZCB` (`vdfexcu.F90:190`).
 - XIOS flux de-accumulation period fix: `field_def_lpjg_safe.xml.j2`, divisor `= NFRHIS*TSTEP` (report App. B.2).
+- Follow-up coupled branch candidates (2026-07-24): 06T (`oasis3mct.time_step=3600`, `use_momix=True`, `momix_kv=0.01`, `kpp_av0=0.003`, `kpp_kv0=0.003`, `kpp_kvbckg=5.0e-06`) and 06V (06T + `ENTSTPC3=1`), then LPJ levers 07A (`BNS greff_min=0.035`) and 07C (`C3G pstemp_low=12`).

@@ -617,6 +617,122 @@ the PI-vs-PD offset is expected.
 In short: don't chase the imbalance with ever-colder atmospheres; remove the structural cold bias first, then the
 moderate cooling needed for the imbalance becomes affordable.
 
+\subsection{2026--07--24 coupled follow-up from the CRUNCEP3-initialized branch: the year-50 land--ocean split refines the path}\label{sub:cruncep3_init_followup}
+After the earlier report structure was drafted, the coupled
+CRUNCEP3-initialized branch (alias ``080a'') reached
+50 years, which adds an important constraint on the tuning strategy. The new
+result is \emph{not} a simple hemisphere-wide cold drift. By year 50 the system
+shows a marked \textbf{warm-ocean / cold-land split}, while boreal tree cover
+continues to retreat --- most strongly over Siberia / East Siberia.
+
+Two points matter:
+\begin{enumerate}\itemsep1pt
+\item The older LPJG story remains necessary: the spin-up / competition state is
+still part of the problem, and the vegetation levers are real.
+\item But the 50-year coupled adjustment shows that a \emph{regional continental-land}
+climate failure also develops, so vegetation-only retuning is not sufficient.
+\end{enumerate}
+
+The finished year-50 diagnostics make the asymmetry explicit. Relative to year 0,
+NH45+ \texttt{TREEFPC} declines from $0.336$ to $0.215$, but the strongest loss is
+concentrated over Siberia / East Siberia. In the Siberian box (55--75\textdegree N,
+60--180\textdegree E) \texttt{TREEFPC} drops by $-0.188$, and in East Siberia
+(55--75\textdegree N, 90--160\textdegree E) by $-0.232$, accompanied by a strong
+drop in \texttt{AGDD5} ($-89$ and $-133$ respectively). At the same time,
+NH45+ aggregate \texttt{AGDD5} actually \emph{increases}, and Scandinavia / Canada
+also warm in thermal-growing metrics. So the problem is not ``the NH is too cold'';
+it is that \textbf{boreal continental land, especially East Siberia, remains too
+cold relative to the oceanic state}. This is exactly what one sees in the year-50
+seasonal-temperature maps against the CRUNCEP3 reference: ocean-adjacent sectors
+are warm-biased while large boreal land sectors remain cold.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{plots/treefpc_coupled_cruncep3_init_y50_minus_y0_nh.png}
+\caption{Coupled CRUNCEP3-initialized branch year-50 follow-up: NH \texttt{TREEFPC} at year 0 (1350),
+final year (1399) and change (Y50$-$Y0). The retreat is broad, but the largest
+loss is concentrated over Siberia / East Siberia.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/t2m_seasonal_bias_coupled_cruncep3_init_vs_cruncep3_nh.png}
+\caption{Early coupled decade: 1350--1359 vs CRUNCEP3 forcing}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/t2m_seasonal_bias_coupled_cruncep3_init_1390_1399_vs_cruncep3_nh.png}
+\caption{Final coupled decade: 1390--1399 vs CRUNCEP3 forcing}
+\end{subfigure}
+\caption{Seasonal NH T2m bias of the coupled CRUNCEP3-initialized branch against CRUNCEP3 forcing. The
+year-50 state is not a uniform NH cooling; instead it shows a land--ocean split,
+with boreal continental land still cold while oceanic sectors are relatively warm.}
+\end{figure}
+
+This follow-up changes the recommendation in one practical way: the next runs
+should \textbf{fix the physical coupled branch first, and only then add LPJ
+compensation}. In other words, the "warm-floor" concept of this report still
+holds, but the relevant floor is now more specific: \textbf{a warmer boreal land
+floor}, not merely a warmer NH mean. The cleanest next matrix is therefore:
+\begin{enumerate}\itemsep1pt
+\item \textbf{06T-only} physical branch:
+	\texttt{oasis3mct.time\_step=3600}, \texttt{use\_momix=True},
+	\texttt{momix\_kv=0.01}, \texttt{kpp\_av0=0.003}, \texttt{kpp\_kv0=0.003},
+	\texttt{kpp\_kvbckg=5e-06}.
+\item \textbf{06V-only} physical branch: 06T plus \texttt{ENTSTPC3=1}.
+\item Best of 06T/06V plus \textbf{07A} (\texttt{BNS greff\_min=0.035}).
+\item Best of 06T/06V plus \textbf{07A+07C}
+	(\texttt{C3G pstemp\_low=12}).
+\end{enumerate}
+
+The year-50 evidence also explains why \textbf{LPJ-only tuning should not be the
+first move}. The all-tuned coupled NH bias panels (seasonal and annual) show that
+the coupled atmosphere response already differs strongly among branches even before
+the LPJ compensation is evaluated. If the physical branch leaves East Siberia cold,
+then LPJ-only changes risk compensating the wrong climate state rather than fixing
+it. Conversely, if a 06T/06V-type branch can hold the global net-radiation target
+while reducing the East-Siberian land cold pool, then the LPJ levers can be used
+for their intended role --- retaining boreal trees --- rather than masking a
+regional coupled-climate defect.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{plots/net_radiation_panel_baseline_A_to_V_07A_to_C_HRgoal_LRpi_last30.png}
+\caption{Global net-radiation history used to define the next physical branch.
+The preferred candidates remain the late 06-series branches that move closest to
+the target while staying within a plausible tuning envelope; the follow-up now
+adds the requirement that they must also improve boreal land climate, not only the
+global radiation budget.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_DJF.png}
+\caption{DJF}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_MAM.png}
+\caption{MAM}
+\end{subfigure}
+\par\medskip
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_JJA.png}
+\caption{JJA}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_SON.png}
+\caption{SON}
+\end{subfigure}
+\caption{All tuned coupled experiments relative to 06\_Baseline, resolved by
+season (10-year means). These panels help separate branches that reduce the global
+radiation problem by globally cooling everything from branches that have a more
+usable boreal-land signal.}
+\end{figure}
+
 \section{Work plan: a systematic path to a warm-floor, surface-balanced PI control}\label{sec:workplan}
 \textbf{Two revised targets.} (i) net \emph{surface} energy balance $|F_\mathrm{sfc}|\lesssim0.3$\,W/m$^2$ ---
 \emph{not} TOA. Surface and TOA net flux track to within $\approx0.1$\,W/m$^2$ in every run (\S\ref{sec:rad}); they

@@ -21,6 +21,16 @@ in place). It is structured in three parts:
    stable-BL mixing), *then* spend a moderate cooling lever to reach surface
    balance without the RMSE blow-up.
 
+**2026-07-24 follow-up:** a finished 50-year coupled run started from the
+CRUNCEP3-initialized vegetation state (alias "080a") refines the picture. The
+failure is **not** a simple NH-wide cold drift. By year 50 the
+system shows a **warm-ocean / cold-land split**, and the vegetation loss is
+strongest over **Siberia / East Siberia**, where `TREEFPC` and `AGDD5` both
+decline even though NH45+ aggregate thermal metrics can increase. The current
+working interpretation and next-run proposal are recorded in:
+
+- `notes/COUPLED_CRUNCEP3_INIT_BRANCH_FOLLOWUP_2026-07-24.md`
+
 See **`DATA_PATHS.md`** for every experiment and its Levante path.
 
 ## Layout
@@ -35,7 +45,7 @@ scripts/
   sbatch/          SLURM wrappers (LPJG diag, forcing generation, nc conversion)
 data/              derived CSVs (master metrics, CMPI by var/region, tree/grass fractions, ...)
 configs/           reval per-run evaluation configs
-notes/             LPJG_PFT_investigation.md, PROGRESS_REPORT.md (working notes)
+notes/             LPJG_PFT_investigation.md, PROGRESS_REPORT.md, COUPLED_CRUNCEP3_INIT_BRANCH_FOLLOWUP_2026-07-24.md
 ```
 
 ## Which script makes which figure
@@ -58,9 +68,18 @@ notes/             LPJG_PFT_investigation.md, PROGRESS_REPORT.md (working notes)
 | `seaice_t2m_trend`, `seaice_volume_trend` | `scripts/analysis/seaice_t2m_trend.py`, `seaice_volume_trend.py` |
 | **`v3_decisive_climate_vs_veg`** (the decisive test) | `scripts/analysis/v3_decisive.py` |
 
+2026-07-24 coupled follow-up figures copied into this repo under `plots/`
+(`treefpc_coupled_cruncep3_init_y{10,50}_minus_y0_nh`,
+`t2m_seasonal_bias_coupled_cruncep3_init*_vs_cruncep3_nh`,
+`t2m_bias_vs_base06_all_tuned_coupled_nh_10yrseasonal_{DJF,MAM,JJA,SON}`,
+`net_radiation_panel_baseline_A_to_V_07A_to_C_HRgoal_LRpi_last30`) are
+generated in the working analysis directory:
+`/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/scripts/`.
+
 ## Recompiling the report
 ```
-cd report && pdflatex report.tex && pdflatex report.tex
+module load texlive/live2025-gcc-13.3.0
+cd report && latexmk -pdf -interaction=nonstopmode -halt-on-error report.tex
 ```
 (`plots/` is symlinked into `report/`; per-run figures are in `report/run_figures/`.)
 

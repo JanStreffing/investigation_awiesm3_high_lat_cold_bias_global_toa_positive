@@ -90,6 +90,45 @@ The highest-value, low-cost fix is to **relax BNE/BINE establishment limits (`gd
 the LPJG spin-up**, verifying that boreal `cvh` recovers toward the satellite/HTESSEL ~0.44. This is the
 physically-grounded *warming lever* that can offset the imbalance-tuning cold bias.
 
+## 7. 2026-07-24 coupled follow-up — what changed after a 50-year run
+
+The newer coupled follow-up from the CRUNCEP3-initialized branch (alias "080a")
+changes the interpretation in one important way: the boreal problem is **not adequately described as a purely climate-free,
+competition-only issue once the coupled system is allowed to evolve for 50 years**.
+
+Key new findings from the finished 50-year run:
+
+- NH45+ `TREEFPC` still declines strongly (`0.336 -> 0.215`).
+- The collapse is strongest over **Siberia / East Siberia**, where `TREEFPC` and
+  `AGDD5` both decrease strongly by year 50.
+- At the same time, NH45+ aggregate `AGDD5` increases, and some other regions
+  (e.g. Scandinavia / Canada) do not show the same thermal decline.
+- The final-decade seasonal temperature bias map against CRUNCEP3 shows a
+  **warm-ocean / cold-land split**, not a simple hemispheric cold drift.
+
+Updated interpretation:
+
+- The older decisive test still supports the claim that the **spin-up state and
+  LPJG competition structure matter a lot**.
+- But the 50-year coupled follow-up shows that **regional coupled climate also
+  matters**, especially over boreal continental land.
+- Therefore the current best statement is:
+  - the boreal cold bias has a **structural LPJG component**,
+  - but the coupled system can still generate a **regional land-cooling pattern**
+    that amplifies the Siberian forest loss.
+
+Practical consequence:
+
+- Do **not** treat vegetation-only retuning as sufficient.
+- The next tuning path should combine:
+  1. a better coupled physical branch (`06T` / `06V`) to improve radiation
+     balance without worsening East Siberian land climate, and only then
+  2. LPJ competition retuning (`07A`, then `07A+07C`) to retain boreal trees.
+
+See also:
+
+- `notes/COUPLED_CRUNCEP3_INIT_BRANCH_FOLLOWUP_2026-07-24.md`
+
 *Verified-from-source: coupling chain (§2), iftreefracca=1, establishment limits (§3). Inferred: that
 gdd5min_est/twmin_est are the binding constraints (consistent with the maps but not yet confirmed by an
 `est_limits.out` analysis — a good next diagnostic).*
