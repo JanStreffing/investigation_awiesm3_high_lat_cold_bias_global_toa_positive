@@ -380,7 +380,7 @@ $\to$ 16.8\,\% (baseline) $\to$ 11.4\,\% (06V)} --- progressively worse with the
 \emph{Caveat on the prior:} DGVMs disagree substantially on boreal tree-vs-grass partitioning, and real boreal
 forest is genuinely open with substantial non-tree ground cover (Jiang et al.\ 2012), so ``grass over Siberia'' is
 not \emph{automatically} a bug. What makes the establishment-failure reading defensible here is the \emph{magnitude}:
-the coupled state reaches cvh\,$\approx$\,0.02--0.05 with \emph{no closed canopy anywhere} (FORESTFPC$=0$,
+the coupled state reaches cvh\,$\approx$\,0.02--0.05 with \dead{no closed canopy anywhere (FORESTFPC$=0$)}\footnote{\textbf{Void diagnostic.} \texttt{FORESTFPC} sums only PFTs with \texttt{landcover==FOREST} (\texttt{commonoutput.cpp}:1143), i.e.\ the \emph{managed-forest} land-use class; natural trees are counted in \texttt{TREEFPC} via the \texttt{NATURAL} branch. In this PI configuration nothing is allocated to FOREST (\texttt{Natural\_sum}$=0.684$, \texttt{Total}$=0.665$), so \texttt{FORESTFPC}$\equiv0$ \emph{by construction} while \texttt{TREEFPC}$=0.323$. It is a land-use bookkeeping artifact and says nothing about canopy closure.} (
 \S\ref{sec:workplan}), an outlier well below the $\sim0.4$--$0.7$ closed-taiga range (MODIS VCF), not merely a
 grass-leaning partition.
 
@@ -586,9 +586,12 @@ establishment gates being cleared, which was read as an LPJG-internal competitio
 experiment (\S\ref{sub:xfer}) shows that \emph{moving between the CRUNCEP and AMIP forcings alone}, with
 byte-identical parameters, costs $-54\,\%$ of Siberian and $-66\,\%$ of East-Siberian \texttt{TREEFPC}. The
 under-vegetation seen here is therefore largely what the forcing change predicts on its own, and cannot by
-itself demonstrate a competition failure. What does survive is \texttt{FORESTFPC}$=0$ --- no closed canopy
-forms under \emph{either} forcing --- so the closed-canopy failure remains unexplained and may still be
-competition. \dead{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one.}}}
+itself demonstrate a competition failure. \dead{What does survive is FORESTFPC$=0$ --- no closed canopy forms
+under either forcing --- so the closed-canopy failure remains unexplained and may still be competition.}
+\texttt{FORESTFPC} is in fact a \emph{void diagnostic} here: it counts only the managed-forest land-use class,
+which is empty in this PI configuration, so it is identically zero whatever the vegetation does
+(\S\ref{sub:xfer}). There is no separate closed-canopy failure.
+\dead{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one.}}}
 Is the boreal forest deficit a \emph{climate} problem (fix the atmosphere) or an \emph{LPJG-internal} tree-vs-grass
 competition problem (fix the vegetation)? We answered it directly with a \textbf{feedback-free} experiment: a clean
 OpenIFS--AMIP run (prescribed observed SST, no coupled ocean/LPJG cold feedback; $\sim$PI 1870--79) generated a
@@ -598,7 +601,7 @@ vegetation it produced (bottom). \textbf{The forcing is \emph{not} growing-seaso
 warmest-month T2m is $14.7$\,\textdegree C (100\% of cells clear the \texttt{twmin\_est}$=+5$ gate) and GDD5 is $730$
 (76\% clear $500$) --- establishment is climatically permitted essentially everywhere trees should be. \textbf{Yet the
 spin-up under-vegetates and grass wins}: cvh$=0.21$ (far below the $0.4$--$0.7$ closed-taiga range),
-\texttt{GRASSFPC}$=0.37 > \texttt{TREEFPC}=0.21$, and \emph{no closed canopy forms anywhere} (FORESTFPC$=0$), with grass
+\texttt{GRASSFPC}$=0.37 > \texttt{TREEFPC}=0.21$, and \dead{no closed canopy forms anywhere (FORESTFPC$=0$)}\footnote{\textbf{Void diagnostic.} \texttt{FORESTFPC} sums only PFTs with \texttt{landcover==FOREST} (\texttt{commonoutput.cpp}:1143), i.e.\ the \emph{managed-forest} land-use class; natural trees are counted in \texttt{TREEFPC} via the \texttt{NATURAL} branch. In this PI configuration nothing is allocated to FOREST (\texttt{Natural\_sum}$=0.684$, \texttt{Total}$=0.665$), so \texttt{FORESTFPC}$\equiv0$ \emph{by construction} while \texttt{TREEFPC}$=0.323$. It is a land-use bookkeeping artifact and says nothing about canopy closure.}, with grass
 filling exactly the East-Siberian interior. On a dense gridlist this cannot be dismissed as under-sampling.
 \textbf{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one} --- so the primary
 counter-lever is the vegetation model (boreal \texttt{greff\_min}, C3-grass competitiveness, \texttt{pstemp\_low}), not
@@ -851,7 +854,7 @@ cvh is the summed tree \emph{crown area}, so it tracks establishment success dir
 
 \textbf{Screen \& deploy.} Tune the competition knobs on the cheap standalone LPJG spin-up (the OIFS--AMIP forcing of
 \S\ref{sub:decisive}; minutes--hours of wall-time), targeting the MODIS-VCF pattern ($\sim0.4$--$0.7$ closed taiga,
-$<0.2$ at the ecotone, larch winning the cold NE) and a closed canopy (FORESTFPC$>0$, tree NPP $>$ grass NPP) ---
+$<0.2$ at the ecotone, larch winning the cold NE) and \dead{a closed canopy (FORESTFPC$>0$)}\footnote{\textbf{Void diagnostic.} \texttt{FORESTFPC} sums only PFTs with \texttt{landcover==FOREST} (\texttt{commonoutput.cpp}:1143), i.e.\ the \emph{managed-forest} land-use class; natural trees are counted in \texttt{TREEFPC} via the \texttt{NATURAL} branch. In this PI configuration nothing is allocated to FOREST (\texttt{Natural\_sum}$=0.684$, \texttt{Total}$=0.665$), so \texttt{FORESTFPC}$\equiv0$ \emph{by construction} while \texttt{TREEFPC}$=0.323$. It is a land-use bookkeeping artifact and says nothing about canopy closure.} --- tree NPP $>$ grass NPP ---
 \emph{not} merely a higher global mean. On a passing screen, re-do the coupled LPJG spin-up, regenerate the restart,
 and carry it into Phase 2.
 
@@ -1042,12 +1045,15 @@ LW CRE           & $+24.88$ & $+25.8$ & $-0.92$ & 60N--90N     & $-97.7$ & $-6.5
 \end{center}
 
 The cloud radiative effect matches observations to \textbf{$0.08$\,W/m$^2$} and the planetary albedo to
-$0.002$. The band contributions sum exactly to the global mean and reproduce the textbook meridional
-structure --- tropics gain, poles lose --- with \textbf{no band carrying an anomalous imbalance}. The
-Southern-Ocean overlay (45--65\textdegree S) gives SW CRE $-60.3$\,W/m$^2$ with the global CRE correct, so
-\textbf{the Hyder et al.\ atmospheric-SW hypothesis that has shadowed \S\ref{sec:so} does not appear as a
-gross cloud error here}. The AMIP and 09C zonal profiles lie almost on top of one another: the coupled
-model's radiation \emph{is} the atmosphere's.
+$0.002$. The AMIP and 09C zonal profiles lie almost on top of one another: the coupled model's radiation
+\emph{is} the atmosphere's.
+
+\dead{The band contributions reproduce the textbook meridional structure with no band carrying an anomalous
+imbalance, so the Hyder et al.\ atmospheric-SW hypothesis does not appear as a gross cloud error and there is
+no region to fix.} \textbf{That conclusion was an artifact of the comparison.} The bands above were compared
+to \emph{each other}, and only the \emph{global} CRE to CERES. Differencing each band \emph{against CERES}
+(\S\ref{sub:sobands}) shows the global agreement is a \textbf{cancellation of large regional errors}, and that
+the Southern Ocean carries most of the imbalance.
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.99\textwidth]{plots/amip_toa_decomposition_zonal.png}
@@ -1056,13 +1062,35 @@ nearly indistinguishable, and the imbalance is the small residual of a large tro
 extratropical deficits --- not a localised error.}
 \end{figure}
 
-\textbf{Consequence for the plan.} The $+0.67$ is the residual of two $\approx240$\,W/m$^2$ terms that each
-match CERES to under $1$\,W/m$^2$, and it is comparable to the AMIP surface-closure residual ($+0.152$,
-\S\ref{sub:snowenth}), to CERES's own $+0.3$, and to PI-vs-present reference uncertainty. \dead{The next step
-is to identify the region carrying the atmospheric imbalance and retune its radiation.} There is no such
-region: a global radiative retune would perturb a budget that is already correct to within its observational
-uncertainty, in order to chase a smaller residual --- the compensating-error trap of \S\ref{sec:so}, pointed
-the other way. Re-framing the campaign arithmetic instead:
+\subsubsection{Differenced against CERES per band: the Southern Ocean carries it}\label{sub:sobands}
+\begin{center}\small
+\begin{tabular}{l r r r r r}
+\toprule
+band & model & CERES & diff & area & \textbf{contribution} \\
+\midrule
+90S--65S              & $-97.0$ & $-104.0$ & $+7.03$ & $4.8\,\%$ & $\mathbf{+0.34}$ \\
+\textbf{SO 65S--45S}  & $-49.5$ & $-55.3$  & $\mathbf{+5.81}$ & $9.8\,\%$ & $\mathbf{+0.57}$ \\
+45S--30S              & $-5.6$  & $-1.4$   & $-4.20$ & $10.4\,\%$ & $-0.44$ \\
+tropics 30S--30N      & $+42.6$ & $+45.1$  & $-2.51$ & $50.0\,\%$ & $-1.26$ \\
+30N--45N              & $-4.8$  & $-5.7$   & $+0.89$ & $10.4\,\%$ & $+0.09$ \\
+45N--65N              & $-50.1$ & $-54.1$  & $+4.02$ & $9.8\,\%$  & $+0.40$ \\
+65N--90N              & $-106.3$& $-106.1$ & $-0.15$ & $4.8\,\%$  & $-0.01$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The global budget is right by cancellation, not by being right.} The Southern Ocean
+(65--45\textdegree S) runs $+5.8$\,W/m$^2$ too much absorbed energy and contributes
+$\mathbf{+0.57}$\,W/m$^2$ to the global mean --- on its own, comparable to the entire $+0.67$ imbalance. The
+cause is a cloud \emph{deficit}: cloud area $83.1\,\%$ against CERES's $89.7\,\%$ ($-6.6$\,pp) with SW CRE
+$-60.3$ against $-68.1$ ($+7.8$\,W/m$^2$ too little reflection). \textbf{This is precisely the Hyder et al.\
+(2018) signature}, and it vindicates the compensating-error worry of \S\ref{sec:so}: the ocean-mixing levers
+of Part~I have been removing a Southern-Ocean warm bias that is substantially \emph{atmospheric} in origin.
+
+\textbf{Consequence for the plan.} The $+0.67$ is not irreducible after all --- but neither is it fixable by a
+global knob, since the global mean is already correct. It is fixable \emph{regionally}, and the two largest
+regional errors have \emph{opposite} sign at TOA, which is what makes the round-10 design work
+(\S\ref{sec:round10}). Re-framing the campaign arithmetic:
 \begin{center}\small
 \begin{tabular}{l r c r}
 \toprule
@@ -1437,9 +1465,10 @@ identical \texttt{global.ins}. A compiled difference cannot be excluded; re-runn
 \item The AMIP forcing is the \emph{superseded} build (\S\ref{sub:amipsummer}), $\approx0.9$\,K warmer over
 Siberian JJA land than the corrected one --- so this is a \textbf{lower bound} on the penalty against today's
 atmosphere.
-\item \texttt{FORESTFPC}$=0$ in \emph{both} arms. Forcing transfer explains the tree-vs-grass shift; it does
-\textbf{not} explain the total absence of closed canopy, which survives as a separate unexplained problem and
-may still belong to competition.
+\item \dead{\texttt{FORESTFPC}$=0$ in both arms, so the absence of closed canopy survives as a separate
+unexplained problem.} \texttt{FORESTFPC} is a \emph{void diagnostic} in this configuration --- it counts only
+the managed-forest land-use class, which is empty here, so it is identically zero regardless of what the
+vegetation does. There is no separate closed-canopy failure to explain.
 \end{enumerate}
 
 \section{Revised plan: tune the atmosphere on AMIP}\label{sec:amipplan}
@@ -1488,6 +1517,76 @@ standard error is $0.09$--$0.26$\,K against biases of $1$--$2$\,K: sampling is n
 \emph{Land spin-up is} --- with \texttt{lresume:\ false} the deep soil (\texttt{stl4}, \texttt{swvl4}) carries
 initialisation shock, so discard the first 1--2 years. For paired tuning experiments 5\,yr (1 discarded
 $+$ 4 used) suffices, since identical prescribed SST makes most interannual variance cancel in the difference.
+
+\clearpage
+\section{Round 10 design: a two-pronged, targeted attack (2026--07--28)}\label{sec:round10}
+\emph{Original design as proposed. Operator notes to be appended in \S\ref{sub:r10notes}.}
+
+\textbf{The structural fact the design rests on.} The two largest regional radiation errors have
+\emph{opposite} sign at TOA (\S\ref{sub:sobands}, \S\ref{sub:ceres}), so fixing them together is
+self-balancing, whereas fixing either alone is not:
+
+\begin{center}\small
+\begin{tabular}{l l l r}
+\toprule
+ & error & fixing it & $\Delta$TOA \\
+\midrule
+\textbf{A1 Southern Ocean} & too \emph{little} cloud ($-6.6$\,pp, SW CRE $+7.8$) & adds cloud, reflects more &
+$\mathbf{-0.5}$ to $-0.6$ \\
+\textbf{A2 boreal land} & too \emph{much} cloud ($+8.2$\,pp, surface SW $-11$ in JJA) & removes cloud, absorbs more &
+$\mathbf{+0.1}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Prong A --- AMIP (atmosphere), A1 before A2}
+\textbf{A1 first.} It moves the global target in the right direction ($+0.67\to\approx+0.1$) \emph{and}
+attacks the error the campaign has suspected since \S\ref{sec:so}. A2 then costs back only $\approx0.1$ of the
+$\approx0.55$ that A1 buys, so the boreal fix becomes affordable --- the ``warm floor'' logic of Part~III,
+relocated from the vegetation to the atmosphere.
+
+\textbf{On levers.} OpenIFS has no land-only cloud knob, and that is informative rather than obstructive: the
+land-specificity of A2 ($-16.5$\,W/m$^2$ CRE error over Siberian land against $-2.2$ over ocean at the same
+latitude) is itself evidence that the cause is \textbf{land-surface moisture supply}, not the cloud scheme ---
+which makes the \texttt{RVRSMIN} sensitivity test (\S\ref{sub:expA}) potentially the actual fix rather than a
+proxy for one. A1, being over ocean, is a genuine cloud-scheme / microphysics target.
+
+\textbf{Guardrails on every A-run} --- all four, every time:
+\begin{enumerate}\itemsep1pt
+\item global net TOA \emph{and} surface flux (state which convention, \S\ref{sub:snowenth});
+\item SO 45--65\textdegree S SW CRE and cloud area against CERES;
+\item \textbf{the tropics} --- $50\,\%$ of the globe and the largest single contribution ($-1.26$), and the
+term the 06O/06T/06V levers degraded (\S\ref{sec:cmpi});
+\item CMPI by \emph{pattern}, not the global number.
+\end{enumerate}
+
+\subsection{Prong B --- LPJ-GUESS, and it must go second}
+\textbf{Do not tune competition parameters yet.} The tree deficit is largely forcing-driven ($-54\,\%$
+Siberian \texttt{TREEFPC} from the forcing swap alone, \S\ref{sub:xfer}), so tuning LPJG while its forcing is
+$11$\,W/m$^2$ dim and $2.2$\,K cold would bake the atmospheric error into vegetation parameters. That is the
+compensating-error trap, and it is what the 07-series was already doing --- which is the natural reading of
+why it achieved nothing (\S\ref{sec:round09}).
+
+\begin{enumerate}\itemsep1pt
+\item Complete Prong A.
+\item \textbf{Regenerate the LPJG forcing} from the corrected atmosphere. Enabling work required:
+\texttt{amip\_pi\_base} uses the default \texttt{file\_def} and emits the evaluation fields but \emph{not} the
+daily LPJG forcing set, so a merged \texttt{file\_def} (or a second short run) is needed.
+\item \textbf{Re-spin and re-derive the residual.} Whatever tree deficit survives against a corrected forcing
+is the real LPJG target. Only then are \texttt{greff\_min} / \texttt{pstemp\_low} legitimate levers.
+\end{enumerate}
+
+\textbf{Gates, replacing the void one.} \dead{FORESTFPC$>0$} is unachievable by construction
+(\S\ref{sub:xfer}) and must not be used. Use instead: \texttt{TREEFPC} against the CRUNCEP-arm equilibrium
+($0.357$ Siberia, $0.359$ E.\ Siberia); \texttt{AGDD5} recovery toward $776$/$748$; and \texttt{cvh} toward
+the MODIS $0.4$--$0.7$ closed-taiga range.
+
+\subsection{Ordering}
+\textbf{A1 $\to$ A2 $\to$ regenerate forcing $\to$ re-spin LPJG $\to$ B.} Prong B cannot be evaluated honestly
+until Prong A has fixed what feeds it.
+
+\subsection{Operator notes}\label{sub:r10notes}
+\emph{(reserved --- to be filled in)}
 
 \appendix
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
