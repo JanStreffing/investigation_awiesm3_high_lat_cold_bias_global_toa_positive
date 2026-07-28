@@ -1,5 +1,25 @@
 # Coupled CRUNCEP3-initialized branch follow-up (2026-07-24)
 
+## Update (2026-07-28): `09A/09B/09C` new-sea-ice branch
+
+This note is extended with the new three-way comparison branch:
+
+- `09A`: baseline coupled + new sea-ice scheme
+- `09B`: coupled + new sea-ice + tuning stack (`06T` style)
+- `09C`: coupled + new sea-ice, `06V` variant
+
+All three have completed the `1350-1379` segment and are compared with a common
+last-10-year window (`1370-1379`).
+
+### New diagnostic figures used in follow-up analysis
+
+- `/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/plots/diff_from_amip_and_era5/t2m_bias_vs_cruncep3_spinup_09A_09B_09C_nh_last10yrmean.png`
+- `/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/plots/diff_from_amip_and_era5/treefpc_bias_vs_cruncep3_spinup_09A_09B_09C_nh_last10yrmean.png`
+
+The plot captions now explicitly document `09B` tuning parameters as
+`original -> tuned`, so the branch interpretation is tied directly to runscript
+changes, not only run labels.
+
 ## Purpose
 
 This note records the current understanding after the coupled

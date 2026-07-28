@@ -1,5 +1,55 @@
 # AWI‑ESM3 (v3.4, CORE3 / TCO95) PI‑control tuning campaign — `Tuning_test_06*`
 
+## Addendum (2026-07-28): new-sea-ice branch `Tuning_test_09*`
+
+This report now also tracks the new-sea-ice continuation branch:
+
+- `09A`: baseline coupled run with the new sea-ice scheme
+- `09B`: new sea-ice + tuned coupled run (`06T` style stack)
+- `09C`: new sea-ice coupled `06V` variant
+
+### Run status and window used
+
+All three runs reached the target 30-year segment (`1350-1379`) and are available for
+consistent last-10-year diagnostics (`1370-1379`):
+
+- `09A`: `Tuning_test_09A_lpjguess_Baseline_coupled_fromCRUNCEP_newSeaIce`
+- `09B`: `Tuning_test_09B_06T_1hCPL_MOSPP_KPPLOW_CRUNCEPinit_newSeaIce`
+- `09C`: `Tuning_test_09C_06V_CRUNCEPinit_newSeaIce`
+
+### Updated comparison figures
+
+Generated with common plotting scripts in:
+`/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/scripts/`
+
+- T2m (ocean + land):
+	`/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/plots/diff_from_amip_and_era5/t2m_bias_vs_cruncep3_spinup_09A_09B_09C_nh_last10yrmean.png`
+- TREEFPC:
+	`/work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/plots/diff_from_amip_and_era5/treefpc_bias_vs_cruncep3_spinup_09A_09B_09C_nh_last10yrmean.png`
+
+Both figures use:
+
+- spinup reference for vegetation (`CRUNCEPcalibrated_v3`, last 10 years in spinup file)
+- last-10-year means for coupled runs from model years `1370-1379`
+
+### `09B` tuning block documented on figures (original -> tuned)
+
+- `oasis3mct.time_step`: `7200 s -> 3600 s`
+- `use_momix`: `.false. -> .true.`
+- `kpp_av0`: `0.005 -> 0.003`
+- `kpp_kv0`: `0.005 -> 0.003`
+- `kpp_avbckg`: `1e-4 -> 5e-5`
+- `kpp_kvbckg`: `1e-5 -> 5e-6`
+- `pndaspect`: `0.8 -> 1.3`
+- `rfracmax`: `1.0 -> 0.75`
+- `albpnd`: `0.2 -> 0.28`
+
+### Interpretation update
+
+The active branch comparison is now `09A` vs `09B` vs `09C` under the same new-sea-ice
+framework and year window. This supersedes using only `09A/09B` for current
+decision-making and should be the default set in follow-up discussions.
+
 **Progress report** · prepared 2026‑06‑30
 **Experiments by:** a270270 (`/work/bb1469/a270270/runtime/awiesm3-v3.4/`)
 **Evaluation:** release_evaluation_tool2 (`/work/ab0246/a270092/software/release_evaluation_tool2`)

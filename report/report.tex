@@ -30,6 +30,46 @@ boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate)}
 \maketitle
 \vspace{-0.6cm}
 
+\section*{Update (2026--07--28): new-sea-ice branch \texttt{Tuning\_test\_09A/09B/09C}}
+
+This report now includes the new three-way coupled comparison branch:
+\texttt{09A} (baseline + new sea ice), \texttt{09B} (new sea ice + tuned stack), and
+\texttt{09C} (new sea ice, 06V variant). All three completed the same 30-year
+segment and are compared on the same last-10-year window (model years 1370--1379).
+
+\textbf{Run identities}
+\begin{itemize}
+\item \texttt{09A}: \texttt{Tuning\_test\_09A\_lpjguess\_Baseline\_coupled\_fromCRUNCEP\_newSeaIce}
+\item \texttt{09B}: \texttt{Tuning\_test\_09B\_06T\_1hCPL\_MOSPP\_KPPLOW\_CRUNCEPinit\_newSeaIce}
+\item \texttt{09C}: \texttt{Tuning\_test\_09C\_06V\_CRUNCEPinit\_newSeaIce}
+\end{itemize}
+
+\textbf{09B tuning block documented on the figures (original $\rightarrow$ tuned)}
+\begin{itemize}
+\item \texttt{oasis3mct.time\_step}: 7200 s $\rightarrow$ 3600 s
+\item \texttt{use\_momix}: \texttt{.false.} $\rightarrow$ \texttt{.true.}
+\item \texttt{kpp\_av0}: 0.005 $\rightarrow$ 0.003, \texttt{kpp\_kv0}: 0.005 $\rightarrow$ 0.003
+\item \texttt{kpp\_avbckg}: 1e-4 $\rightarrow$ 5e-5, \texttt{kpp\_kvbckg}: 1e-5 $\rightarrow$ 5e-6
+\item \texttt{pndaspect}: 0.8 $\rightarrow$ 1.3, \texttt{rfracmax}: 1.0 $\rightarrow$ 0.75, \texttt{albpnd}: 0.2 $\rightarrow$ 0.28
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\centering
+\includegraphics[width=\textwidth]{plots/t2m_bias_vs_cruncep3_spinup_09A_09B_09C_nh_last10yrmean.png}
+\caption{NH T2m bias vs CRUNCEP3 spinup reference (ocean + land).}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\centering
+\includegraphics[width=\textwidth]{plots/treefpc_bias_vs_cruncep3_spinup_09A_09B_09C_nh_last10yrmean.png}
+\caption{NH TREEFPC bias vs CRUNCEP3 spinup reference.}
+\end{subfigure}
+\caption{New-sea-ice branch update: common last-10-year means (1370--1379) for \texttt{09A/09B/09C}.}
+\end{figure}
+
+\vspace{-2mm}
+
 \part{Tuning away the high TOA imbalance}
 \emph{We set out to cut the AWI--ESM3 PI-control's $+1.5$\,W/m$^2$ TOA imbalance. Every effective lever does it by
 \textbf{cooling} the model, and the aggressive coupling/ocean-mixing levers cut the imbalance hardest --- but push the
