@@ -1545,6 +1545,21 @@ attacks the error the campaign has suspected since \S\ref{sec:so}. A2 then costs
 $\approx0.55$ that A1 buys, so the boreal fix becomes affordable --- the ``warm floor'' logic of Part~III,
 relocated from the vegetation to the atmosphere.
 
+\textbf{Critical: in AMIP the Southern-Ocean target is \emph{radiation only}, never temperature.}
+SST and sea ice are prescribed, so the SO surface temperature cannot respond to a radiation error --- the
+excess absorbed shortwave is simply exported through the fixed boundary. \textbf{A1 must therefore be judged
+on SW CRE and cloud area against CERES, and it is meaningless to look for an SO temperature response in
+AMIP.} This is also why the SO \emph{warm} bias appears only in AWI-CM3/AWI-ESM3: it is a \emph{coupled}
+phenomenon, in which the same $+5.8$\,W/m$^2$ of excess absorbed energy has somewhere to go and warms the
+ocean. The causal chain is then explicit and closes the compensating-error argument of \S\ref{sec:so}:
+\begin{center}\small
+AMIP SO cloud deficit ($-6.6$\,pp) $\to$ $+5.8$\,W/m$^2$ excess absorbed $\to$
+\emph{(coupled only)} SO warm SST bias $\to$ suppressed by the 06T/06V ocean-mixing levers
+\end{center}
+i.e.\ Part~I was damping Weddell/Ross convection to compensate an \emph{atmospheric} cloud error. It follows
+that the only test of whether A1 fixed the real problem is a \emph{coupled} run --- AMIP can confirm the
+radiation is right, but not that the SO warm bias is gone.
+
 \textbf{On levers.} OpenIFS has no land-only cloud knob, and that is informative rather than obstructive: the
 land-specificity of A2 ($-16.5$\,W/m$^2$ CRE error over Siberian land against $-2.2$ over ocean at the same
 latitude) is itself evidence that the cause is \textbf{land-surface moisture supply}, not the cloud scheme ---
@@ -1554,7 +1569,8 @@ proxy for one. A1, being over ocean, is a genuine cloud-scheme / microphysics ta
 \textbf{Guardrails on every A-run} --- all four, every time:
 \begin{enumerate}\itemsep1pt
 \item global net TOA \emph{and} surface flux (state which convention, \S\ref{sub:snowenth});
-\item SO 45--65\textdegree S SW CRE and cloud area against CERES;
+\item SO 45--65\textdegree S SW CRE and cloud area against CERES --- \emph{radiation only}, since prescribed
+SST makes an SO temperature response impossible in AMIP by construction (above);
 \item \textbf{the tropics} --- $50\,\%$ of the globe and the largest single contribution ($-1.26$), and the
 term the 06O/06T/06V levers degraded (\S\ref{sec:cmpi});
 \item CMPI by \emph{pattern}, not the global number.
