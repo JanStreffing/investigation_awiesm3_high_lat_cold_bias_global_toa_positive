@@ -25,13 +25,14 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts; decisive feedback-free re-spin shows the
-boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate.\\
+\date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
 \textbf{Last updated 2026--07--28}: Part~IV added. A feedback-free AMIP reference puts $\approx45\,\%$ of the
 TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere; CERES shows the summer deficit
 is a \emph{land-only cloud} error of $11$\,W/m$^2$ (not the $33$ inferred from CRUNCEP3, which is itself
-$22$\,W/m$^2$ too bright), while the global radiation budget already matches CERES to $0.1$\,W/m$^2$; and
-the LPJG spin-up forcing and the model atmosphere are shown to differ by $\approx20\,\%$ in growing-season light and $2.2$\,K, a transfer step that makes the "competition, not climate" verdict provisional)}
+$\approx21$\,W/m$^2$ too bright), while the global radiation budget already matches CERES to $0.1$\,W/m$^2$.
+A controlled two-arm spin-up test shows the forcing change alone --- CRUNCEP\,$\to$\,AMIP, byte-identical
+parameters --- costs $54\,\%$ of Siberian tree cover, substantially qualifying the
+``competition, not climate'' verdict of \S\ref{sub:decisive}.)}
 
 \begin{document}
 \maketitle
@@ -577,7 +578,17 @@ lever} attacks the residual $\sim$1.4\,K (\S\ref{sub:residual}): \emph{enhanced 
 OpenIFS (VDF stability functions / minimum stable diffusion), which would relax the over-strong surface inversion.
 Together (1)--(4) target essentially the entire boreal DJF cold bias.
 
-\subsection{Decisive test: competition, not climate}\label{sub:decisive}
+\subsection{Decisive test: competition, not climate \textnormal{---
+\textcolor{red}{substantially qualified, see \S\ref{sub:xfer}}}}\label{sub:decisive}
+\fbox{\parbox{0.97\textwidth}{\small\textbf{Read this section with \S\ref{sub:xfer} alongside.} The argument
+below turns on a standalone LPJG re-spin driven by the OIFS--AMIP forcing under-vegetating despite the
+establishment gates being cleared, which was read as an LPJG-internal competition failure. A later controlled
+experiment (\S\ref{sub:xfer}) shows that \emph{moving between the CRUNCEP and AMIP forcings alone}, with
+byte-identical parameters, costs $-54\,\%$ of Siberian and $-66\,\%$ of East-Siberian \texttt{TREEFPC}. The
+under-vegetation seen here is therefore largely what the forcing change predicts on its own, and cannot by
+itself demonstrate a competition failure. What does survive is \texttt{FORESTFPC}$=0$ --- no closed canopy
+forms under \emph{either} forcing --- so the closed-canopy failure remains unexplained and may still be
+competition. \dead{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one.}}}
 Is the boreal forest deficit a \emph{climate} problem (fix the atmosphere) or an \emph{LPJG-internal} tree-vs-grass
 competition problem (fix the vegetation)? We answered it directly with a \textbf{feedback-free} experiment: a clean
 OpenIFS--AMIP run (prescribed observed SST, no coupled ocean/LPJG cold feedback; $\sim$PI 1870--79) generated a
@@ -1368,12 +1379,68 @@ $\approx20\,\%$ of the growing-season light and $2.2$\,K, so under-vegetation is
 change predicts on its own. The verdict should be read as provisional. (The forcing used there was also the
 \emph{superseded} AMIP build, \S\ref{sub:amipsummer}.)
 
-\textbf{The decisive test needs no knowledge of what was tuned.} Take the \emph{same} LPJG parameters and
-spin to equilibrium twice --- once on the CRUNCEP forcing, once on the corrected AMIP forcing. The difference
-in equilibrium \texttt{TREEFPC}/\texttt{GRASSFPC} \emph{is} the forcing-transfer penalty, whatever its cause.
-Large $\Rightarrow$ much of the boreal deficit is transfer, not competition, and \S\ref{sub:decisive} needs
-revising; small $\Rightarrow$ the competition explanation stands on its own. Spin-up jobs run in $\approx3$\,h,
-so this is cheap and decisive.
+\subsection{The transfer test, measured: forcing alone halves boreal tree cover}\label{sub:xfer}
+The test needs no knowledge of what was tuned --- take the \emph{same} LPJG parameters and spin to
+equilibrium under each forcing; the difference \emph{is} the transfer penalty. \textbf{Both arms already
+existed} and required no new computation:
+\begin{center}\footnotesize
+\begin{tabular}{l l}
+\toprule
+CRUNCEP arm & \texttt{lpjg-spinup/LPJG-SPINUP\_2000Y\_TCO95\_CORE3\_CRUNCEPcalibrated\_v3} \\
+AMIP arm    & \texttt{lpjg-spinup-develop/LR\_2000y\_PIforcing\_v3} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Controlled: \texttt{global.ins} \textbf{byte-identical} between the two trees, \texttt{firemodel "GLOBFIRM"}
+in both \texttt{.ins} files, \texttt{nyear\_spinup}$=2000$ / \texttt{freenyears}$=100$, fixed 1850
+CO$_2$/Ndep/LU, both reaching year 3900, and \textbf{10\,043 gridcells in common} (99.8\,\% of the AMIP
+gridlist). The material difference is the forcing file.
+
+\begin{center}\small
+\begin{tabular}{l l r r r r}
+\toprule
+region & & CRUNCEP-forced & AMIP-forced & diff & \% \\
+\midrule
+\textbf{Siberia} & \texttt{TREEFPC}  & 0.357 & \textbf{0.163} & $-0.194$ & $\mathbf{-54}$ \\
+                 & \texttt{GRASSFPC} & 0.288 & 0.330 & $+0.042$ & $+15$ \\
+                 & \texttt{AGDD5}    & 776 & 645 & $-131$ & $-17$ \\
+\midrule
+\textbf{E.\ Siberia} & \texttt{TREEFPC}  & 0.359 & \textbf{0.122} & $-0.236$ & $\mathbf{-66}$ \\
+                     & \texttt{GRASSFPC} & 0.316 & 0.398 & $+0.082$ & $+26$ \\
+                     & \texttt{AGDD5}    & 748 & 568 & $-180$ & $-24$ \\
+\midrule
+NH 45\textdegree N$+$ & \texttt{TREEFPC} & 0.383 & 0.287 & $-0.096$ & $-25$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Changing nothing but the forcing halves the Siberian tree fraction and cuts East Siberia's by
+two-thirds, with grass taking up the space.} For scale, the coupled 080a run lost \texttt{TREEFPC}
+$0.310\to0.121$ over Siberia in 50 years (\S\ref{sub:cruncep3_init_followup}); the forcing swap alone
+reproduces essentially that entire loss at equilibrium, with no parameter changed. \texttt{AGDD5} falls
+$17$--$24\,\%$ in the same direction, so this is not a light effect alone --- the $2.2$\,K also does real work
+through the growing-degree-day gates.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/forcing_transfer_test.png}
+\caption{Zonal means at equilibrium (yr 3900), 10\,043 common gridcells, byte-identical \texttt{global.ins}.
+South of $\approx52$\textdegree N the two arms are indistinguishable; northward they diverge sharply and the
+AMIP-forced treeline retreats several degrees south. The deficit the campaign has been attributing to
+competition is reproduced by the forcing change alone.}
+\end{figure}
+
+\textbf{Three caveats, all material.}
+\begin{enumerate}\itemsep1pt
+\item The arms were built from \emph{different binaries} (a270092 vs a270270) of the same LPJG version with
+identical \texttt{global.ins}. A compiled difference cannot be excluded; re-running both arms from one build
+($\approx3$\,h) would close it, and should be done before this is published.
+\item The AMIP forcing is the \emph{superseded} build (\S\ref{sub:amipsummer}), $\approx0.9$\,K warmer over
+Siberian JJA land than the corrected one --- so this is a \textbf{lower bound} on the penalty against today's
+atmosphere.
+\item \texttt{FORESTFPC}$=0$ in \emph{both} arms. Forcing transfer explains the tree-vs-grass shift; it does
+\textbf{not} explain the total absence of closed canopy, which survives as a separate unexplained problem and
+may still belong to competition.
+\end{enumerate}
 
 \section{Revised plan: tune the atmosphere on AMIP}\label{sec:amipplan}
 Both errors that remain --- $\approx0.83$\,W/m$^2$ of TOA imbalance (\S\ref{sub:amiptoa}) and
