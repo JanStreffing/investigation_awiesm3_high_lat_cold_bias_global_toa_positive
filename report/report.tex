@@ -27,9 +27,11 @@
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts; decisive feedback-free re-spin shows the
 boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate.\\
-\textbf{Last updated 2026--07--28}: Part~IV added --- a feedback-free AMIP reference puts $\approx45\,\%$ of
-the TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere, and the summer bias is a
-surface shortwave deficit, not a boundary-layer one; round 09 (new sea-ice thermodynamics) quantified)}
+\textbf{Last updated 2026--07--28}: Part~IV added. A feedback-free AMIP reference puts $\approx45\,\%$ of the
+TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere; CERES shows the summer deficit
+is a \emph{land-only cloud} error of $11$\,W/m$^2$ (not the $33$ inferred from CRUNCEP3, which is itself
+$22$\,W/m$^2$ too bright), while the global radiation budget already matches CERES to $0.1$\,W/m$^2$; and
+LPJ-GUESS's CRUNCEP-calibrated spin-up is flagged as a possible third cause of the boreal forest deficit)}
 
 \begin{document}
 \maketitle
@@ -1009,6 +1011,61 @@ state, so $+0.67$ is ``what this atmosphere does over a correct ocean'', not a s
 coupled value. But for a $\sim$PI configuration, where the real world was near equilibrium, the expected
 AMIP TOA is $\approx0$ --- so most of the $+0.67$ is model error.
 
+\subsubsection{Where does it live? Nowhere in particular --- the global budget is already right}\label{sub:toadecomp}
+Decomposing the $+0.67$ against CERES-EBAF (\texttt{amip\_toa\_decomp.py}) was expected to localise it. It does
+the opposite:
+
+\begin{center}\small
+\begin{tabular}{l r r r @{\hskip 1.2em} l r r}
+\toprule
+AMIP global & model & CERES & diff & band & net TOA & contribution \\
+\midrule
+absorbed SW      & 240.13 & 240.5 & $-0.37$  & 90S--60S        & $-90.5$ & $-6.06$ \\
+OLR              & 239.46 & 240.2 & $-0.74$  & 60S--30S        & $-22.1$ & $-4.04$ \\
+planetary albedo & 0.2947 & 0.293 & $+0.0017$& tropics 30S--30N& $+42.6$ & $+21.30$ \\
+SW CRE           & $-44.40$ & $-45.4$ & $+1.00$ & 30N--60N     & $-21.8$ & $-3.98$ \\
+LW CRE           & $+24.88$ & $+25.8$ & $-0.92$ & 60N--90N     & $-97.7$ & $-6.55$ \\
+\textbf{net CRE} & $\mathbf{-19.52}$ & $\mathbf{-19.6}$ & $\mathbf{+0.08}$ & \textbf{sum} & & $\mathbf{+0.67}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The cloud radiative effect matches observations to \textbf{$0.08$\,W/m$^2$} and the planetary albedo to
+$0.002$. The band contributions sum exactly to the global mean and reproduce the textbook meridional
+structure --- tropics gain, poles lose --- with \textbf{no band carrying an anomalous imbalance}. The
+Southern-Ocean overlay (45--65\textdegree S) gives SW CRE $-60.3$\,W/m$^2$ with the global CRE correct, so
+\textbf{the Hyder et al.\ atmospheric-SW hypothesis that has shadowed \S\ref{sec:so} does not appear as a
+gross cloud error here}. The AMIP and 09C zonal profiles lie almost on top of one another: the coupled
+model's radiation \emph{is} the atmosphere's.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/amip_toa_decomposition_zonal.png}
+\caption{Zonal-mean net TOA and cloud radiative effect, AMIP (atmosphere only) vs coupled 09C. The curves are
+nearly indistinguishable, and the imbalance is the small residual of a large tropical surplus against
+extratropical deficits --- not a localised error.}
+\end{figure}
+
+\textbf{Consequence for the plan.} The $+0.67$ is the residual of two $\approx240$\,W/m$^2$ terms that each
+match CERES to under $1$\,W/m$^2$, and it is comparable to the AMIP surface-closure residual ($+0.152$,
+\S\ref{sub:snowenth}), to CERES's own $+0.3$, and to PI-vs-present reference uncertainty. \dead{The next step
+is to identify the region carrying the atmospheric imbalance and retune its radiation.} There is no such
+region: a global radiative retune would perturb a budget that is already correct to within its observational
+uncertainty, in order to chase a smaller residual --- the compensating-error trap of \S\ref{sec:so}, pointed
+the other way. Re-framing the campaign arithmetic instead:
+\begin{center}\small
+\begin{tabular}{l r c r}
+\toprule
+ & net TOA & $=$ atmosphere $+$ & coupled-state \\
+\midrule
+080a (untuned coupled) & 1.44 & $0.67\ +$ & $\mathbf{0.77}$ \\
+09C (06V $+$ newSeaIce) & 0.92 & $0.67\ +$ & $\mathbf{0.25}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The ocean-side tuning has already delivered about two-thirds of what was available to it. Whether the HR
+piControl goal of $-0.16$ is even the right target for this configuration should be revisited, given that
+$\approx0.67$ of any coupled value is an atmosphere matching observations.
+
 \subsection{Result II --- the boreal \emph{summer} cold bias is atmospheric}\label{sub:amipsummer}
 Monthly 2\,m-T bias against CRUNCEP3 (1901--10), land only, cos-lat weighted:
 
@@ -1116,42 +1173,140 @@ LW$\downarrow$ $315.6$, SH/LH $-24.6/-56.8$ (\textbf{Bowen $0.43$}), cloud \text
 \texttt{lcc} $0.505$ / \texttt{mcc} $0.386$, \texttt{skt}$-$\texttt{2t} $+0.43$\,K, \texttt{swvl1} $0.343$,
 snow depth $5.5$\,mm w.e.
 
-The LW term is \emph{compensation} (a colder, cloudier surface loses less longwave), not cause. \textbf{It is
-not albedo}: driving albedo to zero recovers only $33$\,W/m$^2$, and a realistic boreal-summer $0.13$--$0.15$
-buys $5$--$9$. So SW$\downarrow$ itself is too low --- \textbf{too much cloud}, \texttt{lcc}$=0.51$ over
-Siberian land in high summer. This is a different mechanism from the winter stable-BL inversion of
-\S\ref{sub:residual}, and it is not addressed by any lever proposed so far.
+The LW term is \emph{compensation} (a colder, cloudier surface loses less longwave), not cause. It is
+\emph{not} albedo: a realistic boreal-summer $0.13$--$0.15$ instead of the model's $0.178$ buys only
+$5$--$9$\,W/m$^2$. So SW$\downarrow$ itself is too low. This is a different mechanism from the winter
+stable-BL inversion of \S\ref{sub:residual}, and it is not addressed by any lever proposed so far.
 
-\subsection{The constraint problem, and the one knob that is free at TOA}\label{sub:jjaknob}
-Burning off that cloud returns SW to the surface but stops reflecting it at TOA. The Siberia box is
-$\approx2.5\,\%$ of the globe and JJA is $25\,\%$ of the year, so $+30$\,W/m$^2$ there is roughly
-$\mathbf{+0.18}$\,W/m$^2$ on the annual global TOA --- a $\approx27\,\%$ worsening of the $+0.67$, against
-only $\approx0.03$ returned as extra OLR from a $2$\,K warmer surface. \textbf{A pure cloud fix cannot meet a
-fixed-TOA constraint.}
+\subsection{Re-measured against CERES: cloud, not clear-sky --- and three times smaller}\label{sub:ceres}
+CRUNCEP3 is a reanalysis-derived forcing product, so the deficit was re-measured against
+\textbf{CERES EBAF Ed4.1} (satellite), which supplies all-sky \emph{and} clear-sky net SW at the surface and
+so permits the decomposition
+$\Delta(\mathrm{SW}_\mathrm{net})=\Delta(\mathrm{SW}_\mathrm{net,clear})+\Delta(\mathrm{SW\ CRE}_\mathrm{sfc})$
+with no assumption about surface albedo or the direct/diffuse split.
 
-Surface \emph{flux partitioning} can, because moving energy between sensible and latent heat changes no
-radiation at TOA at all. And there is a specific reason to suspect it --- \texttt{susveg\_mod.F90}:264--267,
-with the original values still commented out in place:
 \begin{center}\small
-\begin{tabular}{l r r}
+\begin{tabular}{l r r r r r r}
 \toprule
-vegetation type & IFS default (commented out) & active in this build \\
+JJA & \multicolumn{3}{c}{Siberia land} & \multicolumn{3}{c}{NH 55--75\textdegree N ocean} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+ & model & CERES & diff & model & CERES & diff \\
 \midrule
-(3) Evergreen Needleleaf Trees & $500$ & $\mathbf{250}$ \\
-(4) Deciduous Needleleaf Trees (larch) & $500$ & $\mathbf{250}$ \\
+SW net at surface, all-sky   & 155.1 & 166.3 & $\mathbf{-11.2}$ & 142.4 & 155.4 & $-13.0$ \\
+SW net at surface, clear-sky & 246.6 & 241.4 & $+5.3$           & 241.9 & 252.6 & $-10.7$ \\
+SW CRE at surface            & $-91.6$ & $-75.1$ & $\mathbf{-16.5}$ & $-99.5$ & $-97.3$ & $\mathbf{-2.2}$ \\
+cloud area [\%]              & 77.8 & 69.6 & $\mathbf{+8.2}$   & 84.6 & 83.0 & $\mathbf{+1.6}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-Minimum stomatal resistance for boreal needleleaf has been \textbf{halved from the IFS default}. Half the
-resistance is double the conductance: more transpiration, more latent heat, less sensible heat, colder screen
-temperature --- exactly the measured Bowen ratio of $0.43$, against $\approx0.5$--$1.5$ typical of boreal
-conifer forest.
 
-\emph{Caveats.} The Bowen-ratio claim is \emph{inferred}, not measured: CRUNCEP3 carries no SH/LH, and
-FLUXNET boreal sites would settle it. Part of the low Bowen ratio is a \emph{consequence} of the SW deficit
-(less available energy shrinks both fluxes), so the resistance fix alone may not deliver the full $2$\,K and
-the cloud problem may need attacking regardless. CRUNCEP3 is a reanalysis-derived forcing product, not
-observations. Period mismatch 1872--79 vs 1901--10 throughout.
+Three results, all of which revise \S\ref{sec:jja}:
+
+\textbf{(i) It is unambiguously a cloud error.} The decomposition closes exactly
+($-11.2=+5.3-16.5$), and clear-sky surface SW is if anything slightly \emph{too bright}. Aerosol, water
+vapour and surface albedo are therefore all exonerated --- and since PI aerosol is lower than present-day, the
+PI-vs-CERES period mismatch works \emph{against} this finding, making it conservative.
+
+\textbf{(ii) The deficit is $11$\,W/m$^2$, not $33$.}
+\dead{Surface net SW over Siberian land in JJA is 33\,W/m$^2$ too low.} That figure was measured against
+CRUNCEP3, which puts Siberian JJA surface SW at $188.3$\,W/m$^2$ against CERES's $166.3$ --- \textbf{CRUNCEP3
+is $22$\,W/m$^2$ brighter than satellite}, so it was the outlier, not the model. An $11$\,W/m$^2$ summer
+deficit remains the right order to explain a $\approx2$\,K land cold bias, so the mechanism survives; only its
+magnitude changes. (CRUNCEP3 blends CRU \emph{station} temperature with NCEP \emph{reanalysis} radiation,
+which is the natural reading of why its T2m is usable while its SW is not.)
+
+\textbf{(iii) It is specific to boreal land.} Over ocean in the same latitude band the cloud error nearly
+vanishes ($-2.2$\,W/m$^2$ CRE, $+1.6$\,pp area) while over Siberian land it is $-16.5$ and $+8.2$. A
+\emph{global} cloud knob would therefore move the ocean, where nothing is wrong, and spend TOA budget for no
+benefit. The error is over land, in summer --- pointing at surface-driven convection and boundary-layer cloud
+rather than the large-scale cloud scheme.
+
+\textbf{Amount or opacity?} Both, roughly half each. At the observed CRE per unit cloud area
+($-75.1/0.696\approx-108$\,W/m$^2$), the $+8.2$\,pp excess accounts for $\approx-8.8$ of the $-16.5$\,W/m$^2$
+CRE error; the residual $\approx-7.7$ is opacity or vertical placement. A cloud-\emph{amount} lever alone
+therefore reaches at most half of it.
+
+\subsection{Does the cloud fix conflict with the energy target? Less than first thought}\label{sub:jjaknob}
+\dead{Burning off that cloud stops reflecting it at TOA, costing $\approx+0.18$\,W/m$^2$ on the annual global
+TOA --- a $27\,\%$ worsening --- so a pure cloud fix cannot meet a fixed-TOA constraint, and only a
+radiatively neutral surface-flux lever can.} Two things falsify that framing:
+
+\begin{itemize}\itemsep1pt
+\item \textbf{The target is the \emph{surface}, not TOA} (\S\ref{sub:snowenth}), and the drift it controls is
+driven by the flux into the \emph{ocean}. The cloud error is over \emph{land}
+(\S\ref{sub:ceres}), where annual-mean energy storage is $\approx0$ --- land returns what it receives. A
+boreal-land cloud correction therefore barely touches the quantity that governs spin-up drift.
+\item \textbf{The error is land-specific}, so the correction need not be a global knob at all
+(\S\ref{sub:ceres}) --- which was the whole reason a TOA cost was incurred in the first estimate.
+\end{itemize}
+The two objectives are consequently far more separable than the original framing implied, and the cloud
+error can be attacked at its diagnosed cause rather than through a proxy.
+
+\subsection{The stomatal-resistance sensitivity test (experiment A)}\label{sub:expA}
+A second, radiatively neutral lever was nonetheless identified and is being tested, because the measured
+Bowen ratio over Siberian JJA land is $\mathrm{SH/LH}=-24.6/-56.8=\mathbf{0.43}$, low against the general
+observed picture for boreal conifer forest. Minimum canopy resistance for boreal needleleaf
+(\texttt{susveg\_mod.F90}:266--267) is $250$\,s/m, with $500$ retained just above as a comment.
+
+\textbf{Provenance --- and a correction.} \dead{$500$ is the IFS default and has been halved in this build.}
+Git refutes this: both the active $250$ and the commented $500$ are present in
+commit \texttt{cf82033}, ``initial commit of 48r1 released version'', and no AWI commit has ever touched
+\texttt{RVRSMIN}. \textbf{$250$ is what ECMWF ships in 48r1}; $500$ is the older HTESSEL-era value they
+themselves revised. Setting $500$ moves \emph{away} from the released configuration, so this is a
+\textbf{sensitivity test, not a default restoration}.
+
+\emph{Status:} \texttt{amip\_expA\_rvrsmin500}, 6\,yr, paired against \texttt{amip\_pi\_base} on 1872--1875.
+Verified compiled in by inspecting the rebuilt object file (the value appears twice for types 3--4; $250$
+survives only for Desert and Mixed Forest). Note this tests \emph{partitioning}, not the diagnosed cause: if
+the cloud error is real then a resistance change compensates for it, and with $11$\,W/m$^2$ less available
+energy there is also less to repartition. \emph{Caveat:} ``Bowen $0.43$ is too low'' is inferred from the
+literature's general picture, not measured --- neither CRUNCEP3 nor CERES supplies SH/LH here, and FLUXNET
+boreal sites would settle it.
+
+\textbf{A connection worth testing in the same run.} Excess summer evapotranspiration over boreal land would
+\emph{both} cool the surface directly \emph{and} moisten the boundary layer, feeding the excess low cloud
+(model \texttt{lcc}$=50.5\,\%$ over Siberian land in JJA). If cutting transpiration also reduces low cloud,
+the partitioning error and the cloud error are the same problem, and experiment A tests both at once.
+
+\section{A third possibility: LPJ-GUESS is calibrated to a forcing that is too bright}\label{sec:calibmismatch}
+\S\ref{sub:ceres} showed CRUNCEP3 delivers $22$\,W/m$^2$ more surface SW over Siberian land in JJA than
+CERES does. The vegetation state every coupled run in rounds 08 and 09 starts from is
+\texttt{LPJG-SPINUP\_2000Y\_TCO95\_CORE3\_\textbf{CRUNCEPcalibrated}\_v3}. That name is the problem.
+
+If LPJ-GUESS's competition and productivity parameters were tuned so that \emph{CRUNCEP-driven} vegetation
+looks right, and CRUNCEP supplies more light (and, in JJA, $\approx2$\,K more warmth) than reality, then the
+calibration necessarily compensates by making the model \emph{less} productive per unit forcing. Drive that
+same calibration with a dimmer, cooler atmosphere --- either the model's own or a satellite-consistent one ---
+and it must under-vegetate. Trees, being the slower and more marginal competitor at the boreal margin, lose
+first.
+
+This is a \textbf{third} explanation, distinct from the two the report has weighed so far:
+\begin{center}\small
+\begin{tabular}{l l l}
+\toprule
+hypothesis & where the fault lies & status \\
+\midrule
+climate & the atmosphere is too cold & partly true (\S\ref{sub:amipsummer}), magnitude now $11$\,W/m$^2$ \\
+competition & LPJG-internal tree-vs-grass & \S\ref{sub:decisive}, but see below \\
+\textbf{calibration mismatch} & \textbf{LPJG tuned to a too-bright forcing} & \textbf{new, untested} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{It weakens the ``competition, not climate'' verdict of \S\ref{sub:decisive}.} That test drove a
+standalone LPJG re-spin with the OIFS--AMIP forcing and found under-vegetation despite the establishment
+gates being cleared, concluding the failure was LPJG-internal. But the parameters doing the competing were
+calibrated on CRUNCEP, and the forcing driving them was not. Under-vegetation is exactly what a
+calibration transfer to a dimmer forcing predicts --- so the experiment cannot separate ``LPJG competes
+wrongly'' from ``LPJG is calibrated to the wrong light level''. The verdict should be read as provisional
+until the two are disentangled. (The forcing used there was also the \emph{superseded} AMIP build,
+\S\ref{sub:amipsummer}, which is colder still.)
+
+\textbf{How to test it.} Two runs, neither expensive: (i) re-spin standalone LPJG on CRUNCEP3 itself and
+confirm it reproduces the vegetation it was calibrated to --- if it does not, the calibration story is wrong;
+(ii) re-spin on the corrected AMIP forcing and compare. The difference between (i) and (ii) is the
+calibration-transfer penalty, and it is measurable without touching a single LPJG parameter. Only if that
+penalty is small does the competition explanation survive intact.
 
 \section{Revised plan: tune the atmosphere on AMIP}\label{sec:amipplan}
 Both errors that remain --- $\approx0.83$\,W/m$^2$ of TOA imbalance (\S\ref{sub:amiptoa}) and
@@ -1161,25 +1316,36 @@ therefore be tuned on AMIP, not in coupled mode. This does not retire Phases~1A/
 --- the LPJG competition fix and the stable-BL mixing fix still target the \emph{cold-season} bias --- but it
 inserts a cheaper, better-posed stage ahead of Phase~2.
 
-\textbf{Objective.} Siberian JJA $+2$\,K with $\Delta$TOA $\le 0$.
+\textbf{Two objectives, now known to be largely separable} (\S\ref{sub:jjaknob}):
+\begin{enumerate}\itemsep1pt
+\item \textbf{Surface energy balance $\to0$} to cut spin-up drift. This is an \emph{ocean} surface-flux
+problem; the relevant number is $F_\mathrm{sfc}$ over ocean, which has \emph{not} yet been computed --- all
+figures quoted so far ($+0.52$ AMIP, $+0.95$ 09C, $+1.77$ 080a) are global. \textbf{Open item.}
+\item \textbf{Boreal summer warmth} to restore GDD5 and let trees compete. This is a \emph{land} problem,
+caused by an $11$\,W/m$^2$ cloud-driven SW deficit that is absent over ocean (\S\ref{sub:ceres}).
+\end{enumerate}
 
 \begin{center}\small
 \begin{tabular}{l l l l}
 \toprule
- & change & where & expected \\
+ & change & where & status / expectation \\
 \midrule
-\textbf{A} & \texttt{RVRSMIN(3,4)}: $250\to500$ (restore IFS default) & \texttt{susveg\_mod.F90}:266--267 & $+1$--$2$\,K JJA, $\Delta$TOA $\approx0$ \\
+\textbf{A} & \texttt{RVRSMIN(3,4)}: $250\to500$ & \texttt{susveg\_mod.F90}:266--267 & \emph{running}; radiatively
+neutral; tests partitioning, not the diagnosed cause \\
 B & \texttt{RVLAI(3,4)}: $5.0\to4.0$ & \texttt{susveg\_mod.F90}:133--134 & same sign, smaller \\
-C & \texttt{RCLDIFF} $\uparrow$ (cloud erosion) & \texttt{NAMCLDP} (namelist) & $+$surface SW, but $+$TOA \\
-D & A\,$+$\,C balanced to $\Delta$TOA $\approx0$ & & the joint target \\
+C & \dead{\texttt{RCLDIFF} $\uparrow$, global} & \dead{\texttt{NAMCLDP}} & \dead{$+$surface SW, but $+$TOA} \\
+C$'$ & a \emph{land}-acting cloud lever & convection / BL cloud & the error is land-only, so a global knob
+would move the ocean where nothing is wrong \\
+D & A\,$+$\,C$'$ & & joint target \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Run \textbf{A} first: it is the only entry free at TOA, and it \emph{restores a documented default} rather
-than inventing a tuning. \textbf{Gates:} Siberian JJA bias toward $0$; global net TOA not increased;
-no new degradation outside the boreal (judge on the global \texttt{part8}/CMPI pattern, as in
-\S\ref{sec:cmpi}).
+\textbf{Gates:} Siberian JJA bias toward $0$ \emph{and} SW CRE toward CERES; ocean $F_\mathrm{sfc}$ not
+degraded; no new error outside the boreal (judge on the global \texttt{part8}/CMPI pattern, \S\ref{sec:cmpi}).
+Since the cloud error splits roughly half amount, half opacity (\S\ref{sub:ceres}), a lever acting only on
+cloud amount can close at most half of it, and the diagnostic to watch is SW CRE against CERES rather than
+temperature alone.
 
 \textbf{Why AMIP is the right testbed.} $2.3$ node-hours per model year against $15.8$ coupled --- a
 $\approx7\times$ saving --- and 10\,yr completes in one job. Measured interannual scatter of the boreal JJA
