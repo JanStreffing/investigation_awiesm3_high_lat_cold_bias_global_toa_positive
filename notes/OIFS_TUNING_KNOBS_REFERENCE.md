@@ -253,7 +253,53 @@ RVICE (0.13), RLCRITSNOW (0.3E-4), RSNOWLIN2 (0.3E-01), RCLDIFF (0.3E-05), RCLDI
 
 ---
 
-## 10. Literature leads (see report Part IV for the full argument)
+## 10. Tuning runs
+
+All AMIP, TCO95L91, 1850 GHG, observed SST 1870s, `/work/bb1469/a270092/runtime/oifsamip-cy48/`.
+Runscripts in `~/esm_tools/runscripts/oifsamip/`. All evaluated on **1872–75** against
+`amip_pi_base` (discard 1870–71 for deep-soil spin-up). 6 yr ≈ 1.3 h on 14 nodes.
+
+| run | lever | change | how | status | result |
+|---|---|---|---|---|---|
+| `amip_pi_base` | — reference | OIFS defaults + `RVICE=0.16` | — | **done** | net TOA **+0.67**, sfc +0.52; Siberia JJA **−2.16 K** vs CRUNCEP3, **−11 W/m²** SW vs CERES; SO cloud **−6.6 pp**, SW CRE **+7.8** |
+| `amip_expA_rvrsmin500` | `RVRSMIN(3,4)` | 250 → 500 | source | **done** | **+0.19 K** Siberia JJA; SH −3.9 / LH +2.7 W/m² (Bowen 0.43→0.52); `lcc` −0.018; ΔTOA **+0.012**. Right sign, <10 % of target — mechanism confirmed, not a lever |
+| `amip_A1_overlap01` | `RCL_OVERLAPLIQICE` | 0.65 → **0.1** | namelist | running | — |
+| `amip_A1_overlap035` | `RCL_OVERLAPLIQICE` | 0.65 → 0.35 | namelist | running | — |
+| `amip_A2_kknumland150` | `RCL_KK_CLOUD_NUM_LAND` | 300 → **150** cm⁻³ | source | pending | — |
+
+**Falsifiable predictions** (the real test of the two-pronged design):
+A1 should leave **boreal JJA unchanged** (mixed-phase window only; boreal summer cloud is
+warm). A2 should leave the **Southern Ocean unchanged** (`PLSM>0.5` branch only). If either
+bleeds, the separability argument fails.
+
+**Gates for every A-run:** SO 45–65 °S SW CRE + cloud area vs CERES (**radiation only** —
+prescribed SST makes an SO temperature response impossible); global net TOA *and* surface
+flux (state the convention); **tropics** (50 % of the globe, largest single contribution,
+and what the 06O/06T/06V levers wrecked); **NH−SH albedo** (A1 and A2 push it the *same*
+way — they do not cancel on this metric); CMPI by pattern.
+
+### Build discipline (learned the hard way)
+- Use `esm_master comp-oifsamip-cy48/oifs-48r1` **from `/work/ab0246/a270092/model_codes`**;
+  escalate to `recomp-…` (= conf + clean + comp, full rebuild) only if that is not enough.
+  **Never** call `comp-oifs-48r1_script.sh` directly — doing so left `build/` and `install/`
+  inconsistent, and runs stage `install/lib/*`, so the wrong library would have been used.
+- **Judge a build only after the process has exited.** Check the log for the final
+  `cp  oifs-48r1/install/bin/OpenIFS  bin` line. A mid-link timestamp comparison falsely
+  reads "stale" and cost one needless full rebuild.
+- Verify a source-constant change in the **object file**, not the shared library or the
+  driver binary: e.g. `sucldp.F90.o` → `150.0` ×2, `300.0` ×0. Whole-library counts are
+  noise, and `bin/OpenIFS` is a thin driver that does not contain the physics at all.
+- Runs stage their own copy of `install/lib/*` into `run_*/work/lib/oifs/` at submit time,
+  so a rebuild does **not** disturb already-submitted jobs (verified: 36 `.so` staged).
+
+### Coupled tuning rounds 06–09
+Not repeated here — see report Part I (App. A parameter catalogue) and §Round 09.
+Headline: those rounds tuned **ocean and sea-ice** parameters on top of an atmosphere left
+at OpenIFS defaults, which is why §9 above matters.
+
+---
+
+## 11. Literature leads (see report Part IV for the full argument)
 
 - **Southern Ocean too-clear is canonical**; our −6.6 pp / +7.8 W/m² sits mid-range of
   reported values. **NH-land too-cloudy runs *against* the CMIP consensus** (models are
