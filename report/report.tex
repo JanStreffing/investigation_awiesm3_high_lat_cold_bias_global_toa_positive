@@ -31,7 +31,7 @@ boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate.\\
 TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere; CERES shows the summer deficit
 is a \emph{land-only cloud} error of $11$\,W/m$^2$ (not the $33$ inferred from CRUNCEP3, which is itself
 $22$\,W/m$^2$ too bright), while the global radiation budget already matches CERES to $0.1$\,W/m$^2$; and
-LPJ-GUESS's CRUNCEP-calibrated spin-up is flagged as a possible third cause of the boreal forest deficit)}
+the LPJG spin-up forcing and the model atmosphere are shown to differ by $\approx20\,\%$ in growing-season light and $2.2$\,K, a transfer step that makes the "competition, not climate" verdict provisional)}
 
 \begin{document}
 \maketitle
@@ -1209,11 +1209,30 @@ PI-vs-CERES period mismatch works \emph{against} this finding, making it conserv
 
 \textbf{(ii) The deficit is $11$\,W/m$^2$, not $33$.}
 \dead{Surface net SW over Siberian land in JJA is 33\,W/m$^2$ too low.} That figure was measured against
-CRUNCEP3, which puts Siberian JJA surface SW at $188.3$\,W/m$^2$ against CERES's $166.3$ --- \textbf{CRUNCEP3
-is $22$\,W/m$^2$ brighter than satellite}, so it was the outlier, not the model. An $11$\,W/m$^2$ summer
-deficit remains the right order to explain a $\approx2$\,K land cold bias, so the mechanism survives; only its
-magnitude changes. (CRUNCEP3 blends CRU \emph{station} temperature with NCEP \emph{reanalysis} radiation,
-which is the natural reading of why its T2m is usable while its SW is not.)
+CRUNCEP3, which is itself $\approx21$\,W/m$^2$ brighter than satellite --- \textbf{CRUNCEP3 was the outlier,
+not the model}. An $11$\,W/m$^2$ summer deficit remains the right order to explain a $\approx2$\,K land cold
+bias, so the mechanism survives; only its magnitude changes.
+
+\emph{Verified independently}, because the original comparison had assembled the two sides on different grids
+with different land masks --- a way to manufacture exactly this kind of difference. Redone with all three
+sources on the CERES $1^\circ$ grid under a single land mask (\texttt{verify\_ceres\_cruncep.py}): CERES
+$166.7$, AMIP $155.8$ ($-10.8$), CRUNCEP3 $187.6$ ($+21.0$). Raising the land-mask threshold $0.5\to0.8$
+changes these by $<1$\,W/m$^2$, and CERES's own JJA-mean file gives $168.4$ against $166.7$ from the monthly
+climatology. The grid inconsistency was therefore not the cause.
+
+\emph{Why CRUNCEP3 is bright} splits cleanly by season: in JJA it is the downward flux
+($234$\,W/m$^2$ in July against CERES's $209$, the NCEP high-latitude brightness bias), whereas in spring it
+is the forcing file's fixed albedo (\S\ref{sub:ruledout}). CRUNCEP3 blends CRU \emph{station} temperature with
+NCEP \emph{reanalysis} radiation, which is the natural reading of why its T2m is usable while its SW is not.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/verify_ceres_amip_cruncep.png}
+\caption{Surface net shortwave against CERES EBAF, all sources on a common $1^\circ$ grid with one land mask.
+AMIP (orange) is $\approx11$\,W/m$^2$ \emph{dark} in JJA; the CRUNCEP forcing (green) is $\approx21$\,W/m$^2$
+\emph{bright} in JJA and far more so in spring, where its fixed albedo does not mask snow. The two forcings
+differ from each other by $\approx32$\,W/m$^2$ in the growing season --- the transfer step of
+\S\ref{sec:calibmismatch}.}
+\end{figure}
 
 \textbf{(iii) It is specific to boreal land.} Over ocean in the same latitude band the cloud error nearly
 vanishes ($-2.2$\,W/m$^2$ CRE, $+1.6$\,pp area) while over Siberian land it is $-16.5$ and $+8.2$. A
@@ -1268,45 +1287,93 @@ boreal sites would settle it.
 (model \texttt{lcc}$=50.5\,\%$ over Siberian land in JJA). If cutting transpiration also reduces low cloud,
 the partitioning error and the cloud error are the same problem, and experiment A tests both at once.
 
-\section{A third possibility: LPJ-GUESS is calibrated to a forcing that is too bright}\label{sec:calibmismatch}
-\S\ref{sub:ceres} showed CRUNCEP3 delivers $22$\,W/m$^2$ more surface SW over Siberian land in JJA than
-CERES does. The vegetation state every coupled run in rounds 08 and 09 starts from is
-\texttt{LPJG-SPINUP\_2000Y\_TCO95\_CORE3\_\textbf{CRUNCEPcalibrated}\_v3}. That name is the problem.
+\section{Forcing transfer: the spin-up was grown under brighter, warmer conditions than the model delivers}\label{sec:calibmismatch}
+The vegetation state every coupled run in rounds 08 and 09 restarts from is the standalone offline spin-up
+\texttt{LPJG-SPINUP\_2000Y\_TCO95\_CORE3\_CRUNCEPcalibrated\_v3}
+(\texttt{/work/bb1469/a270270/runtime/lpjg-spinup/}), driven by
+\texttt{CRUNCEP\_noLPJG\_1d\_1901-1910\_TCO95\_calibrated\_v3.nc} (verified at
+\texttt{lpj\_guess\_levante\_spinup\_...\_2000y.yaml}:38). \textbf{That forcing and the atmosphere the coupled
+model provides differ substantially, and in the same direction for both light and temperature.}
 
-If LPJ-GUESS's competition and productivity parameters were tuned so that \emph{CRUNCEP-driven} vegetation
-looks right, and CRUNCEP supplies more light (and, in JJA, $\approx2$\,K more warmth) than reality, then the
-calibration necessarily compensates by making the model \emph{less} productive per unit forcing. Drive that
-same calibration with a dimmer, cooler atmosphere --- either the model's own or a satellite-consistent one ---
-and it must under-vegetate. Trees, being the slower and more marginal competitor at the boreal margin, lose
-first.
-
-This is a \textbf{third} explanation, distinct from the two the report has weighed so far:
 \begin{center}\small
-\begin{tabular}{l l l}
+\begin{tabular}{l r r}
 \toprule
-hypothesis & where the fault lies & status \\
+Siberia land, JJA & surface net SW [W/m$^2$] & vs CERES \\
 \midrule
-climate & the atmosphere is too cold & partly true (\S\ref{sub:amipsummer}), magnitude now $11$\,W/m$^2$ \\
-competition & LPJG-internal tree-vs-grass & \S\ref{sub:decisive}, but see below \\
-\textbf{calibration mismatch} & \textbf{LPJG tuned to a too-bright forcing} & \textbf{new, untested} \\
+CERES EBAF (observed)                       & 166.7 & --- \\
+\textbf{CRUNCEP forcing} (what LPJG grew under) & \textbf{187.6} & $\mathbf{+21}$ ($+13\,\%$) \\
+\textbf{AMIP} (what our atmosphere delivers)    & \textbf{155.8} & $\mathbf{-11}$ ($-7\,\%$) \\
+\midrule
+\multicolumn{2}{l}{\textbf{gap between the two forcings}} & $\mathbf{32}$\,W/m$^2$ ($\approx20\,\%$) \\
+\multicolumn{2}{l}{\textbf{plus 2\,m temperature}} & $\mathbf{2.2}$\,K (11.9 vs 9.7\,\textdegree C) \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{It weakens the ``competition, not climate'' verdict of \S\ref{sub:decisive}.} That test drove a
-standalone LPJG re-spin with the OIFS--AMIP forcing and found under-vegetation despite the establishment
-gates being cleared, concluding the failure was LPJG-internal. But the parameters doing the competing were
-calibrated on CRUNCEP, and the forcing driving them was not. Under-vegetation is exactly what a
-calibration transfer to a dimmer forcing predicts --- so the experiment cannot separate ``LPJG competes
-wrongly'' from ``LPJG is calibrated to the wrong light level''. The verdict should be read as provisional
-until the two are disentangled. (The forcing used there was also the \emph{superseded} AMIP build,
-\S\ref{sub:amipsummer}, which is colder still.)
+The errors point \emph{opposite} ways and therefore compound: CRUNCEP is too bright (the NCEP high-latitude
+brightness bias --- its downward SW is $234$\,W/m$^2$ in July against CERES's $209$, $\approx12\,\%$ high),
+while our atmosphere is too dark by the cloud error of \S\ref{sub:ceres}. Vegetation equilibrated to the
+first and then handed the second experiences a $\approx20\,\%$ drop in growing-season radiation and a
+$2.2$\,K cooling --- a step change in exactly the direction that pushes a boreal system from trees toward
+grasses. All numbers here are computed on a common CERES $1^\circ$ grid with a single land mask
+(\texttt{verify\_ceres\_cruncep.py}); mask threshold $0.5\to0.8$ moves them by $<1$\,W/m$^2$.
 
-\textbf{How to test it.} Two runs, neither expensive: (i) re-spin standalone LPJG on CRUNCEP3 itself and
-confirm it reproduces the vegetation it was calibrated to --- if it does not, the calibration story is wrong;
-(ii) re-spin on the corrected AMIP forcing and compare. The difference between (i) and (ii) is the
-calibration-transfer penalty, and it is measurable without touching a single LPJG parameter. Only if that
-penalty is small does the competition explanation survive intact.
+\subsection{Ruled out by measurement}\label{sub:ruledout}
+Several components were suspected along the way and cleared. Recording them so the same ground is not
+re-covered:
+
+\begin{center}\small
+\begin{tabular}{l l}
+\toprule
+suspect & the observation that cleared it \\
+\midrule
+LPJ-GUESS core radiation handling &
+\dead{PAR is inflated because no albedo is applied.} Reading \texttt{rsns} as
+\texttt{NETSWRAD\_TS} and applying \emph{no} further albedo is \textbf{correct} for a net-flux \\
+& input (\texttt{driver.cpp}:1435--1449); a second correction would double-count. Model behaves as designed. \\[2pt]
+EC-Earth spin-up interface &
+Reads the right variable and sets the right type (\texttt{framework.cpp}:2501--2507). No fault found. \\[2pt]
+The forcing script's fixed albedo &
+\dead{\texttt{rsns}$=$\texttt{FSDS}$\times0.861$ is a fixed 0.139 albedo, so spring PAR is inflated $\times1.66$
+and the spin-up is undermined.} \\
+& True that the albedo is fixed (ratio $0.861$ in every cell, April and July alike). But in JJA that gives \\
+& $0.139$ against CERES's $\mathbf{0.142}$ --- right to $0.003$. The large spring error
+($0.139$ vs $0.535$ in April) \\
+& is \textbf{biologically inert}: measured over 687 Siberian cells at equilibrium, April carries
+$\mathbf{1.1\,\%}$ of annual \\
+& GPP and April LAI is $0.02$ (no canopy), while \textbf{JJA carries $\mathbf{80\,\%}$}. Weighted by when carbon \\
+& is actually assimilated, the PAR excess is $\approx13\,\%$, not $66\,\%$. \\[2pt]
+\dead{...and it is an unusual, campaign-specific defect} &
+Standalone LPJ-GUESS assumes a constant albedo natively: \texttt{BETA}$=0.17$
+(\texttt{driver.cpp}:1320), applied \\
+& in both the sunshine and \texttt{SWRAD} paths. The script's $0.139$ is a slightly darker version of \\
+& standard practice, and switching to its \texttt{bulk\_albedo} option would give $0.195$ in JJA --- \\
+& \emph{worse} than the fixed value. \textbf{Do not ``fix'' the script; it is not the problem.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{What survives, and how to settle it}\label{sub:forcingtest}
+What remains is not a defect in any component but a \textbf{transfer problem}: a $\approx20\,\%$
+growing-season radiation step and a $2.2$\,K temperature step between the forcing the vegetation
+equilibrated to and the forcing it is then asked to live in. \textbf{Whether LPJG's \emph{parameters} were
+tuned against CRUNCEP --- the ``calibrated'' in the directory name --- is not established}; the 07-series did
+change \texttt{greff\_min} and \texttt{pstemp\_low}, but no evidence was found of what was calibrated against
+what, and the folder name is not proof.
+
+\textbf{It still weakens the ``competition, not climate'' verdict of \S\ref{sub:decisive}}, though less than
+first argued. That test moved a standalone re-spin from the CRUNCEP forcing to the OIFS--AMIP forcing and
+read the resulting under-vegetation as an LPJG-internal competition failure. But that move alone removes
+$\approx20\,\%$ of the growing-season light and $2.2$\,K, so under-vegetation is partly what the forcing
+change predicts on its own. The verdict should be read as provisional. (The forcing used there was also the
+\emph{superseded} AMIP build, \S\ref{sub:amipsummer}.)
+
+\textbf{The decisive test needs no knowledge of what was tuned.} Take the \emph{same} LPJG parameters and
+spin to equilibrium twice --- once on the CRUNCEP forcing, once on the corrected AMIP forcing. The difference
+in equilibrium \texttt{TREEFPC}/\texttt{GRASSFPC} \emph{is} the forcing-transfer penalty, whatever its cause.
+Large $\Rightarrow$ much of the boreal deficit is transfer, not competition, and \S\ref{sub:decisive} needs
+revising; small $\Rightarrow$ the competition explanation stands on its own. Spin-up jobs run in $\approx3$\,h,
+so this is cheap and decisive.
 
 \section{Revised plan: tune the atmosphere on AMIP}\label{sec:amipplan}
 Both errors that remain --- $\approx0.83$\,W/m$^2$ of TOA imbalance (\S\ref{sub:amiptoa}) and
