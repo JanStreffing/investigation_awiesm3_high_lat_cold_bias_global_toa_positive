@@ -13,6 +13,8 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage[hidelinks]{hyperref}
+\usepackage[normalem]{ulem}
+\newcommand{\dead}[1]{\textcolor{gray}{\sout{#1}}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4pt}
 \captionsetup{font=small,labelfont=bf}
@@ -24,7 +26,10 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts; decisive feedback-free re-spin shows the
-boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate)}
+boreal deficit is LPJG tree-vs-grass \emph{competition}, not climate.\\
+\textbf{Last updated 2026--07--28}: Part~IV added --- a feedback-free AMIP reference puts $\approx45\,\%$ of
+the TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere, and the summer bias is a
+surface shortwave deficit, not a boundary-layer one; round 09 (new sea-ice thermodynamics) quantified)}
 
 \begin{document}
 \maketitle
@@ -921,6 +926,268 @@ the Phase-2 run starts once the re-spun restart and the chosen stable-BL build a
 \texttt{plots/}, \texttt{run\_figures/<run>/}, \texttt{notebooks/}. Tool: \texttt{release\_evaluation\_tool2}
 (reval env); per-run diags via \texttt{part2\_rad\_balance.py} / \texttt{part8\_t2m\_vs\_era5.py} /
 \texttt{part4\_cmpi.py}.}
+
+\clearpage
+\part{The atmosphere alone --- attribution, and where the remaining error lives}
+\emph{Parts~I--III argued from coupled runs, in which atmosphere, ocean and vegetation errors are
+inseparable. This part removes that ambiguity with a \textbf{feedback-free OpenIFS--AMIP reference}:
+prescribed observed SST/sea-ice, prescribed vegetation, same OIFS branch as the coupled campaign.
+Two results follow. \textbf{(i)} With SST prescribed, the model still runs $+0.67$\,W/m$^2$ out of TOA
+balance --- that fraction of the imbalance cannot be ocean heat uptake and is a genuine atmospheric
+radiative error, which places a \emph{floor} beneath what any ocean-side lever can achieve.
+\textbf{(ii)} The boreal \emph{summer} cold bias survives in full without ocean or LPJ-GUESS, so it is
+the atmosphere's --- and it is a surface \emph{shortwave} deficit, not the boundary-layer problem of
+\S\ref{sub:residual}. Together these redirect the work plan: the next tuning should happen on AMIP,
+where both remaining errors live and where an iteration costs $\sim$7$\times$ less than a coupled run.}
+
+\section{The feedback-free AMIP reference (2026--07--27/28)}\label{sec:amip}
+\texttt{amip\_pi\_base}, \texttt{/work/bb1469/a270092/runtime/oifsamip-cy48/}: OpenIFS TCO95L91, GHG/ozone/
+aerosol fixed at 1850 (\texttt{NCMIPFIXYR=1850}), driven by the earliest observed AMIP SST decade
+1870--1879 --- a self-consistent $\sim$PI atmosphere directly comparable to the PI-control coupled runs.
+10\,yr complete in 2:44 on 14 nodes.
+
+Two configuration decisions make it a valid counterpart to the coupled model, and both were wrong in the
+earlier \texttt{\_lpjgforcing} run that Part~II used (\S\ref{sub:amipgen}):
+\begin{itemize}\itemsep1pt
+\item \textbf{OIFS branch.} The oifsamip tree was on \texttt{local\_combined\_fixes}\,@\,\texttt{1303a90};
+the coupled campaign runs esm-tools version \texttt{48r1v5} $=$ \texttt{movcav-landice+co2-concdriven}.
+The branches differ in \emph{atmospheric physics}, not merely coupling plumbing (\texttt{suecozv},
+\texttt{updecozv}, \texttt{suecrad}, \texttt{suphec}, \texttt{srfi\_mod}, \texttt{surfece},
+\texttt{voskin\_mod}). Rebuilt at \texttt{f3ccacb} --- the last non-debug commit, and the same state as
+our coupled tree.
+\item \textbf{Sea albedo.} The old runscript carried \texttt{TMPRALBSEAD}$=0.075$. The coupled runs never
+set it, so they use the source default \texttt{RALBSEAD}$=0.06$ (\texttt{susrad\_mod.F90}:107); OASIS
+exchanges only the \emph{ice} albedo (\texttt{sia\_feom}$\to$\texttt{A\_Ice\_albedo}), so OpenIFS computes
+open-water albedo itself in coupled mode too. A $0.015$ albedo offset over ocean is worth order
+$1$\,W/m$^2$ of reflected SW --- comparable to the quantity being attributed. Removed.
+\end{itemize}
+
+\subsection{Which budget the target applies to: snow enthalpy}\label{sub:snowenth}
+\texttt{part2\_rad\_balance.py}:255--268 computes
+\[
+F_\mathrm{sfc}=\mathrm{ssr}+\mathrm{str}+\mathrm{sshf}+\mathrm{slhf}-\mathrm{sf}\cdot\rho L_f,
+\qquad F_\mathrm{TOA}=\mathrm{tsr}+\mathrm{ttr}.
+\]
+The snowfall-enthalpy term enters the \emph{surface} budget only, and correctly so: it is an internal
+atmosphere$\leftrightarrow$surface transfer and cancels at the top of the atmosphere. Every net-TOA number
+quoted in this report is $(\mathrm{tsr}+\mathrm{ttr})/\Delta t_\mathrm{acc}$, i.e.\ exactly part2's TOA total.
+
+\begin{center}\small
+\begin{tabular}{l r r r r r}
+\toprule
+ & TOA & SFC w/o snow & snow enthalpy & SFC (part2) & TOA$-$SFC \\
+\midrule
+AMIP 1872--79 & 0.667 & 1.441 & 0.925 & \textbf{0.516} & $+0.152$ \\
+09C 1370--79  & 0.918 & 1.897 & 0.944 & \textbf{0.953} & $-0.035$ \\
+080a 1370--79 & 1.682 & 2.588 & 0.823 & \textbf{1.765} & $-0.083$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The term is $0.82$--$0.94$\,W/m$^2$ --- \emph{larger than the entire remaining gap to target}. Without it the
+surface budget misses TOA by $\approx1$\,W/m$^2$; with it, 080a closes at $-0.083$, reproducing the
+$\approx-0.09$ quoted in \S\ref{sec:rad}. \textbf{Convention warning:} the work plan's acceptance target is
+on the \emph{surface} (\S\ref{sec:workplan}), where the same runs read $+0.52$ (AMIP), $+0.95$ (09C),
+$+1.77$ (080a). State which convention is in use whenever these numbers are compared.
+\emph{Open item:} AMIP's closure ($+0.152$) is 2--4$\times$ worse than the coupled runs'. Small against the
+$+0.67$ signal, so the attribution is unaffected, but unexplained --- suspect the prescribed SST/sea-ice
+surface tile. Chase it before quoting the AMIP floor to better than $\sim0.15$\,W/m$^2$.
+
+\subsection{Result I --- roughly 45\,\% of the imbalance is atmospheric}\label{sub:amiptoa}
+\textbf{AMIP net TOA $=+0.67$\,W/m$^2$} (1872--79, after discarding two soil spin-up years; per-year
+$0.13$--$0.92$; \texttt{tsr}$=240.3$\,W/m$^2$ confirms the 3600\,s accumulation divisor). With SST prescribed
+this \emph{cannot} be ocean heat uptake.
+
+Against a coupled baseline of $+1.44$ (080a), that is $\approx45\,\%$ of the coupled imbalance. The best
+branch in the entire campaign (09C, $+0.92$) now sits only $0.25$\,W/m$^2$ above this floor: of the
+$1.08$\,W/m$^2$ still separating it from the HR goal, $\approx0.83$ is atmospheric and only $\approx0.25$ is
+reachable by ocean-side tuning. \textbf{This is the campaign's most consequential number} --- it says the
+lever family of Part~I is nearly exhausted.
+
+\emph{Caveat.} AMIP runs over \emph{observed} SST/ice while the coupled model runs over its own biased
+state, so $+0.67$ is ``what this atmosphere does over a correct ocean'', not a strict lower bound on the
+coupled value. But for a $\sim$PI configuration, where the real world was near equilibrium, the expected
+AMIP TOA is $\approx0$ --- so most of the $+0.67$ is model error.
+
+\subsection{Result II --- the boreal \emph{summer} cold bias is atmospheric}\label{sub:amipsummer}
+Monthly 2\,m-T bias against CRUNCEP3 (1901--10), land only, cos-lat weighted:
+
+\begin{center}\small
+\begin{tabular}{l r r r}
+\toprule
+series & Boreal JJA/ann & Siberia JJA/ann & E.\ Siberia JJA/ann \\
+\midrule
+\textbf{AMIP (atmosphere only)} & $-1.64$ / $-1.05$ & $\mathbf{-2.16}$ / $-0.89$ & $\mathbf{-2.24}$ / $-0.49$ \\
+080a (baseline, old sea ice)    & $-0.36$ / $-0.90$ & $-1.41$ / $-1.36$ & $-1.80$ / $-1.48$ \\
+09A (baseline + newSeaIce)      & $-1.24$ / $-2.06$ & $-2.19$ / $-3.00$ & $-2.47$ / $-2.89$ \\
+09B (06T + newSeaIce)           & $-1.56$ / $-2.33$ & $-2.50$ / $-3.11$ & $-2.72$ / $-3.04$ \\
+09C (06V + newSeaIce)           & $-1.93$ / $-2.64$ & $-2.54$ / $-3.08$ & $-2.69$ / $-3.05$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The atmosphere alone reproduces essentially all of 09A's Siberian JJA bias ($-2.16$ vs $-2.19$) and most of
+09B/09C's. \textbf{Removing the ocean and LPJ-GUESS does not remove the summer cold bias.} The cold-season
+half behaves oppositely --- AMIP's Siberian \emph{annual} bias is only $-0.89$ against $-3.0$ coupled --- so
+September--April remains the coupled/vegetation problem of Part~II, and JJA is now a separate, atmospheric one.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/campaign_boreal_seasonal_bias.png}
+\caption{Boreal 2\,m-T bias by month against CRUNCEP3, land-masked. The atmosphere-only AMIP curve (blue)
+sits at or below the coupled runs through JJA (shaded) but far above them in winter: \textbf{the summer
+bias is atmospheric, the cold-season bias is not}. \emph{Caveat:} the ``Boreal 55--70\textdegree N'' panel is
+contaminated by the Greenland ice sheet (JJA snow depth $320$\,mm w.e.\ in that box vs $5.5$\,mm for
+Siberia); the Siberia and E.\ Siberia panels are clean and carry the argument.}
+\end{figure}
+
+\textbf{Superseded numbers.} \dead{AMIP Siberia JJA $-1.23$, E.\ Siberia $-1.59$, i.e.\ indistinguishable from
+the coupled baseline, so coupling adds nothing in summer.} Those came from the earlier
+\texttt{amip\_pi\_forcing} run, built on the wrong OIFS branch and with \texttt{TMPRALBSEAD}$=0.075$. The
+corrected build is $\approx0.9$\,K colder in Siberian JJA; the conclusion strengthens (the atmosphere is now
+\emph{colder} in summer than the coupled baseline) but the numbers changed.
+
+\section{Round 09 --- new sea-ice thermodynamics (2026--07--27/28)}\label{sec:round09}
+FESOM 2.7 \texttt{awiesm3-implicit-ice-surftemp}\,@\,\texttt{db7dd9af} makes the ice
+surface-temperature solve implicit (d$Q$/d$T$-linearised about the last transmitted \texttt{ist}) and hands
+ownership of the ice surface energy balance to OpenIFS, which now runs a slab-conduction ice tile using
+FESOM-supplied thickness; FESOM ice growth becomes $Q_\mathrm{atmice}=-a2ihf$. The pairing is verifiable at
+runtime in the OASIS \texttt{namcouple}: the 09 runs carry a sixth o2a field,
+\texttt{sit\_feom}$\to$\texttt{A\_Ice\_thickness}, absent from every 08 run.
+Run identities and the 09B parameter block are catalogued in the 2026--07--28 update at the head of this
+report; the quantitative comparison is below. \texttt{09C} was built and run on our own tree
+(\texttt{Tuning\_test\_09C\_06V\_CRUNCEPinit\_newSeaIce}) to close the missing 06V corner.
+
+\begin{center}\small
+\begin{tabular}{l r r r r}
+\toprule
+run & net TOA [W/m$^2$] & global T2m [\textdegree C] & Siberia JJA [K] & Siberia ann [K] \\
+\midrule
+080a baseline, old sea ice & 1.442 & 13.606 & $-1.41$ & $-1.36$ \\
+09A baseline + newSeaIce   & 1.286 & 13.148 & $-2.19$ & $-3.00$ \\
+09B 06T + newSeaIce        & 1.171 & 12.794 & $-2.50$ & $-3.11$ \\
+08B 06V, old sea ice       & 0.935 & 12.347 & $-3.11$ & $-4.09$ \\
+\textbf{09C 06V + newSeaIce} & \textbf{0.919} & 12.492 & $\mathbf{-2.54}$ & $\mathbf{-3.08}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+On the clean old-vs-new 06V pair (08B\,$\to$\,09C) the radiation barely moves ($0.935\to0.919$) but the
+boreal \textbf{warms by $+1.0$\,K in the Siberian annual mean}, $+0.57$\,K in JJA, $+0.15$\,K globally.
+\textbf{09C dominates 08B on both objectives simultaneously} --- the first time in the campaign that has
+happened, and the ``free warming'' sought in \S\ref{sec:rec}. But the effect is \emph{not} an offset: on the
+baseline (080a\,$\to$\,09A) the same code change goes the other way, cooling $0.46$\,K globally and $1.6$\,K
+in the Siberian annual mean. The sign depends on the ocean-mixing branch; no mechanism is established here,
+and pinning it down needs the surface energy budget over ice.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.92\textwidth]{plots/campaign_net_toa_by_year.png}
+\caption{Annual global-mean net TOA (thin) with 5-yr running mean (bold), common 1350--1379 window. The
+dotted line is the \textbf{atmosphere-only floor} measured by AMIP ($+0.67$\,W/m$^2$); the shaded band is the
+only part of the remaining gap that ocean-side tuning can still close. Everything above the dotted line is
+atmospheric.}
+\end{figure}
+
+\emph{Bookkeeping caveat.} \texttt{sacct} shows a \texttt{Tuning\_test\_08A\_06T\_1hCPL\_MOSPP\_KPPLOW\_CRUNCEPinit}
+completing all three chunks on 24--25 July, but no 08A directory exists on disk. 08A was the 06T-only
+physical control --- Run~1 of the 2026-07-24 design note's own sequence --- so within round 08 every
+surviving 06T-family entry (08C, 08E, 08G) carries an LPJ lever and the intended 06T-vs-06V comparison
+cannot be made cleanly. Round 09 supersedes this, but conclusions drawn from round 08 alone inherit the hole.
+
+\section{Why the summer bias exists --- a shortwave deficit (2026--07--28)}\label{sec:jja}
+Siberia JJA surface energy budget, land-masked, cos-lat weighted (AMIP 1872--79 vs CRUNCEP3 1901--10, which
+carries \texttt{rsns}/\texttt{rlns} and so permits a direct radiative comparison):
+
+\begin{center}\small
+\begin{tabular}{l r r r}
+\toprule
+ & AMIP & CRUNCEP3 & $\Delta$ \\
+\midrule
+2\,m temperature      & $9.74$\,\textdegree C & $11.92$\,\textdegree C & $\mathbf{-2.18}$\,K \\
+SW net at surface     & $155.1$ & $188.3$ & $\mathbf{-33.2}$\,W/m$^2$ \\
+LW net at surface     & $-49.2$ & $-64.5$ & $+15.2$\,W/m$^2$ \\
+\midrule
+net radiation         &         &         & $\mathbf{-18}$\,W/m$^2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Supporting AMIP diagnostics: SW$\downarrow$ $188.6$, surface albedo $0.178$ (\texttt{fal} $0.172$),
+LW$\downarrow$ $315.6$, SH/LH $-24.6/-56.8$ (\textbf{Bowen $0.43$}), cloud \texttt{tcc} $0.778$ /
+\texttt{lcc} $0.505$ / \texttt{mcc} $0.386$, \texttt{skt}$-$\texttt{2t} $+0.43$\,K, \texttt{swvl1} $0.343$,
+snow depth $5.5$\,mm w.e.
+
+The LW term is \emph{compensation} (a colder, cloudier surface loses less longwave), not cause. \textbf{It is
+not albedo}: driving albedo to zero recovers only $33$\,W/m$^2$, and a realistic boreal-summer $0.13$--$0.15$
+buys $5$--$9$. So SW$\downarrow$ itself is too low --- \textbf{too much cloud}, \texttt{lcc}$=0.51$ over
+Siberian land in high summer. This is a different mechanism from the winter stable-BL inversion of
+\S\ref{sub:residual}, and it is not addressed by any lever proposed so far.
+
+\subsection{The constraint problem, and the one knob that is free at TOA}\label{sub:jjaknob}
+Burning off that cloud returns SW to the surface but stops reflecting it at TOA. The Siberia box is
+$\approx2.5\,\%$ of the globe and JJA is $25\,\%$ of the year, so $+30$\,W/m$^2$ there is roughly
+$\mathbf{+0.18}$\,W/m$^2$ on the annual global TOA --- a $\approx27\,\%$ worsening of the $+0.67$, against
+only $\approx0.03$ returned as extra OLR from a $2$\,K warmer surface. \textbf{A pure cloud fix cannot meet a
+fixed-TOA constraint.}
+
+Surface \emph{flux partitioning} can, because moving energy between sensible and latent heat changes no
+radiation at TOA at all. And there is a specific reason to suspect it --- \texttt{susveg\_mod.F90}:264--267,
+with the original values still commented out in place:
+\begin{center}\small
+\begin{tabular}{l r r}
+\toprule
+vegetation type & IFS default (commented out) & active in this build \\
+\midrule
+(3) Evergreen Needleleaf Trees & $500$ & $\mathbf{250}$ \\
+(4) Deciduous Needleleaf Trees (larch) & $500$ & $\mathbf{250}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Minimum stomatal resistance for boreal needleleaf has been \textbf{halved from the IFS default}. Half the
+resistance is double the conductance: more transpiration, more latent heat, less sensible heat, colder screen
+temperature --- exactly the measured Bowen ratio of $0.43$, against $\approx0.5$--$1.5$ typical of boreal
+conifer forest.
+
+\emph{Caveats.} The Bowen-ratio claim is \emph{inferred}, not measured: CRUNCEP3 carries no SH/LH, and
+FLUXNET boreal sites would settle it. Part of the low Bowen ratio is a \emph{consequence} of the SW deficit
+(less available energy shrinks both fluxes), so the resistance fix alone may not deliver the full $2$\,K and
+the cloud problem may need attacking regardless. CRUNCEP3 is a reanalysis-derived forcing product, not
+observations. Period mismatch 1872--79 vs 1901--10 throughout.
+
+\section{Revised plan: tune the atmosphere on AMIP}\label{sec:amipplan}
+Both errors that remain --- $\approx0.83$\,W/m$^2$ of TOA imbalance (\S\ref{sub:amiptoa}) and
+$\approx2.2$\,K of Siberian summer cold (\S\ref{sub:amipsummer}) --- are atmospheric, and both are now
+\emph{measured} in a configuration where neither the ocean nor LPJ-GUESS can confound the answer. They should
+therefore be tuned on AMIP, not in coupled mode. This does not retire Phases~1A/1B of \S\ref{sec:workplan}
+--- the LPJG competition fix and the stable-BL mixing fix still target the \emph{cold-season} bias --- but it
+inserts a cheaper, better-posed stage ahead of Phase~2.
+
+\textbf{Objective.} Siberian JJA $+2$\,K with $\Delta$TOA $\le 0$.
+
+\begin{center}\small
+\begin{tabular}{l l l l}
+\toprule
+ & change & where & expected \\
+\midrule
+\textbf{A} & \texttt{RVRSMIN(3,4)}: $250\to500$ (restore IFS default) & \texttt{susveg\_mod.F90}:266--267 & $+1$--$2$\,K JJA, $\Delta$TOA $\approx0$ \\
+B & \texttt{RVLAI(3,4)}: $5.0\to4.0$ & \texttt{susveg\_mod.F90}:133--134 & same sign, smaller \\
+C & \texttt{RCLDIFF} $\uparrow$ (cloud erosion) & \texttt{NAMCLDP} (namelist) & $+$surface SW, but $+$TOA \\
+D & A\,$+$\,C balanced to $\Delta$TOA $\approx0$ & & the joint target \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Run \textbf{A} first: it is the only entry free at TOA, and it \emph{restores a documented default} rather
+than inventing a tuning. \textbf{Gates:} Siberian JJA bias toward $0$; global net TOA not increased;
+no new degradation outside the boreal (judge on the global \texttt{part8}/CMPI pattern, as in
+\S\ref{sec:cmpi}).
+
+\textbf{Why AMIP is the right testbed.} $2.3$ node-hours per model year against $15.8$ coupled --- a
+$\approx7\times$ saving --- and 10\,yr completes in one job. Measured interannual scatter of the boreal JJA
+mean is $\sigma=0.25$\,K (Boreal), $0.59$\,K (Siberia), $0.72$\,K (E.\ Siberia), so with 8 usable years the
+standard error is $0.09$--$0.26$\,K against biases of $1$--$2$\,K: sampling is not the binding constraint.
+\emph{Land spin-up is} --- with \texttt{lresume:\ false} the deep soil (\texttt{stl4}, \texttt{swvl4}) carries
+initialisation shock, so discard the first 1--2 years. For paired tuning experiments 5\,yr (1 discarded
+$+$ 4 used) suffices, since identical prescribed SST makes most interannual variance cancel in the difference.
 
 \appendix
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
