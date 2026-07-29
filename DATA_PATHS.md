@@ -106,6 +106,46 @@ Working interpretation and proposed next runs:
 /work/ab0995/a270270/analysis/LR_offline_LPJ_GUESS_tunning_new/next_experiment_design_coupled_cruncep3_init_followup.md
 ```
 
+### 7. Four standalone forcing-sensitivity spin-ups (2026-07-29)
+
+All four are 2000-year TCO95 offline LPJ-GUESS spin-ups. Final-year diagnostics
+use model year 3900 from `outdata/lpj_guess/19000101-38991231/run1/`.
+
+| Experiment | Run directory | Forcing source |
+|---|---|---|
+| AMIP | `/work/bb1469/a270270/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_AMIPforcing` | `/work/ab0995/a270270/input/cruncep_v7/AMIP_noLPJG_1d_1870-1879_TCO95_PI_fluxfix.nc` |
+| CRUNCEP v3 | `/work/bb1469/a270270/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPcalibrated_v3` | `/work/ab0995/a270270/input/cruncep_v7/CRUNCEP_noLPJG_1d_1901-1910_TCO95_calibrated_v3.nc` |
+| CRUNCEP + CERES direct | `/work/bb1469/a270270/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPandCERES` | `/work/ab0995/a270270/input/cruncep_v7/CRUNCEP_noLPJG_1d_1901-1910_TCO95_CERES_rsns_rlns.nc` |
+| CRUNCEP + CERES daily variability | `/work/bb1469/a270270/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPandCERES_daily_variability` | `/work/ab0995/a270270/input/cruncep_v7/CRUNCEP_noLPJG_1d_1901-1910_TCO95_CERESclim_daily_variability.nc` |
+
+The two runtime files named
+`run_19000101-38991231/work/ifs_spinup_forcing/AM04_atm_cmip6_1d_1990-1999_fast_lpjgforcing.nc`
+were checksum- and variable-verified as exact copies of their intended CERES
+source files.
+
+CERES inputs:
+
+```
+/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_200003-202106.nc
+/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.nc
+```
+
+Full construction and plotting provenance:
+
+```
+/work/ab0995/a270270/analysis/Offline_LPJ_GUESS_analysis/
+```
+
+Prepared but not yet run AMIP NH temperature perturbations:
+
+```
+/work/ab0995/a270270/input/cruncep_v7/AMIP_noLPJG_1d_1870-1879_TCO95_PI_fluxfix_NHplus1K.nc
+/work/ab0995/a270270/input/cruncep_v7/AMIP_noLPJG_1d_1870-1879_TCO95_PI_fluxfix_NHplus2K.nc
+```
+
+Only `tas`, `tasmin`, and `tasmax` at latitude >=45 degrees N were incremented;
+all other values are unchanged from the source AMIP forcing.
+
 ## Observations
 ```
 ERA5 (2m T, seasonal):  /work/ab0246/a270092/obs/era5/netcdf/T2M_{DJF,JJA,DJFM,...}.nc

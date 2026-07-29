@@ -4,7 +4,7 @@ Post-processing, figures, scripts and the write-up for the AWI-ESM3 (v3.4,
 CORE3 / TCO95) PI-control investigation.
 
 **The report is `report/report.pdf`** (source `report/report.tex`, recompilable
-in place). It is structured in three parts:
+in place). It is structured in four parts:
 
 1. **Tuning away the high TOA imbalance** — 22 runs; every effective lever cools
    the model, and the aggressive coupling/ocean-mixing levers cut the +1.5 W/m²
@@ -14,12 +14,15 @@ in place). It is structured in three parts:
    makes the aggressive lever expensive is largely *not* the tuning: it is a
    structural LPJ-GUESS boreal-forest collapse. A clean WITH-vs-WITHOUT-LPJG
    experiment attributes it (snow-albedo + roughness→inversion, plus an
-   over-strong stable-BL residual). A **decisive feedback-free standalone re-spin**
-   then shows the forest deficit is an LPJG **tree-vs-grass competition** problem,
-   **not** a climate one (`plots/v3_decisive_climate_vs_veg.png`).
-3. **The path forward** — raise the structural warm floor (vegetation competition +
-   stable-BL mixing), *then* spend a moderate cooling lever to reach surface
-   balance without the RMSE blow-up.
+   over-strong stable-BL residual). The controlled CRUNCEP→AMIP transfer
+   reproduces most of the regional tree loss without changing LPJG parameters.
+   The new four-spin-up CERES experiment further shows that replacing net
+   radiation alone removes only about 8% of the NH tree-fraction contrast.
+3. **The original path forward** — the warm-floor plan, retained with explicit
+   qualifications from the newer evidence.
+4. **The atmosphere alone** — feedback-free attribution, CERES validation,
+   the full forcing-transfer test, and the revised ordering: correct the
+   atmosphere, re-spin LPJG, then tune only the vegetation residual.
 
 **2026-07-24 follow-up:** a finished 50-year coupled run started from the
 CRUNCEP3-initialized vegetation state (alias "080a") refines the picture. The
@@ -30,6 +33,13 @@ decline even though NH45+ aggregate thermal metrics can increase. The current
 working interpretation and next-run proposal are recorded in:
 
 - `notes/COUPLED_CRUNCEP3_INIT_BRANCH_FOLLOWUP_2026-07-24.md`
+
+**2026-07-29 forcing update:** two CERES EBAF Ed4.1 radiation variants were
+tested alongside AMIP and CRUNCEP v3 in 2000-year offline LPJ-GUESS spin-ups.
+The report now documents the forcing construction, observational provenance,
+construction checks, final-year tree-fraction response, and the prepared AMIP
+NH +1 K / +2 K sensitivity inputs. See
+`notes/CERES_FORCING_SENSITIVITY_2026-07-29.md`.
 
 See **`DATA_PATHS.md`** for every experiment and its Levante path.
 
@@ -45,7 +55,7 @@ scripts/
   sbatch/          SLURM wrappers (LPJG diag, forcing generation, nc conversion)
 data/              derived CSVs (master metrics, CMPI by var/region, tree/grass fractions, ...)
 configs/           reval per-run evaluation configs
-notes/             LPJG_PFT_investigation.md, PROGRESS_REPORT.md, COUPLED_CRUNCEP3_INIT_BRANCH_FOLLOWUP_2026-07-24.md
+notes/             investigation notes, including coupled and CERES-forcing updates
 ```
 
 ## Which script makes which figure
@@ -67,6 +77,10 @@ notes/             LPJG_PFT_investigation.md, PROGRESS_REPORT.md, COUPLED_CRUNCE
 | `establishment_climate_check` | `scripts/analysis/establishment_climate_check.py` |
 | `seaice_t2m_trend`, `seaice_volume_trend` | `scripts/analysis/seaice_t2m_trend.py`, `seaice_volume_trend.py` |
 | **`v3_decisive_climate_vs_veg`** (the decisive test) | `scripts/analysis/v3_decisive.py` |
+
+The CERES forcing and four-spin-up plots were generated in
+`/work/ab0995/a270270/analysis/Offline_LPJ_GUESS_analysis/scripts/` and copied
+into this repository with matching SHA-256 checksums for the submission report.
 
 2026-07-24 coupled follow-up figures copied into this repo under `plots/`
 (`treefpc_coupled_cruncep3_init_y{10,50}_minus_y0_nh`,
