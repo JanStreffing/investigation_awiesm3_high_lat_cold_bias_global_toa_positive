@@ -45,10 +45,28 @@ best boreal lever", which is `t = +1.10`.
 
 Years needed to resolve a boreal T2m signal of size Δ: **1.0 K → 3; 0.5 K → 13; 0.3 K → 36;
 0.2 K → 80.** So the 4-year screen detects any lever worth ≥ 40 % of the −2.2 K target on
-its own, which is a reasonable bar. **Nine boreal levers were run and none cleared it.**
-That is the actual boreal result of round 10: not a ranking, but the finding that no lever
-tried so far is large enough to matter. The answer is a bigger lever, not a finer ruler —
-a 0.3 K effect does not fix a 2.2 K bias even when it is real.
+its own. **Nine boreal levers were run and none cleared it.** That is the actual boreal
+result of round 10: not a ranking, but the finding that no lever tried so far is
+individually large enough to measure at this run length.
+
+**What that does *not* license.** "No single lever is big, therefore we need a bigger
+lever" is one reading and it is not supported — the far more likely route to −2.2 K is a
+*stack* of small levers all pushed the same way (seven at 0.3 K each would do it). These
+runs cannot distinguish "each lever is ~0.3 K and they add" from "each lever is ~0". Both
+are consistent with every number in this file.
+
+**But if stacking is the plan, the measurement problem gets worse, not better.** Individual
+0.3 K contributions need ~36 years each to rank, which is unaffordable across a candidate
+list. Two consequences follow, and they are the practical output of this round:
+
+1. **Lever selection must come from physical reasoning and sign confidence, not from the
+   measured 4-year ranking.** Picking the top performers out of a noise-dominated table is
+   the winner's curse: it selects for favourable noise, so the stack under-delivers.
+   **ABB8 is exactly that experiment.** Its three components were chosen because they
+   ranked well at 4 years; stacked, they gave −0.17 K.
+2. **The testable unit becomes the stack, not the lever.** A stack aimed at the full 2.2 K
+   should clear ±0.89 K comfortably at 4 years. So build stacks from physics, test the
+   stack cheaply, and spend long runs only on attributing a stack that already works.
 
 Corollary: C1/C2/E1 are **untested, not refuted**. At 4 years we cannot separate "`RLAM`
 does little" from "`RLAM` does nothing", so the boundary-layer axis remains open.
@@ -62,9 +80,9 @@ The collision is historical; read `Bn` as "boreal lever n".
 | run | change | SO SW CRE | Siberia JJA T2m | global sfc flux | verdict |
 |---|---|---:|---:|---:|---|
 | **A1a** | `RCL_OVERLAPLIQICE` 0.65→**0.10** | **−6.51** (80 % of gap) | **−1.15 K** | −1.63 | **overshoots**; wrecks boreal |
-| **A1b** | `RCL_OVERLAPLIQICE` 0.65→**0.35** | −1.89 (23 %) | −0.03 K | **−0.13** | **best so far** — energy target met, boreal untouched |
-| **A2** | `RCL_KK_CLOUD_NUM_LAND` 300→150 | −0.15 | −0.18 K | +0.36 | **no traction** |
-| **expA** | `RVRSMIN(3,4)` 250→500 | −0.40 | +0.19 K | +0.41 | real but far too small |
+| **A1b** | `RCL_OVERLAPLIQICE` 0.65→**0.35** | −1.89 (23 %) | −0.03 K | **−0.13** | **best so far** — energy target met (both significant); boreal unresolved, not "untouched" |
+| **A2** | `RCL_KK_CLOUD_NUM_LAND` 300→150 | −0.15 | −0.18 K | +0.36 | nothing significant anywhere; boreal ~~no traction~~ unresolved |
+| **expA** | `RVRSMIN(3,4)` 250→500 | −0.40 | +0.19 K | +0.41 | ~~real but far too small~~ **within noise** — sign is unconfirmed |
 | **A1c** | `RDEPLIQREFDEPTH` 500→1500 m | −0.13 | +0.06 K | +0.25 | **failed** — no SO leverage; cloud-depth selectivity idea dead |
 | **B1** | `DETRPEN` 0.75E-4→0.45E-4 | −0.12 | **−0.13 K** | +0.64 | **failed** — more SW yet colder; worst tropics and global RMSE |
 | **B2** | `RCLDIFF_CONVI` 10→25 | −0.07 | **+0.29 K** | +0.53 | ~~best boreal so far~~ **boreal within noise**; +1.23 subpolar N Atl RMSE |
@@ -150,12 +168,13 @@ differences smaller than the noise, and A2/B5/B6 being "inert" is indistinguisha
 their being unresolved. The mechanism may still be true; these runs simply cannot speak to
 it.
 
-**What does survive is the negative result, and it is worth more than the ranking was.**
-Nine boreal levers spanning cloud microphysics, convection, erosion, shallow mixing, ice
-fall speed and surface conductivity all failed to move Siberian JJA T2m by the ±0.89 K that
-4 years can detect. Whatever holds the boreal cold bias in place is not moved by ordinary
-excursions of any of these parameters. That is a genuine constraint on where to look next,
-and it points away from incremental cloud tuning.
+**What survives is one bounded statement, and only one.** Nine boreal levers spanning cloud
+microphysics, convection, erosion, shallow mixing, ice fall speed and surface conductivity
+each failed to move Siberian JJA T2m by the ±0.89 K that 4 years can detect. That bounds
+each lever's *individual* size; it says nothing about whether they are ~0.3 K and additive
+or ~0. Read it as an upper bound per lever, not as evidence that these parameters are
+inert, and not as a reason to abandon incremental tuning — stacking small levers remains
+the most plausible route to −2.2 K.
 
 It also leaves ECMWF's own diagnosis — excessive turbulent mixing in cloudy boundary layers,
 explicitly *not* cloud microphysics — as the leading untested hypothesis rather than a
@@ -238,7 +257,8 @@ presumably runs it alongside compensating tuning we do not have.
 **3. The A1/A2 separability argument was WRONG, and conditional on amplitude.** The
 prediction was that the WBF terms could not touch boreal summer cloud because
 boreal-land BL cloud is warm (>268 K) and never enters the mixed-phase window. Measured:
-it holds at 0.35 (−0.03 K) but fails badly at 0.1 (−1.15 K). **The error was ignoring the
+it **fails badly at 0.1 (−1.15 K, significant)**. At 0.35 the response is −0.03 K, which is
+unresolved — consistent with the prediction but not a confirmation of it. **The error was ignoring the
 mid-level mixed-phase cloud above the warm boundary layer.** Vertical decomposition of
 A1a over Siberian land in JJA:
 
@@ -253,20 +273,30 @@ A1a over Siberian land in JJA:
 Lowering the overlap converted ice→liquid in mid-level cloud; liquid is far more
 reflective per unit mass, hence −9.8 W/m² surface SW and the cooling.
 
+*Caveat on this table:* the ±2.75 pp cloud-area detection threshold applies here too, so the
+individual layer changes are at best marginal on their own. What the mechanism has to
+explain — A1a's −1.15 K and −9.75 W/m² — is significant, and the +14.6 g/m² column-liquid
+change is large; but treat the layer-by-layer split as indicative rather than measured.
+
 **4. This sets up a direct opposition through every mixed-phase knob.** The Southern
 Ocean needs *more* supercooled liquid (brighter); boreal mid-level cloud needs *less*
 (dimmer). Both are the same process. **No mixed-phase parameter can fix both**, which is
 why A1 helped the SO and hurt the boreal. Any boreal fix must act through a
 non-phase-partitioning channel.
 
-**5. The boreal cold bias is now the hard problem — three failed attempts.** expA
-+0.19 K (real, TOA-neutral, ~10 % of target); A2 −0.18 K (wrong sign, no traction);
-A1 makes it worse at any strength that meaningfully fixes the SO. Meanwhile the energy
-target fell to a single parameter.
+**5. The boreal cold bias is the hard problem, and it is also the badly-measured one.**
+expA +0.19 K and A2 −0.18 K are both **inside the ±0.89 K noise floor**, so neither the
+sizes nor the *signs* are established — an earlier version of this entry called expA
+"real" and A2 "wrong sign", and neither is supported. What does stand: A1 makes the boreal
+worse at any strength that meaningfully fixes the SO (A1a −1.15 K **is** significant), and
+the energy target fell to a single parameter.
 
-**6. Warm-rain removal is not what controls boreal cloud.** A2 sped land autoconversion
-3.5× and moved cloud area by −0.08 pp. Boreal summer cloud is sustained by continuous
-boundary-layer moisture supply, not limited by how fast it rains out.
+**6. Warm-rain removal did not detectably control boreal cloud.** A2 sped land
+autoconversion 3.5× and moved JJA cloud area by −0.08 pp — but the detection threshold on
+that diagnostic is **±2.75 pp**, so this is an upper bound, not a measurement. The
+conclusion once drawn from it — that boreal summer cloud is moisture-supply-limited rather
+than rainout-limited — is **not supported by this run**. It remains a plausible hypothesis
+with no evidence behind it either way.
 
 ### Standing caution
 A1b reaches near-zero global flux while leaving **77 % of the SO CRE error and the entire
