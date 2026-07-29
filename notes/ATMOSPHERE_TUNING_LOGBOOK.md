@@ -1,8 +1,93 @@
-# OpenIFS 48r1 tuning knobs — reference
+# Atmosphere tuning logbook — OpenIFS 48r1 (AMIP)
 
-Compiled 2026-07-28 from three parallel sweeps: the OIFS source tree, the SMHI GitLab
-EC-Earth repositories, and the published literature. Kept as a reference because we will
-likely come back here.
+**Two things in one file:** §0 is the running record of what has been tried and what it
+did; §1–10 are the reference — every knob, its default, what it does, and which are dead
+ends. Started 2026-07-28 from three parallel sweeps (OIFS source, SMHI GitLab EC-Earth
+repos, published literature). Add each experiment's outcome to §0 as it lands.
+
+---
+
+## 0. Experiment log
+
+All AMIP TCO95, 1850 GHG, observed SST 1870s, 6 yr, evaluated **1872–1875** against
+control `amip_pi_base`. Runs live in `/work/bb1469/a270092/runtime/oifsamip-cy48/`.
+Evaluation script: `scripts/analysis/eval_round10_A.py`.
+
+### Targets at the start of round 10
+| | control | observed (CERES) | gap |
+|---|---:|---:|---:|
+| global net TOA | +0.533 | ~0 expected for PI | **+0.53** |
+| global surface flux | +0.383 | 0 | **+0.38** |
+| SO 45–65S TOA SW CRE | −60.06 | −68.14 | **+8.08** |
+| SO cloud area | 83.15 % | 89.72 % | **−6.6 pp** |
+| Siberia JJA surface net SW | 151.9 | 166.3 | **−14.4** |
+| Siberia JJA cloud area | 79.1 % | 69.6 % | **+9.5 pp** |
+| Siberia JJA T2m bias | — | — | **≈ −2.2 K** |
+
+### Results
+
+| run | change | SO SW CRE | Siberia JJA T2m | global sfc flux | verdict |
+|---|---|---:|---:|---:|---|
+| **A1a** | `RCL_OVERLAPLIQICE` 0.65→**0.10** | **−6.51** (80 % of gap) | **−1.15 K** | −1.63 | **overshoots**; wrecks boreal |
+| **A1b** | `RCL_OVERLAPLIQICE` 0.65→**0.35** | −1.89 (23 %) | −0.03 K | **−0.13** | **best so far** — energy target met, boreal untouched |
+| **A2** | `RCL_KK_CLOUD_NUM_LAND` 300→150 | −0.15 | −0.18 K | +0.36 | **no traction** |
+| **expA** | `RVRSMIN(3,4)` 250→500 | −0.40 | +0.19 K | +0.41 | real but far too small |
+| A1c | `RDEPLIQREFDEPTH` 500→1500 m | *running* | | | cloud-depth selectivity test |
+| B1 | `DETRPEN` 0.75E-4→0.45E-4 | *running* | | | cut convective mid-cloud source |
+| B2 | `RCLDIFF_CONVI` 10→25 | *running* | | | erode convective cloud harder |
+
+### What has been learned
+
+**1. `RCL_OVERLAPLIQICE` = 0.35 essentially solves the energy target.** Global surface
+flux +0.383 → **−0.129 W/m²** and net TOA +0.533 → +0.027, at a cost of only −0.26 in the
+tropics and no change in NH−SH albedo. One namelist parameter, no rebuild.
+
+**2. EC-Earth4's 0.1 is not transferable to our configuration.** It fixes 80 % of the SO
+CRE error but drives global TOA to −1.48 and cools Siberian JJA by 1.15 K. EC-Earth4
+presumably runs it alongside compensating tuning we do not have.
+
+**3. The A1/A2 separability argument was WRONG, and conditional on amplitude.** The
+prediction was that the WBF terms could not touch boreal summer cloud because
+boreal-land BL cloud is warm (>268 K) and never enters the mixed-phase window. Measured:
+it holds at 0.35 (−0.03 K) but fails badly at 0.1 (−1.15 K). **The error was ignoring the
+mid-level mixed-phase cloud above the warm boundary layer.** Vertical decomposition of
+A1a over Siberian land in JJA:
+
+| | control | A1a change |
+|---|---:|---:|
+| low cloud | 52.3 % | +1.06 |
+| **mid cloud** | 39.8 % | **+3.50** |
+| high cloud | 46.4 % | +0.52 |
+| **column liquid water** | 72.3 g/m² | **+14.6 (+20 %)** |
+| column ice water | 23.9 g/m² | −4.2 |
+
+Lowering the overlap converted ice→liquid in mid-level cloud; liquid is far more
+reflective per unit mass, hence −9.8 W/m² surface SW and the cooling.
+
+**4. This sets up a direct opposition through every mixed-phase knob.** The Southern
+Ocean needs *more* supercooled liquid (brighter); boreal mid-level cloud needs *less*
+(dimmer). Both are the same process. **No mixed-phase parameter can fix both**, which is
+why A1 helped the SO and hurt the boreal. Any boreal fix must act through a
+non-phase-partitioning channel.
+
+**5. The boreal cold bias is now the hard problem — three failed attempts.** expA
++0.19 K (real, TOA-neutral, ~10 % of target); A2 −0.18 K (wrong sign, no traction);
+A1 makes it worse at any strength that meaningfully fixes the SO. Meanwhile the energy
+target fell to a single parameter.
+
+**6. Warm-rain removal is not what controls boreal cloud.** A2 sped land autoconversion
+3.5× and moved cloud area by −0.08 pp. Boreal summer cloud is sustained by continuous
+boundary-layer moisture supply, not limited by how fast it rains out.
+
+### Standing caution
+A1b reaches near-zero global flux while leaving **77 % of the SO CRE error and the entire
+boreal error in place**. That is precisely the compensating-error configuration
+Schuddeboom & McDonald (2021) warn about — CMIP6 models with the *smallest* SO radiation
+bias carry the *largest* compensating errors. The global number looking right is not
+evidence the cloud field is right. Tuning to 0.30–0.35 to hit −0.16 exactly would be
+tuning to the global number, which is the failure mode the literature names.
+
+---
 
 Source tree: `/work/ab0246/a270092/model_codes/oifsamip-cy48/oifs-48r1/ifs-source/`
 (branch `movcav-landice+co2-concdriven` @ `f3ccacb`, = esm_tools version `48r1v5`).
