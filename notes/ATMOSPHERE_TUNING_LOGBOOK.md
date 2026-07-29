@@ -84,6 +84,51 @@ left as turbulent flux, the rest going into the ground. Caveat — `expA` shows 
 parameters still teleconnect (+0.60 subpolar N Atl via downstream moisture transport), so
 "cannot *directly* degrade" is not "will not degrade".
 
+### Started 2026-07-29, results pending
+
+Reference for **C1/C2/E1 is `amip_B8_lamsk5`**, not the control: the current `install/lib`
+has B8 compiled in, so every run launched on it inherits `RVLAMSK/S(3,4)=5`. Their
+namelists are otherwise byte-identical to the control's (`RVICE: 0.16` only), so each is a
+clean single-lever increment on a known baseline.
+
+| run | change | type | binary | rationale |
+|---|---|---|---|---|
+| **ABB8** | A1b `RCL_OVERLAPLIQICE` 0.35 + B2 `RCLDIFF_CONVI` 25 + B8 | namelist on B8 | `e41a8d4acdb3` | the three levers that individually work — do all three compose? |
+| **C1** | `RLAM` 150→**75** m | namelist (`NAMVDF`) | `e41a8d4acdb3` | boundary-layer mixing — a new axis, see below |
+| **C2** | `RLAM` 150→**40** m | namelist (`NAMVDF`) | `e41a8d4acdb3` | same, aggressive; C1+C2 give a gradient since the sign is untested |
+| **E1** | `RVLAMSK`/`RVLAMSKS(3,4)` 5→**2.5** | **source** | `4b1f678bc051` | is the best lever linear or saturating? |
+
+**The C group is the important new idea.** `RLAM` is the asymptotic mixing length used
+**only in the statically-unstable branch** of `vdfexcu` (`vdfexcu.F90:397`, `ZKLENT=PLAM`)
+— the daytime convective land boundary layer and nothing else. `suvdf.F90:77` sets the
+150 m default and `:108-109` then reads `NAMVDF` over it, so it is namelist-only, needs no
+rebuild, and can run in parallel with source-edit experiments.
+
+It matters because it is the one lever aimed at ECMWF's *own* published diagnosis of the
+IFS summer land cold bias: **excessive turbulent mixing in cloudy boundary layers**, with
+the explicit statement that cloud microphysics is *not* the main driver. Everything in
+rounds A and B was a cloud or convection knob; the whole B series returned at most +0.5 K,
+which is consistent with ECMWF being right and us having spent the campaign on the wrong
+axis. Less mixing → shallower BL → surface sensible heating retained in a thinner layer →
+warmer T2m, *and* less moisture lofted → less boreal cloud. Both signs favour us.
+
+Caveat: `RLAM` is global and applies over ocean too, so the deep-water SW RMSE must be
+checked, not assumed.
+
+**E1 is a decision run, not a tuning run.** B8 (skin conductivity 10→5) gave the single
+best boreal response of the campaign — Siberia JJA T2m **+0.502 K**, cloud −1.98 pp,
+surface SW +6.38 W/m². That a *surface* parameter moved cloud that much is the evidence
+that boreal cloud here is **moisture-supply-limited, not microphysics-limited** — which is
+also why A2 (`RCL_KK_CLOUD_NUM_LAND`) did nothing at all. E1 halves it again: if
++0.5 K → ~+1.0 K the lever has room and we push on; if it saturates, the residual needs a
+different axis and we stop spending runs on skin conductivity.
+
+**Serialisation cost.** Source-edit experiments share one model tree, so only one can be
+in flight at a time (edit → `recomp` → verify md5 → submit → wait for staging → repeat).
+Namelist experiments have no such constraint. If the E/vegetation axis proves worth
+several more runs, copying the model tree would let them run in parallel — worth raising
+before doing it, given the stale-object incident below.
+
 ### BUILD PROCEDURE — non-negotiable for source edits
 `esm_master comp-` **silently reused a stale object** for `susveg_mod.F90`: the object md5
 was byte-identical with `RVLAMSK=5` and `RVLAMSK=10`. Almost certainly because

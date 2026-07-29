@@ -37,7 +37,19 @@ RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
         ('A1c depth1500', 'amip_A1c_depliqdepth1500'),
         ('B1 detrpen.45', 'amip_B1_detrpen045'),
         ('B2 convi=25', 'amip_B2_clddiffconvi25'),
-        ('AB ovl+convi', 'amip_AB_ovl035_convi25')]
+        ('AB ovl+convi', 'amip_AB_ovl035_convi25'),
+        ('B3 clddiff', 'amip_B3_clddiff15e6'),
+        ('B4 entshalp3', 'amip_B4_entshalp3'),
+        ('B5 capdcycl0', 'amip_B5_capdcycl0'),
+        ('B6 lcritsnow', 'amip_B6_lcritsnow1e5'),
+        ('B7 rvice.22', 'amip_B7_rvice022'),
+        ('B8 lamsk5', 'amip_B8_lamsk5'),
+        # --- started 2026-07-29. C1/C2/E1 sit on the B8 binary, so their
+        # reference is 'B8 lamsk5', not 'control'.
+        ('ABB8 A1b+B2+B8', 'amip_ABB8'),
+        ('C1 rlam75', 'amip_C1_rlam75'),
+        ('C2 rlam40', 'amip_C2_rlam40'),
+        ('E1 lamsk2.5', 'amip_E1_lamsk25')]
 
 ERA5 = '/work/ab0246/a270092/obs/era5/netcdf/T2M.nc'
 
