@@ -22,7 +22,69 @@ Evaluation script: `scripts/analysis/eval_round10_A.py`.
 | SO cloud area | 83.15 % | 89.72 % | **−6.6 pp** |
 | Siberia JJA surface net SW | 151.9 | 166.3 | **−14.4** |
 | Siberia JJA cloud area | 79.1 % | 69.6 % | **+9.5 pp** |
-| Siberia JJA T2m bias | — | — | **≈ −2.2 K** |
+| Siberia JJA T2m bias | — | — | ~~**≈ −2.2 K**~~ **≈ −1.0 K** |
+
+*The T2m row was corrected on 2026-07-29: the −2.2 K was scored against ERA5 1990–2014
+while the model is 1870s/1850 GHG, and ~1.1 K of it is that period offset. See the
+section immediately below. The CERES-based rows carry the same flaw, not yet quantified.*
+
+### ⚠ The target itself — about half of the boreal "bias" is the reference period
+
+Measured 2026-07-29 (`scripts/analysis/era5_period_offset.sh`). The T2m reference in
+`eval_round10_A.py` is `obs/era5/netcdf/T2M.nc`, which is ERA5 **1990–2014**. The AMIP runs
+are **1870s observed SST with 1850 GHG**. That is ~130 years of greenhouse warming sitting
+inside a number the campaign has been treating as model error and tuning against.
+
+ERA5 Siberian JJA (55–75N, 60–180E box, no land mask), relative to the 1990–2014 reference:
+
+| period | offset vs 1990–2014 |
+|---|---:|
+| 1979–1989 | **−0.670 K** |
+| 1940–1969 | **−0.790 K** |
+
+The interannual sd is 0.578 K, so the SE of the 1979–89 vs 1990–2014 difference is 0.209 K
+→ `t ≈ 3.2`. The offset is real, not sampling noise. ERA5 cannot reach the 1870s, so chain
+through HadCRUT5's global series (1870s → 1990–2014 = **+0.756 K**) scaled by ERA5's own
+Siberian-JJA-to-global amplification over the overlapping window (**×1.48**):
+
+```
+implied Siberian JJA 1870s -> 1990-2014 offset  ~ 1.12 K
+reported AMIP "bias" vs ERA5 1990-2014          = -2.16 K
+residual genuine model cold bias                ~ -1.04 K
+```
+
+**The boreal target is therefore ~1.0 K, not 2.2 K.** Consequences:
+
+1. **Tuning to close 2.2 K would manufacture a ~1 K warm bias** in the coupled PI model.
+2. **The stack is smaller than feared** — at 44 yr (±0.27 K) a ~1.0 K target is ~4
+   resolvable levers, not ~7.
+3. **The same flaw applies to the energy target.** CERES EBAF here is the 07/2005–06/2015
+   climatology scored against an 1870s model, so the +8.08 W/m² SO SW CRE gap and the
+   +0.53 W/m² TOA imbalance carry their own unquantified period offset. **Not yet measured.**
+
+*Caveats:* the ERA5 box is unmasked while the model numbers are land-masked — land warms
+faster than ocean, so the true land-only offset is if anything **larger** and this
+correction is conservative. The ×1.48 amplification is extrapolated back from one window,
+and HadCRUT5's 1870s global mean rests on sparse coverage.
+
+**The clean fix is one cheap run.** The AMIP SST forcing covers 187001–201512 and CMIP6
+historical GHG runs to 2014, so a present-day AMIP leg (1989–2015, transient GHG via
+`NCMIPFIXYR: 0`) can be scored against ERA5 1990–2014 *and* CERES 2005–2015 with no period
+mismatch at all — ~25 years, one job.
+
+**Does NCEP2 corroborate "LPJ-GUESS was calibrated under a too-generous CRUNCEP forcing"?
+On temperature, no.** NCEP2 Siberian JJA is **−0.118 K colder** than ERA5 over 1990–2014
+(paired by year, sd 0.228, `t = −2.6`) — statistically real but negligible, and the *wrong
+sign* for a story in which LPJG grew its trees under an over-warm forcing. This is
+consistent with how CRUNCEP3 is built: temperature derives from **CRU**, bias-corrected
+against station observations, while **radiation** derives from NCEP — which is exactly where
+the **+21 W/m² excess against CERES** was measured. The calibration mismatch is on the
+radiation axis, not the temperature axis. Caveat: NCEP2 is only a proxy for CRUNCEP3; the
+direct check needs the actual CRUNCEP3 forcing, and the `.ins` files under the spin-up's
+`config/lpj_guess/` are templates with placeholder paths (`c:/nc/temp.nc`), so it was not
+done here. See also [[forcing-transfer-test]] — swapping CRUNCEP→AMIP forcing alone costs
+−54 % Siberian TREEFPC, which is the direct evidence and does not depend on *which* variable
+carries it.
 
 ### ⚠ Statistical power — read before believing any boreal number below
 
@@ -45,13 +107,16 @@ best boreal lever", which is `t = +1.10`.
 
 Years needed to resolve a boreal T2m signal of size Δ: **1.0 K → 3; 0.5 K → 13; 0.3 K → 36;
 0.2 K → 80.** So the 4-year screen detects any lever worth ≥ 40 % of the −2.2 K target on
-its own. **Nine boreal levers were run and none cleared it.** That is the actual boreal
+its own — and against the **corrected ~1.0 K target** (section above) ±0.89 K is ~90 % of
+the whole target, so at 4 years we could only ever have detected a near-total fix.
+**Nine boreal levers were run and none cleared it.** That is the actual boreal
 result of round 10: not a ranking, but the finding that no lever tried so far is
 individually large enough to measure at this run length.
 
 **What that does *not* license.** "No single lever is big, therefore we need a bigger
-lever" is one reading and it is not supported — the far more likely route to −2.2 K is a
-*stack* of small levers all pushed the same way (seven at 0.3 K each would do it). These
+lever" is one reading and it is not supported — the far more likely route to the corrected
+**~1.0 K** target is a *stack* of small levers all pushed the same way (three or four at
+0.3 K each would do it, not seven). These
 runs cannot distinguish "each lever is ~0.3 K and they add" from "each lever is ~0". Both
 are consistent with every number in this file.
 
@@ -64,9 +129,11 @@ list. Two consequences follow, and they are the practical output of this round:
    the winner's curse: it selects for favourable noise, so the stack under-delivers.
    **ABB8 is exactly that experiment.** Its three components were chosen because they
    ranked well at 4 years; stacked, they gave −0.17 K.
-2. **The testable unit becomes the stack, not the lever.** A stack aimed at the full 2.2 K
-   should clear ±0.89 K comfortably at 4 years. So build stacks from physics, test the
-   stack cheaply, and spend long runs only on attributing a stack that already works.
+2. **The testable unit becomes the stack, not the lever.** A stack aimed at the full ~1.0 K
+   target sits right at the 4-year threshold (±0.89 K) — detectable only if it works almost
+   completely — but is comfortably resolved at 44 years (±0.27 K). So build stacks from
+   physics, test the stack on the extended runs, and spend attribution effort only on a
+   stack that already works.
 
 Corollary: C1/C2/E1 are **untested, not refuted**. At 4 years we cannot separate "`RLAM`
 does little" from "`RLAM` does nothing", so the boundary-layer axis remains open.

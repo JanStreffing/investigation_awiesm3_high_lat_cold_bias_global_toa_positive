@@ -1127,6 +1127,53 @@ The atmosphere alone reproduces essentially all of 09A's Siberian JJA bias ($-2.
 half behaves oppositely --- AMIP's Siberian \emph{annual} bias is only $-0.89$ against $-3.0$ coupled --- so
 September--April remains the coupled/vegetation problem of Part~II, and JJA is now a separate, atmospheric one.
 
+\subsubsection{Correction (2026--07--29): about half of that $-2.16$\,K is the reference period}\label{sub:perioffset}
+The number above is scored against \textbf{ERA5 1990--2014}, while these runs use \textbf{1870s observed SST
+with 1850 GHG}. Roughly $130$ years of greenhouse warming therefore sits inside a quantity the campaign has
+been treating as model error --- and tuning against. Measured from the DKRZ ERA5 pool
+(\texttt{scripts/analysis/era5\_period\_offset.sh}), Siberian JJA over the same box used for evaluation:
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+ERA5 period & offset vs 1990--2014 \\
+\midrule
+1979--1989 & $\mathbf{-0.670}$\,K \\
+1940--1969 & $\mathbf{-0.790}$\,K \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The interannual sd is $0.578$\,K, giving SE $=0.209$\,K on the 1979--89 vs 1990--2014 difference
+($t\approx3.2$): the offset is real. ERA5 stops at 1940, so chaining through HadCRUT5's global series
+(1870s $\to$ 1990--2014 $= +0.756$\,K) scaled by ERA5's own Siberian-JJA-to-global amplification over the
+overlapping window ($\times1.48$) implies a Siberian JJA period offset of $\approx1.12$\,K, leaving a
+\textbf{genuine model cold bias of $\approx-1.0$\,K rather than $-2.2$\,K}.
+
+\textbf{This changes the target, not the diagnosis.} The attribution above is unaffected --- it is a
+model-versus-model comparison (AMIP against coupled 09A) in which any reference offset cancels, so ``the JJA
+bias is atmospheric'' stands. What changes is \emph{how much} of it we should try to remove: closing the full
+$2.2$\,K would manufacture a $\approx1$\,K \emph{warm} bias in the coupled pre-industrial state.
+
+\emph{Caveats.} The ERA5 box is unmasked whereas the model figures are land-masked; land warms faster than
+ocean, so the true land-only offset is if anything larger and this correction is conservative. The $\times1.48$
+amplification is extrapolated back from a single window, and HadCRUT5's 1870s global mean rests on sparse
+coverage. \textbf{The same flaw applies to the CERES-based energy targets} (\S\ref{sub:ceres},
+\S\ref{sub:sobands}): CERES EBAF here is the 07/2005--06/2015 climatology scored against an 1870s model, so
+the $+8.08$\,W/m$^2$ SO SW CRE gap and the $+0.53$\,W/m$^2$ imbalance carry an analogous, \emph{as yet
+unquantified}, period offset. The decisive fix for both is a single present-day AMIP leg (1989--2015,
+transient GHG) scored directly against ERA5 1990--2014 and CERES 2005--2015; the AMIP SST forcing already
+covers 187001--201512.
+
+\textbf{Does this shift the residual onto LPJ-GUESS's CRUNCEP calibration?} Partly, but the corroboration
+attempted on the \emph{temperature} axis fails: NCEP2 Siberian JJA is $-0.118$\,K \emph{colder} than ERA5 over
+1990--2014 (paired by year, $t=-2.6$) --- real but negligible, and the wrong sign for a story in which
+LPJ-GUESS grew its trees under an over-warm forcing. That is consistent with CRUNCEP3's construction:
+temperature derives from CRU, bias-corrected against stations, while \emph{radiation} derives from NCEP, which
+is precisely where the $+21$\,W/m$^2$ excess against CERES was measured (\S\ref{sub:ceres}). The calibration
+mismatch sits on the radiation axis. The direct evidence remains the forcing-transfer test
+(\S\ref{sub:xfer}), which does not depend on which variable carries it.
+
 \begin{figure}[H]\centering
 \includegraphics[width=0.99\textwidth]{plots/campaign_boreal_seasonal_bias.png}
 \caption{Boreal 2\,m-T bias by month against CRUNCEP3, land-masked. The atmosphere-only AMIP curve (blue)
