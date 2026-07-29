@@ -39,6 +39,13 @@ The collision is historical; read `Bn` as "boreal lever n".
 | **A1c** | `RDEPLIQREFDEPTH` 500→1500 m | −0.13 | +0.06 K | +0.25 | **failed** — no SO leverage; cloud-depth selectivity idea dead |
 | **B1** | `DETRPEN` 0.75E-4→0.45E-4 | −0.12 | **−0.13 K** | +0.64 | **failed** — more SW yet colder; worst tropics and global RMSE |
 | **B2** | `RCLDIFF_CONVI` 10→25 | −0.07 | **+0.29 K** | +0.53 | best boreal so far, **but +1.23 subpolar N Atl RMSE** |
+| **AB** | A1b + B2 | −1.82 | **+0.32 K** | +0.23 | **composes** — see below; best SO RMSE of the campaign |
+| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | **+0.54** | **+0.37 K** | **+1.52** | boreal works, **energy fails** — sfc flux +1.14, tropics +1.72 |
+| **B4** | `ENTSHALP` 2.0→3.0 | −1.55 | **−0.19 K** | −1.07 | **failed** boreal (wrong sign); only run ever to improve subpolar N Atl |
+| **B5** | `RCAPDCYCL` 2.0→0.0 | −0.46 | +0.00 K | −0.58 | **inert** on boreal; best global SW RMSE (13.820) |
+| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | +0.05 | −0.03 K | +0.05 | **inert** |
+| **B7** | `RVICE` 0.16→0.22 | +0.99 | **−0.67 K** | +0.06 | **failed** — worst boreal and worst T2m RMSE of all runs |
+| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | +0.20 | **+0.50 K** | +0.44 | **best boreal of the campaign**; cloud −1.98 pp, sfc SW +6.38 |
 
 ### Deep-water-formation SW RMSE vs CERES — the priority metric
 SW biases where deep water forms set the coupled ocean's initial state; errors there give
@@ -55,34 +62,73 @@ regional means, and it is the ranking that counts.**
 | A1c | 6.874 | 5.134 | 9.688 | 14.088 | 1.621 |
 | B1 | 6.962 | 5.942 | 9.200 | 14.593 | 1.628 |
 | B2 | 6.483 | **6.039** | 8.704 | 14.064 | 1.589 |
+| **AB** | **5.306** | 4.885 | 9.353 | 14.041 | 1.590 |
+| B3 | 6.756 | 5.888 | 8.943 | 14.375 | 1.571 |
+| B4 | 6.658 | **4.440** | 8.757 | 15.303 | 1.605 |
+| B5 | 6.343 | 5.387 | 8.805 | **13.820** | 1.576 |
+| B6 | 6.944 | 5.209 | 9.526 | 14.067 | 1.609 |
+| B7 | **7.235** | 5.425 | **9.682** | 14.471 | **1.672** |
+| B8 | 7.118 | 5.464 | 9.287 | 14.221 | 1.577 |
 
-**A1b is best or neutral in all three deep-water regions** and the only run that leaves the
-subpolar North Atlantic alone. Note it beats A1a in the SO *by field RMSE* (5.56 vs 6.18)
-despite A1a fixing more of the mean CRE — A1a improved the regional mean while degrading
-the spatial pattern, which is the compensating-error signature showing up in the metric
-built to catch it. **Every boreal lever degrades the subpolar North Atlantic**, B2 worst.
+**A1b is best or neutral in all three deep-water regions** and the only *single* lever that
+leaves the subpolar North Atlantic alone. Note it beats A1a in the SO *by field RMSE*
+(5.56 vs 6.18) despite A1a fixing more of the mean CRE — A1a improved the regional mean
+while degrading the spatial pattern, which is the compensating-error signature showing up
+in the metric built to catch it.
+
+**The combination result is the important one.** AB gives the best Southern Ocean of any
+run (5.306 vs 7.193 control) *and* **cancels B2's subpolar-Atlantic damage**: +1.226 for B2
+alone collapses to +0.071 when A1b is added. So "every boreal lever degrades the subpolar
+North Atlantic" — true of every lever in isolation, B2 worst — is **not** true of the
+combination. That is the single most useful thing this round produced, because it means the
+energy target and the boreal target are not forced to trade against each other there.
+
+B4 is the only run that ever *improves* the subpolar North Atlantic (−0.373), but it moves
+boreal T2m the wrong way (−0.19 K) and has the worst global SW RMSE (15.303), so it is not
+usable as-is — it is filed as a possible corrective term if a future combination overshoots
+in that basin.
 
 *(T2m RMSE folds in the expected PI-vs-present-day offset of ~0.5–1 K; the spread across
-runs is only ±0.04 K. Use it to rank, not as a skill score.)*
+runs is only ±0.04 K, except B7 at +0.087. Use it to rank, not as a skill score.)*
 
-### Started 2026-07-28, results pending
+### Round of 2026-07-28 — predicted vs actual
 
-| run | change | type | rationale |
-|---|---|---|---|
-| **AB** | `RCL_OVERLAPLIQICE` 0.35 **+** `RCLDIFF_CONVI` 25 | namelist | do the two halves compose? if additive: sfc flux ≈ +0.02, boreal ≈ +0.26 K |
-| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | namelist | strongest-σ cloud knob (SPP allows ×2.83); erosion is **phase-agnostic**, so it sidesteps the mixed-phase opposition |
-| **B4** | `ENTSHALP` 2.0→3.0 | namelist | Vial/Bony: stronger shallow mixing dries the sub-cloud layer and *reduces* low cloud |
-| **B5** | `RCAPDCYCL` 2.0→0.0 | namelist | CAPE diurnal-cycle correction exists for **land** diurnal convection — inherent land bias |
-| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | namelist | removes ice faster; targets the mid/high ice cloud that carried A1a's response |
-| **B7** | `RVICE` 0.16→0.22 | namelist | same target, different route; beyond EC-Earth's 0.137–0.17 range |
-| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | **source** | skin-layer conductivity, **vegetation-type indexed** — the only lever that cannot *directly* degrade the deep-water regions |
+All eight completed; results are folded into the two tables above. The rationales are kept
+because the contrast between what each lever was *supposed* to do and what it did is what
+now points the campaign at the boundary layer.
 
-**B8 is the one to watch.** Every other lever is a global cloud/convection parameter and can
-damage the deep-water regions; B8 touches boreal needleleaf and nothing else. It attacks
-what was actually measured: of the +4.2 W/m² B2 delivered to the boreal surface only ~2.4
-left as turbulent flux, the rest going into the ground. Caveat — `expA` shows land-only
-parameters still teleconnect (+0.60 subpolar N Atl via downstream moisture transport), so
-"cannot *directly* degrade" is not "will not degrade".
+| run | change | type | rationale (as written before the runs) | outcome |
+|---|---|---|---|---|
+| **AB** | `RCL_OVERLAPLIQICE` 0.35 **+** `RCLDIFF_CONVI` 25 | namelist | do the two halves compose? if additive: sfc flux ≈ +0.02, boreal ≈ +0.26 K | **+0.32 K — composes**; cancels B2's N-Atl damage |
+| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | namelist | strongest-σ cloud knob (SPP allows ×2.83); erosion is **phase-agnostic**, so it sidesteps the mixed-phase opposition | boreal +0.37 K but **sfc flux +1.14** — energy target lost |
+| **B4** | `ENTSHALP` 2.0→3.0 | namelist | Vial/Bony: stronger shallow mixing dries the sub-cloud layer and *reduces* low cloud | **wrong sign** (−0.19 K); shallow-mixing idea dead for boreal |
+| **B5** | `RCAPDCYCL` 2.0→0.0 | namelist | CAPE diurnal-cycle correction exists for **land** diurnal convection — inherent land bias | **inert** (+0.00 K) — land diurnal CAPE is not the lever |
+| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | namelist | removes ice faster; targets the mid/high ice cloud that carried A1a's response | **inert** (−0.03 K) |
+| **B7** | `RVICE` 0.16→0.22 | namelist | same target, different route; beyond EC-Earth's 0.137–0.17 range | **worst run** (−0.67 K); confirms A1a's mixed-phase penalty |
+| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | **source** | skin-layer conductivity, **vegetation-type indexed** — the only lever that cannot *directly* degrade the deep-water regions | **+0.50 K, best of campaign** — and it is a *surface* knob |
+
+**B8 was called as the one to watch, and it was right** — but for a reason we had not
+anticipated. It was picked because every other lever is a global cloud/convection parameter
+that can damage the deep-water regions, whereas B8 touches boreal needleleaf and nothing
+else; and because of what had been measured, that of the +4.2 W/m² B2 delivered to the
+boreal surface only ~2.4 left as turbulent flux, the rest going into the ground. The
+teleconnection caveat also held: B8 still cost +0.65 in the subpolar N Atlantic, so
+"cannot *directly* degrade" was indeed not "will not degrade".
+
+**The unanticipated part is the mechanism.** A *surface* parameter reduced boreal cloud by
+1.98 pp and added 6.38 W/m² of surface SW — more cloud reduction than any of the six cloud
+microphysics knobs tried alongside it. Read together with A2 (`RCL_KK_CLOUD_NUM_LAND`,
+literally the boreal-cloud-droplet knob) doing nothing at all, and B5/B6 being inert, the
+conclusion is that **boreal cloud here is moisture-supply-limited, not microphysics-limited**.
+The cloud scheme is not what is holding the cloud up; the surface moisture flux is.
+
+**This is why the round's real output is a change of axis.** Nine cloud and convection
+levers returned at most +0.50 K against a −2.2 K bias, and the one that worked was not a
+cloud lever. That matches ECMWF's own published diagnosis of the IFS summer land cold bias
+— excessive turbulent mixing in cloudy boundary layers, with the explicit statement that
+cloud microphysics is *not* the main driver. The campaign has been spending its runs on the
+wrong axis. Hence the C group below, which is the first lever aimed at the boundary layer
+itself rather than at the cloud sitting on top of it.
 
 ### Started 2026-07-29, results pending
 
