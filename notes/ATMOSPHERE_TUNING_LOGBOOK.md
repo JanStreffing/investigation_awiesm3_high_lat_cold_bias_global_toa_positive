@@ -26,15 +26,78 @@ Evaluation script: `scripts/analysis/eval_round10_A.py`.
 
 ### Results
 
+**Naming.** `A1x` = Southern Ocean levers, `A2`/`Bn` = boreal-land levers, `AB` = combined.
+The `Bn` labels are *atmosphere* levers within prong A — they are **not** prong B (LPJ-GUESS).
+The collision is historical; read `Bn` as "boreal lever n".
+
 | run | change | SO SW CRE | Siberia JJA T2m | global sfc flux | verdict |
 |---|---|---:|---:|---:|---|
 | **A1a** | `RCL_OVERLAPLIQICE` 0.65→**0.10** | **−6.51** (80 % of gap) | **−1.15 K** | −1.63 | **overshoots**; wrecks boreal |
 | **A1b** | `RCL_OVERLAPLIQICE` 0.65→**0.35** | −1.89 (23 %) | −0.03 K | **−0.13** | **best so far** — energy target met, boreal untouched |
 | **A2** | `RCL_KK_CLOUD_NUM_LAND` 300→150 | −0.15 | −0.18 K | +0.36 | **no traction** |
 | **expA** | `RVRSMIN(3,4)` 250→500 | −0.40 | +0.19 K | +0.41 | real but far too small |
-| A1c | `RDEPLIQREFDEPTH` 500→1500 m | *running* | | | cloud-depth selectivity test |
-| B1 | `DETRPEN` 0.75E-4→0.45E-4 | *running* | | | cut convective mid-cloud source |
-| B2 | `RCLDIFF_CONVI` 10→25 | *running* | | | erode convective cloud harder |
+| **A1c** | `RDEPLIQREFDEPTH` 500→1500 m | −0.13 | +0.06 K | +0.25 | **failed** — no SO leverage; cloud-depth selectivity idea dead |
+| **B1** | `DETRPEN` 0.75E-4→0.45E-4 | −0.12 | **−0.13 K** | +0.64 | **failed** — more SW yet colder; worst tropics and global RMSE |
+| **B2** | `RCLDIFF_CONVI` 10→25 | −0.07 | **+0.29 K** | +0.53 | best boreal so far, **but +1.23 subpolar N Atl RMSE** |
+
+### Deep-water-formation SW RMSE vs CERES — the priority metric
+SW biases where deep water forms set the coupled ocean's initial state; errors there give
+long, unpredictable coupled spin-up drift. **This ranks the runs differently from the
+regional means, and it is the ranking that counts.**
+
+| | SO 45–65S | subpolar N Atl | Nordic Seas | global SW | T2m vs ERA5 |
+|---|---:|---:|---:|---:|---:|
+| control | 7.193 | 4.813 | 9.231 | 14.349 | 1.585 |
+| A1a | 6.179 | 5.048 | 9.617 | 14.369 | 1.578 |
+| **A1b** | **5.557** | **4.819** | **8.243** | 14.138 | **1.557** |
+| A2 | 6.914 | 5.052 | 9.302 | 14.275 | 1.608 |
+| expA | 6.427 | 5.414 | 8.910 | **14.032** | 1.574 |
+| A1c | 6.874 | 5.134 | 9.688 | 14.088 | 1.621 |
+| B1 | 6.962 | 5.942 | 9.200 | 14.593 | 1.628 |
+| B2 | 6.483 | **6.039** | 8.704 | 14.064 | 1.589 |
+
+**A1b is best or neutral in all three deep-water regions** and the only run that leaves the
+subpolar North Atlantic alone. Note it beats A1a in the SO *by field RMSE* (5.56 vs 6.18)
+despite A1a fixing more of the mean CRE — A1a improved the regional mean while degrading
+the spatial pattern, which is the compensating-error signature showing up in the metric
+built to catch it. **Every boreal lever degrades the subpolar North Atlantic**, B2 worst.
+
+*(T2m RMSE folds in the expected PI-vs-present-day offset of ~0.5–1 K; the spread across
+runs is only ±0.04 K. Use it to rank, not as a skill score.)*
+
+### Started 2026-07-28, results pending
+
+| run | change | type | rationale |
+|---|---|---|---|
+| **AB** | `RCL_OVERLAPLIQICE` 0.35 **+** `RCLDIFF_CONVI` 25 | namelist | do the two halves compose? if additive: sfc flux ≈ +0.02, boreal ≈ +0.26 K |
+| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | namelist | strongest-σ cloud knob (SPP allows ×2.83); erosion is **phase-agnostic**, so it sidesteps the mixed-phase opposition |
+| **B4** | `ENTSHALP` 2.0→3.0 | namelist | Vial/Bony: stronger shallow mixing dries the sub-cloud layer and *reduces* low cloud |
+| **B5** | `RCAPDCYCL` 2.0→0.0 | namelist | CAPE diurnal-cycle correction exists for **land** diurnal convection — inherent land bias |
+| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | namelist | removes ice faster; targets the mid/high ice cloud that carried A1a's response |
+| **B7** | `RVICE` 0.16→0.22 | namelist | same target, different route; beyond EC-Earth's 0.137–0.17 range |
+| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | **source** | skin-layer conductivity, **vegetation-type indexed** — the only lever that cannot *directly* degrade the deep-water regions |
+
+**B8 is the one to watch.** Every other lever is a global cloud/convection parameter and can
+damage the deep-water regions; B8 touches boreal needleleaf and nothing else. It attacks
+what was actually measured: of the +4.2 W/m² B2 delivered to the boreal surface only ~2.4
+left as turbulent flux, the rest going into the ground. Caveat — `expA` shows land-only
+parameters still teleconnect (+0.60 subpolar N Atl via downstream moisture transport), so
+"cannot *directly* degrade" is not "will not degrade".
+
+### BUILD PROCEDURE — non-negotiable for source edits
+`esm_master comp-` **silently reused a stale object** for `susveg_mod.F90`: the object md5
+was byte-identical with `RVLAMSK=5` and `RVLAMSK=10`. Almost certainly because
+`source/ifs_sp` is a symlink to `ifs-source`, so CMake's dependency check follows the link,
+not the edited file. This cost five wrongly-killed runs and a wrong contamination call.
+
+1. edit source
+2. **`esm_master recomp-oifsamip-cy48/oifs-48r1`** from `model_codes` (`recomp` = conf +
+   clean + comp; the `clean` is what forces it). `comp-` is fine for namelist-only work.
+3. **verify the object or library md5 actually changed** — not the source, the *binary*
+4. only then submit
+5. **do not rebuild while a run is queued or starting**: `esm_tools` copies `install/lib/*`
+   into `work/lib/oifs` at **job start**, not at submit time. Wait until the run's
+   `work/lib/oifs/libsurf.SP.so` exists, then rebuild for the next experiment.
 
 ### What has been learned
 

@@ -33,7 +33,13 @@ VARS = ['tsr', 'ttr', 'tsrc', 'ttrc', 'tisr', 'ssr', 'str', 'sshf', 'slhf', 'sf'
 
 RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
         ('A1b ovl=0.35', 'amip_A1_overlap035'), ('A2 KKland=150', 'amip_A2_kknumland150'),
-        ('expA rvrs=500', 'amip_expA_rvrsmin500')]
+        ('expA rvrs=500', 'amip_expA_rvrsmin500'),
+        ('A1c depth1500', 'amip_A1c_depliqdepth1500'),
+        ('B1 detrpen.45', 'amip_B1_detrpen045'),
+        ('B2 convi=25', 'amip_B2_clddiffconvi25'),
+        ('AB ovl+convi', 'amip_AB_ovl035_convi25')]
+
+ERA5 = '/work/ab0246/a270092/obs/era5/netcdf/T2M.nc'
 
 
 def load(run):
@@ -80,15 +86,61 @@ def sel(f, lat, lon, lsm, la, lo=(-180, 180), sfc='all', months=None):
     return float((sub * w).sum() / (w.sum() * len(mo)))
 
 
+def era5_t2m(lat, lon):
+    """ERA5 T2m annual climatology on the model grid. NOTE the model is ~PI
+    (1850 GHG, 1870s SST) and ERA5 is present-day, so an expected cold offset of
+    order 0.5-1 K is folded into this RMSE -- use it to RANK runs, not as an
+    absolute skill score."""
+    ds = xr.open_dataset(ERA5)
+    v = 't2m' if 't2m' in ds else list(ds.data_vars)[0]
+    da = ds[v].mean('time') if 'time' in ds[v].dims else ds[v]
+    la = 'latitude' if 'latitude' in da.dims else 'lat'
+    lo = 'longitude' if 'longitude' in da.dims else 'lon'
+    da = da.rename({la: 'lat', lo: 'lon'}).sortby('lat')
+    da = xr.concat([da.isel(lon=[-1]).assign_coords(lon=da.lon.values[-1:] - 360.0), da,
+                    da.isel(lon=[0]).assign_coords(lon=da.lon.values[:1] + 360.0)], dim='lon')
+    out = da.interp(lat=xr.DataArray(np.clip(lat, da.lat.values.min(), da.lat.values.max()), dims='y'),
+                    lon=xr.DataArray(np.where(lon < 0, lon + 360, lon), dims='x')).values
+    ds.close()
+    return out
+
+
+def rmse(model2d, obs2d, lat, lon=None, box=None, lsm=None, sfc='all'):
+    """Area-weighted spatial RMSE of an annual-mean field, optionally over a box.
+
+    The regional versions matter more than the global one: SW biases where DEEP WATER
+    FORMS set the coupled ocean's initial state, and errors there produce long,
+    unpredictable coupled spin-up drift. Boxes used:
+      SO     45-65S ocean            -- AABW/AAIW formation
+      SPNA   50-65N, 60W-0, ocean    -- NADW, subpolar North Atlantic
+      NORDIC 65-80N, 20W-20E, ocean  -- Nordic Seas overflow
+    """
+    w = np.cos(np.deg2rad(lat))[:, None] * np.ones(model2d.shape)
+    if box is not None:
+        la0, la1, lo0, lo1 = box
+        l180 = ((lon + 180) % 360) - 180
+        m = np.zeros(model2d.shape, bool)
+        m[np.ix_((lat >= la0) & (lat <= la1), (l180 >= lo0) & (l180 <= lo1))] = True
+        if lsm is not None and sfc != 'all':
+            m &= (lsm > 0.5) if sfc == 'land' else (lsm <= 0.5)
+        w = np.where(m, w, 0.0)
+    ok = np.isfinite(model2d) & np.isfinite(obs2d)
+    w = np.where(ok, w, 0.0)
+    return float(np.sqrt((w * (model2d - obs2d) ** 2).sum() / w.sum()))
+
+
 lsm = xr.open_dataset(LSMF)['lsm'].isel(time_counter=0).values
 JJA = [5, 6, 7]
+E5 = None
 res, C = {}, None
 for lab, run in RUNS:
-    d, lat, lon = load(run)
+    d, _lat, _lon = load(run)
     if d is None:
         print(f'  !! {lab}: output incomplete, skipped'); continue
+    lat, lon = _lat, _lon      # keep the last GOOD grid; a failed load must not clobber it
     if C is None:
         C = ceres(lat, lon)
+        E5 = era5_t2m(lat, lon)
     net = d['tsr'] + d['ttr']
     swcre = d['tsr'] - d['tsrc']
     snow = d['sf'] * 333_550_000.0
@@ -105,7 +157,15 @@ for lab, run in RUNS:
         g_toa=sel(net, lat, lon, lsm, (-90, 90)),
         g_sfc=sel(sfc, lat, lon, lsm, (-90, 90)),
         trop=sel(net, lat, lon, lsm, (-30, 30)),
-        dalb=alb_n - alb_s)
+        dalb=alb_n - alb_s,
+        rmse_sw=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat),
+        rmse_so=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat, lon,
+                     (-65, -45, -180, 180), lsm, 'ocean'),
+        rmse_spna=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat, lon,
+                       (50, 65, -60, 0), lsm, 'ocean'),
+        rmse_nordic=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat, lon,
+                         (65, 80, -20, 20), lsm, 'ocean'),
+        rmse_t2m=rmse(d['2t'].mean(0), E5, lat))
 obs = dict(so_cre=sel(C['toa_cre_sw_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
            so_cld=sel(C['cldarea_total_daynight_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
            so_net=sel(C['toa_net_all_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
@@ -121,7 +181,12 @@ rows = [('SOUTHERN OCEAN 45-65S ocean (A1 target)', None),
         ('  cloud area [%]', 'sib_cld'),
         ('GLOBAL / guardrails', None),
         ('  net TOA [W/m2]', 'g_toa'), ('  surface flux [W/m2]', 'g_sfc'),
-        ('  tropics net TOA [W/m2]', 'trop'), ('  NH-SH albedo', 'dalb')]
+        ('  tropics net TOA [W/m2]', 'trop'), ('  NH-SH albedo', 'dalb'),
+        ('SW RMSE vs CERES -- DEEP WATER FORMATION', None),
+        ('  Southern Ocean 45-65S', 'rmse_so'), ('  subpolar N Atl 50-65N', 'rmse_spna'),
+        ('  Nordic Seas 65-80N', 'rmse_nordic'),
+        ('GLOBAL RMSE (rank, not skill)', None),
+        ('  surface net SW vs CERES', 'rmse_sw'), ('  T2m vs ERA5 [K]', 'rmse_t2m')]
 labs = [l for l, _ in RUNS if l in res]
 print(f"\nAMIP {Y0}-{Y1}. Each column: value (change vs control).  CERES where available.\n")
 print(f"{'':34s}" + "".join(f"{l:>19s}" for l in labs) + f"{'CERES':>10s}")
