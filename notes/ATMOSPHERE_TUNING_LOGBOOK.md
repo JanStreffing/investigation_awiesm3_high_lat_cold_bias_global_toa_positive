@@ -24,6 +24,35 @@ Evaluation script: `scripts/analysis/eval_round10_A.py`.
 | Siberia JJA cloud area | 79.1 % | 69.6 % | **+9.5 pp** |
 | Siberia JJA T2m bias | — | — | **≈ −2.2 K** |
 
+### ⚠ Statistical power — read before believing any boreal number below
+
+Measured 2026-07-29 with `scripts/analysis/noise_floor.py`: a run × year ANOVA over all 19
+runs, splitting each per-year value into a tuning signal, the SST-forced year excursion
+shared by every run, and internal atmospheric noise. The 4-year evaluation window gives
+
+| diagnostic | internal sd | 95 % detection threshold | runs clearing it |
+|---|---:|---:|---:|
+| Siberia JJA **T2m** | 0.644 K | **± 0.89 K** | **1 / 18** (only A1a, −1.15) |
+| Siberia JJA **surface SW** | 4.67 W/m² | **± 6.47 W/m²** | **1 / 18** (only A1a) |
+| Siberia JJA **cloud area** | 1.99 pp | **± 2.75 pp** | **0 / 18** |
+| SO **SW CRE** | 0.49 W/m² | ± 0.68 W/m² | 6 / 18 |
+| global **net TOA** | 0.163 W/m² | ± 0.23 W/m² | 9 / 18 |
+
+**The energy target is well resolved; the boreal target is not resolved at all.** Every
+Southern-Ocean and global-energy conclusion in this file stands. **Every boreal ranking in
+the tables below is within noise** and must not be read as a result — including "B8 is the
+best boreal lever", which is `t = +1.10`.
+
+Years needed to resolve a boreal T2m signal of size Δ: **1.0 K → 3; 0.5 K → 13; 0.3 K → 36;
+0.2 K → 80.** So the 4-year screen detects any lever worth ≥ 40 % of the −2.2 K target on
+its own, which is a reasonable bar. **Nine boreal levers were run and none cleared it.**
+That is the actual boreal result of round 10: not a ranking, but the finding that no lever
+tried so far is large enough to matter. The answer is a bigger lever, not a finer ruler —
+a 0.3 K effect does not fix a 2.2 K bias even when it is real.
+
+Corollary: C1/C2/E1 are **untested, not refuted**. At 4 years we cannot separate "`RLAM`
+does little" from "`RLAM` does nothing", so the boundary-layer axis remains open.
+
 ### Results
 
 **Naming.** `A1x` = Southern Ocean levers, `A2`/`Bn` = boreal-land levers, `AB` = combined.
@@ -38,14 +67,14 @@ The collision is historical; read `Bn` as "boreal lever n".
 | **expA** | `RVRSMIN(3,4)` 250→500 | −0.40 | +0.19 K | +0.41 | real but far too small |
 | **A1c** | `RDEPLIQREFDEPTH` 500→1500 m | −0.13 | +0.06 K | +0.25 | **failed** — no SO leverage; cloud-depth selectivity idea dead |
 | **B1** | `DETRPEN` 0.75E-4→0.45E-4 | −0.12 | **−0.13 K** | +0.64 | **failed** — more SW yet colder; worst tropics and global RMSE |
-| **B2** | `RCLDIFF_CONVI` 10→25 | −0.07 | **+0.29 K** | +0.53 | best boreal so far, **but +1.23 subpolar N Atl RMSE** |
-| **AB** | A1b + B2 | −1.82 | **+0.32 K** | +0.23 | **composes** — see below; best SO RMSE of the campaign |
-| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | **+0.54** | **+0.37 K** | **+1.52** | boreal works, **energy fails** — sfc flux +1.14, tropics +1.72 |
-| **B4** | `ENTSHALP` 2.0→3.0 | −1.55 | **−0.19 K** | −1.07 | **failed** boreal (wrong sign); only run ever to improve subpolar N Atl |
-| **B5** | `RCAPDCYCL` 2.0→0.0 | −0.46 | +0.00 K | −0.58 | **inert** on boreal; best global SW RMSE (13.820) |
-| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | +0.05 | −0.03 K | +0.05 | **inert** |
-| **B7** | `RVICE` 0.16→0.22 | +0.99 | **−0.67 K** | +0.06 | **failed** — worst boreal and worst T2m RMSE of all runs |
-| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | +0.20 | **+0.50 K** | +0.44 | **best boreal of the campaign**; cloud −1.98 pp, sfc SW +6.38 |
+| **B2** | `RCLDIFF_CONVI` 10→25 | −0.07 | **+0.29 K** | +0.53 | ~~best boreal so far~~ **boreal within noise**; +1.23 subpolar N Atl RMSE |
+| **AB** | A1b + B2 | −1.82 | **+0.32 K** | +0.23 | **composes on energy** (SO CRE −1.82, significant); boreal within noise |
+| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | **+0.54** | **+0.37 K** | **+1.52** | ~~boreal works~~ boreal within noise; **energy fails** — sfc flux +1.14, tropics +1.72 |
+| **B4** | `ENTSHALP` 2.0→3.0 | −1.55 | **−0.19 K** | −1.07 | boreal within noise; **significant** SO CRE −1.55; only run to improve subpolar N Atl |
+| **B5** | `RCAPDCYCL` 2.0→0.0 | −0.46 | +0.00 K | −0.58 | boreal within noise (as is every run); best global SW RMSE (13.820) |
+| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | +0.05 | −0.03 K | +0.05 | **significant** global TOA −0.34; boreal unresolved |
+| **B7** | `RVICE` 0.16→0.22 | +0.99 | **−0.67 K** | +0.06 | ~~worst boreal~~ boreal within noise; **significant** SO CRE +0.99 (wrong way) |
+| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | +0.20 | **+0.50 K** | +0.44 | ~~best boreal of the campaign~~ **within noise** (t=+1.10); cloud −1.98 pp vs ±2.75 pp threshold |
 
 ### Deep-water-formation SW RMSE vs CERES — the priority metric
 SW biases where deep water forms set the coupled ocean's initial state; errors there give
@@ -76,17 +105,21 @@ leaves the subpolar North Atlantic alone. Note it beats A1a in the SO *by field 
 while degrading the spatial pattern, which is the compensating-error signature showing up
 in the metric built to catch it.
 
-**The combination result is the important one.** AB gives the best Southern Ocean of any
-run (5.306 vs 7.193 control) *and* **cancels B2's subpolar-Atlantic damage**: +1.226 for B2
-alone collapses to +0.071 when A1b is added. So "every boreal lever degrades the subpolar
-North Atlantic" — true of every lever in isolation, B2 worst — is **not** true of the
-combination. That is the single most useful thing this round produced, because it means the
-energy target and the boreal target are not forced to trade against each other there.
+**The combination result looks like the important one, with one caveat.** AB gives the best
+Southern Ocean of any run (5.306 vs 7.193 control) and appears to **cancel B2's
+subpolar-Atlantic damage**: +1.226 for B2 alone collapses to +0.071 when A1b is added. If
+real, that matters a great deal — it would mean the energy and boreal targets are not
+forced to trade against each other in that basin.
 
-B4 is the only run that ever *improves* the subpolar North Atlantic (−0.373), but it moves
-boreal T2m the wrong way (−0.19 K) and has the worst global SW RMSE (15.303), so it is not
-usable as-is — it is filed as a possible corrective term if a future combination overshoots
-in that basin.
+**Caveat: these spatial RMSEs have not been significance-tested.** The noise floor above
+was measured for regional means, not for field RMSE. Given that SO *mean* CRE is well
+resolved (±0.68) the ocean RMSEs are probably sound too, but B2's subpolar signal is the
+load-bearing number here and it has not been checked. Test before relying on it.
+
+B4 is the only run that ever *improves* the subpolar North Atlantic (−0.373). Its boreal
+T2m (−0.19 K) is within noise and carries no information, but its SO CRE (−1.55) and global
+TOA (−1.43) are both significant, and its global SW RMSE is the worst of any run (15.303).
+Filed as a possible corrective term if a future combination overshoots in that basin.
 
 *(T2m RMSE folds in the expected PI-vs-present-day offset of ~0.5–1 K; the spread across
 runs is only ±0.04 K, except B7 at +0.087. Use it to rank, not as a skill score.)*
@@ -99,38 +132,37 @@ now points the campaign at the boundary layer.
 
 | run | change | type | rationale (as written before the runs) | outcome |
 |---|---|---|---|---|
-| **AB** | `RCL_OVERLAPLIQICE` 0.35 **+** `RCLDIFF_CONVI` 25 | namelist | do the two halves compose? if additive: sfc flux ≈ +0.02, boreal ≈ +0.26 K | **+0.32 K — composes**; cancels B2's N-Atl damage |
-| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | namelist | strongest-σ cloud knob (SPP allows ×2.83); erosion is **phase-agnostic**, so it sidesteps the mixed-phase opposition | boreal +0.37 K but **sfc flux +1.14** — energy target lost |
-| **B4** | `ENTSHALP` 2.0→3.0 | namelist | Vial/Bony: stronger shallow mixing dries the sub-cloud layer and *reduces* low cloud | **wrong sign** (−0.19 K); shallow-mixing idea dead for boreal |
-| **B5** | `RCAPDCYCL` 2.0→0.0 | namelist | CAPE diurnal-cycle correction exists for **land** diurnal convection — inherent land bias | **inert** (+0.00 K) — land diurnal CAPE is not the lever |
-| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | namelist | removes ice faster; targets the mid/high ice cloud that carried A1a's response | **inert** (−0.03 K) |
-| **B7** | `RVICE` 0.16→0.22 | namelist | same target, different route; beyond EC-Earth's 0.137–0.17 range | **worst run** (−0.67 K); confirms A1a's mixed-phase penalty |
-| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | **source** | skin-layer conductivity, **vegetation-type indexed** — the only lever that cannot *directly* degrade the deep-water regions | **+0.50 K, best of campaign** — and it is a *surface* knob |
+| **AB** | `RCL_OVERLAPLIQICE` 0.35 **+** `RCLDIFF_CONVI` 25 | namelist | do the two halves compose? if additive: sfc flux ≈ +0.02, boreal ≈ +0.26 K | composes **on energy**; boreal +0.32 K is within noise |
+| **B3** | `RCLDIFF` 6.0E-6→1.5E-5 | namelist | strongest-σ cloud knob (SPP allows ×2.83); erosion is **phase-agnostic**, so it sidesteps the mixed-phase opposition | boreal +0.37 K **within noise**; **sfc flux +1.14** — energy target lost |
+| **B4** | `ENTSHALP` 2.0→3.0 | namelist | Vial/Bony: stronger shallow mixing dries the sub-cloud layer and *reduces* low cloud | boreal −0.19 K **within noise** — shallow-mixing idea untested, not dead |
+| **B5** | `RCAPDCYCL` 2.0→0.0 | namelist | CAPE diurnal-cycle correction exists for **land** diurnal convection — inherent land bias | +0.00 K, but so is everything — **unresolved**, not proven inert |
+| **B6** | `RLCRITSNOW` 2.0E-5→1.0E-5 | namelist | removes ice faster; targets the mid/high ice cloud that carried A1a's response | −0.03 K — **unresolved**, not proven inert |
+| **B7** | `RVICE` 0.16→0.22 | namelist | same target, different route; beyond EC-Earth's 0.137–0.17 range | −0.67 K **within noise**; SO CRE +0.99 is significant and wrong-way |
+| **B8** | `RVLAMSK`/`RVLAMSKS(3,4)` 10→5 | **source** | skin-layer conductivity, **vegetation-type indexed** — the only lever that cannot *directly* degrade the deep-water regions | **+0.50 K but t=+1.10 — within noise**; no mechanism can be inferred |
 
-**B8 was called as the one to watch, and it was right** — but for a reason we had not
-anticipated. It was picked because every other lever is a global cloud/convection parameter
-that can damage the deep-water regions, whereas B8 touches boreal needleleaf and nothing
-else; and because of what had been measured, that of the +4.2 W/m² B2 delivered to the
-boreal surface only ~2.4 left as turbulent flux, the rest going into the ground. The
-teleconnection caveat also held: B8 still cost +0.65 in the subpolar N Atlantic, so
-"cannot *directly* degrade" was indeed not "will not degrade".
+**B8 was called as the one to watch. That call cannot be judged from these runs.**
+Its +0.50 K is `t = +1.10` and its cloud change (−1.98 pp) sits under a ±2.75 pp threshold,
+so nothing about it is resolved. An earlier version of this section read the +0.50 K and the
+cloud reduction as evidence that boreal cloud here is *moisture-supply-limited rather than
+microphysics-limited* — inferred from a surface parameter apparently out-cutting six cloud
+knobs, with A2 and B5/B6 as corroboration. **That inference is withdrawn.** It was built on
+differences smaller than the noise, and A2/B5/B6 being "inert" is indistinguishable from
+their being unresolved. The mechanism may still be true; these runs simply cannot speak to
+it.
 
-**The unanticipated part is the mechanism.** A *surface* parameter reduced boreal cloud by
-1.98 pp and added 6.38 W/m² of surface SW — more cloud reduction than any of the six cloud
-microphysics knobs tried alongside it. Read together with A2 (`RCL_KK_CLOUD_NUM_LAND`,
-literally the boreal-cloud-droplet knob) doing nothing at all, and B5/B6 being inert, the
-conclusion is that **boreal cloud here is moisture-supply-limited, not microphysics-limited**.
-The cloud scheme is not what is holding the cloud up; the surface moisture flux is.
+**What does survive is the negative result, and it is worth more than the ranking was.**
+Nine boreal levers spanning cloud microphysics, convection, erosion, shallow mixing, ice
+fall speed and surface conductivity all failed to move Siberian JJA T2m by the ±0.89 K that
+4 years can detect. Whatever holds the boreal cold bias in place is not moved by ordinary
+excursions of any of these parameters. That is a genuine constraint on where to look next,
+and it points away from incremental cloud tuning.
 
-**This is why the round's real output is a change of axis.** Nine cloud and convection
-levers returned at most +0.50 K against a −2.2 K bias, and the one that worked was not a
-cloud lever. That matches ECMWF's own published diagnosis of the IFS summer land cold bias
-— excessive turbulent mixing in cloudy boundary layers, with the explicit statement that
-cloud microphysics is *not* the main driver. The campaign has been spending its runs on the
-wrong axis. Hence the C group below, which is the first lever aimed at the boundary layer
-itself rather than at the cloud sitting on top of it.
+It also leaves ECMWF's own diagnosis — excessive turbulent mixing in cloudy boundary layers,
+explicitly *not* cloud microphysics — as the leading untested hypothesis rather than a
+tested one. C1/C2 were the first shot at it and returned no resolvable signal, which at
+4 years means untested, not refuted.
 
-### Started 2026-07-29, results pending
+### Round of 2026-07-29 — all four completed, none resolved on boreal
 
 Reference for **C1/C2/E1 is `amip_B8_lamsk5`**, not the control: the current `install/lib`
 has B8 compiled in, so every run launched on it inherits `RVLAMSK/S(3,4)=5`. Their
@@ -139,10 +171,10 @@ clean single-lever increment on a known baseline.
 
 | run | change | type | binary | rationale |
 |---|---|---|---|---|
-| **ABB8** | A1b `RCL_OVERLAPLIQICE` 0.35 + B2 `RCLDIFF_CONVI` 25 + B8 | namelist on B8 | `e41a8d4acdb3` | the three levers that individually work — do all three compose? |
-| **C1** | `RLAM` 150→**75** m | namelist (`NAMVDF`) | `e41a8d4acdb3` | boundary-layer mixing — a new axis, see below |
-| **C2** | `RLAM` 150→**40** m | namelist (`NAMVDF`) | `e41a8d4acdb3` | same, aggressive; C1+C2 give a gradient since the sign is untested |
-| **E1** | `RVLAMSK`/`RVLAMSKS(3,4)` 5→**2.5** | **source** | `4b1f678bc051` | is the best lever linear or saturating? |
+| **ABB8** | A1b 0.35 + B2 25 + B8 | namelist on B8 | `e41a8d4acdb3` | do the three compose? → **energy yes** (SO CRE −1.95, TOA −0.27, both significant); boreal −0.17 K, within noise |
+| **C1** | `RLAM` 150→**75** m | namelist (`NAMVDF`) | `e41a8d4acdb3` | BL mixing, new axis → −0.21 K, **within noise: untested, not refuted** |
+| **C2** | `RLAM` 150→**40** m | namelist (`NAMVDF`) | `e41a8d4acdb3` | aggressive → +0.39 K, also within noise; C1/C2 non-monotonicity is noise, not physics |
+| **E1** | `RVLAMSK`/`RVLAMSKS(3,4)` 5→**2.5** | **source** | `4b1f678bc051` | linear or saturating? → **unanswerable**: +0.06 K, and B8's +0.50 K was itself unresolved |
 
 **The C group is the important new idea.** `RLAM` is the asymptotic mixing length used
 **only in the statically-unstable branch** of `vdfexcu` (`vdfexcu.F90:397`, `ZKLENT=PLAM`)
@@ -161,13 +193,16 @@ warmer T2m, *and* less moisture lofted → less boreal cloud. Both signs favour 
 Caveat: `RLAM` is global and applies over ocean too, so the deep-water SW RMSE must be
 checked, not assumed.
 
-**E1 is a decision run, not a tuning run.** B8 (skin conductivity 10→5) gave the single
-best boreal response of the campaign — Siberia JJA T2m **+0.502 K**, cloud −1.98 pp,
-surface SW +6.38 W/m². That a *surface* parameter moved cloud that much is the evidence
-that boreal cloud here is **moisture-supply-limited, not microphysics-limited** — which is
-also why A2 (`RCL_KK_CLOUD_NUM_LAND`) did nothing at all. E1 halves it again: if
-+0.5 K → ~+1.0 K the lever has room and we push on; if it saturates, the residual needs a
-different axis and we stop spending runs on skin conductivity.
+**E1 was posed as a decision run — linear or saturating? — and the honest answer is that
+the question was ill-posed.** It rested on B8's +0.502 K being a measured quantity, and it
+was not (`t = +1.10`). E1 returned +0.06 K, equally unresolved. Nothing about the skin-
+conductivity axis can be concluded from B8 and E1 together, in either direction.
+
+The design error worth remembering: **B8 was promoted to "best of campaign" and then built
+on — twice, in ABB8 and E1 — before its uncertainty was ever estimated.** Three of the four
+runs in this round were spent following up a result that was inside the noise. The noise
+floor cost one post-processing script and no node-hours, and should have been measured
+after the first round, not the third.
 
 **Serialisation cost.** Source-edit experiments share one model tree, so only one can be
 in flight at a time (edit → `recomp` → verify md5 → submit → wait for staging → repeat).
