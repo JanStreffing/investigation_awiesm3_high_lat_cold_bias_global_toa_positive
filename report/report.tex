@@ -1165,6 +1165,48 @@ unquantified}, period offset. The decisive fix for both is a single present-day 
 transient GHG) scored directly against ERA5 1990--2014 and CERES 2005--2015; the AMIP SST forcing already
 covers 187001--201512.
 
+\subsubsection{Attribution (2026--07--29): the boreal forest is a \emph{temperature} problem}\label{sub:radvstemp}
+The forcing-transfer test (\S\ref{sub:xfer}) showed that swapping CRUNCEP\,$\to$\,AMIP forcing alone costs
+$-54$\,\% of Siberian \texttt{TREEFPC}, but could not say \emph{which} variable carried it: radiation and
+temperature both feed NPP, and therefore both feed the \texttt{greff\_min} growth-efficiency mortality that
+\S\ref{sub:decisive} identifies as the actual killer (\S\ref{sub:decisive}). A colleague's spin-ups separate them by holding CRUNCEP
+temperature fixed and swapping \emph{only} the radiation to CERES
+(\texttt{LPJG-SPINUP\_2000Y\_TCO95\_CORE3\_CRUNCEPandCERES}). \textbf{\texttt{AGDD5} is identical between
+those two arms} ($775.8$ Siberia, $748.0$ E.\ Siberia, $1157.5$ NH) --- the control confirming that only
+radiation moved.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+region & radiation only & full swap & radiation share \\
+ & (CRUNCEP$\to$CERES) & (CRUNCEP$\to$AMIP) & \\
+\midrule
+NH 45N+     & $-1.7$\,\%  & $-25.1$\,\% & $\mathbf{7}$\,\% \\
+Siberia     & $-8.9$\,\%  & $-54.3$\,\% & $\mathbf{16}$\,\% \\
+E.\ Siberia & $-10.5$\,\% & $-66.0$\,\% & $\mathbf{16}$\,\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The radiation arm moves $-21$\,W/m$^2$ while the full swap moves $\approx-32$, so scaling linearly
+puts radiation at $\le25$\,\%. The daily-variability variant is indistinguishable ($-7.8$ vs $-8.9$\,\%), so
+it is not a sub-daily distribution effect either. \textbf{Temperature carries $\approx75$--$85$\,\% of the
+boreal tree collapse.}
+
+\textbf{Consequence: prong~A's radiation work will not restore the forest.} Closing the \emph{entire} Siberian
+SW deficit recovers at most a quarter of the tree loss. The forest depends on the $\approx1.0$\,K temperature
+bias established in \S\ref{sub:perioffset}, not on the Southern-Ocean/energy target. These are two separate
+jobs and should stop being described as one.
+
+\textbf{The period mismatch also sits on the LPJG side.} CRUNCEP3 spans \textbf{1901--2015} --- twentieth-century
+climate --- yet was used to spin up the \emph{pre-industrial} vegetation state that the coupled 1850 model
+restarts from. Part of the $131$-\texttt{GDD5} Siberian gap is therefore a real PI-versus-20thC climate
+difference rather than model error: $131$\,\texttt{GDD5} over a $\approx120$-day season is $\approx1.1$\,K, of
+which the 1870s\,$\to$\,1901--2015 offset plausibly accounts for $0.3$--$0.45$\,K, leaving $0.6$--$0.8$\,K
+genuine --- consistent with the $\approx1.0$\,K derived against ERA5 1990--2014, since CRUNCEP's period is
+cooler than ERA5's. \emph{Caveat:} the AMIP arm used the superseded forcing build, $\approx0.9$\,K warmer over
+Siberian JJA, so the temperature share is if anything understated.
+
 \textbf{Does this shift the residual onto LPJ-GUESS's CRUNCEP calibration?} Partly, but the corroboration
 attempted on the \emph{temperature} axis fails: NCEP2 Siberian JJA is $-0.118$\,K \emph{colder} than ERA5 over
 1990--2014 (paired by year, $t=-2.6$) --- real but negligible, and the wrong sign for a story in which

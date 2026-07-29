@@ -26,7 +26,8 @@ Evaluation script: `scripts/analysis/eval_round10_A.py`.
 
 *The T2m row was corrected on 2026-07-29: the −2.2 K was scored against ERA5 1990–2014
 while the model is 1870s/1850 GHG, and ~1.1 K of it is that period offset. See the
-section immediately below. The CERES-based rows carry the same flaw, not yet quantified.*
+section immediately below. The CERES-based SO CRE row carries the same flaw (measured: the
+real gap is ~6 W/m², not +8.08); the global TOA row does **not** — see the energy section.*
 
 ### ⚠ The target itself — about half of the boreal "bias" is the reference period
 
@@ -58,9 +59,10 @@ residual genuine model cold bias                ~ -1.04 K
 1. **Tuning to close 2.2 K would manufacture a ~1 K warm bias** in the coupled PI model.
 2. **The stack is smaller than feared** — at 44 yr (±0.27 K) a ~1.0 K target is ~4
    resolvable levers, not ~7.
-3. **The same flaw applies to the energy target.** CERES EBAF here is the 07/2005–06/2015
-   climatology scored against an 1870s model, so the +8.08 W/m² SO SW CRE gap and the
-   +0.53 W/m² TOA imbalance carry their own unquantified period offset. **Not yet measured.**
+3. **The energy target splits.** CERES EBAF here is the 07/2005–06/2015 climatology scored
+   against an 1870s model. Measured in the next section: the **SO SW CRE gap is overstated**
+   (~6 W/m² real, not +8.08), but the **global TOA target of ~0 is correct** and needs no
+   correction, so A1b's energy result stands.
 
 *Caveats:* the ERA5 box is unmasked while the model numbers are land-masked — land warms
 faster than ocean, so the true land-only offset is if anything **larger** and this
@@ -85,6 +87,38 @@ direct check needs the actual CRUNCEP3 forcing, and the `.ins` files under the s
 done here. See also [[forcing-transfer-test]] — swapping CRUNCEP→AMIP forcing alone costs
 −54 % Siberian TREEFPC, which is the direct evidence and does not depend on *which* variable
 carries it.
+
+### The same test on the ENERGY target: TOA survives, the SO CRE target does not
+
+Measured 2026-07-29 (`scripts/analysis/ceres_period_offset.sh`). CERES cannot answer this —
+it starts in 2000 — so ERA5's own TOA fields (178 TSR, 208 TSRC, 179 TTR) stand in, 1940–2015.
+
+| ERA5 period | SO SW CRE | global net TOA |
+|---|---:|---:|
+| 1940–1969 | −59.886 | **−0.052** |
+| 1970–1999 | −60.654 | +0.276 |
+| 2005–2015 (the CERES window) | −61.312 | **+0.735** |
+
+**The global TOA target needs no correction, and this is the reassuring half.** We target
+~0 for a pre-industrial state, and ERA5's 1940–69 value is −0.05 — i.e. essentially
+equilibrium, exactly as a near-PI climate should be. Meanwhile its 2005–2015 value of
+**+0.735 W/m² reproduces the observed present-day energy imbalance (~+0.7–0.9)**, which is
+a useful validation that these fields are not nonsense. So the **+0.53 W/m² model imbalance
+is genuine model error**, the ~0 target is right, and **A1b's −0.51 W/m² correction stands
+unqualified**.
+
+**The SO SW CRE target does carry the flaw.** That target is taken straight from CERES
+(−68.14). ERA5 says 1940–69 was **+1.425 W/m² less negative** than the CERES window
+(interannual sd 1.005, SE of the difference 0.354 → `t ≈ 4.0`), and the 1870s would be
+further still — call it ~+2 W/m². So the real gap for an 1870s model is **~6 W/m², not
++8.08**, and A1b's −1.89 closes **~30 % of it rather than 23 %**. The direction of the
+error is unchanged; its size was overstated.
+
+**Caveat, and it is a serious one:** ERA5's TOA radiative fluxes are *model-derived forecast*
+fields, not assimilated observations. Their long-term drift partly reflects changes in the
+observing system and in the forecast model, so unlike the T2m offset — which rests on an
+assimilated variable — this is an order-of-magnitude bound, not a measurement. The
+present-day AMIP leg is what would settle it properly.
 
 ### ⚠ Radiation vs temperature: the boreal forest is a TEMPERATURE problem
 
@@ -200,6 +234,38 @@ SW biases where deep water forms set the coupled ocean's initial state; errors t
 long, unpredictable coupled spin-up drift. **This ranks the runs differently from the
 regional means, and it is the ranking that counts.**
 
+**Significance-tested 2026-07-29** (`scripts/analysis/rmse_significance.py`), same run × year
+ANOVA, using each year's own spatial RMSE as the replicate. Unlike the boreal means, this
+metric is **well resolved** — RMSE aggregates thousands of gridcells, so internal noise
+largely averages out:
+
+| region | 95 % threshold | verdict |
+|---|---:|---|
+| SO 45–65S | ±0.055 | 11/18 significant — **A1b −0.16, AB −0.17, ABB8 −0.15** all real |
+| subpolar N Atl | ±0.078 | 5/18 significant — see the cancellation below |
+| Nordic Seas | ±0.206 | **0/18 — nothing is significant** |
+| global SW | ±0.067 | 6/18 — worst B4 +0.28, best B5 −0.13 |
+
+**The cancellation claim is CONFIRMED.** It was flagged as load-bearing and unchecked:
+
+| subpolar N Atl | Δ | t | verdict |
+|---|---:|---:|---|
+| B2 alone | +0.101 | **+2.53** | **significant damage** |
+| AB (A1b+B2) | +0.015 | +0.37 | within noise |
+| ABB8 (A1b+B2+B8) | +0.002 | +0.05 | within noise |
+
+B2's subpolar damage is real, and adding A1b removes it to indistinguishable from zero. The
+energy and boreal targets genuinely do **not** trade against each other in that basin.
+
+**But the Nordic Seas column below is entirely noise.** Nothing reaches ±0.206, so A1b's
+−0.989 there was never established, and "A1b is best or neutral in all three deep-water
+regions" holds only for two of them.
+
+*Magnitudes differ between the two tables by construction:* the table below is the RMSE of
+the 4-year **mean** field (smaller — averaging suppresses variability), while the test uses
+**per-year** RMSE, the correct replicate for significance. Compare differences and signs,
+not absolute levels.
+
 | | SO 45–65S | subpolar N Atl | Nordic Seas | global SW | T2m vs ERA5 |
 |---|---:|---:|---:|---:|---:|
 | control | 7.193 | 4.813 | 9.231 | 14.349 | 1.585 |
@@ -217,6 +283,8 @@ regional means, and it is the ranking that counts.**
 | B6 | 6.944 | 5.209 | 9.526 | 14.067 | 1.609 |
 | B7 | **7.235** | 5.425 | **9.682** | 14.471 | **1.672** |
 | B8 | 7.118 | 5.464 | 9.287 | 14.221 | 1.577 |
+
+*(Nordic Seas column: **none** of these differences is significant — see above.)*
 
 **A1b is best or neutral in all three deep-water regions** and the only *single* lever that
 leaves the subpolar North Atlantic alone. Note it beats A1a in the SO *by field RMSE*
