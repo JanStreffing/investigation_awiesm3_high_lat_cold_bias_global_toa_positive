@@ -26,13 +26,16 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--07--28}: Part~IV added. A feedback-free AMIP reference puts $\approx45\,\%$ of the
+\textbf{Last updated 2026--07--29}: Part~IV and the four-arm forcing sensitivity added. A feedback-free AMIP
+reference puts $\approx45\,\%$ of the
 TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere; CERES shows the summer deficit
 is a \emph{land-only cloud} error of $11$\,W/m$^2$ (not the $33$ inferred from CRUNCEP3, which is itself
 $\approx21$\,W/m$^2$ too bright), while the global radiation budget already matches CERES to $0.1$\,W/m$^2$.
 A controlled two-arm spin-up test shows the forcing change alone --- CRUNCEP\,$\to$\,AMIP, byte-identical
 parameters --- costs $54\,\%$ of Siberian tree cover, substantially qualifying the
-``competition, not climate'' verdict of \S\ref{sub:decisive}.)}
+``competition, not climate'' verdict of \S\ref{sub:decisive}. Replacing only CRUNCEP
+\texttt{rsns}/\texttt{rlns} by CERES-constrained radiation removes only $\sim8\,\%$ of the NH tree-fraction
+contrast, locating most of the transfer penalty outside net radiation alone.)}
 
 \begin{document}
 \maketitle
@@ -102,13 +105,15 @@ not imbalance alone.
 (\texttt{albpnd}\,$0.2\!\to\!0.28$, \texttt{rfracmax}\,$1.0\!\to\!0.75$, \texttt{pndaspect}\,$0.8\!\to\!1.3$).
 Differences below are each run's \emph{distinguishing} change on top of that.
 
-\textbf{Three parts.} \textbf{(I)} evaluates the 22 imbalance-tuning runs and exposes the imbalance$\leftrightarrow$cold-bias
+\textbf{Four parts.} \textbf{(I)} evaluates the 22 imbalance-tuning runs and exposes the imbalance$\leftrightarrow$cold-bias
 trade-off, tracing the aggressive lever to a Southern-Ocean mechanism. \textbf{(II)} shows that the cold bias which
 makes that lever costly is largely \emph{not} the tuning but a \textbf{structural} LPJ-GUESS boreal-forest collapse
 (\S\ref{sec:lpjg}) --- a \emph{counter-lever}: fixing it warms the NH high latitudes, buying the RMSE headroom to spend
-the aggressive global cooling on the imbalance. A decisive feedback-free experiment pins that fix to vegetation, not
-climate. \textbf{(III)} combines them into a work plan: raise the structural warm floor, then cut the imbalance
-(\S\ref{sec:rec}).
+the aggressive global cooling on the imbalance. Feedback-free spin-ups then quantify the sensitivity to forcing
+and isolate the comparatively small contribution from replacing net radiation alone. \textbf{(III)} records the
+original warm-floor work plan. \textbf{(IV)} supersedes its ordering where newer evidence requires it: first fix
+the atmospheric forcing on AMIP, then re-spin LPJG and tune only the residual
+(\S\ref{sec:amipplan}, \S\ref{sec:round10}).
 
 \section{Headline: the imbalance\,$\leftrightarrow$\,cold-bias trade-off}
 Every lever that meaningfully lowers the TOA imbalance does so by \emph{cooling} the model, which worsens the
@@ -363,8 +368,9 @@ provisional.
 structural LPJ-GUESS boreal-forest collapse that every run inherits. That makes it a \textbf{counter-lever} --- fixing
 it warms the NH high latitudes at essentially unchanged imbalance, buying the RMSE headroom to spend the aggressive
 global cooling on the imbalance. This part attributes the bias with a clean WITH-vs-WITHOUT-LPJG experiment, resolves
-its two mechanisms and a residual, and --- with a decisive feedback-free spin-up --- pins the fix to vegetation
-competition, not climate.}
+its two mechanisms and a residual. Feedback-free spin-ups then show that the \emph{source} of the low-tree state
+is strongly forcing-sensitive: the complete CRUNCEP--AMIP transfer matters greatly, whereas replacing CRUNCEP net
+radiation by CERES alone has only a small equilibrium effect.}
 
 \section{The NH high-latitude cold bias is a structural LPJ-GUESS problem}\label{sec:lpjg}
 The runs carry a severe near-surface \textbf{cold bias over Siberia and northern Canada} (visible in every
@@ -542,7 +548,7 @@ uncorrelated.}
 \textbf{Near-complete attribution.} The two mechanisms close the boreal DJF cold bias between them: of the
 $\approx-4.5$\,K Siberian bias vs ERA5, the LPJG forest-cover collapse (snow-albedo in spring, roughness in winter)
 contributes $\approx-3$\,K, and the over-strong stable-BL inversion the remaining $\approx-1.4$\,K. Two
-\emph{orthogonal} levers --- the LPJG establishment fix and enhanced stable-BL mixing --- therefore target
+\emph{orthogonal} levers --- restoring a forcing-consistent forest state and enhanced stable-BL mixing --- therefore target
 essentially the entire bias. (The veg cooling is also a \emph{stable} offset, not a runaway: over 20\,yr the LPJG
 run carries more/thicker Arctic ice as a bounded mean offset with no amplifying sea-ice drift.)
 
@@ -558,40 +564,43 @@ exports it over OASIS as \texttt{GUE\_FRAH}$\to$\texttt{cvh} (\texttt{framework.
 summed tree \emph{crown area}$\times$density (no 0.05 clamp --- that constant is dead code; \texttt{natural\_frac}$=1$
 over PI land), so cvh$\approx$0.05 means boreal tree cover is genuinely $\sim$5\%. The establishment gates
 (\texttt{gdd5min\_est=500}, \texttt{twmin\_est=5}) are \emph{not} the blocker --- they are cleared across the boreal ---
-so this is a \textbf{tree-vs-grass competition failure} (grass out-produces trees at canopy closure; settled in
-\S\ref{sub:decisive}), with the degraded state \emph{inherited from the LPJG spin-up}, not a coupled runaway. Seasonally (\S\ref{sub:seasonality})
+so the degraded state is \textbf{inherited from the LPJG spin-up}, not a coupled runaway. It was initially read as
+a tree-vs-grass competition failure, but the controlled forcing-transfer test
+(\S\ref{sub:xfer}) reproduces most of the boreal loss without changing LPJG parameters; competition must therefore
+be diagnosed only after a forcing-consistent re-spin. Seasonally (\S\ref{sub:seasonality})
 the LPJG cold effect spans September--June (DJF $-2.4$, MAM $-2.5$\,K over the boreal box)
 and vanishes only in July--August --- i.e.\ it is a cold-season, not a growing-season, effect. The co-equal
 \emph{sunless} late-autumn/winter part --- which pure snow-albedo cannot explain --- is now
 resolved (\S\ref{sub:withwithout}--\ref{sub:residual}): it is the roughness$\to$inversion effect of the lost
 forest (\S\ref{sub:roughness}) plus a model-intrinsic over-strong stable-BL inversion (\S\ref{sub:residual}).
 
-\textbf{Fixes}: (1) tune the boreal \textbf{tree-vs-grass competition} (\texttt{greff\_min}, C3-grass competitiveness,
-cold-tree photosynthesis \texttt{pstemp\_low}) --- \emph{not} the establishment gates, which are correct
-(\S\ref{sub:decisive}) --- and re-do the LPJG spin-up; highest value, cheap to screen offline by checking cvh recovers
-toward the MODIS pattern; (2) revisit \texttt{iftreefracca}/crown allometry; (3) a woody stem-area floor on the
+\textbf{Fixes}: (1) correct the atmospheric forcing, regenerate the daily LPJG forcing and re-do the spin-up with
+one verified binary; only the residual against that forcing may justify tuning \texttt{greff\_min}, C3-grass
+competitiveness or \texttt{pstemp\_low} (\S\ref{sub:xfer}, \S\ref{sec:round10}); (2) if a structural residual remains,
+revisit \texttt{iftreefracca}/crown allometry; (3) a woody stem-area floor on the
 snow-masking fraction in OpenIFS
 (\texttt{surfbc\_ctl\_mod.F90}:389--391 / \texttt{surfrad\_ctl\_mod.F90}:650--655) --- but this only bites once (1)
-raises cvh, since the masked-snow tile is weighted by cvh itself. Fixes (1)--(3) are the physically-grounded
-\emph{warming lever} of \S\ref{sec:rec} and buy $\sim$3\,K (\S\ref{sub:levervsera5}). \textbf{A fourth, orthogonal
+raises cvh, since the masked-snow tile is weighted by cvh itself. Restoring forest cover is the physically-grounded
+\emph{warming lever} of \S\ref{sec:rec} and buys $\sim$3\,K (\S\ref{sub:levervsera5}), but its cause must not be
+prejudged as a parameter error. \textbf{A fourth, orthogonal
 lever} attacks the residual $\sim$1.4\,K (\S\ref{sub:residual}): \emph{enhanced stable-boundary-layer mixing} in
 OpenIFS (VDF stability functions / minimum stable diffusion), which would relax the over-strong surface inversion.
 Together (1)--(4) target essentially the entire boreal DJF cold bias.
 
-\subsection{Decisive test: competition, not climate \textnormal{---
-\textcolor{red}{substantially qualified, see \S\ref{sub:xfer}}}}\label{sub:decisive}
-\fbox{\parbox{0.97\textwidth}{\small\textbf{Read this section with \S\ref{sub:xfer} alongside.} The argument
+\subsection{Feedback-free AMIP spin-up \textnormal{---
+\textcolor{red}{substantially qualified by \S\ref{sub:xfer} and \S\ref{sec:ceresforcing}}}}\label{sub:decisive}
+\fbox{\parbox{0.97\textwidth}{\small\textbf{Read this section with the later controlled tests.} The argument
 below turns on a standalone LPJG re-spin driven by the OIFS--AMIP forcing under-vegetating despite the
 establishment gates being cleared, which was read as an LPJG-internal competition failure. A later controlled
 experiment (\S\ref{sub:xfer}) shows that \emph{moving between the CRUNCEP and AMIP forcings alone}, with
 byte-identical parameters, costs $-54\,\%$ of Siberian and $-66\,\%$ of East-Siberian \texttt{TREEFPC}. The
 under-vegetation seen here is therefore largely what the forcing change predicts on its own, and cannot by
-itself demonstrate a competition failure. \dead{What does survive is FORESTFPC$=0$ --- no closed canopy forms
-under either forcing --- so the closed-canopy failure remains unexplained and may still be competition.}
+itself demonstrate a competition failure. The four-arm radiation test (\S\ref{sec:ceresforcing}) further shows
+that replacing only CRUNCEP \texttt{rsns}/\texttt{rlns} by CERES removes only a small part of the NH contrast:
+the strong full-forcing effect is not a net-radiation effect alone.
 \texttt{FORESTFPC} is in fact a \emph{void diagnostic} here: it counts only the managed-forest land-use class,
 which is empty in this PI configuration, so it is identically zero whatever the vegetation does
-(\S\ref{sub:xfer}). There is no separate closed-canopy failure.
-\dead{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one.}}}
+(\S\ref{sub:xfer}). There is no separate closed-canopy failure.}}\par\medskip
 Is the boreal forest deficit a \emph{climate} problem (fix the atmosphere) or an \emph{LPJG-internal} tree-vs-grass
 competition problem (fix the vegetation)? We answered it directly with a \textbf{feedback-free} experiment: a clean
 OpenIFS--AMIP run (prescribed observed SST, no coupled ocean/LPJG cold feedback; $\sim$PI 1870--79) generated a
@@ -603,9 +612,13 @@ warmest-month T2m is $14.7$\,\textdegree C (100\% of cells clear the \texttt{twm
 spin-up under-vegetates and grass wins}: cvh$=0.21$ (far below the $0.4$--$0.7$ closed-taiga range),
 \texttt{GRASSFPC}$=0.37 > \texttt{TREEFPC}=0.21$, and \dead{no closed canopy forms anywhere (FORESTFPC$=0$)}\footnote{\textbf{Void diagnostic.} \texttt{FORESTFPC} sums only PFTs with \texttt{landcover==FOREST} (\texttt{commonoutput.cpp}:1143), i.e.\ the \emph{managed-forest} land-use class; natural trees are counted in \texttt{TREEFPC} via the \texttt{NATURAL} branch. In this PI configuration nothing is allocated to FOREST (\texttt{Natural\_sum}$=0.684$, \texttt{Total}$=0.665$), so \texttt{FORESTFPC}$\equiv0$ \emph{by construction} while \texttt{TREEFPC}$=0.323$. It is a land-use bookkeeping artifact and says nothing about canopy closure.}, with grass
 filling exactly the East-Siberian interior. On a dense gridlist this cannot be dismissed as under-sampling.
-\textbf{Verdict: the deficit is primarily an LPJG-internal competition problem, not a climate one} --- so the primary
-counter-lever is the vegetation model (boreal \texttt{greff\_min}, C3-grass competitiveness, \texttt{pstemp\_low}), not
-another atmospheric retune. The one climate co-limit is the deep-winter cold ($-28.3$\,\textdegree C box mean,
+\textbf{Verdict: clearing the establishment gates does not prove that competition is the dominant error.} The
+controlled transfer test shows that the complete forcing change reproduces most of the regional tree loss
+(\S\ref{sub:xfer}), while the new four-arm experiment shows that replacing net radiation alone explains only a
+small part of the NH contrast (\S\ref{sec:ceresforcing}). Competition remains a possible \emph{residual} target,
+but it must be measured after a forcing-consistent re-spin rather than assumed from this AMIP arm. One climate
+co-limit visible here is
+the deep-winter cold ($-28.3$\,\textdegree C box mean,
 $<-40$ in NE Siberia) that gates out evergreens on $\sim40\%$ of cells --- but climatically-permitted \emph{larch}
 (no cold gate) fails there too (BNS cover $0.035$), so the winter warming of Phase~1B is only a \emph{secondary} aid.
 
@@ -614,12 +627,85 @@ $<-40$ in NE Siberia) that gates out evergreens on $\sim40\%$ of cells --- but c
 \caption{\textbf{Decisive climate-vs-competition test} (NH boreal, equilibrium yr 3900). \emph{Top:} the
 feedback-free obs-SST $\sim$PI OIFS--AMIP forcing that drove the standalone LPJG re-spin --- warmest-month T2m
 (vs \texttt{twmin\_est}$=+5$), annual GDD5 (vs $500$), coldest-month T2m (vs evergreen \texttt{tcmin\_est}$=-30$).
-\emph{Bottom:} the equilibrium vegetation it produced --- cvh, \texttt{TREEFPC}, \texttt{GRASSFPC}. The growing-season
-forcing clears the gates across the boreal, yet the spin-up yields cvh$\approx0.2$ with grass dominating the
-East-Siberian interior and no closed canopy --- grass out-competes trees under an adequate climate. The only climate
-co-limit is the deep-winter cold (top-right, NE Siberia), but climatically-permitted larch fails there too.}
+\emph{Bottom:} the equilibrium vegetation it produced --- cvh, \texttt{TREEFPC}, \texttt{GRASSFPC}. The
+growing-season gates are largely cleared, yet the AMIP-forced equilibrium has cvh$\approx0.2$ and extensive
+East-Siberian grass. This panel diagnoses the AMIP-arm state; the controlled transfer test
+(\S\ref{sub:xfer}) shows that it cannot by itself attribute the state to LPJG competition.}
 \label{fig:decisive}
 \end{figure}
+
+\section{Forcing sensitivity: CRUNCEP radiation constrained by CERES EBAF}\label{sec:ceresforcing}
+\textbf{Question and controlled design.} The full forcing-transfer test in Part~IV shows that moving from
+CRUNCEP to AMIP strongly reduces equilibrium boreal tree cover, but it does not isolate which forcing fields cause
+that response. We therefore completed four 2000-yr standalone LPJ-GUESS spin-ups on TCO95 and compared their
+final year (model year 3900). The two additional arms isolate the narrower effect of replacing only CRUNCEP
+surface net shortwave (\texttt{rsns}) and net longwave (\texttt{rlns}) by CERES-constrained radiation:
+\begin{center}\small
+\begin{tabular}{p{0.23\textwidth} p{0.28\textwidth} p{0.42\textwidth}}
+\toprule
+experiment & daily forcing cycle & radiation treatment \\
+\midrule
+AMIP & OpenIFS--AMIP, 1870--1879 & corrected native OpenIFS \texttt{rsns}/\texttt{rlns} \\
+CRUNCEP v3 & calibrated CRUNCEP v7, 1901--1910 & calibrated CRUNCEP net radiation \\
+CRUNCEP + CERES direct & CRUNCEP v3 non-radiation fields & CERES EBAF Ed4.1 monthly 2001--2010, bilinear to TCO95 and linearly interpolated between month midpoints \\
+CRUNCEP + CERES daily variability & CRUNCEP v3 non-radiation fields & CERES official 12-month climatological means, retaining CRUNCEP relative daily SW and additive daily LW anomalies \\
+\bottomrule
+\end{tabular}
+\end{center}
+In both CERES experiments \texttt{tas}, \texttt{tasmin}, \texttt{tasmax}, precipitation, humidity and wind are
+byte-for-byte unchanged from CRUNCEP v3. Runtime files carry the generic name
+\path{AM04_atm_cmip6_1d_1990-1999_fast_lpjgforcing.nc}; checksums and full variable comparisons verified
+that they are exact runtime copies of the intended direct and daily-variability source files.
+
+\textbf{CERES provenance and what the comparison means.} The observational reference is NASA Langley CERES EBAF
+Edition 4.1 on its native $1^\circ$ grid, specifically
+\texttt{sfc\_net\_sw\_all\_clim} from
+\path{CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.nc}. It is the official July 2005--June 2015 climatology
+(\href{https://doi.org/10.5067/TERRA-AQUA/CERES/EBAF_L3B004.1}{product DOI}).
+Figure~\ref{fig:ceresverify} puts all forcings on a common
+$1^\circ$ land grid and shows JJA plus the Siberian seasonal cycle. AMIP--CERES and CRUNCEP--CERES are
+\emph{forcing differences across products and epochs}, not strict pre-industrial biases. The small differences
+for the two CERES-derived forcings are \emph{construction checks}, not independent validations: the direct case
+uses 2001--2010 monthly CERES data, whereas the daily-variability case is explicitly constrained to the same
+climatology used as the reference.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/forcing_rsns_ceres_ebaf_siberia_verification.png}
+\caption{\textbf{Surface net-shortwave forcing check against CERES EBAF Ed4.1.} Top: CERES JJA net SW and each
+forcing minus CERES after common-grid remapping over land. Bottom: Siberian land seasonal cycles and their
+differences from CERES (55--75\textdegree N, 60--180\textdegree E). Near-zero CERES-derived panels confirm the
+forcing construction; they are not an independent observational test.}
+\label{fig:ceresverify}
+\end{figure}
+
+\textbf{Equilibrium vegetation response.} In the annual \texttt{treeFrac} diagnostic, the NH-land display-grid
+mean is $0.186$ under AMIP,
+$0.269$ under CRUNCEP v3, $0.262$ under direct CERES radiation and $0.263$ when CRUNCEP daily variability is
+retained. Thus the full CRUNCEP--AMIP difference is $+0.083$, whereas the two CERES substitutions remain
+$+0.076$ above AMIP. Replacing CRUNCEP radiation reduces its mean tree fraction by only $0.006$--$0.007$ and
+leaves about 92\% of the CRUNCEP--AMIP difference. The almost identical direct and daily-variability results show
+that this choice of monthly-to-daily radiation treatment has negligible influence on the hemispheric mean at
+equilibrium, although regional differences remain visible.
+
+\begin{figure}[p]\centering
+\includegraphics[width=0.97\textwidth]{plots/spinup_tree_fraction_nh_lastyear_4exp.png}
+\par\smallskip
+\includegraphics[width=0.97\textwidth]{plots/spinup_tree_fraction_bias_vs_amip_nh_lastyear_4exp.png}
+\caption{\textbf{Final-year tree fraction in the four 2000-yr offline spin-ups.} Top: absolute year-3900 tree
+fraction. Bottom: CRUNCEP-family differences from AMIP. CERES-constrained radiation modestly reduces CRUNCEP tree
+cover, but does not remove the much larger AMIP--CRUNCEP contrast.}
+\label{fig:cerestree}
+\end{figure}
+
+\textbf{Interpretation.} Net radiation alone is not the dominant cause of the AMIP--CRUNCEP equilibrium
+tree-cover difference: changing only \texttt{rsns}/\texttt{rlns} removes roughly 8\% of this hemispheric
+\texttt{treeFrac} contrast. Together with the regional \texttt{TREEFPC} transfer result of
+\S\ref{sub:xfer}, this localises most of the full-forcing penalty to other meteorology (especially the documented
+temperature/GDD5 change), field covariability and nonlinear LPJG response. It does \emph{not} establish a residual
+competition error. The appropriate conclusion is:
+\emph{the vegetation equilibrium is strongly forcing-sensitive, but within the CRUNCEP family a CERES net-radiation
+correction alone is insufficient; competition parameters should be considered only after a forcing-consistent
+same-binary re-spin.}
 
 \part{The path forward: raise the floor, then tune}
 \emph{Parts~I--II give the strategy: the imbalance can only be cut by cooling, and cooling is only affordable once the
@@ -637,6 +723,9 @@ preprocessing; existing configs are unaffected.
 \item \textbf{Accumulation period} for these XIOS runs is \textbf{3600\,s} (not the 21600\,s of the old HR config);
 configs use \texttt{accumulation\_period=3600} (verified: tsr\,$\to\approx240$\,W/m$^2$).
 \item None of the runs is at equilibrium within 30\,yr --- numbers are a ranking, not final values.
+\item \textbf{CERES is a modern, monthly constraint}, not a pre-industrial daily observation
+(\S\ref{sec:ceresforcing}). The CERES-derived panels test that the forcing construction worked; only the
+AMIP--CERES and CRUNCEP--CERES panels compare independent products, and even those span different epochs.
 \end{enumerate}
 
 \section{Recommendation \& synthesis}\label{sec:rec}
@@ -665,9 +754,11 @@ at \emph{near-unchanged} imbalance ($+0.2$\,W/m$^2$, within drift) --- indicatin
 largely orthogonal to} the TOA tuning. That reframes
 the path forward:
 \begin{enumerate}\itemsep1pt
-\item Fix the LPJG boreal forest-cover bug (establishment limits \texttt{gdd5min\_est}/\texttt{twmin\_est} and/or
-zero-LAI stem snow-masking --- see the companion note) and re-do the spin-up; this warms the NH high latitudes in
-\emph{every} run, lowering the shared RMSD floor by $\approx$3\,K in the worst region.
+\item First correct the atmospheric forcing and re-spin LPJG with a verified common binary
+(\S\ref{sub:xfer}, \S\ref{sec:round10}). The CERES experiment
+(\S\ref{sec:ceresforcing}) shows that net-radiation correction alone is insufficient; tune tree--grass
+competition only if a residual remains under the corrected forcing. Do not relax the already-adequate summer
+establishment gates.
 \item Attack the residual with \emph{enhanced stable-BL mixing} in OpenIFS (\S\ref{sub:residual}) --- an
 independent knob that relaxes the surface-trapped winter inversion.
 \item On that warmer baseline, apply a \emph{moderate} mixing/coupling setting (06O-like, not 06V) for the
@@ -809,7 +900,11 @@ drift), \emph{then} spend a
 \emph{moderate} cooling lever to reach surface balance, now affordable because the floor is $\sim3$--$4$\,K warmer
 where it was worst. Phases 1A/1B are independent (parallel); Phase 2 depends on both; Phase 3 gates.
 
-\subsection{Phase 1A --- Restore boreal tree cover (LPJG establishment)}
+\subsection{Phase 1A --- Restore boreal tree cover (forcing first; LPJG residual second)}
+\fbox{\parbox{0.97\textwidth}{\small\textbf{Ordering updated by Part~IV.} This phase was originally written as
+an LPJG-competition tuning step. The controlled transfer test now requires the opposite order:
+correct/regenerate the atmospheric forcing, re-spin with one LPJG binary, and tune competition only against the
+remaining vegetation residual (\S\ref{sub:xfer}, \S\ref{sec:round10}).}}
 \textbf{Literature \& observational basis --- what realistic trees require (so we don't green the tundra).} The
 observed arctic/boreal treeline sits near the July $10$\,\textdegree C isotherm (K\"oppen), refined by K\"orner \&
 Paulsen (2004) to a growing-season mean of $\sim6$--$7$\,\textdegree C over $\sim90$ days, with the northern boreal
@@ -839,12 +934,13 @@ the \emph{forested} WITHOUT-LPJG climate it excludes evergreens on just $23\%$ o
 vs $43\%$ in the degraded WITH-LPJG run --- the missing forest's own $-3.3$\,\textdegree C winter cooling doubles the
 exclusion. So it is a \textbf{bistable trap} seeded by the under-forested spin-up, not a climate trigger.
 
-\textbf{The decisive test settles it (\S\ref{sub:decisive}): competition, not climate} --- so Phase 1A's lever is the
-\textbf{competition parameters}, not the establishment gates: boreal \texttt{greff\_min} (0.03 BNE / 0.09 BINE,BNS),
-C3-grass competitiveness, and cold-tree photosynthesis \texttt{pstemp\_low}$=10$\,\textdegree C. Robustly, trees
-\emph{do} establish (nonzero density) and fire is never involved (burnt fraction $=0$ despite BLAZE) --- the failure
-is canopy-closure/productivity competition, not a gate or a fire problem. Phase-1B winter warming
-(\S\ref{sub:phase1b}) is a \emph{secondary} aid, only on the coldest evergreen-gated cells.
+\textbf{The feedback-free tests now constrain the order.} The full CRUNCEP--AMIP forcing change reproduces most
+of the regional loss with unchanged parameters (\S\ref{sub:xfer}); the four-arm experiment shows that CERES
+net-radiation replacement removes only a small part of the NH \texttt{treeFrac} contrast
+(\S\ref{sec:ceresforcing}). Trees do establish and fire is not involved, but those facts do not isolate a
+competition error. Boreal \texttt{greff\_min}, C3-grass competitiveness and cold-tree
+\texttt{pstemp\_low} remain candidate levers only for a residual measured after a forcing-consistent re-spin.
+Phase-1B winter warming (\S\ref{sub:phase1b}) remains an independent test on the coldest evergreen-gated cells.
 
 \textbf{Why not just relax the gates?} The summer gates are not binding (above), so loosening them cannot help; and
 the \emph{one} binding gate --- the winter \texttt{tcmin\_est} --- correctly excludes evergreens from the
@@ -852,8 +948,9 @@ extreme-cold larch zone, so relaxing it would plant \emph{unrealistic} evergreen
 fix is therefore the winter \emph{climate}, not the limits. (Keep \texttt{iftreefracca 1}, \texttt{global.ins}:150:
 cvh is the summed tree \emph{crown area}, so it tracks establishment success directly.)
 
-\textbf{Screen \& deploy.} Tune the competition knobs on the cheap standalone LPJG spin-up (the OIFS--AMIP forcing of
-\S\ref{sub:decisive}; minutes--hours of wall-time), targeting the MODIS-VCF pattern ($\sim0.4$--$0.7$ closed taiga,
+\textbf{Screen \& deploy.} First run the CRUNCEP and corrected-AMIP arms with the \emph{same} LPJG binary and
+unchanged parameters. Only then screen any competition knobs on the cheap standalone spin-up, targeting the
+MODIS-VCF pattern ($\sim0.4$--$0.7$ closed taiga,
 $<0.2$ at the ecotone, larch winning the cold NE) and \dead{a closed canopy (FORESTFPC$>0$)}\footnote{\textbf{Void diagnostic.} \texttt{FORESTFPC} sums only PFTs with \texttt{landcover==FOREST} (\texttt{commonoutput.cpp}:1143), i.e.\ the \emph{managed-forest} land-use class; natural trees are counted in \texttt{TREEFPC} via the \texttt{NATURAL} branch. In this PI configuration nothing is allocated to FOREST (\texttt{Natural\_sum}$=0.684$, \texttt{Total}$=0.665$), so \texttt{FORESTFPC}$\equiv0$ \emph{by construction} while \texttt{TREEFPC}$=0.323$. It is a land-use bookkeeping artifact and says nothing about canopy closure.} --- tree NPP $>$ grass NPP ---
 \emph{not} merely a higher global mean. On a passing screen, re-do the coupled LPJG spin-up, regenerate the restart,
 and carry it into Phase 2.
@@ -937,7 +1034,8 @@ lever): too cold $\to$ back off coupling; imbalance too high $\to$ add \texttt{k
 the Phase-2 run starts once the re-spun restart and the chosen stable-BL build are both in hand.
 
 \vspace{4pt}
-{\footnotesize All scripts, data, figures and this report live in \texttt{/work/bb1469/a270092/eval/}\,:
+{\footnotesize The submission copy of all scripts, data, figures and this report lives in
+\path{/work/ab0995/a270270/analysis/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/}:
 \texttt{data/MASTER\_metrics.csv}, \texttt{data/cmpi\_by\_variable.csv}, \texttt{data/cmpi\_by\_region.csv}, \texttt{configs/},
 \texttt{plots/}, \texttt{run\_figures/<run>/}, \texttt{notebooks/}. Tool: \texttt{release\_evaluation\_tool2}
 (reval env); per-run diags via \texttt{part2\_rad\_balance.py} / \texttt{part8\_t2m\_vs\_era5.py} /
@@ -1757,7 +1855,42 @@ name); the alias \texttt{/oifs} silently falls back to the setup and doubles the
 NFRHIS$=$1 this is the timestep). A validated $\times6$ scalar patch
 (\texttt{AMIP\_noLPJG\_1d\_1870-1879\_TCO95\_PI\_fluxfix.nc}) corrected the existing forcing without a rerun.
 
-\textbf{A.3 Phase-1B OpenIFS source edits (\S\ref{sub:phase1b}).} Paths under
+\textbf{Controlled temperature test now ready.} Because the AMIP--CRUNCEP comparison shows meaningful
+forcing sensitivity but the CERES replacement rules out net radiation as its dominant source, two additional AMIP
+forcing cycles were created for the next attribution step. They add exactly $+1$ or $+2$\,K to
+\texttt{tas}, \texttt{tasmin} and \texttt{tasmax} at all TCO95 cells north of or at 45\textdegree N; every field
+south of 45\textdegree N and every non-temperature variable is unchanged. Their NH-land forcing-cycle means are
+$-3.57$ and $-2.57$\,\textdegree C, compared with $-4.57$\,\textdegree C in the source AMIP file. These are
+\emph{prepared inputs, not spin-up results}. Running them with unchanged LPJG parameters will quantify whether a
+uniform boreal temperature increment crosses a vegetation threshold or merely produces a modest continuous response.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.97\textwidth]{plots/forcing_amip_temperature_nh_10yrmean_original_plus1K_plus2K.png}
+\caption{\textbf{Input check for the planned AMIP temperature sensitivity.} Ten-year NH-land mean near-surface
+temperature in the original, $+1$\,K and $+2$\,K forcing cycles. The increments were applied consistently to
+\texttt{tas}, \texttt{tasmin} and \texttt{tasmax} at latitude $\ge45$\textdegree N; no vegetation response is
+shown because these two spin-ups have not yet been run.}
+\label{fig:amipwarmingforcing}
+\end{figure}
+
+\textbf{A.3 CERES forcing construction and validation (\S\ref{sec:ceresforcing}).}
+The direct source is
+\path{/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_200003-202106.nc};
+the climatological source is
+\path{/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.nc}.
+The output files are
+\path{/work/ab0995/a270270/input/cruncep_v7/CRUNCEP_noLPJG_1d_1901-1910_TCO95_CERES_rsns_rlns.nc}
+and
+\path{/work/ab0995/a270270/input/cruncep_v7/CRUNCEP_noLPJG_1d_1901-1910_TCO95_CERESclim_daily_variability.nc}.
+Both contain 3652 daily timesteps and 40\,320 TCO95 cells. Coordinates and all non-radiation fields are unchanged
+from CRUNCEP v3. The direct file has \texttt{rsns} range 0--358.23 and \texttt{rlns} range
+$-197.30$--34.76\,W\,m$^{-2}$. The daily-variability file has ranges 0--455.61 and
+$-206.92$--93.85\,W\,m$^{-2}$; every mapped CERES cell-month target is reproduced within
+$8\times10^{-6}$\,W\,m$^{-2}$. Construction and preanalysis scripts, cached intermediates and the detailed
+provenance document are retained under
+\path{/work/ab0995/a270270/analysis/Offline_LPJ_GUESS_analysis/}.
+
+\textbf{A.4 Phase-1B OpenIFS source edits (\S\ref{sub:phase1b}).} Paths under
 \texttt{oifs-48r1/ifs-source/arpifs/phys\_ec/}:
 \begin{center}\small
 \begin{tabular}{l l l l l}
@@ -1811,6 +1944,10 @@ Louis, J.-F.\ (1979). A parametric model of vertical eddy fluxes in the atmosphe
 Medeiros, B.\ et al.\ (2011). Arctic inversion strength in climate models. \emph{J.\ Climate} 24, 4733--4740.\par
 Mohrmann, M., Heuz\'e, C.\ \& Swart, S.\ (2021). Southern Ocean polynyas in CMIP6 models. \emph{The Cryosphere} 15,
 4281--4313.\par
+NASA Langley Research Center (2019). CERES Energy Balanced and Filled (EBAF) Edition 4.1,
+Level-3B monthly product. DOI:
+\href{https://doi.org/10.5067/TERRA-AQUA/CERES/EBAF_L3B004.1}
+{10.5067/TERRA-AQUA/CERES/EBAF\_L3B004.1}.\par
 Pithan, F., Medeiros, B.\ \& Mauritsen, T.\ (2014). Mixed-phase clouds cause climate model biases in Arctic
 wintertime temperature inversions. \emph{Clim.\ Dyn.}\ 43, 289--303.\par
 Sandu, I.\ et al.\ (2013). Why is it so difficult to represent stably stratified conditions in numerical weather
