@@ -86,6 +86,40 @@ done here. See also [[forcing-transfer-test]] — swapping CRUNCEP→AMIP forcin
 −54 % Siberian TREEFPC, which is the direct evidence and does not depend on *which* variable
 carries it.
 
+### ⚠ Radiation vs temperature: the boreal forest is a TEMPERATURE problem
+
+Measured 2026-07-29 (`scripts/analysis/radiation_vs_temperature_attribution.py`) from a
+colleague's spin-ups, which hold CRUNCEP temperature fixed and swap only the radiation to
+CERES. **AGDD5 is identical between those two arms** (775.8 Siberia, 748.0 E. Siberia,
+1157.5 NH), which is the control confirming only radiation moved.
+
+| region | radiation only (CRUNCEP→CERES) | full swap (CRUNCEP→AMIP) | radiation share |
+|---|---:|---:|---:|
+| NH 45N+ | −1.7 % | −25.1 % | **7 %** |
+| Siberia | −8.9 % | −54.3 % | **16 %** |
+| E. Siberia | −10.5 % | −66.0 % | **16 %** |
+
+The radiation arm moves −21 W/m² while the full swap moves ~−32, so scaling linearly puts
+radiation at **≤25 %**. The daily-variability variant is indistinguishable (−7.8 % vs
+−8.9 %), so it is not a sub-daily distribution effect. **Temperature carries ~75–85 % of
+the boreal tree collapse.**
+
+**Consequence for the campaign: prong A's radiation work will not restore the forest.**
+Closing the entire Siberian SW deficit recovers at most a quarter of the tree loss. The
+forest depends on the ~1.0 K temperature bias, not on the SO/energy target. These are two
+separate jobs and should stop being described as one.
+
+**The period-mismatch also sits on the LPJG side.** CRUNCEP3 spans **1901–2015** — 20th
+century — yet was used to spin up the **pre-industrial** vegetation state the coupled 1850
+model restarts from. Part of the 131-GDD5 Siberian gap is therefore a legitimate PI-vs-20thC
+climate difference, not model error. 131 GDD5 over a ~120-day season is ≈1.1 K, of which the
+1870s→1901–2015 offset plausibly accounts for ~0.3–0.45 K, leaving ~0.6–0.8 K genuine —
+consistent with the ~1.0 K derived against ERA5 1990–2014, since CRUNCEP's period is cooler
+than ERA5's. See [[reference-period-offset]].
+
+*Caveat:* the AMIP arm used the **superseded** forcing build, ~0.9 K warmer over Siberian
+JJA than the corrected one, so the temperature share is if anything understated.
+
 ### ⚠ Statistical power — read before believing any boreal number below
 
 Measured 2026-07-29 with `scripts/analysis/noise_floor.py`: a run × year ANOVA over all 19
