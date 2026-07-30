@@ -1947,6 +1947,120 @@ against a $+1.3$--$2.0$\,K need, before the non-additivity that AB demonstrated.
 temperature-driven, so prong~B cannot absorb a boreal residual the atmosphere does not deliver. The boreal
 problem must be solved in OpenIFS.
 
+\section{Round 11 design (2026--07--30): attack the mechanisms, not the parameters}\label{sec:round11}
+Round 10 closed on two structural walls (\S\ref{sub:combine}). Round 11 therefore targets the underlying
+mechanisms. Two proposals were written and then \textbf{withdrawn for being tuning-to-fit}, and recording why is
+part of the result:
+
+\begin{itemize}\itemsep2pt
+\item \dead{Land/sea split on \texttt{RCL\_OVERLAPLIQICE}.} \textbf{Anti-physical.} That parameter is the
+sub-grid \emph{overlap fraction of supercooled liquid with ice} (range $[0,1]$, default $0.65$, EC-Earth4 uses
+$0.1$), entering $\mathtt{ZDEPOS}=\max(\mathtt{ZOVERLAP\_LIQICE}\cdot\mathtt{ZA}\cdot(\mathtt{ZINEW}-\mathtt{ZICE0}),0)$.
+The code's own comment states the intended selectivity --- \emph{``Reduce in shallow convection because assume
+SLW in active updraught is less overlapped with ice in less active part''} --- i.e.\ convective segregation
+\emph{lowers} overlap. But ocean mixed-phase cloud is predominantly stratiform (well mixed, so \emph{high}
+overlap) and land cloud more convective (segregated, \emph{low} overlap), the \textbf{opposite} of what the
+tuning wants.
+\item \dead{\texttt{RCAPDCYCL} mode 3 = disable the CAPE diurnal-cycle correction over land.}
+\textbf{A regression.} That correction is Bechtold et al.\ (2014), which exists to fix the documented error of
+land convection triggering too early in the day.
+\end{itemize}
+
+\subsection{D1 --- \texttt{RCAPDCYCL} mode 4: reformulate the land closure}\label{sub:d1}
+\textbf{B5 was misdiagnosed.} \texttt{RCAPDCYCL} is a \emph{mode selector}, not a magnitude
+(\texttt{cumastrn.F90}:773,777): $1.0$ = land only, scaled on \texttt{ZKHVFL} (surface kinematic virtual heat
+flux, \texttt{:464}); $2.0$ = everywhere, land via $\mathtt{ZCAPPBL}\cdot\mathtt{ZTAU}/\mathtt{ZTAURES}$ and
+ocean via a wind-based \texttt{ZTAUPBL}; $0.0$ = off entirely. So B5's $2.0\to0.0$ \textbf{deleted the
+correction globally}: its $+0.407$\,K boreal gain came from the land branch, its $-1.94$\,W/m$^2$ tropical cost
+from losing the ocean branch. The two are separable.
+
+The physical argument is in the scaling. Mode 1 is proportional to the \emph{actual surface buoyancy flux} and
+vanishes where that forcing is weak; mode 2's land branch uses boundary-layer CAPE instead. Boreal summer has
+weak insolation, a shallow boundary layer and small surface fluxes, so the buoyancy-flux form self-limits while
+the BL-CAPE form need not --- a real reason to suspect \textbf{mode 2's land branch is mis-scaled for
+weak-forcing high-latitude convection}, and it predicts the observed sign. \textbf{Mode 4} (added this build)
+is mode-1 land physics with mode-2's ocean branch verbatim; both are existing code. \emph{Prediction:} recovers
+part of $+0.407$\,K with little of the tropical cost. If the boreal gain vanishes too, the effect was never
+about the land closure formulation and the B5 result needs re-reading.
+
+\subsection{D2 --- ice nuclei, not overlap}\label{sub:d2}
+The Southern-Ocean supercooled-liquid deficit is an \textbf{ice-nucleation} problem, and the scheme has no
+aerosol dependence whatsoever:
+\[
+\mathtt{ZICENUCLEI} = 1000\cdot\exp(12.96\cdot\mathtt{ZSUPERSATICE}-0.639)
+\qquad(\texttt{cloudsc.F90}:2516,\ :2618)
+\]
+That is \textbf{Meyers et al.\ (1992)} --- a function of ice supersaturation \emph{only}, documented to
+overestimate INP in clean environments, which is precisely the remote Southern Ocean; DeMott et al.\
+(2010/2015) make INP a function of aerosol number instead. Reducing INP over ocean therefore has a real
+mechanism (INP sources are continental: mineral dust, biological) with the correct sign in both regions at
+once, and strong leverage since $\mathtt{ZCVDS}\propto\mathtt{ZICENUCLEI}^{0.666}$ --- a factor $0.1$ cuts
+deposition to $\approx0.22$.
+
+\textbf{Three better routes are closed.} (i) \texttt{PNICE} is already a \texttt{cloudsc} argument
+(\texttt{:265}) and already used for autoconversion (\texttt{:2855}), but it is filled only when
+$\mathtt{NAERCLD}>0$ (\texttt{callpar.F90}:1155, else zeroed at \texttt{:1166}) and \texttt{NAERCLD} defaults
+to $0$; that configuration is several times slower and \textbf{would not finish CMIP7 in time}.
+(ii) \texttt{onlinedust\_v4\_rmp.nc} is staged and \emph{opened} unconditionally, but its arrays
+(\texttt{POTSRC}, \texttt{SOILTYPE}, \texttt{CULT}) are allocated only by \texttt{TM5M7\_SRC\_DUST\_INIT} via
+\texttt{tm5m7\_init.F90} --- \textbf{only under m7} --- so its contents are never populated here
+(\texttt{suecrad}'s \texttt{YDUSTCLIM} is a different object, dust \emph{optical properties} for the radiation
+climatology). (iii) MACv2-SP plumes are anthropogenic sulphate/BC/OC: poor INP, sulphate coating
+\emph{deactivates} mineral dust INP, and in a piControl anthropogenic aerosol is near zero, giving no
+land/ocean contrast.
+
+\subsubsection{Two physical caveats that shape the test}\label{sub:d2caveats}
+\textbf{The tropics will pay, and ``ocean'' is the wrong discriminator.} The scaling acts only inside the
+mixed-phase window ($\mathtt{RTHOMO}\le T<\mathtt{RTT}-5$, i.e.\ $235.15$--$268.15$\,K, with liquid present),
+which in the tropics sits at $\approx500$--$300$\,hPa and \emph{is} populated --- deep convective updraughts
+carry supercooled liquid well above the freezing level, and anvil detrainment feeds it. Reducing INP there
+retains more supercooled liquid, brightening tropical mid-level cloud and pushing tropical TOA \emph{further
+below} CERES. Expect a cost of order A1a's $-1.07$\,W/m$^2$ or worse. More fundamentally, tropical and
+subtropical oceans are \emph{not} dust-remote (Saharan dust over the tropical Atlantic, Asian dust over the
+North Pacific); the Southern Ocean is uniquely far from continental sources. The property that distinguishes it
+is \textbf{remoteness}, which a local land-fraction mask cannot encode.
+
+\textbf{Sea salt sets an INP floor.} Sea salt itself is a poor INP (highly soluble, inefficient in the immersion
+mode at these temperatures), but sea spray carries \textbf{marine biogenic organics} --- sea-surface microlayer
+material, phytoplankton exudates --- which are a modest INP source (Wilson et al.\ 2015; DeMott et al.\ 2016).
+So the ocean INP factor \textbf{must not approach zero}: $\approx0.1$--$0.3$ is defensible, not $0.01$. Sea
+salt's larger role is as CCN, which is moot here since \texttt{PCCN} is zeroed with $\mathtt{NAERCLD}=0$ and
+droplet number is the constant \texttt{RCL\_KK\_CLOUD\_NUM\_SEA}. A tempering caveat: marine biogenic INP peaks
+with the austral-summer bloom (DJF), exactly when SO insolation and our SW bias peak, so the SO is
+\emph{least} INP-starved in the season we care most about.
+
+\subsection{The three runs}\label{sub:round11runs}
+All on the same forcing as the 19 round-10 levers (\texttt{oifs.scenario} defaults to \texttt{historical}), so
+deltas are directly comparable to B5's; 46\,yr, evaluated 1872--1915.
+
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+run & change & purpose \\
+\midrule
+\textbf{D1} & \texttt{RCAPDCYCL}$=4$ (source + namelist) & separate B5's boreal gain from its tropical cost \\
+\textbf{D2a} & \texttt{ZICENUCLEI} $\times f(\mathtt{PLSM})$, no remoteness & does the INP route have leverage at all? \\
+\textbf{D2b} & tile-based two-term INP $+$ remoteness gate & the physically honest version \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent D2a is run \emph{knowing} it should damage the tropics: the question it answers is whether INP has
+Southern-Ocean leverage, which decides whether D2b is worth building. D2b computes the INP field in
+\texttt{callpar} from \texttt{SURFL\%ZFRTI} (tile fractions, already used at \texttt{callpar.F90}:2006) and
+\texttt{PAUX\%PGEMU} (sine of latitude, available at \texttt{:1801}), passing one new array to \texttt{cloudsc}:
+\[
+\mathrm{INP}\ \propto\ a\cdot[\text{bare soil (tile 8)}\times\text{wind}]\ +\ b\cdot[\text{low veg (4)}+\text{high veg (6)}]
+\]
+Tile convention from \texttt{srfi\_mod.F90}:52. The two terms matter: a \emph{dust-only} proxy would give the
+\textbf{wrong sign} over boreal forest, which is a weak dust source --- lowering its INP would brighten boreal
+cloud and cool it further. Vegetated land is instead a strong \textbf{biological} INP source in summer (pollen,
+bacteria, fungal spores, litter), peaking in exactly our season, while snow tiles (5/7) collapse that term in
+winter and leave the cold-season bias untouched.
+
+All three are source edits on the single \texttt{oifsamip-cy48} tree and therefore \textbf{serialise}: edit,
+\texttt{esm\_master recomp-oifsamip-cy48}, verify the binary md5 changed, submit, wait for staging, repeat.
+
 \appendix
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize

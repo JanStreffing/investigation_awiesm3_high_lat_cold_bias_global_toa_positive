@@ -63,6 +63,138 @@ larger than the control's +0.64. Aerosols were verified correct (MACv2-SP transi
 1989→2002 logged), so this is not a missing-forcing artefact but a genuine radiative bias,
 consistent with the SO cloud deficit being identical across epochs (+7.85 vs +7.78).
 
+### Round 11 design (2026-07-30): two physically-motivated levers
+
+Round 10 ended with two structural walls (see the combination arithmetic above): the SO is
+reachable only through mixed-phase overlap that cools Siberia, and Siberia's levers sum to
++1.06 K against a +1.3–2.0 K need without adding. Round 11 attacks the *mechanisms* instead
+of trading parameters.
+
+**Two proposals were withdrawn first, for being tuning-to-fit rather than physics.**
+
+1. ~~Land/sea split on `RCL_OVERLAPLIQICE`.~~ **Withdrawn — anti-physical.** That parameter is
+   the sub-grid **overlap fraction of supercooled liquid with ice** (range [0,1], default
+   0.65, EC-Earth4 uses 0.1), entering `ZDEPOS = MAX(ZOVERLAP_LIQICE·ZA·(ZINEW−ZICE0),0)`.
+   The code's own comment gives the intended selectivity: *"Reduce in shallow convection
+   because assume SLW in active updraught is less overlapped with ice in less active part"* —
+   i.e. **convective segregation lowers overlap**. But ocean mixed-phase cloud is
+   predominantly *stratiform* (well mixed → HIGH overlap) and land cloud more convective
+   (segregated → LOW overlap), which is the **opposite** of what the tuning wants. No
+   physical story; it only helps us.
+2. ~~`RCAPDCYCL` mode 3 = disable the CAPE diurnal-cycle correction over land.~~
+   **Withdrawn — a regression.** That correction is Bechtold et al. (2014), which exists to
+   fix the documented error of land convection triggering too early in the day. Switching it
+   off is not a fix.
+
+#### D1 — `RCAPDCYCL` mode 4: reformulate the land closure, do not delete it
+
+**B5 was misdiagnosed.** `RCAPDCYCL` is a **mode selector**, not a magnitude
+(`cumastrn.F90:773,777`):
+
+| value | behaviour |
+|---|---|
+| 1.0 | correction over **land only**, scaled on `ZKHVFL` (surface kinematic virtual heat flux, `:464`) |
+| 2.0 | **everywhere** — land via `ZCAPPBL·ZTAU/ZTAURES`, ocean via a wind-based `ZTAUPBL` |
+| 0.0 | **off entirely** ← what B5 did |
+
+So B5's +0.407 K did not tune anything down: it **deleted the correction globally**. Its
+boreal gain came from the land branch, its **−1.94 W/m² tropical cost** from removing the
+ocean branch. The two are separable.
+
+**The physical argument** is in what the land formulations scale on. Mode 1 is proportional
+to the *actual surface buoyancy flux* and **vanishes when that forcing is weak**; mode 2's
+land branch uses boundary-layer CAPE instead. In boreal summer — weak insolation, shallow
+BL, small surface fluxes — the buoyancy-flux version self-limits while the BL-CAPE version
+need not. That is a real reason to think **mode 2's land branch is mis-scaled for
+weak-forcing high-latitude convection**, and it predicts the sign we measured.
+
+**D1 adds mode 4 = mode-1 land physics + mode-2 ocean branch verbatim.** Both branches are
+existing code; no new physics is invented. Falsifiable prediction: recovers part of B5's
++0.407 K with little of its tropical cost.
+
+#### D2 — ice nuclei, not overlap: `ZICENUCLEI` continental scaling
+
+The SO supercooled-liquid deficit is an **ice-nucleation** problem, and the scheme has no
+aerosol dependence at all:
+
+```
+ZICENUCLEI = 1000·EXP(12.96·ZSUPERSATICE − 0.639)      (cloudsc.F90:2516, :2618)
+```
+
+That is **Meyers et al. (1992)** — a function of ice supersaturation *only*, documented to
+overestimate INP in clean environments, which is exactly the remote Southern Ocean.
+DeMott et al. (2010/2015) make INP a function of aerosol number instead. Scaling
+`ZICENUCLEI` down over ocean therefore has a **real mechanism** — INP sources are
+continental (mineral dust, biological) — with the correct sign in both regions at once:
+low INP over the SO → liquid survives → brighter; continental INP unchanged → boreal
+untouched. Leverage is strong since `ZCVDS ∝ ZICENUCLEI^0.666`, so a factor 0.1 cuts
+deposition to ~0.22.
+
+**Why the "proper" version is not available.** `PNICE` (ice number concentration) is already
+a `cloudsc` argument (`:265`) and already used for autoconversion (`:2855`), but it is filled
+only when `NAERCLD > 0` (`callpar.F90:1155`, else zeroed at `:1166`); `NAERCLD` defaults to 0
+(`sucldp.F90:597`). **`NAERCLD > 0` is ruled out on cost** — that configuration is several
+times slower and would not finish CMIP7 in time.
+
+**Why the dust climatology cannot be used either.** `onlinedust_v4_rmp.nc` is staged and
+*opened* unconditionally, but its arrays (`POTSRC`, `SOILTYPE`, `CULT`) are allocated only by
+`TM5M7_SRC_DUST_INIT` via `tm5m7_init.F90` — i.e. **only under m7**. `suecrad`'s `YDUSTCLIM`
+is a different object (dust optical properties for the radiation aerosol climatology, not the
+source map). So the file's contents are never populated in our configuration.
+
+**Why MACv2-SP is not a usable INP proxy.** Its plumes are anthropogenic sulphate/BC/OC —
+poor INP, and sulphate coating *deactivates* mineral dust INP. Worse, in a piControl
+anthropogenic aerosol is near zero, so it would give almost no land/ocean contrast.
+
+**Two physical caveats that shape the test — added after review.**
+
+*The tropics will pay, and "ocean" is the wrong discriminator.* The scaling acts only inside
+the mixed-phase window (`RTHOMO ≤ T < RTT−5`, i.e. 235.15–268.15 K, liquid present), which in
+the tropics sits at ~500–300 hPa and **is** populated: deep convective updraughts carry
+supercooled liquid well above the freezing level, and anvil detrainment feeds it. Reducing
+INP there retains more liquid → brighter tropical mid-level cloud → tropical TOA pushed
+**further below** CERES, where it is already 2.5 too low. Expect a cost of order A1a's
+−1.07 W/m² or worse. And physically, tropical/subtropical oceans are **not** dust-remote
+(Saharan dust over the tropical Atlantic, Asian dust over the N Pacific) — the SO is uniquely
+far from sources. The distinguishing property is **remoteness**, which a local land mask
+cannot encode.
+
+*Sea salt sets an INP floor.* Sea salt itself is a poor INP (highly soluble, inefficient in
+the immersion mode at these temperatures), but sea spray carries **marine biogenic organics**
+— sea-surface microlayer material, phytoplankton exudates — which are a modest INP source
+(Wilson et al. 2015; DeMott et al. 2016). So **the ocean factor must not approach zero:
+~0.1–0.3 is defensible, not 0.01.** Sea salt's larger role is as CCN, which is moot here since
+`PCCN` is zeroed at `NAERCLD=0` and droplet number is the constant `RCL_KK_CLOUD_NUM_SEA`.
+Tempering caveat: marine biogenic INP peaks with the austral-summer bloom (DJF), exactly when
+SO insolation and our SW bias peak — so the SO is *least* INP-starved in the season we care
+most about, which argues against expecting A1a-sized leverage.
+
+**D2 phase 1 (this round):** scale `ZICENUCLEI` by a continuous function of `PLSM` (land
+fraction, already passed and already used land-selectively at `:2054/:2062/:2113/:2131`), with
+a namelist factor so it can be scanned without rebuilding.
+
+**D2 phase 2 (if phase 1 has leverage):** replace the land-fraction proxy with a
+**tile-based two-term INP field** computed in `callpar` from `SURFL%ZFRTI` (already used at
+`callpar.F90:2006`) and passed into `cloudsc`:
+
+```
+INP ∝ a·[bare soil (tile 8) × wind above threshold]   <- mineral dust
+    + b·[low veg (tile 4) + high veg (tile 6)]        <- biological
+```
+
+Tile convention from `srfi_mod.F90:52`. This is better physics *and* gets the signs right
+where a dust-only proxy would not: boreal forest is a weak dust source but a **strong
+biological INP source in summer** (pollen, bacteria, fungal spores, litter), which is exactly
+our season — while snow tiles (5/7) collapse the biological term in winter, leaving the
+cold-season bias untouched. A dust-only proxy would *lower* boreal INP and brighten boreal
+cloud, i.e. the wrong sign.
+
+**Build note:** both D1 and D2 are source edits on the single `oifsamip-cy48` tree, so they
+**serialise** — edit → `esm_master recomp-oifsamip-cy48` → verify binary md5 changed → submit
+→ wait for staging → next. (`recomp-awiesm3-develop-is` rebuilds the *coupled* tree, which
+our AMIP runs do not use; propagating these edits there is a separate step for the coupled
+rounds.)
+
 ### 44-year results (2026-07-30): the boreal ranking is rebuilt
 
 Detection threshold fell from ±0.89 K to **±0.240 K** (`sd(eps)`=0.575, dof=774).
