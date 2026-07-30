@@ -33,7 +33,7 @@ warnings.filterwarnings('ignore')
 RT = '/work/bb1469/a270092/runtime/oifsamip-cy48'
 LSMF = ('/work/bb1469/a270270/runtime/awiesm3-v3.4/Tuning_test_08B_06V_06Tplus_ENTSTPC3_CRUNCEPinit/'
         'outdata/oifs/atm_remapped_1m_lsm_1350-1350.nc')
-Y0, Y1 = 1872, 1875
+Y0, Y1 = 1872, 1915
 YEARS = list(range(Y0, Y1 + 1))
 JJA = [5, 6, 7]                     # same 0-based convention as eval_round10_A.py
 BOX = ((55, 75), (60, 180))         # Siberia land

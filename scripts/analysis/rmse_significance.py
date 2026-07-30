@@ -31,7 +31,7 @@ RT = '/work/bb1469/a270092/runtime/oifsamip-cy48'
 OBS = '/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.nc'
 LSMF = ('/work/bb1469/a270270/runtime/awiesm3-v3.4/Tuning_test_08B_06V_06Tplus_ENTSTPC3_CRUNCEPinit/'
         'outdata/oifs/atm_remapped_1m_lsm_1350-1350.nc')
-Y0, Y1 = 1872, 1875
+Y0, Y1 = 1872, 1915
 YEARS = list(range(Y0, Y1 + 1))
 
 RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),

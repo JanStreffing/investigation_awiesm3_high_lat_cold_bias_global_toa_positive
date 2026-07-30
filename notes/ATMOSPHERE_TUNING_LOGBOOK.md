@@ -22,14 +22,146 @@ Evaluation script: `scripts/analysis/eval_round10_A.py`.
 | SO cloud area | 83.15 % | 89.72 % | **−6.6 pp** |
 | Siberia JJA surface net SW | 151.9 | 166.3 | **−14.4** |
 | Siberia JJA cloud area | 79.1 % | 69.6 % | **+9.5 pp** |
-| Siberia JJA T2m bias | — | — | ~~**≈ −2.2 K**~~ **≈ −1.0 K** |
+| Siberia JJA T2m bias | — | — | ~~≈ −2.2 K~~ ~~≈ −1.0 K~~ **−1.3 to −2.0 K** |
 
-*The T2m row was corrected on 2026-07-29: the −2.2 K was scored against ERA5 1990–2014
-while the model is 1870s/1850 GHG, and ~1.1 K of it is that period offset. See the
-section immediately below. The CERES-based SO CRE row carries the same flaw (measured: the
-real gap is ~6 W/m², not +8.08); the global TOA row does **not** — see the energy section.*
+*Corrected twice. On 2026-07-29 the −2.2 K was cut to ~−1.0 K on the argument that ~1.1 K
+was reference-period offset, estimated indirectly from HadCRUT5. On **2026-07-30** the
+`amip_presentday` run measured that offset directly and found only **+0.42 K**, so the
+boreal target is **−1.3 to −2.0 K** — much closer to the original figure. The SO SW CRE
+row is likewise **restored to ~+7.8 W/m²**: its measured period offset is −0.07, not −1.43.
+See §"Period offset, measured directly" below, which supersedes the estimate.*
 
-### ⚠ The target itself — about half of the boreal "bias" is the reference period
+### ~~⚠ The target itself — about half of the boreal "bias" is the reference period~~
+### Period offset, measured directly (2026-07-30) — supersedes the estimate above
+
+`amip_presentday` is the same model and configuration run over 1989–2015, so the epoch
+offset can be **measured** instead of chained through observations.
+
+| arm | Sib JJA T2m | vs ERA5 90–14 | SO SW CRE | vs CERES | net TOA |
+|---|---:|---:|---:|---:|---:|
+| control (1872–1915) | 9.73 | **−2.45** | −60.29 | **+7.85** | 0.64 |
+| presentday (1990–2014) | 10.14 | **−2.04** | −60.36 | **+7.78** | 2.20 |
+| **measured offset** | | **+0.42 K** | | **−0.07 W/m²** | +1.56 |
+
+**Both of yesterday's corrections were too large.** The boreal offset is **+0.42 K**, not
++1.12 K, so the period-clean bias is **−2.04 K** — close to the original figure, *not* ~1.0 K.
+The SO SW CRE offset is **−0.07**, not −1.43, so that gap is **+7.78**, essentially the
+original +8.08. The "~6 W/m²" claim is withdrawn.
+
+**Why the estimate failed, and the real finding underneath.** It applied an **observed**
+epoch change (~+1.1 K from HadCRUT5×amplification) to a model that does not reproduce it.
+The model warms Siberian JJA by only +0.42 K between the epochs, so **the model
+under-warms the historical period by ≈0.7 K** — a *trend* error distinct from the mean-state
+bias, and a new result in its own right.
+
+**Target.** If observations are right about the epoch change, the 1870s bias is ≈**−1.3 K**
+(12.18 − 1.12 = 11.06 target vs 9.73). By the model's own internal offset it is ≈**−2.0 K**.
+So the honest range is **−1.3 to −2.0 K**.
+
+*Caveat:* `presentday` global net TOA is **+2.20** against CERES's +0.97 — a +1.23 excess,
+larger than the control's +0.64. Aerosols were verified correct (MACv2-SP transient, years
+1989→2002 logged), so this is not a missing-forcing artefact but a genuine radiative bias,
+consistent with the SO cloud deficit being identical across epochs (+7.85 vs +7.78).
+
+### 44-year results (2026-07-30): the boreal ranking is rebuilt
+
+Detection threshold fell from ±0.89 K to **±0.240 K** (`sd(eps)`=0.575, dof=774).
+
+| run | 4-yr Δ | **44-yr Δ** | t | verdict |
+|---|---:|---:|---:|---|
+| **B5** `RCAPDCYCL` 2→0 | +0.001 | **+0.407** | +3.32 | **SIGNIFICANT — best** |
+| **B2** `RCLDIFF_CONVI` 25 | +0.290 | **+0.344** | +2.80 | **SIGNIFICANT** |
+| **B3** `RCLDIFF` 1.5E-5 | +0.366 | **+0.306** | +2.50 | **SIGNIFICANT** |
+| A1a ovl=0.10 | −1.149 | −0.749 | −6.11 | SIGNIFICANT (wrong way) |
+| expA, C1 | +0.193, −0.213 | +0.232, +0.223 | ~1.9 | marginal |
+| **B8** `RVLAMSK`=5 | **+0.502** | **−0.038** | −0.31 | **noise** |
+| AB, B7, C2, E1, A2, A1c, B6 | — | ≤ +0.12 | — | noise |
+
+**B8, the "best lever of the campaign", is noise.** The 07-29 retraction was correct.
+**B5, dismissed as "inert" at +0.001, is the strongest lever.** The caution written then —
+"unresolved, not proven inert" — is what preserved it.
+
+**Guardrails at 44 yr — and a real conflict:**
+
+| metric | control | B5 | B2 | B3 | A1b | AB | ABB8 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| SO SW CRE | −60.29 | −60.52 | −60.18 | −59.62 | **−62.46** | −62.34 | −62.17 |
+| Sib JJA T2m | 9.73 | **10.13** | 10.07 | 10.03 | 9.59 | 9.68 | 9.71 |
+| global net TOA | 0.64 | **−0.36** | 1.04 | 1.98 | **0.07** | 0.39 | 0.43 |
+| tropics net TOA | 42.61 | **40.67** | 43.26 | 44.62 | 42.32 | 42.83 | 42.92 |
+
+* **B5** wins boreal *and* improves |TOA| (0.64 → −0.36), but costs **−1.94 W/m² in the
+  tropics**, already 2.5 too low. That is its price.
+* **B2/B3 buy boreal with energy** (+0.39, +1.34 TOA). B3 is unusable.
+* **A1b nearly perfects energy** (0.64→0.07) and owns the SO — but **cancels B2's boreal
+  gain**: additive prediction +0.21, measured **−0.053**. The anti-synergy is now solid.
+* **A1b and B5 both push TOA negative** (−0.58, −1.00), so stacking them would overshoot to
+  ≈−0.94. The best boreal lever and the best energy lever are not freely combinable.
+
+**Deep-water SW RMSE at 44 yr** (per-year RMSE, ANOVA): SO threshold ±0.019 — A1b −0.12,
+AB −0.12, ABB8 −0.11 all significant. Subpolar N Atl ±0.024 — **B2 +0.029 significant
+damage; AB −0.023 noise; ABB8 −0.026 a significant *improvement***, so the cancellation is
+confirmed and slightly better than neutral. **Nordic Seas: nothing significant** (±0.053) —
+A1b's −0.989 was never established. Global SW: **B5 −0.14, the best**.
+
+### ⚠⚠ 2026-07-30: the runs were NOT 1850 GHG — a dead namelist block
+
+**`NCMIPFIXYR: 1850` never took effect in any oifsamip run.** All 24 runscripts hand-wrote a
+`&NAMECECMIP6` block. OpenIFS **48r1 renamed that namelist to `&NAMECECMIP`**
+(`ece_cmip.F90:68` POSNAMs `'NAMECECMIP'` only; **`NAMECECMIP6` and `SSPNAME` appear nowhere
+in the source**). The legacy block still exists in esm-tools' fort.4 *template*, so f90nml
+patched it without complaint and the generated namelist looked correct on inspection — while
+the model read only `NAMECECMIP` and left `NCMIPFIXYR` at its default **−1**. Since
+`LFIXYEAR = NCMIPFIXYR > 0`, forcing was **transient**. Verified from the model's own output:
+
+```
+UPDRGAS: Surface greenhouse gas concentrations for YEAR/MONTH  1870/01
+CO2 = 286.94 -> 287.12 -> 287.31 -> 287.49 ...   (rising through the run)
+SP_SETUP: IYR = 1870, 1871, 1872, ...            (MACv2-SP aerosols advancing)
+```
+
+So every run is a **transient CMIP7 historical run at its actual calendar year**, not a
+fixed-1850 PI run — Krakatoa (1883: −0.98 K Siberian JJA) and Santa María (1902) included.
+
+**What this does NOT invalidate — the tuning results.** All 19 runs share that identical
+forcing trajectory, and the perturbations live in `NAMCLDP`/`NAMVDF`/source, which *are*
+read correctly. The run × year ANOVA absorbs the shared trend and the volcanoes in
+`g[year]`. **B5 +0.407, B2 +0.344, B3 +0.306 stand**, as does the ±0.240 K floor.
+
+**What it does affect — the absolute targets**, all of which are read off the control:
+CO₂ drifts 287→301 ppm (≈+0.15 W/m² mid-run vs 1850, partly offset by aerosols) and the
+volcanoes depress the 44-yr mean by ≈0.05 K (measured: 3 of 44 years affected). Small — but
+the global TOA target is only +0.53 W/m², so ≈0.1 W/m² of spurious forcing is not negligible
+*there*.
+
+**Also unaffected: `amip_presentday`.** `historical` is *correct* for 1990–2014, so the
+epoch-offset comparison is transient-vs-transient and self-consistent.
+
+**Fix.** Not a hand-patch — the setup's own switch. `oifs.scenario: "piControl"` routes
+through `configs/components/oifs/oifs48.cmip.yaml`, which writes `NCMIPFIXYR` into the live
+`&NAMECECMIP` *and* sets `LCMIP_STRATAER_CMIP7=True` / `LCMIP_STRATAER_BCKGD=False` in
+`NAERAD` so volcanic aerosol goes to background. `oifsamip.yaml:101` defaults
+`oifs.scenario` to `"historical"`, which is why nothing was pinned. The dead block has been
+removed from all 24 runscripts (no behaviour change — it was never read), and
+**`amip_picontrol`** is running as a true piControl reference. `amip_pi_base` is deliberately
+untouched, because all 19 lever deltas are referenced to it.
+
+**Residual code gap.** There is **no switch to pin MACv2-SP tropospheric aerosols.**
+`updtim.F90:812-818` takes the year from `UPDCAL(...NINDAT...IAN)` unconditionally;
+`NCMIPFIXYR` is consulted only at `:842` for the separate `SUECSO4` sulphate path. So even
+`amip_picontrol` will advance MACv2-SP 1870→1915 while its GHG, ozone and volcanic aerosol
+sit at 1850. Worth reporting upstream.
+
+**Coupled rounds 06–09 are NOT affected** — their `NCMIPFIXYR = 1850` sits in the live
+`&NAMECECMIP` block, written by the proper `oifs48.cmip.yaml` machinery.
+
+### ⚠ SUPERSEDED 2026-07-30 — the estimate below was ~2.7× too large
+
+**Read the "Period offset, measured directly" section first.** The indirect estimate below
+put the Siberian JJA period offset at ~1.12 K and the SO SW CRE offset at −1.43 W/m². The
+`amip_presentday` run has since measured both: **+0.42 K** and **−0.07 W/m²**. The reasoning
+below is kept because the *method* error is instructive — it applied an **observed** epoch
+change to a model that does not reproduce that change — but its conclusions are withdrawn.
 
 Measured 2026-07-29 (`scripts/analysis/era5_period_offset.sh`). The T2m reference in
 `eval_round10_A.py` is `obs/era5/netcdf/T2M.nc`, which is ERA5 **1990–2014**. The AMIP runs
