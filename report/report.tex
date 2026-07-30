@@ -1,4 +1,5 @@
 \documentclass[10pt]{article}
+\usepackage{pifont}
 \usepackage[a4paper,margin=1.8cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -1225,7 +1226,8 @@ The atmosphere alone reproduces essentially all of 09A's Siberian JJA bias ($-2.
 half behaves oppositely --- AMIP's Siberian \emph{annual} bias is only $-0.89$ against $-3.0$ coupled --- so
 September--April remains the coupled/vegetation problem of Part~II, and JJA is now a separate, atmospheric one.
 
-\subsubsection{Correction (2026--07--29): about half of that $-2.16$\,K is the reference period}\label{sub:perioffset}
+\subsubsection{Correction (2026--07--29), \textcolor{red}{itself superseded 2026--07--30}: the reference period matters, but far less than estimated}\label{sub:perioffset}
+\textbf{Read \S\ref{sub:perdirect} first.} The indirect estimate in this subsection put the Siberian JJA period offset at $\approx1.12$\,K and concluded the genuine boreal bias was $\approx-1.0$\,K. The \texttt{amip\_presentday} run has since \emph{measured} that offset: $\mathbf{+0.42}$\,\textbf{K}. The conclusions below are therefore \textbf{withdrawn} --- the boreal bias is $\approx-2.0$\,K, close to the original figure. The reasoning is retained because the method error is instructive: it applied an \emph{observed} epoch change to a model that does not reproduce that change.
 The number above is scored against \textbf{ERA5 1990--2014}, while these runs use \textbf{1870s observed SST
 with 1850 GHG}. Roughly $130$ years of greenhouse warming therefore sits inside a quantity the campaign has
 been treating as model error --- and tuning against. Measured from the DKRZ ERA5 pool
@@ -1790,6 +1792,160 @@ until Prong A has fixed what feeds it.
 
 \subsection{Operator notes}\label{sub:r10notes}
 \emph{(reserved --- to be filled in)}
+
+\section{Round 10 results (2026--07--30): 46-year runs rebuild the ranking}\label{sec:round10res}
+All 19 prong-A runs were extended from 6 to 46 years (evaluated 1872--1915, 44\,yr) after a statistical-power
+check showed the original 4-year window could not resolve the boreal signal at all.
+
+\subsection{The 4-year window was resolving nothing in the boreal}\label{sub:noisefloor}
+A run\,$\times$\,year ANOVA (\texttt{scripts/analysis/noise\_floor.py}) decomposes each per-year value into a
+tuning signal, the SST-forced excursion common to every run, and internal noise. At 4 years the 95\,\% detection
+threshold on Siberian JJA T2m was $\pm0.89$\,K and \textbf{1 of 18 runs cleared it} --- A1a, the overshoot already
+rejected. Siberian JJA surface SW: 1 of 18. Siberian JJA cloud area: \textbf{0 of 18}. The energy target was by
+contrast well resolved ($\pm0.23$\,W/m$^2$ on global TOA, 9 of 18 significant), so the campaign's Southern-Ocean
+and global conclusions were safe while \emph{every boreal ranking was noise}.
+
+At 44 years the threshold falls to $\pm\mathbf{0.240}$\,K, and the ranking inverts:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r l}
+\toprule
+run & 4-yr $\Delta$ & \textbf{44-yr $\Delta$} & $t$ & verdict \\
+\midrule
+\textbf{B5} \texttt{RCAPDCYCL} $2\to0$   & $+0.001$ & $\mathbf{+0.407}$ & $+3.32$ & \textbf{significant --- best} \\
+\textbf{B2} \texttt{RCLDIFF\_CONVI}$=25$ & $+0.290$ & $\mathbf{+0.344}$ & $+2.80$ & \textbf{significant} \\
+\textbf{B3} \texttt{RCLDIFF}$=1.5$E-5    & $+0.366$ & $\mathbf{+0.306}$ & $+2.50$ & \textbf{significant} \\
+A1a \texttt{ovl}$=0.10$                  & $-1.149$ & $-0.749$ & $-6.11$ & significant, wrong way \\
+\textbf{B8} \texttt{RVLAMSK}$=5$         & $\mathbf{+0.502}$ & $\mathbf{-0.038}$ & $-0.31$ & \textbf{noise} \\
+AB, B7, C2, E1, A2, A1c, B6              & --- & $\le+0.12$ & --- & noise \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Two reversals matter. \textbf{B8, promoted to ``best lever of the campaign'' on its $+0.502$\,K, is
+noise}; it had already been retracted on 07--29 when the noise floor was first measured, and the 46-year runs
+confirm that retraction. \textbf{B5, dismissed as ``inert'' at $+0.001$\,K, is the strongest lever in the
+campaign.} The caution recorded at the time --- \emph{unresolved, not proven inert} --- is what kept it in play.
+
+\emph{Method note for future rounds:} B8 was promoted and then built upon twice (ABB8, E1) before its uncertainty
+was ever estimated. Three of that round's four runs were spent following a result inside the noise. The noise
+floor cost one post-processing script and no node-hours.
+
+\subsection{Period offset, measured rather than estimated}\label{sub:perdirect}
+\texttt{amip\_presentday} is the same model and configuration run over 1989--2015, so the epoch offset is
+measurable directly instead of chained through observations (\S\ref{sub:perioffset}).
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+arm & Sib JJA T2m & vs ERA5 90--14 & SO SW CRE & vs CERES & net TOA \\
+\midrule
+control (1872--1915)     & $9.73$  & $\mathbf{-2.45}$ & $-60.29$ & $\mathbf{+7.85}$ & $0.64$ \\
+presentday (1990--2014)  & $10.14$ & $\mathbf{-2.04}$ & $-60.36$ & $\mathbf{+7.78}$ & $2.20$ \\
+\textbf{measured offset} &         & $\mathbf{+0.42}$ &          & $\mathbf{-0.07}$ & $+1.56$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Both 07--29 corrections were too large. The boreal offset is $+0.42$\,K, not $+1.12$, so the
+period-clean bias is $\mathbf{-2.04}$\,K; the SO SW CRE offset is $-0.07$, not $-1.43$, so that gap is
+$\mathbf{+7.78}$ --- essentially the original $+8.08$, and the ``$\approx6$\,W/m$^2$'' claim is withdrawn.
+
+\textbf{The real finding is underneath the error.} The model warms Siberian JJA by only $+0.42$\,K between the
+epochs where observations imply $\approx+1.1$\,K, so \textbf{the model under-warms the historical period by
+$\approx0.7$\,K} --- a \emph{trend} error distinct from the mean-state bias. Taking observations as correct for
+the epoch change puts the 1870s bias at $\approx-1.3$\,K; taking the model's own offset puts it at
+$\approx-2.0$\,K. The honest target range is $\mathbf{-1.3}$ \textbf{to} $\mathbf{-2.0}$\,\textbf{K}.
+
+\emph{Caveat:} \texttt{presentday} global net TOA is $+2.20$ against CERES's $+0.97$. Aerosols were verified
+correct (MACv2-SP transient, years 1989$\to$2002 logged), so this is a genuine radiative bias rather than a
+missing-forcing artefact, consistent with the SO cloud deficit being identical across epochs.
+
+\subsection{The runs were never 1850 GHG --- a dead namelist block}\label{sub:deadnml}
+\texttt{NCMIPFIXYR: 1850} never took effect in any \texttt{oifsamip} run. All 24 runscripts hand-wrote a
+\texttt{\&NAMECECMIP6} block; OpenIFS 48r1 renamed that namelist to \texttt{\&NAMECECMIP}
+(\texttt{ece\_cmip.F90}:68 \texttt{POSNAM}s \texttt{'NAMECECMIP'} only, and \texttt{NAMECECMIP6}/\texttt{SSPNAME}
+appear \emph{nowhere} in the source). The legacy block survives in esm-tools' \texttt{fort.4} template, so
+\texttt{f90nml} patched it without complaint and the generated namelist looked correct --- while the model read
+only \texttt{NAMECECMIP} and left \texttt{NCMIPFIXYR} at its default $-1$. Since
+\texttt{LFIXYEAR = NCMIPFIXYR > 0}, forcing was \textbf{transient}. From the model's own output:
+
+\begin{center}\footnotesize\begin{verbatim}
+UPDRGAS: greenhouse gas concentrations for YEAR/MONTH  1870/01
+CO2 = 286.94 -> 287.12 -> 287.31 -> 287.49 ...   (rising through the run)
+SP_SETUP: IYR = 1870, 1871, 1872, ...            (MACv2-SP aerosols advancing)
+\end{verbatim}\end{center}
+
+\noindent So every run is a transient CMIP7 \emph{historical} run at its actual calendar year, Krakatoa (1883:
+$-0.98$\,K in Siberian JJA) included, not a fixed-1850 PI run.
+
+\textbf{The tuning results are unaffected}: all runs share that identical forcing trajectory, the perturbations
+live in \texttt{NAMCLDP}/\texttt{NAMVDF}/source which \emph{are} read, and the ANOVA absorbs the shared trend and
+the volcanoes in $g[\mathrm{year}]$. \textbf{The absolute targets are affected}, since they are all read off the
+control: CO$_2$ drifts $287\to301$\,ppm ($\approx+0.15$\,W/m$^2$ mid-run vs 1850, partly offset by aerosols) and
+the volcanoes depress the 44-yr mean by $\approx0.05$\,K. Small --- but the global TOA target is only
+$+0.53$\,W/m$^2$, so $\approx0.1$\,W/m$^2$ of spurious forcing is not negligible \emph{there}.
+\texttt{amip\_presentday} is unaffected: \texttt{historical} is \emph{correct} for 1990--2014.
+
+The fix is the setup's own switch, not a hand-patch: \texttt{oifs.scenario: "piControl"} routes through
+\texttt{configs/components/oifs/oifs48.cmip.yaml}, which writes \texttt{NCMIPFIXYR} into the live block and sets
+the CMIP7 stratospheric-aerosol switches in \texttt{NAERAD}. The dead block has been removed from all 24
+runscripts and \texttt{amip\_picontrol} is running as a true PI reference; \texttt{amip\_pi\_base} is
+deliberately untouched because all 19 lever deltas reference it. \textbf{The CMIP7 production spin-up is not
+affected} --- its \texttt{NCMIPFIXYR}$=1850$ is in the live block and CO$_2$ is pinned at $284.30$\,ppm at
+calendar year 2018. \emph{Residual code gap:} nothing pins MACv2-SP tropospheric aerosols
+(\texttt{updtim.F90}:812--818 takes the calendar year unconditionally).
+
+\subsection{Can the levers be combined? Not as they stand}\label{sub:combine}
+Targets from the 44-year control, and the significant per-lever responses:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+ & SO SW CRE & Sib JJA T2m & global TOA & tropics TOA \\
+\midrule
+\textbf{required} $\Delta$ & $\mathbf{-7.85}$ & $\mathbf{+1.3}$ to $\mathbf{+2.0}$ & $\mathbf{-0.64}$ & $\mathbf{+2.50}$ \\
+\midrule
+A1a \texttt{ovl}$=0.10$ & $\mathbf{-6.46}$ & $-0.749$ & $-1.90$ & $-1.07$ \\
+A1b \texttt{ovl}$=0.35$ & $-2.17$ & $-0.135$ & $-0.58$ & $-0.29$ \\
+B5 & $-0.23$ & $\mathbf{+0.407}$ & $-1.00$ & $\mathbf{-1.94}$ \\
+B2 & $+0.11$ & $+0.344$ & $+0.39$ & $+0.65$ \\
+B3 & $+0.67$ & $+0.306$ & $+1.34$ & $\mathbf{+2.02}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Note the tropics are $2.5$\,W/m$^2$ \emph{too low}, not too high, so B5's $-1.94$ is a real cost and
+only B3 helps there. Added linearly:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+stack & SO & Sib & global TOA & tropics \\
+\midrule
+A1b$+$B5           & $-2.40$ & $+0.27$ & $-0.94$ \ding{55} & $40.4$ \ding{55} \\
+A1b$+$B2$+$B5      & $-2.30$ & $+0.62^{*}$ & $-0.55$ \ding{55} & $41.0$ \ding{55} \\
+A1b$+$B2$+$B3$+$B5 & $-1.63$ \ding{55} & $+0.92^{*}$ & $+0.79$ \ding{55} & $43.0$ \\
+A1a$+$B2$+$B3$+$B5 & $\mathbf{-5.91}$ & $+0.31$ \ding{55} & $-0.53$ & $42.3$ \ding{55} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent$^{*}$optimistic: AB measured $-0.053$\,K where additivity predicted $+0.21$, so A1b \emph{cancels}
+B2's boreal gain.
+
+\textbf{Two structural walls, not bad luck.}
+\begin{itemize}\itemsep1pt
+\item \textbf{The Southern Ocean is reachable only through A1-strength mixed-phase overlap, which cools Siberia.}
+That is the same process on both ends: more supercooled liquid brightens SO cloud
+\emph{and} boreal mid-level cloud. A1a buys $82\,\%$ of the SO target and spends $-0.75$\,K of Siberia doing it.
+\item \textbf{Siberia's levers are too small and do not add.} The three significant ones sum to $+1.06$\,K
+against a $+1.3$--$2.0$\,K need, before the non-additivity that AB demonstrated.
+\end{itemize}
+
+\noindent \textbf{The LPJ-GUESS fallback is closed}: \S\ref{sub:radvstemp} showed the forest is $75$--$85\,\%$
+temperature-driven, so prong~B cannot absorb a boreal residual the atmosphere does not deliver. The boreal
+problem must be solved in OpenIFS.
 
 \appendix
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
