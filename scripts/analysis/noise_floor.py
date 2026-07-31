@@ -55,7 +55,18 @@ RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
         ('ABB8 A1b+B2+B8', 'amip_ABB8'),
         ('C1 rlam75', 'amip_C1_rlam75'),
         ('C2 rlam40', 'amip_C2_rlam40'),
-        ('E1 lamsk2.5', 'amip_E1_lamsk25')]
+        ('E1 lamsk2.5', 'amip_E1_lamsk25'),
+        # --- round 11 (2026-07-30/31) ---
+        ('D1 capdcycl4', 'amip_D1_capdcycl4'),
+        ('D2a inpsea.2', 'amip_D2a_inpsea02'),
+        ('D2b inp+p700', 'amip_D2b_inpsea02_p700'),
+        ('piCTRL 1850', 'amip_picontrol'),
+        # --- round 12, F-series: boreal surface exchange (2026-07-31) ---
+        ('F1 z0h/10', 'amip_F1_z0h10'),
+        ('F2 LAI=3', 'amip_F2_lai3'),
+        ('F3 cov=0.7', 'amip_F3_cov07'),
+        ('F4 rsmin1000', 'amip_F4_rsmin1000'),
+        ('F5 all four', 'amip_F5_allveg')]
 
 lsm = xr.open_dataset(LSMF)['lsm'].isel(time_counter=0).values
 

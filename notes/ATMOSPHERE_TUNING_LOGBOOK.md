@@ -65,13 +65,18 @@ consistent with the SO cloud deficit being identical across epochs (+7.85 vs +7.
 
 ### Run inventory — every directory under `runtime/oifsamip-cy48/`, including the dead ones
 
-There are 41 experiment directories but only 26 carry data. Recording which are which, so
-nobody has to guess whether an empty directory is a failure worth investigating.
+There are **42** experiment directories but only **30** carry data. Recording which are which,
+so nobody has to guess whether an empty directory is a failure worth investigating.
+*(Counts change as rounds are added — regenerate with the one-liner at the end of this section.)*
 
-**Carrying evaluated data (26).** control `amip_pi_base` (50 yr) and `amip_picontrol` (48);
+**Carrying evaluated data (30).** control `amip_pi_base` (50 yr) and `amip_picontrol` (48);
 `amip_presentday` (26); the levers `A1a A1b A1c A2_kknumland150 expA B1–B8 AB ABB8 C1 C2 E1`
-(46 yr each); round 11 `D1 D2a D2b` (48 yr each); round 12 `F1–F5` (running). All appear in
-the results tables above.
+(46 yr each); round 11 `D1 D2a D2b` (48 yr each); round 12 **`F1–F5` (48 yr each, COMPLETE)**.
+All appear in the results tables above.
+
+**Running (1).** `amip_G1_F4_D2b` — F4 + D2b, the first combination whose components are
+disjoint in process and geography. Started 2026-07-31; add to the `RUNS` list in all three
+evaluators when it finishes.
 
 **Superseded, no output (1).** `amip_A2_kkland150` — a first A2 attempt from 2026-07-29,
 replaced by `amip_A2_kknumland150`. Two runscripts exist for A2 (`_A2_kkland150.yaml` and
@@ -89,6 +94,14 @@ been cleaned out. **None of them is a tuning lever and none should appear in an 
 *Practical note:* the evaluation scripts glob on `atm_remapped_1m_<var>_1m_<year>.nc`, so
 these directories are skipped automatically with an "incomplete, skipped" warning if ever
 added to a `RUNS` list. The warning is the intended behaviour, not an error to chase.
+
+*Regenerate this inventory:*
+```bash
+cd /work/bb1469/a270092/runtime/oifsamip-cy48
+for d in amip_*/; do
+  printf "%-26s %s\n" "$d" "$(ls ${d}outdata/oifs/atm_remapped_1m_2t_1m_*.nc 2>/dev/null | wc -l)"
+done
+```
 
 ### ⭐ Surface albedo (2026-07-31): half the Siberian SW deficit is not cloud at all
 
@@ -298,7 +311,7 @@ parallelises the cold path — **2m09s → 7.7s, output verified byte-identical*
 costs one run's work. `table.py` builds tables from the cache; the old fixed-width text parser
 silently mis-aligned columns when new run labels had different widths.
 
-### Round 12 design (2026-07-31): the F-series — boreal surface exchange, running
+### Round 12 design (2026-07-31): the F-series — boreal surface exchange
 
 Round 11 left the boreal unsolved: B5 (+0.407 K) is still the only significant lever and it
 costs **−1.94 W/m² in the tropics**, which are already 2.5 below CERES. D1 was built to
