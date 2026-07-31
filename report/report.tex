@@ -2061,6 +2061,207 @@ winter and leave the cold-season bias untouched.
 All three are source edits on the single \texttt{oifsamip-cy48} tree and therefore \textbf{serialise}: edit,
 \texttt{esm\_master recomp-oifsamip-cy48}, verify the binary md5 changed, submit, wait for staging, repeat.
 
+\section{Round 11 results: D2b adopted for the Southern Ocean, D1 falsified}\label{sec:round11res}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+ & SO SW CRE & SO SW RMSE & Sib JJA T2m & global TOA & tropics \\
+\midrule
+control                    & $-60.29$ & $6.88$ & $9.73$ & $0.64$ & $42.61$ \\
+piCTRL 1850                & $-60.65$ & $6.83$ & $9.74$ & $\mathbf{0.79}$ & $42.69$ \\
+D1 \texttt{RCAPDCYCL}$=4$  & $-60.38$ & $6.51$ & $\mathbf{9.56}$ & $0.61$ & $42.53$ \\
+D2a INP, no gate           & $\mathbf{-65.13}$ & $5.07$ & $9.56$ & $-0.28$ & $42.23$ \\
+\textbf{D2b INP + p700}    & $-62.93$ & $\mathbf{4.96}$ & $9.51$ & $0.36$ & $\mathbf{42.70}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{D2b is adopted as the Southern-Ocean lever.} It gives the best SO surface-SW
+RMSE of any run ($6.88\to4.96$, $-28\,\%$) at \emph{zero} tropical cost ($+0.09$), beating both
+A1b ($5.54$) and the ungated D2a ($5.07$) --- the latter despite a larger mean-CRE change,
+because D2b improves the spatial \emph{pattern}, which is what the priority metric exists to
+measure. The ice-nucleation hypothesis (\S\ref{sub:d2}) is therefore supported, and the
+pressure gate did what it was designed to do: D2a's tropical cost ($-0.38$) vanishes ($+0.09$)
+while $55\,\%$ of the SO gain is retained.
+
+\textbf{D1 is cleanly falsified.} It was predicted to recover part of B5's $+0.407$\,K by
+switching the land CAPE closure to mode-1's buoyancy-flux scaling; it delivered
+$\mathbf{-0.170}$\,K, the wrong sign. So B5's boreal gain requires \emph{removing} the land
+correction, not rescaling it --- the effect is not about which quantity the closure scales on.
+Stating the prediction in advance is what made the refutation unambiguous.
+
+\textbf{\texttt{amip\_picontrol} settles two things.} The energy target is $+0.79$\,W/m$^2$,
+not $+0.64$ --- slightly \emph{larger}, so A1b does not overshoot. And Siberian JJA T2m differs
+by only $+0.008$\,K, so the dead-namelist forcing bug (\S\ref{sub:deadnml}) never affected the
+boreal target and every round-10 boreal conclusion stands.
+
+\section{Round 12: boreal surface exchange, and the best lever of the campaign}\label{sec:round12}
+Round 11 left the boreal unsolved. Round 12 changed target from convection and cloud to
+\textbf{boreal surface exchange}, anchored on one observation: the measured Siberian JJA Bowen
+ratio is $\mathbf{0.43}$ against $\approx0.5$--$1.5$ observed for boreal conifer, so the model
+puts too much surface energy into latent heat. Four levers, each raising Bowen by an
+independent route, all indexed on vegetation types 3/4 so that types 5/6/18 --- and hence the
+tropics --- are untouched \emph{by construction}. That is exactly the property B5 lacks.
+
+\begin{center}\footnotesize
+\begin{tabular}{l l r r l}
+\toprule
+run & change & $\Delta$T2m & $t$ & verdict \\
+\midrule
+\textbf{F4} & \texttt{RVRSMIN(3,4)} $250\to1000$ & $\mathbf{+0.749}$ & $+6.06$ & \textbf{significant, best ever} \\
+\textbf{F5} & all four combined                  & $\mathbf{+0.746}$ & $+6.03$ & significant, $\equiv$ F4 \\
+B5          & (previous best)                    & $+0.407$ & $+3.29$ & significant \\
+F2          & \texttt{RVLAI(3,4)} $5\to3$        & $+0.321$ & $+2.59$ & significant \\
+F1          & \texttt{RVZ0H(3,4)}$=$\texttt{z0m}$/10$ & $+0.185$ & $+1.49$ & marginal \\
+F3          & \texttt{RVCOV(3,4)} $0.9\to0.7$    & $\approx0$ & --- & noise \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{F4 costs the tropics nothing} ($42.68$ vs control $42.61$) where B5 wrecked
+them ($40.67$), and it gives the best global T2m RMSE of any run ($1.54$). Bowen moves
+$0.44\to0.60$, into the observed range \emph{without} overshooting --- the risk named in
+advance did not materialise.
+
+\textbf{F5 equals F4 to $0.003$\,K.} Against a naive sum of $\approx1.25$\,K, adding F1, F2 and
+F3 on top of F4 contributes nothing. The advance prediction --- $\text{F5}\ll\sum$, closer to
+the largest single lever --- held, and more strongly than expected: near-total saturation of a
+single shared latent-heat pathway with a floor at zero. \emph{Use F4 alone.}
+
+\textbf{A prediction that failed.} F1 was called strongest a priori because $kB^{-1}=0$ is the
+largest departure from observation (every closed-forest type sets $z_{0h}=z_{0m}$, i.e.\ $kB^{-1}=0$, where observations give $kB^{-1}\approx2$). It is marginal and barely moved Bowen
+($0.44\to0.43$). ``Largest departure from observation'' is not a reliable guide to leverage.
+
+\textbf{B5 carries a hidden $-0.72$\,K DJF cooling} (F4: $+0.06$), invisible for the whole
+campaign because only JJA was ever evaluated. Given that the coupled model's original
+complaint is a \emph{cold-season} bias, that is disqualifying for B5, and DJF now belongs in
+the standard guardrails.
+
+\subsection{Is F4 fixing a cause or a symptom?}\label{sub:f4cause}
+Two tests, both partly exonerating. \emph{Seasonal selectivity:} DJF $+0.061$, MAM $+0.047$,
+JJA $\mathbf{+0.749}$, SON $+0.110$ --- exactly the signature a transpiration mechanism must
+have, since stomata are shut and the canopy snow-covered in winter. \emph{Vertical targeting:}
+F4 warms $1000/925/850$\,hPa by $+0.83/+0.84/+0.83$, closing $56$--$83\,\%$ of the
+\emph{Siberia-specific} layer bias (\S\ref{sub:vprof}), and only $+0.53$ aloft.
+
+What remains true is that \texttt{RVRSMIN} $250\to1000$ is an unanchored $4\times$ excursion
+from what ECMWF ships, and that the vertical profiles show it removes moisture that is already
+deficient. \textbf{G1 $=$ F4 $+$ D2b is running}: the first pairing whose components are
+disjoint in both process and geography, hence expected not to conflict --- but AB and ABB8 both
+got superposition wrong in sign, so it is measured, not assumed.
+
+\section{Vertical structure vs ERA5: where the biases live}\label{sec:vprof}
+\subsection{The Siberia-specific cold bias is confined below 850\,hPa}\label{sub:vprof}
+Model minus ERA5 on the model's 19 pressure levels, \texttt{amip\_presentday} vs ERA5
+1990--2014 so the comparison is period-clean. ERA5 comes from the DKRZ pool; all 19 model
+levels exist exactly in ERA5's 37, so no interpolation is needed.
+
+\begin{center}\footnotesize
+\begin{tabular}{r r r r}
+\toprule
+hPa & Siberia & Global & \textbf{Siberia-specific} \\
+\midrule
+1000 & $-1.90$ & $-0.73$ & $\mathbf{-1.17}$ \\
+ 925 & $-2.17$ & $-0.65$ & $\mathbf{-1.52}$ \\
+ 850 & $-1.99$ & $-0.99$ & $\mathbf{-1.00}$ \\
+ 700 & $-1.22$ & $-1.15$ & $-0.07$ \\
+ 500 & $-1.67$ & $-1.49$ & $-0.18$ \\
+ 300 & $-2.32$ & $-2.22$ & $-0.10$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent This separates two problems that had been conflated. Above 700\,hPa Siberia merely
+shares a \textbf{global tropospheric cold bias of $0.7$--$2.9$\,K} that no boreal lever will
+touch; the boreal-specific excess lives entirely in the bottom three levels, which is the
+signature a surface-exchange problem should have and which validates the F-series framing.
+
+\textbf{The excess boreal cloud is thermally driven, not moisture-driven.} Siberian RH is
+$+5.6$ to $+8.2\,\%$ too high while $q$ is \emph{too low} ($-0.2$ to $-0.3$\,g/kg): a 2\,K cold
+bias cuts $q_{sat}$ by $\approx14\,\%$ while $q$ falls only $\approx6\,\%$. So a large
+F-response must not be read as confirming the cause.
+
+\textbf{Independent support for D2:} the Southern Ocean has RH $+5.8$ to $+6.6\,\%$ too high
+through the mixed-phase layer while reflecting \emph{too little} SW --- humidity present,
+liquid absent, exactly the supercooled-liquid deficit the INP hypothesis predicts.
+
+\emph{Broken diagnostic, recorded:} the model's pressure-level relative humidity \texttt{r} is
+\textbf{identically zero in every run checked} ($0$ nonzero of $17\,510\,400$ values) while
+\texttt{q} is fine. The XIOS \texttt{r} output yields silent garbage and must not be used; RH
+above is recomputed from \texttt{t} and \texttt{q}.
+
+\section{Surface albedo: half the Siberian SW deficit is not cloud}\label{sec:albedo}
+Every boreal lever so far has attacked cloud. Decomposed against CERES on the identical box
+and mask, the $12.5$\,W/m$^2$ Siberian JJA surface-SW deficit is only half cloud:
+$\mathbf{7.0}$\,W/m$^2$ from too little SW reaching the surface, and
+$\mathbf{5.5}$\,W/m$^2$ from \textbf{surface albedo too high} --- $0.1753$ model versus
+$0.1461$ CERES, entirely independent of cloud. F4 does not touch it ($0.1749$).
+
+\subsection{Not a global albedo error, and not the forest}\label{sub:albreg}
+Temperate and tropical land is essentially perfect (Europe, Amazon, Great Plains, steppe,
+Australia all within $\pm0.004$), so the albedo \emph{scheme} is sound and a global fix would
+be wrong. The error is concentrated at high latitude: Siberian tundra $+0.094$ ($-16.0$\,W/m$^2$),
+Canada boreal $+0.032$, Siberia boreal $+0.029$, Sahara $+0.020$ --- but \textbf{Fennoscandia,
+the same needleleaf type, is correct at $+0.002$}. Splitting Siberia by latitude gives $+0.011$
+in the forest core and $+0.087$ at 70--75N.
+
+\subsection{How the albedo is built, and two hypotheses that died}\label{sub:albbuild}
+All configurations --- AMIP, coupled round-09, \emph{and the CMIP7 production piControl} ---
+run \texttt{LRDALB = .false.} with \texttt{NALBEDOSCHEME = 3}, which \textbf{discards the MODIS
+albedo present in the input file} and constructs albedo each step
+(\texttt{surfbc\_ctl\_mod.F90}:512) as
+$\alpha=\mathtt{RVVEGALB}(t_{vl})c_{vl}+\mathtt{RVVEGALB}(t_{vh})c_{vh}+\alpha_{soil}(1-c_{vl}-c_{vh})$.
+
+\dead{Hypothesis 1: the soil-albedo field dominates tundra.} The bare fraction is only
+$0.01$--$0.03$, so the soil term is negligible. \dead{Hypothesis 2: the soil fields are
+corrupt.} GRIB 117--120 do carry an inconsistent header (\texttt{N=128} with a 256-row
+\texttt{pl} but only $40\,320$ values, the O96 count), which \textbf{breaks \texttt{cdo} and
+\texttt{grib\_get\_data}} on those fields and should be reported upstream --- but the values
+are O96-ordered and correct: zero over $99.2\,\%$ of ocean cells, $\mathrm{corr}(\alpha_{soil},
+\mathrm{lsm})=+0.894$. Not our bias.
+
+\subsection{The real signature is snow-melt timing}\label{sub:albsnow}
+The blend at 70--75N yields $0.158$ while the model runs at $0.303$; the extra $\approx0.145$
+is snow. Monthly, the model is \textbf{too dark in April} ($-0.06$ to $-0.07$),
+\textbf{near-perfect in July/August} when snow-free ($+0.004$), and \textbf{too bright in June}
+($+0.086$ to $+0.116$) \textbf{and September} ($+0.08$ to $+0.10$). So \texttt{RVVEGALB} is
+essentially right and the \emph{snow season is too long at both ends}.
+
+\textbf{Cause and effect.} Through February--April the model is too cold \emph{and} too dark
+simultaneously; if bright snow caused the cold those signs would agree, so the winter cold is
+\textbf{not} albedo-driven. The albedo bias turns positive only in June, after the surface
+crosses freezing. But the June snow is a genuine defect in its own right: \textbf{June is
+$+6.2\,^\circ$C with $213$\,W/m$^2$ of insolation and $0.020$\,m\,w.e.\ still lying}, and the
+implied snow-cover fraction is $\approx17\,\%$ where CERES implies $\approx2\,\%$. That points
+at the \textbf{snow-cover-fraction formulation}, not snow albedo (too \emph{low} in April) and
+not melt energy (ample).
+
+\subsection{Growing season: June is albedo, July is cloud}\label{sub:albgrow}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+Siberia 55--75N, W/m$^2$ & Jun & Jul & Aug & JJA \\
+\midrule
+cloud             & $6.9$ & $\mathbf{9.9}$ & $4.4$ & $7.0$ \\
+albedo / snow     & $\mathbf{13.4}$ & $1.7$ & $1.3$ & $5.5$ \\
+total             & $20.2$ & $11.6$ & $5.7$ & $12.5$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Almost cleanly separated in time. The residual snow term is $5.5$\,W/m$^2$ on the JJA
+mean, essentially all in June, worth $\approx0.2$--$0.7$\,K depending on which sensitivity
+applies --- potentially another F4-sized gain, and \emph{orthogonal} to F4, which fixes SW-down
+while this fixes the absorbed fraction.
+
+\textbf{But albedo does not explain the land cold bias.} Insolation-weighted over land
+60S--75N excluding Greenland, the mean albedo-induced SW loss is $-3.00$\,W/m$^2$ against a mean
+T2m bias of $-1.35$\,K, with spatial correlation $r=+0.145$ and slope $+0.033$\,K per W/m$^2$.
+Decisively, \textbf{cells where the model is too \emph{dark} are still $-1.16$\,K cold}. A
+$\approx1.2$\,K land-wide cold bias therefore has no albedo signature at all, consistent with
+the global tropospheric cold bias of \S\ref{sub:vprof}. Fixing albedo is worth doing; it is not
+the root cause.
+
 \appendix
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize

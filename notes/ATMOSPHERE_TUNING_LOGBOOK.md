@@ -90,6 +90,214 @@ been cleaned out. **None of them is a tuning lever and none should appear in an 
 these directories are skipped automatically with an "incomplete, skipped" warning if ever
 added to a `RUNS` list. The warning is the intended behaviour, not an error to chase.
 
+### ⭐ Surface albedo (2026-07-31): half the Siberian SW deficit is not cloud at all
+
+Every boreal lever so far has attacked cloud. Decomposing the 12.5 W/m² Siberian JJA surface
+SW deficit against CERES on the identical box and mask shows cloud is only half of it
+(`scripts/analysis/albedo_by_region.py`, `albedo_vs_t2m_bias.py`):
+
+| term | W/m² | mechanism |
+|---|---:|---|
+| too little SW reaching the surface | **7.0** | excess cloud — what F4 attacks |
+| **surface albedo too high** | **5.5** | **independent of cloud** |
+
+Model Siberian JJA albedo **0.1753** vs CERES **0.1461**. F4 does not touch it (0.1749): it
+raises SW *down* by thinning cloud while the albedo error passes straight through.
+
+#### It is not a global albedo error — temperate and tropical land is right
+
+| region | model | CERES | diff | W/m² |
+|---|---:|---:|---:|---:|
+| **Siberian tundra** | 0.3364 | 0.2427 | **+0.094** | **−16.0** |
+| Canada boreal | 0.1697 | 0.1382 | +0.032 | −6.1 |
+| Siberia boreal | 0.1753 | 0.1461 | +0.029 | −5.5 |
+| Sahara | 0.3811 | 0.3616 | +0.020 | −4.8 |
+| **Fennoscandia** | 0.1157 | 0.1141 | **+0.002** | −0.3 |
+| Europe / Amazon / Plains / steppe / Australia | — | — | **±0.004** | ~0 |
+
+Temperate and tropical vegetation is essentially perfect, so the albedo *scheme* is not
+broken and a global fix would be wrong. **Sahara +0.020 is a separate, real finding** worth
+its own look. Note Fennoscandia — same needleleaf type as Siberia — is correct, which already
+argues against a needleleaf-albedo error.
+
+#### Latitude split: it is not the forest
+
+| band | model | CERES | diff |
+|---|---:|---:|---:|
+| 55–60N | 0.1369 | 0.1257 | +0.011 |
+| 60–65N | 0.1377 | 0.1272 | +0.011 |
+| 65–70N | 0.1738 | 0.1429 | +0.031 |
+| 70–75N | 0.3026 | 0.2152 | **+0.087** |
+
+#### How the albedo is actually built — and why two hypotheses died
+
+All configurations (AMIP, coupled round-09, **and the CMIP7 production piControl**) run
+`LRDALB = .false.` with `NALBEDOSCHEME = 3`. That **discards the MODIS albedo sitting in the
+input file** (params 15–18, 174) and constructs albedo every step (`surfbc_ctl_mod.F90:512`):
+
+```
+alpha = RVVEGALB(tvl)*cvl + RVVEGALB(tvh)*cvh + alpha_soil*(1-cvl-cvh)
+PALBF = 0.45976*PALUVD + 0.54024*PALNID
+```
+
+*Hypothesis 1 — the soil-albedo field dominates tundra. **WRONG.*** The bare fraction is only
+**0.01–0.03** in every Siberian band, so the soil term is negligible.
+
+*Hypothesis 2 — the soil fields are corrupt. **Cosmetic only.*** GRIB 117–120 declare `N=128`
+with a full 256-row `pl` array while carrying 40 320 values (the O96 count) — a genuinely
+inconsistent header that **breaks `cdo` and `grib_get_data`** on those fields. But the values
+are O96-ordered and correct: soil albedo is zero over 99.2 % of ocean cells and non-zero over
+98 % of land, `corr(soil, lsm) = +0.894`. **Report upstream as a metadata bug; it is not our
+bias.**
+
+The blend at 70–75N gives only **0.158**, while the model runs at **0.303**. Vegetation and
+soil cannot produce that — the extra ~0.145 is **snow**.
+
+#### The real signature: snow-melt timing, not albedo magnitude
+
+| band | Apr | May | **Jun** | Jul | Aug | **Sep** |
+|---|---:|---:|---:|---:|---:|---:|
+| 55–65N | −0.016 | +0.099 | +0.035 | −0.006 | +0.003 | +0.042 |
+| 65–70N | **−0.061** | +0.029 | **+0.084** | +0.004 | +0.005 | **+0.082** |
+| 70–75N | **−0.067** | −0.043 | **+0.116** | +0.092 | +0.055 | **+0.101** |
+
+The model is **too DARK in Apr** (−0.06 to −0.07), **near-perfect in Jul/Aug** when the surface
+is snow-free (+0.004), and **too bright in Jun and Sep**. So `RVVEGALB` is essentially right;
+the snow season is **too long at both ends**.
+
+#### Cause and effect: cold is upstream, but the June snow is a real defect
+
+| | Feb | Mar | Apr | May | **Jun** | Jul |
+|---|---:|---:|---:|---:|---:|---:|
+| T2m bias | −1.70 | −1.41 | −0.08 | −0.34 | −1.35 | −2.35 |
+| albedo bias | **−0.084** | **−0.089** | −0.063 | +0.005 | **+0.086** | +0.030 |
+
+**Feb–Apr the model is too cold *and* too dark simultaneously.** If bright snow caused the
+cold, the signs would agree. They do not — so the winter cold is **not** albedo-driven and
+must come from elsewhere (the global tropospheric cold bias, longwave, or advection). The
+albedo bias only turns positive in June, *after* the temperature crosses freezing.
+
+But the June snow is not merely inherited: **June is +6.2 °C with 213 W/m² of insolation and
+0.020 m w.e. still lying.** Snow should not survive that. Implied snow-cover fraction is
+**~17 %, where CERES implies ~2 %** — a very thin layer credited with far too much area, which
+points at the **snow-cover-fraction formulation**, not snow albedo (too *low* in April) and not
+melt energy (ample).
+
+#### Growing season: June is albedo, July is cloud
+
+| Siberia 55–75N | Jun | Jul | Aug | JJA |
+|---|---:|---:|---:|---:|
+| cloud | 6.9 | **9.9** | 4.4 | 7.0 |
+| **albedo/snow** | **13.4** | 1.7 | 1.3 | 5.5 |
+| total | 20.2 | 11.6 | 5.7 | 12.5 |
+
+Almost cleanly separated in time. The residual snow/albedo term is **5.5 W/m² on the JJA
+mean, essentially all in June** — worth **~0.2–0.7 K** depending on which sensitivity applies
+(0.033 K/W/m² from the spatial regression, 0.136 from F4's own response). Potentially another
+F4-sized gain, and **orthogonal to F4**, which fixes SW-down while this fixes the absorbed
+fraction.
+
+#### But albedo does not explain the land cold bias
+
+Insolation-weighted over land 60S–75N (excl. Greenland): mean albedo-induced SW loss
+**−3.00 W/m²**, mean T2m bias **−1.35 K**, spatial correlation **r = +0.145**, slope
+**+0.033 K per W/m²**. Decisively, **cells where the model is too *dark* are still −1.16 K
+cold**. So a ~1.2 K land-wide cold bias has **no albedo signature at all**, consistent with the
+global tropospheric cold bias of 0.7–2.9 K found in the vertical profiles. Fixing albedo is
+worth doing; it is not the root cause.
+
+*Caveats:* CERES surface albedo over snow at high latitude carries real retrieval uncertainty,
+and the negative Apr/May bias is odd enough that ERA5 `fal` should be used as a cross-check
+before trusting the amplitude. In a coupled run with LPJG this interacts with the
+vegetation–albedo feedback that AMIP deliberately switches off.
+
+### ⭐ Round 12 results (2026-07-31): F4 is the best boreal lever of the campaign
+
+Threshold ±0.242 K at 44 yr. **F4 nearly doubles the previous best and costs no guardrail.**
+
+| run | ΔSiberia JJA T2m | t | verdict |
+|---|---:|---:|---|
+| **F4** `RVRSMIN` 250→1000 | **+0.749** | +6.06 | **significant — best ever** |
+| **F5** all four | **+0.746** | +6.03 | significant, ≡ F4 |
+| B5 (previous best) | +0.407 | +3.29 | significant |
+| F2 `RVLAI` 5→3 | +0.321 | +2.59 | significant |
+| F1 `RVZ0H` z0m/10 | +0.185 | +1.49 | marginal |
+| F3 `RVCOV` 0.9→0.7 | ≈0 | — | noise |
+
+| | control | B5 | **F4** | F5 | target |
+|---|---:|---:|---:|---:|---:|
+| Siberia JJA T2m | 9.73 | 10.13 | **10.48** | 10.47 | ~12.2 |
+| Siberia sfc SW | 153.78 | 156.26 | **159.33** | 160.04 | 166.26 |
+| Siberia cloud % | 78.14 | 77.02 | **75.89** | 75.52 | 69.59 |
+| global net TOA | 0.64 | **−0.36** | 0.74 | 0.69 | ~0 |
+| **tropics net TOA** | 42.61 | **40.67** | **42.68** | 42.67 | 45.11 |
+| T2m RMSE vs ERA5 | 1.58 | 1.56 | **1.54** | 1.56 | |
+| Bowen ratio | 0.44 | 0.42 | **0.60** | 0.57 | 0.5–1.5 obs |
+
+**F4 costs the tropics nothing** (42.68 vs control 42.61) where B5 wrecked them (40.67). That
+is what vegetation-type indexing bought, and it worked as designed. Bowen moves 0.44 → 0.60,
+into the observed range **without overshooting** — the risk flagged in advance did not
+materialise.
+
+**F5 ≡ F4 to 0.003 K.** Against a naive sum of ~1.25 K, adding F1+F2+F3 on top of F4
+contributes *nothing*. The advance prediction ("F5 ≪ the sum, closer to the largest single
+lever") held, and more strongly than expected: near-total saturation of one shared
+latent-heat pathway. **Use F4 alone.**
+
+**Prediction that failed:** F1 (`RVZ0H`) was called strongest a priori because kB⁻¹ = 0 is the
+largest departure from observation. It is marginal (+0.185) and **barely moved Bowen**
+(0.44→0.43). "Largest departure from observation" is not a reliable guide to leverage.
+
+**B5 carries a hidden −0.72 K DJF cooling** (F4: +0.06). Invisible for the whole campaign
+because only JJA was ever evaluated. Given the coupled model's original complaint is a
+*cold-season* bias, that is disqualifying for B5. **DJF now belongs in the standard
+guardrails.**
+
+**Is F4 fixing a cause or a symptom?** Two tests, both partly exonerating:
+* *Seasonally selective* — DJF +0.061, MAM +0.047, **JJA +0.749**, SON +0.110. Exactly the
+  signature a transpiration mechanism must have (stomata shut, canopy snow-covered in winter),
+  so it acts through the mechanism claimed.
+* *Vertically targeted* — warms 1000/925/850 hPa by +0.83/+0.84/+0.83, closing **56–83 % of
+  the Siberia-specific** layer bias, and only +0.53 aloft. It fixes the layer that is
+  specifically Siberian rather than smearing warmth through the column.
+
+What remains true: `RVRSMIN` 250→1000 is an **unanchored 4× excursion** from what ECMWF
+ships, and the vertical profiles show it removes moisture that is already deficient.
+
+### Round 11 results (2026-07-30): D2b adopted for the Southern Ocean, D1 falsified
+
+| | SO SW CRE | SO SW RMSE | Sib JJA T2m | global TOA | tropics |
+|---|---:|---:|---:|---:|---:|
+| control | −60.29 | 6.88 | 9.73 | 0.64 | 42.61 |
+| **piCTRL 1850** | −60.65 | 6.83 | 9.74 | **0.79** | 42.69 |
+| D1 `RCAPDCYCL`=4 | −60.38 | 6.51 | **9.56** | 0.61 | 42.53 |
+| D2a INP, no gate | **−65.13** | 5.07 | 9.56 | −0.28 | 42.23 |
+| **D2b INP + p700** | −62.93 | **4.96** | 9.51 | 0.36 | **42.70** |
+
+**D2b adopted.** Best SO SW RMSE of any run (6.88 → 4.96, −28 %) with **zero tropical cost**
+(+0.09), beating A1b (5.54) and even D2a (5.07) despite a smaller mean-CRE change — it
+improves the spatial *pattern*, which is what the priority metric is for.
+
+**D1 falsified cleanly.** Predicted to recover part of B5's +0.407 K by reformulating the land
+CAPE closure; delivered **−0.170 K**, the wrong sign. So B5's gain requires *removing* the
+land correction, not rescaling it — the effect is not about which quantity the closure scales
+on. The advance prediction made this unambiguous.
+
+**piCTRL: the energy target is +0.79, not +0.64** — slightly *larger*, so A1b does not
+overshoot. And **boreal T2m differs by only +0.008 K**, so the dead-namelist forcing bug never
+affected the boreal target and every round-10 boreal conclusion stands.
+
+**G1 = F4 + D2b is running** — the first pairing where the two targets do not conflict, since
+they are disjoint in both process and geography (stomatal conductance on vegetation types 3/4
+versus ice nucleation over ocean below 700 hPa). Naive sum: boreal +0.53, SO RMSE ~4.74,
+tropics ~42.8. **A prediction, not a measurement** — AB and ABB8 both got superposition wrong
+in sign, and F5 saturated almost completely.
+
+*Infrastructure:* `eval_round10_A.py` now caches per run (JSON in `.eval_cache/`) and
+parallelises the cold path — **2m09s → 7.7s, output verified byte-identical**. Adding one run
+costs one run's work. `table.py` builds tables from the cache; the old fixed-width text parser
+silently mis-aligned columns when new run labels had different widths.
+
 ### Round 12 design (2026-07-31): the F-series — boreal surface exchange, running
 
 Round 11 left the boreal unsolved: B5 (+0.407 K) is still the only significant lever and it

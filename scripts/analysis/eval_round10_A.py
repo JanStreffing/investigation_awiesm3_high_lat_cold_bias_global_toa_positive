@@ -19,7 +19,8 @@ Guardrails reported for every run: global net TOA and surface flux (with snow
 enthalpy), tropics, and NH-SH albedo asymmetry (which the literature warns A1 and A2
 push the SAME way).
 """
-import numpy as np, xarray as xr, os, warnings
+import numpy as np, xarray as xr, os, sys, json, warnings
+from concurrent.futures import ProcessPoolExecutor
 warnings.filterwarnings('ignore')
 
 ACC = 3600.0
@@ -49,7 +50,18 @@ RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
         ('ABB8 A1b+B2+B8', 'amip_ABB8'),
         ('C1 rlam75', 'amip_C1_rlam75'),
         ('C2 rlam40', 'amip_C2_rlam40'),
-        ('E1 lamsk2.5', 'amip_E1_lamsk25')]
+        ('E1 lamsk2.5', 'amip_E1_lamsk25'),
+        # --- round 11 (2026-07-30/31) ---
+        ('D1 capdcycl4', 'amip_D1_capdcycl4'),
+        ('D2a inpsea.2', 'amip_D2a_inpsea02'),
+        ('D2b inp+p700', 'amip_D2b_inpsea02_p700'),
+        ('piCTRL 1850', 'amip_picontrol'),
+        # --- round 12, F-series: boreal surface exchange (2026-07-31) ---
+        ('F1 z0h/10', 'amip_F1_z0h10'),
+        ('F2 LAI=3', 'amip_F2_lai3'),
+        ('F3 cov=0.7', 'amip_F3_cov07'),
+        ('F4 rsmin1000', 'amip_F4_rsmin1000'),
+        ('F5 all four', 'amip_F5_allveg')]
 
 ERA5 = '/work/ab0246/a270092/obs/era5/netcdf/T2M.nc'
 
@@ -143,23 +155,50 @@ def rmse(model2d, obs2d, lat, lon=None, box=None, lsm=None, sfc='all'):
 
 lsm = xr.open_dataset(LSMF)['lsm'].isel(time_counter=0).values
 JJA = [5, 6, 7]
-E5 = None
-res, C = {}, None
-for lab, run in RUNS:
-    d, _lat, _lon = load(run)
+
+# ---------------------------------------------------------------------------
+# Per-run cache.  Each run costs ~530 file reads to yield 16 floats, and the run
+# list only grows, so recomputing everything to add one experiment is waste.
+#
+# !! BUMP CACHE_VERSION WHENEVER A METRIC DEFINITION BELOW CHANGES !!  The
+# signature deliberately does NOT hash this file: adding a run to RUNS would
+# then invalidate every cache and defeat the point.  --no-cache forces a
+# full recompute.
+# ---------------------------------------------------------------------------
+CACHE_VERSION = 1
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.eval_cache')
+USE_CACHE = '--no-cache' not in sys.argv
+NPROC = int(os.environ.get('EVAL_NPROC', '8'))
+
+
+def _sig(run):
+    """Newest input mtime + window + metric version; None if run is incomplete."""
+    newest = 0.0
+    for v in VARS:
+        for y in range(Y0, Y1 + 1):
+            fp = f'{RT}/{run}/outdata/oifs/atm_remapped_1m_{v}_1m_{y}-{y}.nc'
+            if not os.path.exists(fp):
+                return None
+            m = os.path.getmtime(fp)
+            if m > newest:
+                newest = m
+    return f'v{CACHE_VERSION}|{Y0}-{Y1}|{newest:.0f}'
+
+
+def metrics(run, lat, lon, C, E5):
+    """The 16 scalars for one run.  Identical arithmetic to the pre-cache version."""
+    d, _, _ = load(run)
     if d is None:
-        print(f'  !! {lab}: output incomplete, skipped'); continue
-    lat, lon = _lat, _lon      # keep the last GOOD grid; a failed load must not clobber it
-    if C is None:
-        C = ceres(lat, lon)
-        E5 = era5_t2m(lat, lon)
+        return None
     net = d['tsr'] + d['ttr']
     swcre = d['tsr'] - d['tsrc']
     snow = d['sf'] * 333_550_000.0
     sfc = d['ssr'] + d['str'] + d['sshf'] + d['slhf'] - snow
     alb_n = 1 - sel(d['tsr'], lat, lon, lsm, (0, 90)) / sel(d['tisr'], lat, lon, lsm, (0, 90))
     alb_s = 1 - sel(d['tsr'], lat, lon, lsm, (-90, 0)) / sel(d['tisr'], lat, lon, lsm, (-90, 0))
-    res[lab] = dict(
+    ssrm = d['ssr'].mean(0)
+    csw = C['sfc_net_sw_all_clim'].mean(0)
+    return dict(
         so_cre=sel(swcre, lat, lon, lsm, (-65, -45), sfc='ocean'),
         so_cld=sel(d['tcc'] * 100, lat, lon, lsm, (-65, -45), sfc='ocean'),
         so_net=sel(net, lat, lon, lsm, (-65, -45), sfc='ocean'),
@@ -170,14 +209,69 @@ for lab, run in RUNS:
         g_sfc=sel(sfc, lat, lon, lsm, (-90, 90)),
         trop=sel(net, lat, lon, lsm, (-30, 30)),
         dalb=alb_n - alb_s,
-        rmse_sw=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat),
-        rmse_so=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat, lon,
-                     (-65, -45, -180, 180), lsm, 'ocean'),
-        rmse_spna=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat, lon,
-                       (50, 65, -60, 0), lsm, 'ocean'),
-        rmse_nordic=rmse(d['ssr'].mean(0), C['sfc_net_sw_all_clim'].mean(0), lat, lon,
-                         (65, 80, -20, 20), lsm, 'ocean'),
+        rmse_sw=rmse(ssrm, csw, lat),
+        rmse_so=rmse(ssrm, csw, lat, lon, (-65, -45, -180, 180), lsm, 'ocean'),
+        rmse_spna=rmse(ssrm, csw, lat, lon, (50, 65, -60, 0), lsm, 'ocean'),
+        rmse_nordic=rmse(ssrm, csw, lat, lon, (65, 80, -20, 20), lsm, 'ocean'),
         rmse_t2m=rmse(d['2t'].mean(0), E5, lat))
+
+
+def _worker(args):
+    lab, run, lat, lon, C, E5 = args
+    try:
+        return lab, metrics(run, lat, lon, C, E5)
+    except Exception as e:                    # one bad run must not kill the table
+        print(f'  !! {lab}: {type(e).__name__}: {e}')
+        return lab, None
+
+
+# bootstrap grid + reference fields from the first complete run
+lat = lon = C = E5 = None
+for _lab, _run in RUNS:
+    _fp = f'{RT}/{_run}/outdata/oifs/atm_remapped_1m_2t_1m_{Y0}-{Y0}.nc'
+    if os.path.exists(_fp):
+        _ds = xr.open_dataset(_fp)
+        lat, lon = _ds['2t'].lat.values, _ds['2t'].lon.values
+        _ds.close()
+        C, E5 = ceres(lat, lon), era5_t2m(lat, lon)
+        break
+
+os.makedirs(CACHE_DIR, exist_ok=True)
+res, todo = {}, []
+for lab, run in RUNS:
+    sig = _sig(run)
+    if sig is None:
+        print(f'  !! {lab}: output incomplete, skipped')
+        continue
+    cf = os.path.join(CACHE_DIR, run + '.json')
+    if USE_CACHE and os.path.exists(cf):
+        try:
+            blob = json.load(open(cf))
+            if blob.get('sig') == sig:
+                res[lab] = blob['m']
+                continue
+        except Exception:
+            pass
+    todo.append((lab, run, lat, lon, C, E5))
+
+if todo:
+    print(f'  computing {len(todo)}, {len(res)} cached [{NPROC} proc]', flush=True)
+    if NPROC > 1 and len(todo) > 1:
+        with ProcessPoolExecutor(max_workers=min(NPROC, len(todo))) as ex:
+            done = list(ex.map(_worker, todo))
+    else:
+        done = [_worker(a) for a in todo]
+    for (lab, m), t in zip(done, todo):
+        if m is None:
+            continue
+        res[lab] = m
+        json.dump({'sig': _sig(t[1]), 'm': m},
+                  open(os.path.join(CACHE_DIR, t[1] + '.json'), 'w'))
+else:
+    print(f'  all {len(res)} run(s) from cache')
+
+res = {lab: res[lab] for lab, _ in RUNS if lab in res}   # preserve RUNS order
+
 obs = dict(so_cre=sel(C['toa_cre_sw_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
            so_cld=sel(C['cldarea_total_daynight_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
            so_net=sel(C['toa_net_all_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
