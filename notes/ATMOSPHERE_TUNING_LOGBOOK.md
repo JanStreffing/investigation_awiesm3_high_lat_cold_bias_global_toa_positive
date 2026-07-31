@@ -63,6 +63,115 @@ larger than the control's +0.64. Aerosols were verified correct (MACv2-SP transi
 1989→2002 logged), so this is not a missing-forcing artefact but a genuine radiative bias,
 consistent with the SO cloud deficit being identical across epochs (+7.85 vs +7.78).
 
+### Run inventory — every directory under `runtime/oifsamip-cy48/`, including the dead ones
+
+There are 41 experiment directories but only 26 carry data. Recording which are which, so
+nobody has to guess whether an empty directory is a failure worth investigating.
+
+**Carrying evaluated data (26).** control `amip_pi_base` (50 yr) and `amip_picontrol` (48);
+`amip_presentday` (26); the levers `A1a A1b A1c A2_kknumland150 expA B1–B8 AB ABB8 C1 C2 E1`
+(46 yr each); round 11 `D1 D2a D2b` (48 yr each); round 12 `F1–F5` (running). All appear in
+the results tables above.
+
+**Superseded, no output (1).** `amip_A2_kkland150` — a first A2 attempt from 2026-07-29,
+replaced by `amip_A2_kknumland150`. Two runscripts exist for A2 (`_A2_kkland150.yaml` and
+`_A2_kknumland150.yaml`); **only the `kknumland150` one was ever evaluated.**
+
+**LPJG forcing generation, not tuning runs (11).** `amip_lpjgforce_chk`, `amip_nolpjg_forc`,
+`amip_nolpjg_forcing`, `amip_nolpjg_pi1870`, `amip_pi_clean1/2`, `amip_pi_dbg1/2/3`,
+`amip_pi_fixtest`, `amip_pi_forcing` — all from `_lpjgforcing.yaml`, 3–5 July 2026, during
+the work on the clean AMIP–noLPJG forcing generator (report §`sub:amipgen`). They were built
+to emit the **daily LPJG forcing set**, not the standard evaluation fields, which is why they
+have zero `atm_remapped_1m_2t_*` files — that is expected, not a failure. `amip_pi_forcing`
+retains 12 coupler files (`A_SST_OpenIFS_*.nc`, `A_Ice_frac_OpenIFS_*.nc`); the rest have
+been cleaned out. **None of them is a tuning lever and none should appear in an evaluation.**
+
+*Practical note:* the evaluation scripts glob on `atm_remapped_1m_<var>_1m_<year>.nc`, so
+these directories are skipped automatically with an "incomplete, skipped" warning if ever
+added to a `RUNS` list. The warning is the intended behaviour, not an error to chase.
+
+### Round 12 design (2026-07-31): the F-series — boreal surface exchange, running
+
+Round 11 left the boreal unsolved: B5 (+0.407 K) is still the only significant lever and it
+costs **−1.94 W/m² in the tropics**, which are already 2.5 below CERES. D1 was built to
+separate B5's boreal gain from that cost and **failed** (−0.170 K, wrong sign). So round 12
+changes target: instead of convection or cloud, it attacks **boreal surface exchange**.
+
+**One observational anchor for all five runs.** The measured Siberian JJA Bowen ratio is
+**0.43**, against ~0.5–1.5 observed for boreal conifer — the model puts too much of the
+surface energy into latent heat. Each lever raises Bowen by an independent route, so this is
+one hypothesis tested four ways rather than four unrelated pokes.
+
+**All are indexed on vegetation types 3 and 4** (evergreen/deciduous needleleaf), so types
+5/6/18 (broadleaf, mixed) keep their defaults and the tropics and temperate forests are
+untouched **by construction**. That is precisely the property B5 lacks, and the reason an
+F-lever could beat it even at similar boreal magnitude.
+
+| run | change (`susveg_mod.F90`) | basis | binary |
+|---|---|---|---|
+| **F1** | `RVZ0H(3,4)` = `RVZ0M/10` | see below — largest departure from observation | `feb42a8c3985` |
+| **F2** | `RVLAI(3,4)` 5.0 → 3.0 | observed boreal conifer LAI is 2–4, not 5 | `12ed4f92e7f5` |
+| **F3** | `RVCOV(3,4)` 0.9 → 0.7 | taiga is often open woodland | `03d49cb864d0` |
+| **F4** | `RVRSMIN(3,4)` 250 → 1000 | expA's 250→500 gave +0.232 K; tests saturation | `fafde82f9d91` |
+| **F5** | all four together | **measures** the superposition | `2b6aaac9da20` |
+
+None had been tried before: `RVZ0H`, `RVLAI` and `RVCOV` had **zero** prior mentions in this
+logbook, and `RVRSMIN` only at 500 (expA). Five distinct md5s, each verified against what its
+experiment staged, with the revert verified between every build so each of F1–F4 isolates one
+parameter and F5 is exactly their sum.
+
+#### F1: forests use `z0h = z0m`, everything else uses `z0m/100`
+
+The find that motivated the round. In `susveg_mod.F90`, **every closed-forest type (3, 4, 5,
+6, 18) sets the roughness length for heat equal to that for momentum**, while every other
+land type uses `z0m/100` (water/ice use `z0m/10`). Even "Interrupted Forest" (19) gets /100.
+So it is systematic and deliberate, not a typo — but observations give
+kB⁻¹ = ln(z0m/z0h) ≈ 2 for forests (z0h ≈ z0m/7), i.e. the model uses **kB⁻¹ = 0** and
+parameterises forest heat *and moisture* exchange as far more efficient than observed.
+Raising the resistance forces the surface to warm to shed the same energy and cuts
+evaporation — both raise Bowen.
+
+*Honest caveat on sign:* for **skin** temperature the sign is unambiguous (warmer). For **2 m**
+temperature it is not — reducing `z0h` steepens the near-surface gradient and T2m is diagnosed
+within it, so part of the skin warming may not reach 2 m. The moisture side reinforces
+warming. Net warming is the **prediction**, not a certainty.
+
+#### F5: measure the superposition, do not infer it
+
+Predicting superposition has failed **twice, in sign**: AB (A1b + B2) predicted +0.21 K and
+measured −0.053; ABB8's parts summed to +0.76 K and measured −0.167. F5 costs one build and
+one job and runs in parallel, so the superposition arrives *with* the individual sensitivities
+rather than nine hours later.
+
+**Prediction on record: F5 ≪ F1+F2+F3+F4**, probably closer to the largest single lever than
+to their sum. Unlike AB — which combined genuinely different processes — F1–F4 all act through
+the **same pathway**, suppressing latent heat flux, and latent heat has a floor at zero, so
+saturation is close to guaranteed. If F5 comes out near-additive, the four are working through
+partly separate channels (e.g. F1 altering boundary-layer structure rather than only
+evaporation), which is itself worth knowing.
+
+**Risk named in advance:** all four at full strength may drive Bowen *past* the observed
+0.5–1.5 range into a dry bias. A large F5 is therefore **not automatically good** — check
+Bowen, soil moisture and T2m RMSE, not just the Siberian JJA mean. With F1–F4 individually
+plus one superposition point we can interpolate down to a sensible amplitude instead of
+guessing.
+
+#### What the vertical profiles say about this round
+
+Measured *after* the runs were launched (see the section above), and it cuts both ways:
+
+* **Supports the framing.** The Siberia-specific cold bias is confined below 850 hPa
+  (−1.0 to −1.5 K beyond the global bias, ~0 at 700–300 hPa). That is exactly the signature a
+  surface-exchange problem should have, so the F-levers are aimed at the right layer.
+* **Cautions the mechanism.** Siberian RH is +5.6 to +8.2 % too high while `q` is **too low**.
+  The excess cloud is *thermally* driven — cold air saturating at lower moisture — not
+  moisture-driven. The F-series removes moisture that is already deficient, so **a large
+  F-response must not be read as confirmation that we found the cause.**
+
+Also relevant: above 700 hPa Siberia merely shares a **global tropospheric cold bias of
+0.7–2.9 K**. No boreal lever will touch that, and it is a separate problem the campaign has
+not yet addressed.
+
 ### Vertical structure vs ERA5 (2026-07-31): where the biases actually live
 
 Everything measured until now was at the surface or TOA, which says a bias exists but not
