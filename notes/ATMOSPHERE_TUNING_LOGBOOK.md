@@ -63,6 +63,73 @@ larger than the control's +0.64. Aerosols were verified correct (MACv2-SP transi
 1989→2002 logged), so this is not a missing-forcing artefact but a genuine radiative bias,
 consistent with the SO cloud deficit being identical across epochs (+7.85 vs +7.78).
 
+### Vertical structure vs ERA5 (2026-07-31): where the biases actually live
+
+Everything measured until now was at the surface or TOA, which says a bias exists but not
+where it originates. `scripts/analysis/vertical_profiles_prep.sh` + `vertical_profiles.py`
+compare model and ERA5 on the model's 19 pressure levels.
+
+*Setup:* ERA5 monthly pressure levels come from the **DKRZ pool**
+(`/pool/data/ERA5/E5/pl/an/1M/`, params 130 T, 133 q, 157 RH) — **no download needed**. All
+19 model levels exist *exactly* in ERA5's 37, so `-sellevel` matches with no interpolation.
+ERA5 is regridded onto the model grid so the *same* land mask applies to both. The model
+writes **monthly** `pl` output (36 MB/yr/var) as well as 6-hourly (4.6 GB) — use the monthly.
+Primary comparison is `amip_presentday` vs ERA5 1990–2014, which is **period-clean**.
+
+#### ⚠ The model's pressure-level RH field is BROKEN
+
+`r` on pressure levels is **identically zero in every run checked** — 0 nonzero of 17,510,400
+values in both `amip_presentday` (1995) and `amip_pi_base` (1900) — while `q` on the same
+levels is fine. The XIOS `r` output is dead and **must not be used**; it silently yields
+garbage rather than failing. RH below is computed from `t` and `q` via Bolton's formula
+applied identically to both datasets, so the saturation convention cancels in the difference.
+
+#### The Siberia-specific cold bias is confined below 850 hPa
+
+| hPa | Siberia | Global | **Siberia-specific** |
+|---:|---:|---:|---:|
+| 1000 | −1.90 | −0.73 | **−1.17** |
+| 925 | −2.17 | −0.65 | **−1.52** |
+| 850 | −1.99 | −0.99 | **−1.00** |
+| 700 | −1.22 | −1.15 | −0.07 |
+| 500 | −1.67 | −1.49 | −0.18 |
+| 300 | −2.32 | −2.22 | −0.10 |
+| 200 | −4.92 | −2.87 | −2.05 |
+
+**This separates two problems that had been conflated.** Above 700 hPa Siberia merely shares
+a **global tropospheric cold bias of 0.7–2.9 K** (peaking near the tropopause) that no boreal
+lever will touch. The boreal-specific excess lives entirely in the bottom three levels —
+exactly the signature a surface-exchange problem should have, which **validates the F-series
+framing** (`RVZ0H`/`RVLAI`/`RVCOV`/`RVRSMIN` all act on surface exchange).
+
+#### The excess boreal cloud is thermally driven, not moisture-driven
+
+Siberian JJA RH is **+5.6 to +8.2 % too high**, but `q` is **too LOW** (−0.2 to −0.3 g/kg).
+The air is not moist; it is cold, so it saturates at lower moisture. A 2 K cold bias cuts
+`q_sat` by ~14 % (Clausius–Clapeyron) while `q` is only ~6 % low, which accounts for the RH
+excess almost exactly.
+
+**Caution for the F-series.** Those levers work by *removing moisture*, which will reduce
+cloud — but moisture is already deficient and the loop reads cold → cloud → less SW → colder.
+Cutting an already-deficient moisture supply may be treating a symptom. A large F-response
+should therefore **not** be read as confirmation that we found the cause.
+
+#### Independent support for the D2 (INP) hypothesis
+
+The Southern Ocean has RH **+5.8 to +6.6 % too high through the mixed-phase layer**
+(850–500 hPa) while reflecting **too little** SW (CRE −60.3 vs CERES −68.1). The humidity is
+present; the liquid is not. That is precisely the supercooled-liquid deficit the
+ice-nucleation hypothesis predicts, seen from a completely independent direction.
+
+*Qualification:* the SO RH excess actually **peaks at 300 hPa (+10 %)**, above the layer
+D2b's 700 hPa gate targets. So the gate's success may owe more to sparing the tropics than
+to selectively hitting SO low cloud, and the low-cloud framing in the round-11 notes is
+weaker than the D2a-vs-D2b result alone suggested.
+
+*Not comparable:* the model writes no cloud variables on pressure levels (`cc`/`clwc`/`ciwc`
+absent), so vertical cloud structure cannot be compared directly — RH is the only proxy.
+Adding those three to the `file_def` would be a small change worth making for future runs.
+
 ### Round 11 design (2026-07-30): two physically-motivated levers
 
 Round 10 ended with two structural walls (see the combination arithmetic above): the SO is
