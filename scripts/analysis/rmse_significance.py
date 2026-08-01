@@ -34,23 +34,8 @@ LSMF = ('/work/bb1469/a270270/runtime/awiesm3-v3.4/Tuning_test_08B_06V_06Tplus_E
 Y0, Y1 = 1872, 1915
 YEARS = list(range(Y0, Y1 + 1))
 
-RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
-        ('A1b ovl=0.35', 'amip_A1_overlap035'), ('A2 KKland=150', 'amip_A2_kknumland150'),
-        ('expA rvrs=500', 'amip_expA_rvrsmin500'),
-        ('A1c depth1500', 'amip_A1c_depliqdepth1500'),
-        ('B1 detrpen.45', 'amip_B1_detrpen045'),
-        ('B2 convi=25', 'amip_B2_clddiffconvi25'),
-        ('AB ovl+convi', 'amip_AB_ovl035_convi25'),
-        ('B3 clddiff', 'amip_B3_clddiff15e6'),
-        ('B4 entshalp3', 'amip_B4_entshalp3'),
-        ('B5 capdcycl0', 'amip_B5_capdcycl0'),
-        ('B6 lcritsnow', 'amip_B6_lcritsnow1e5'),
-        ('B7 rvice.22', 'amip_B7_rvice022'),
-        ('B8 lamsk5', 'amip_B8_lamsk5'),
-        ('ABB8 A1b+B2+B8', 'amip_ABB8'),
-        ('C1 rlam75', 'amip_C1_rlam75'),
-        ('C2 rlam40', 'amip_C2_rlam40'),
-        ('E1 lamsk2.5', 'amip_E1_lamsk25')]
+# RUNS lives in runs.py so the evaluators cannot drift apart (they did, 3x).
+from runs import RUNS
 
 BOXES = {'SO 45-65S': (-65, -45, -180, 180), 'subpolar N Atl': (50, 65, -60, 0),
          'Nordic Seas': (65, 80, -20, 20), 'global': None}

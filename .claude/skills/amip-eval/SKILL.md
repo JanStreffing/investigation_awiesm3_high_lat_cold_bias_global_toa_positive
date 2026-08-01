@@ -33,9 +33,15 @@ the question allows.
 | `scripts/analysis/rmse_significance.py` | same ANOVA on per-year spatial SW RMSE (deep-water boxes) |
 | `scripts/analysis/vertical_profiles_prep.sh` then `vertical_profiles.py` | model − ERA5 profiles of T, q, RH |
 
-Add new runs to the `RUNS` list in **all three** of the first scripts — they each carry their
-own copy. Runs with missing output are skipped with a printed warning, so adding a
-still-running experiment is harmless.
+**Add new runs in ONE place: `scripts/analysis/runs.py`.** All evaluators import `RUNS` from
+there. They used to carry three separate copies, which drifted three times — each time leaving
+one script unable to reproduce numbers the others had printed. `runs.py` also holds the shared
+window (`Y0, Y1`) and paths, for the same reason, plus a `NOT_LEVERS` list of the
+forcing-generator directories that must never be added. Runs with missing output are skipped
+with a printed warning, so adding a still-running experiment is harmless.
+
+Also **document the round in the logbook when you design it, not after the results land** —
+the F-series rationale existed only in runscript headers until it was reconstructed later.
 
 ## 2. Metrics, regions, and current targets
 
@@ -83,6 +89,9 @@ N Atl **±0.024**; Nordic **±0.053**; global SW **±0.023**.
   differently from "−0.17".
 - Check **tropics net TOA** on any lever touching convection or cloud. B5 wins the boreal at
   a cost of −1.94 W/m² there.
+- **Check DJF, not only JJA.** B5's −0.72 K winter cooling went unnoticed for the whole
+  campaign because only the growing season was ever evaluated, and the coupled model's
+  original complaint is a *cold-season* bias.
 - **Never predict superposition.** AB and ABB8 both got it wrong *in sign*. Measure it.
 - State a **falsifiable prediction** before a run and report the outcome against it. D1's
   prediction failed cleanly and that was worth more than a vague success.

@@ -39,34 +39,8 @@ JJA = [5, 6, 7]                     # same 0-based convention as eval_round10_A.
 BOX = ((55, 75), (60, 180))         # Siberia land
 ACC = 3600.0
 
-RUNS = [('control', 'amip_pi_base'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
-        ('A1b ovl=0.35', 'amip_A1_overlap035'), ('A2 KKland=150', 'amip_A2_kknumland150'),
-        ('expA rvrs=500', 'amip_expA_rvrsmin500'),
-        ('A1c depth1500', 'amip_A1c_depliqdepth1500'),
-        ('B1 detrpen.45', 'amip_B1_detrpen045'),
-        ('B2 convi=25', 'amip_B2_clddiffconvi25'),
-        ('AB ovl+convi', 'amip_AB_ovl035_convi25'),
-        ('B3 clddiff', 'amip_B3_clddiff15e6'),
-        ('B4 entshalp3', 'amip_B4_entshalp3'),
-        ('B5 capdcycl0', 'amip_B5_capdcycl0'),
-        ('B6 lcritsnow', 'amip_B6_lcritsnow1e5'),
-        ('B7 rvice.22', 'amip_B7_rvice022'),
-        ('B8 lamsk5', 'amip_B8_lamsk5'),
-        ('ABB8 A1b+B2+B8', 'amip_ABB8'),
-        ('C1 rlam75', 'amip_C1_rlam75'),
-        ('C2 rlam40', 'amip_C2_rlam40'),
-        ('E1 lamsk2.5', 'amip_E1_lamsk25'),
-        # --- round 11 (2026-07-30/31) ---
-        ('D1 capdcycl4', 'amip_D1_capdcycl4'),
-        ('D2a inpsea.2', 'amip_D2a_inpsea02'),
-        ('D2b inp+p700', 'amip_D2b_inpsea02_p700'),
-        ('piCTRL 1850', 'amip_picontrol'),
-        # --- round 12, F-series: boreal surface exchange (2026-07-31) ---
-        ('F1 z0h/10', 'amip_F1_z0h10'),
-        ('F2 LAI=3', 'amip_F2_lai3'),
-        ('F3 cov=0.7', 'amip_F3_cov07'),
-        ('F4 rsmin1000', 'amip_F4_rsmin1000'),
-        ('F5 all four', 'amip_F5_allveg')]
+# RUNS lives in runs.py so the evaluators cannot drift apart (they did, 3x).
+from runs import RUNS
 
 lsm = xr.open_dataset(LSMF)['lsm'].isel(time_counter=0).values
 
