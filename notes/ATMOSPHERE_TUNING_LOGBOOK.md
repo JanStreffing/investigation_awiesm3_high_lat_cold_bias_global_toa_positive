@@ -74,9 +74,13 @@ so nobody has to guess whether an empty directory is a failure worth investigati
 (46 yr each); round 11 `D1 D2a D2b` (48 yr each); round 12 **`F1–F5` (48 yr each, COMPLETE)**.
 All appear in the results tables above.
 
-**Running (1).** `amip_G1_F4_D2b` — F4 + D2b, the first combination whose components are
-disjoint in process and geography. Started 2026-07-31; add to the `RUNS` list in all three
-evaluators when it finishes.
+**Running (2).** Round 13, the H-series, testing the snow-cover-fraction lever `RQSNCR`
+(critical snow depth 10 cm → 30 cm): `amip_H1_snowcr30` (the change alone, vs control) and
+`amip_H2_G1_snowcr30` (the change on top of G1). Started 2026-08-02.
+
+**Completed since this inventory was written (1).** `amip_G1_F4_D2b` — now in `RUNS` and in
+all evaluator tables; see the G1 section above. Adding a run means editing
+`scripts/analysis/runs.py` only, not three separate copies.
 
 **Superseded, no output (1).** `amip_A2_kkland150` — a first A2 attempt from 2026-07-29,
 replaced by `amip_A2_kknumland150`. Two runscripts exist for A2 (`_A2_kkland150.yaml` and
@@ -102,6 +106,124 @@ for d in amip_*/; do
   printf "%-26s %s\n" "$d" "$(ls ${d}outdata/oifs/atm_remapped_1m_2t_1m_*.nc 2>/dev/null | wc -l)"
 done
 ```
+
+### Round 13 design (2026-08-02): the H-series — snow cover fraction, the June lever
+
+*Written before the runs finished, per the rule learned in round 12.*
+
+**Why snow.** The albedo investigation decomposed the 12.5 W/m² Siberian JJA surface-SW
+deficit into ~7.0 W/m² cloud and ~5.5 W/m² **surface albedo**, and the albedo half is
+concentrated almost entirely in **June** (albedo bias +0.086; July and August near-perfect).
+That is a snow-*melt-timing* signature, not a snow-*brightness* one: the model holds a bright
+surface into early summer and then agrees with observations once the snow is gone.
+
+Before touching snow albedo the question "is it too cold because snow is too bright, or too
+bright because too much snow because it is too cold?" was tested directly. **Winter cold is
+not albedo-driven** — February–April is simultaneously cold *and* dark in the model, which
+rules out the albedo→cold direction for those months. That leaves melt timing in the growing
+season as the part worth fixing, which is also the only part that matters for the forest.
+
+**The lever.** Snow cover fraction in `surfbc_ctl_mod.F90:317-322` is
+
+    ZCVS = MIN(1, snow_depth_cm * RQSNCR)
+
+with `RQSNCR = 1/10` under `LESN09=T` (`sussoil_mod.F90:157`). A grid box is therefore
+declared **100 % snow-covered at just 10 cm of snow**, and linearly below that — with no
+dependence on vegetation height or orographic roughness. For boreal forest this is
+physically wrong in an obvious way: 10 cm of snow does not hide a spruce canopy, and the
+observed masking depth over forest is several times larger. H-series sets `RQSNCR = 1/30`.
+
+*Why this is safe for the ice sheets:* Antarctica and Greenland carry snow far deeper than
+30 cm, so `MIN(1, ...)` saturates at 1 for any value in this range and they are untouched.
+Only **shallow, marginal, melting** snow responds — which is exactly the target.
+
+**Runs.** `H1` = `RQSNCR` alone against control (clean attribution); `H2` = `RQSNCR` on top
+of G1's F4 source change and D2b namelist (the deployable stack). `H2 − G1` measures the
+interaction directly against `H1 − control`.
+
+**Falsifiable prediction, on record before the results:** H1 recovers a good part of June's
+13.4 W/m² albedo term, worth ~+0.2 to +0.7 K on Siberian JJA T2m, and does **little in July
+and August**, where the surface is already snow-free and the residual deficit is cloud.
+*If it warms July as much as June, the mechanism is not the one claimed here* and the result
+should be treated as an accidental global brightening, not a melt-timing fix.
+
+Guardrails to check besides the usual set: DJF and MAM in `seasonal_by_run.py` (a snow change
+is a cold-season change first), NH−SH albedo, and the Nordic Seas SW RMSE that G1 degraded.
+
+### ⭐ G1 = F4 + D2b results (2026-08-02): the best configuration of the campaign
+
+G1 combines the two levers whose mechanisms and geographies are disjoint — F4 (`RVRSMIN`
+250→1000, boreal stomatal resistance) and D2b (`RCL_INPSEA=0.2`, `RCL_INPPMIN=700 hPa`,
+ocean ice-nuclei scaling). It is the first pairing that improves **both** targets at once.
+
+| metric | control | G1 | Δ | target |
+|---|---:|---:|---:|---:|
+| **SO SW RMSE** (priority) | 6.877 | **4.809** | −2.067 | — |
+| SO TOA SW CRE [W/m²] | −60.29 | −63.13 | −2.84 | −68.14 |
+| SO cloud area [%] | 83.07 | 83.59 | +0.52 | 89.72 |
+| **Siberia JJA T2m [°C]** | 9.73 | **10.25** | **+0.521** (t=4.22) | ≈12.2 |
+| Siberia sfc net SW [W/m²] | 153.78 | 159.31 | +5.54 | 166.26 |
+| global net TOA [W/m²] | +0.64 | +0.45 | −0.195 | ~0 |
+| tropics net TOA [W/m²] | 42.61 | 42.71 | +0.096 | 45.11 |
+| global T2m RMSE [K] | 1.579 | 1.553 | −0.026 | — |
+| Nordic Seas SW RMSE | 9.058 | 9.358 | **+0.300** | — |
+
+**It superposes — measured, not predicted.** Every previous combination got superposition
+wrong *in sign* (AB, ABB8). G1 is additive to within noise on every metric:
+
+| | F4 | D2b | sum | G1 actual |
+|---|---:|---:|---:|---:|
+| Siberia JJA T2m | +0.749 | −0.222 | +0.527 | **+0.521** |
+| SO SW RMSE | −0.217 | −1.914 | −2.131 | −2.067 |
+| SO TOA SW CRE | −0.079 | −2.640 | −2.719 | −2.840 |
+| global net TOA | +0.095 | −0.283 | −0.188 | −0.195 |
+
+The likely reason additivity holds here and failed before: F4 acts on a land surface flux in
+the boreal summer, D2b on ice nucleation over ocean below 700 hPa. AB and ABB8 combined levers
+that both modified the same cloud scheme in the same regime.
+
+**The one cost is the Nordic Seas**, +0.300 SW RMSE against a ±0.052 threshold — worse than
+additive (F4 −0.074 + D2b +0.258 = +0.184). Nordic RMSE has never responded to anything else
+in the campaign, so this is the first lever to move it, in the wrong direction. It is a small
+box and not the deep-water priority, but it should not be allowed to grow further.
+
+**Remaining gap:** G1 closes 26 % of the boreal bias (0.52 of ~2.0 K) and 36 % of the SO CRE
+gap. The SO **cloud-area** deficit of ~6 pp is still untouched by every lever ever tried.
+
+### Seasonal audit (2026-08-02): the noise floor is not the same in every season
+
+`scripts/analysis/seasonal_by_run.py` (new) runs the same run×year ANOVA as `noise_floor.py`
+but per season. This exists because the campaign evaluated JJA only for eleven rounds, and the
+coupled model's original complaint is a **cold-season** bias.
+
+Siberian T2m detection thresholds differ by a factor of 2.4 across the year:
+
+| season | control | sd(eps) | 95 % threshold |
+|---|---:|---:|---:|
+| DJF | −29.35 °C | 1.407 K | **±0.588 K** |
+| MAM | −9.28 °C | 0.923 K | ±0.386 K |
+| JJA | +9.73 °C | 0.580 K | ±0.242 K |
+| SON | −10.41 °C | 1.031 K | ±0.431 K |
+
+**Applying the JJA threshold to a winter delta overstates significance by 2.4×, and I did
+exactly that** in a first pass, briefly recording D2b (−0.455) and B3 (−0.486) as
+winter-damaged levers. Both are **within** the DJF noise floor. Corrected findings:
+
+- **B5 `capdcycl0` is the only lever with genuine winter damage** (DJF −0.720, clears ±0.588),
+  and the only one that warms JJA significantly while cooling DJF significantly. Its rejection
+  stands, now on a properly-thresholded basis.
+- **D2b's real seasonal cost is spring, not winter**: MAM −0.467 clears ±0.386; its DJF −0.455
+  does not clear ±0.588.
+- **F4 is seasonally clean** — DJF +0.061, MAM +0.047, SON +0.110, all within noise, with the
+  entire signal in JJA (+0.749). This is what a well-targeted lever looks like and is a further
+  argument for F4 over the cloud levers.
+- **G1 is seasonally clean**: DJF +0.070, MAM −0.296, SON +0.280, none significant. The MAM
+  cooling inherited from D2b is diluted below its threshold.
+- Also newly significant on this test: A1a cools MAM/JJA and warms DJF/SON by large amounts —
+  it is not a boreal lever, it is a global cloud change. B6, B7 and F3 all cool MAM
+  significantly; F5 inherits F3's MAM −0.507.
+
+*Run it with every round from now on.* Reporting JJA alone is how B5 survived eleven rounds.
 
 ### ⭐ Surface albedo (2026-07-31): half the Siberian SW deficit is not cloud at all
 

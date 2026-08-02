@@ -58,7 +58,11 @@ RUNS = [
     ('F3 cov=0.7', 'amip_F3_cov07'),
     ('F4 rsmin1000', 'amip_F4_rsmin1000'),
     ('F5 all four', 'amip_F5_allveg'),
-    # ('G1 F4+D2b', 'amip_G1_F4_D2b'),   # round 13 -- uncomment when it finishes
+    ('G1 F4+D2b', 'amip_G1_F4_D2b'),
+    # Round 13 (H): snow cover fraction RQSNCR 1/10 -> 1/30.  In flight 2026-08-02;
+    # evaluators skip them with a warning until the output is complete.
+    ('H1 snowcr30', 'amip_H1_snowcr30'),
+    ('H2 G1+snowcr', 'amip_H2_G1_snowcr30'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs

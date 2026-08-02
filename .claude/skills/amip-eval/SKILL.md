@@ -30,6 +30,7 @@ the question allows.
 |---|---|
 | `scripts/analysis/eval_round10_A.py` | the main table: SO, Siberia, global guardrails, deep-water + global RMSE |
 | `scripts/analysis/noise_floor.py` | run × year ANOVA → detection threshold and `t` for Siberian JJA T2m |
+| `scripts/analysis/seasonal_by_run.py` | the same ANOVA **per season**, with a per-season threshold |
 | `scripts/analysis/rmse_significance.py` | same ANOVA on per-year spatial SW RMSE (deep-water boxes) |
 | `scripts/analysis/vertical_profiles_prep.sh` then `vertical_profiles.py` | model − ERA5 profiles of T, q, RH |
 
@@ -91,7 +92,12 @@ N Atl **±0.024**; Nordic **±0.053**; global SW **±0.023**.
   a cost of −1.94 W/m² there.
 - **Check DJF, not only JJA.** B5's −0.72 K winter cooling went unnoticed for the whole
   campaign because only the growing season was ever evaluated, and the coupled model's
-  original complaint is a *cold-season* bias.
+  original complaint is a *cold-season* bias. Run `seasonal_by_run.py` every round.
+- **Use the season's OWN threshold.** Siberian T2m noise is 2.4× larger in winter than summer:
+  DJF **±0.588 K**, MAM **±0.386**, JJA **±0.242**, SON **±0.431**. Judging a DJF delta against
+  the JJA threshold overstates significance by 2.4× and did, briefly, promote D2b (−0.455) and
+  B3 (−0.486) to "winter-damaged" when both are within noise. **B5 is the only lever with real
+  winter damage.**
 - **Never predict superposition.** AB and ABB8 both got it wrong *in sign*. Measure it.
 - State a **falsifiable prediction** before a run and report the outcome against it. D1's
   prediction failed cleanly and that was worth more than a vague success.

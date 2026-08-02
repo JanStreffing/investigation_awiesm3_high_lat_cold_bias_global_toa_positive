@@ -27,7 +27,12 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--07--29}: Part~IV and the four-arm forcing sensitivity added. A feedback-free AMIP
+\textbf{Last updated 2026--08--02}: G1 $=$ F4 $+$ D2b (\S\ref{sub:g1}) is the best configuration of
+the campaign --- Southern Ocean SW RMSE $6.88\to4.81$ and Siberian JJA T2m $+0.52$\,K together, and the
+first combination that superposes additively rather than wrong in sign. A per-season noise floor
+(\S\ref{sub:seasonal}) corrects two levers wrongly called winter-damaged and leaves B5 as the only real
+case. Round 13 (\S\ref{sec:h}) tests the snow-cover-fraction lever behind the June albedo bias.
+\textbf{2026--07--29}: Part~IV and the four-arm forcing sensitivity added. A feedback-free AMIP
 reference puts $\approx45\,\%$ of the
 TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere; CERES shows the summer deficit
 is a \emph{land-only cloud} error of $11$\,W/m$^2$ (not the $33$ inferred from CRUNCEP3, which is itself
@@ -2146,9 +2151,84 @@ F4 warms $1000/925/850$\,hPa by $+0.83/+0.84/+0.83$, closing $56$--$83\,\%$ of t
 
 What remains true is that \texttt{RVRSMIN} $250\to1000$ is an unanchored $4\times$ excursion
 from what ECMWF ships, and that the vertical profiles show it removes moisture that is already
-deficient. \textbf{G1 $=$ F4 $+$ D2b is running}: the first pairing whose components are
+deficient. \textbf{G1 $=$ F4 $+$ D2b} tested this: the first pairing whose components are
 disjoint in both process and geography, hence expected not to conflict --- but AB and ABB8 both
-got superposition wrong in sign, so it is measured, not assumed.
+got superposition wrong in sign, so it was measured, not assumed. It superposes
+(\S\ref{sub:g1}).
+
+\subsection{G1 $=$ F4 $+$ D2b: the best configuration of the campaign}\label{sub:g1}
+G1 is the first combination to improve \emph{both} targets at once, and the first whose
+superposition is additive rather than wrong in sign.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+metric & control & G1 & $\Delta$ & target \\
+\midrule
+\textbf{SO SW RMSE} (priority) & $6.877$ & $\mathbf{4.809}$ & $-2.067$ & --- \\
+SO TOA SW CRE [W\,m$^{-2}$] & $-60.29$ & $-63.13$ & $-2.84$ & $-68.14$ \\
+SO cloud area [\%] & $83.07$ & $83.59$ & $+0.52$ & $89.72$ \\
+\textbf{Siberia JJA T2m} [$^\circ$C] & $9.73$ & $\mathbf{10.25}$ & $\mathbf{+0.521}$ ($t{=}4.22$) & $\approx 12.2$ \\
+Siberia sfc net SW [W\,m$^{-2}$] & $153.78$ & $159.31$ & $+5.54$ & $166.26$ \\
+global net TOA [W\,m$^{-2}$] & $+0.64$ & $+0.45$ & $-0.195$ & $\sim 0$ \\
+tropics net TOA [W\,m$^{-2}$] & $42.61$ & $42.71$ & $+0.096$ & $45.11$ \\
+global T2m RMSE [K] & $1.579$ & $1.553$ & $-0.026$ & --- \\
+Nordic Seas SW RMSE & $9.058$ & $9.358$ & $\mathbf{+0.300}$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Superposition, measured:} Siberia JJA T2m F4 $+0.749$ $+$ D2b $-0.222$
+$=+0.527$ predicted vs $\mathbf{+0.521}$ actual; SO SW RMSE $-2.131$ vs $-2.067$; SO CRE
+$-2.719$ vs $-2.840$; global net TOA $-0.188$ vs $-0.195$. Additive to within noise on every
+metric. The plausible reason it holds here and failed for AB/ABB8: F4 acts on a land surface
+flux in boreal summer, D2b on ice nucleation over ocean below 700\,hPa, whereas AB and ABB8
+combined levers modifying the \emph{same} cloud scheme in the \emph{same} regime.
+
+\noindent\textbf{The one cost} is the Nordic Seas, $+0.300$ SW RMSE against a $\pm0.052$
+threshold, and worse than additive ($+0.184$ expected). No other lever in the campaign has
+ever moved Nordic RMSE; this one moves it the wrong way. Small box, not the deep-water
+priority, but it must not be allowed to grow.
+
+G1 closes $26\,\%$ of the boreal bias and $36\,\%$ of the SO CRE gap. The SO
+\emph{cloud-area} deficit of ${\sim}6$\,pp remains untouched by every lever tried.
+
+\subsection{Seasonal audit: the noise floor is not the same in every season}\label{sub:seasonal}
+The campaign evaluated JJA only for eleven rounds, while the coupled model's original
+complaint is a \emph{cold-season} bias. \texttt{scripts/analysis/seasonal\_by\_run.py} applies
+the run$\times$year ANOVA of \S\ref{sub:noisefloor} separately to each season. The detection
+threshold varies by a factor of $2.4$ across the year:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+season & control & sd$(\epsilon)$ & 95\,\% threshold \\
+\midrule
+DJF & $-29.35\,^\circ$C & $1.407$\,K & $\pm 0.588$\,K \\
+MAM & $-9.28\,^\circ$C & $0.923$\,K & $\pm 0.386$\,K \\
+JJA & $+9.73\,^\circ$C & $0.580$\,K & $\pm 0.242$\,K \\
+SON & $-10.41\,^\circ$C & $1.031$\,K & $\pm 0.431$\,K \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Applying the JJA threshold to a winter delta overstates significance by $2.4\times$,
+and a first pass through these results did exactly that, briefly recording D2b ($-0.455$) and
+B3 ($-0.486$) as winter-damaged. Both are \emph{within} the DJF noise floor. Corrected:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{B5 \texttt{capdcycl0} is the only lever with genuine winter damage}
+  (DJF $-0.720$, clears $\pm0.588$) and the only one that significantly warms JJA while
+  significantly cooling DJF. Its rejection stands, now properly thresholded.
+\item \textbf{D2b's real seasonal cost is spring, not winter}: MAM $-0.467$ clears
+  $\pm0.386$; its DJF $-0.455$ does not clear $\pm0.588$.
+\item \textbf{F4 is seasonally clean} --- DJF $+0.061$, MAM $+0.047$, SON $+0.110$, all within
+  noise, the entire signal in JJA. A further argument for F4 over the cloud levers.
+\item \textbf{G1 is seasonally clean}: DJF $+0.070$, MAM $-0.296$, SON $+0.280$, none
+  significant; D2b's MAM cooling is diluted below threshold.
+\item A1a warms DJF/SON and cools MAM/JJA by large amounts --- a global cloud change, not a
+  boreal lever. B6, B7 and F3 cool MAM significantly; F5 inherits F3's MAM $-0.507$.
+\end{itemize}
 
 \section{Vertical structure vs ERA5: where the biases live}\label{sec:vprof}
 \subsection{The Siberia-specific cold bias is confined below 850\,hPa}\label{sub:vprof}
@@ -2263,6 +2343,40 @@ the global tropospheric cold bias of \S\ref{sub:vprof}. Fixing albedo is worth d
 the root cause.
 
 \appendix
+\section{Round 13: snow cover fraction, the June lever}\label{sec:h}
+\subsection{Design and prediction}\label{sub:hdesign}
+The albedo decomposition (\S\ref{sec:albedo}) splits the $12.5$\,W\,m$^{-2}$ Siberian JJA
+surface-SW deficit into ${\sim}7.0$ cloud and ${\sim}5.5$ \textbf{surface albedo}, with the
+albedo half concentrated almost entirely in \textbf{June} (\S\ref{sub:albgrow}; bias $+0.086$,
+July and August near-perfect). That is a snow-\emph{melt-timing} signature, not a
+snow-\emph{brightness} one. Cause and effect were established before touching anything: winter
+cold is \emph{not} albedo-driven, since February--April is simultaneously cold and dark
+(\S\ref{sub:albsnow}), which rules out the albedo\,$\to$\,cold direction for those months.
+
+Snow cover fraction (\texttt{surfbc\_ctl\_mod.F90:317--322}) is
+\[ \mathrm{ZCVS} \;=\; \min\!\left(1,\; d_{\mathrm{snow}}[\mathrm{cm}] \cdot \mathtt{RQSNCR}\right),
+\qquad \mathtt{RQSNCR} = 1/10 \ \ \text{under \texttt{LESN09=T}}. \]
+A grid box is therefore fully snow-covered at \textbf{10\,cm}, linearly below that, with no
+dependence on vegetation height or orographic roughness. For boreal forest this is wrong in an
+obvious direction: $10$\,cm of snow does not hide a spruce canopy, and the observed masking
+depth over forest is several times larger. The H-series sets $\mathtt{RQSNCR}=1/30$.
+
+\emph{Why the ice sheets are safe:} Antarctica and Greenland carry snow far deeper than
+$30$\,cm, so $\min(1,\cdot)$ saturates at $1$ for any value in this range and they are
+untouched. Only shallow, marginal, melting snow responds --- which is the target.
+
+\textbf{H1} applies the change alone against control (clean attribution); \textbf{H2} applies
+it on top of G1's F4 source change and D2b namelist (the deployable stack). $\mathrm{H2}-
+\mathrm{G1}$ measured against $\mathrm{H1}-\mathrm{control}$ gives the interaction directly.
+
+\textbf{Falsifiable prediction, recorded before the runs finished:} H1 recovers a good part of
+June's $13.4$\,W\,m$^{-2}$ albedo term, worth ${\sim}+0.2$ to $+0.7$\,K on Siberian JJA T2m,
+and does \emph{little} in July and August, where the surface is already snow-free and the
+residual deficit is cloud. \emph{If it warms July as much as June, the claimed mechanism is
+wrong} and the result should be read as an accidental global brightening, not a melt-timing
+fix. Guardrails beyond the standard set: DJF and MAM (\S\ref{sub:seasonal}) --- a snow change
+is a cold-season change first --- NH$-$SH albedo, and the Nordic Seas SW RMSE that G1 degraded.
+
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize
 \begin{tabular}{l l l l}
