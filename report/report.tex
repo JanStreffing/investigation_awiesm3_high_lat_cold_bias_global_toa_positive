@@ -27,7 +27,10 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--08--02}: G1 $=$ F4 $+$ D2b (\S\ref{sub:g1}) is the best configuration of
+\textbf{Last updated 2026--08--02b}: Round 13 (\S\ref{sec:h}) is a clean falsification --- the
+snow-cover lever gave $+0.020$\,K on the boreal target against a predicted $+0.2$ to $+0.7$, because
+shallow snow turns out to be an \emph{autumn} phenomenon, not a melt one, and it cost $-1.23$\,K in
+winter. Rejected. G1 $=$ F4 $+$ D2b (\S\ref{sub:g1}) remains the best configuration of
 the campaign --- Southern Ocean SW RMSE $6.88\to4.81$ and Siberian JJA T2m $+0.52$\,K together, and the
 first combination that superposes additively rather than wrong in sign. A per-season noise floor
 (\S\ref{sub:seasonal}) corrects two levers wrongly called winter-damaged and leaves B5 as the only real
@@ -2369,13 +2372,71 @@ untouched. Only shallow, marginal, melting snow responds --- which is the target
 it on top of G1's F4 source change and D2b namelist (the deployable stack). $\mathrm{H2}-
 \mathrm{G1}$ measured against $\mathrm{H1}-\mathrm{control}$ gives the interaction directly.
 
-\textbf{Falsifiable prediction, recorded before the runs finished:} H1 recovers a good part of
-June's $13.4$\,W\,m$^{-2}$ albedo term, worth ${\sim}+0.2$ to $+0.7$\,K on Siberian JJA T2m,
-and does \emph{little} in July and August, where the surface is already snow-free and the
-residual deficit is cloud. \emph{If it warms July as much as June, the claimed mechanism is
-wrong} and the result should be read as an accidental global brightening, not a melt-timing
-fix. Guardrails beyond the standard set: DJF and MAM (\S\ref{sub:seasonal}) --- a snow change
-is a cold-season change first --- NH$-$SH albedo, and the Nordic Seas SW RMSE that G1 degraded.
+\textbf{Falsifiable prediction, recorded before the runs finished:}
+\dead{H1 recovers a good part of June's $13.4$\,W\,m$^{-2}$ albedo term, worth
+${\sim}+0.2$ to $+0.7$\,K on Siberian JJA T2m, and does little in July and August.}
+\textcolor{red}{\textbf{Falsified}} (\S\ref{sub:hres}): JJA came out at $+0.020$\,K,
+$t=0.17$. The failure mode was not the anticipated one --- it did not warm July as much as
+June, it failed to warm \emph{any} summer month.
+
+\subsection{Results: prediction falsified, lever rejected}\label{sub:hres}
+\textbf{Predicted $+0.2$ to $+0.7$\,K on Siberian JJA T2m; measured $+0.020$\,K, $t=0.17$.}
+And the lever inflicts the largest winter cold bias in the campaign, $-1.233$\,K DJF against a
+$\pm0.588$ threshold, beating the $-0.720$ for which B5 was rejected.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+ & DJF & MAM & JJA & SON \\
+\midrule
+H1 \texttt{snowcr30} & $\mathbf{-1.233}^{*}$ & $-0.473^{*}$ & $\mathbf{+0.020}$ & $+0.428$ \\
+H2 $=$ G1 $+$ snow & $-0.973^{*}$ & $-0.342$ & $+0.662^{*}$ & $+0.863^{*}$ \\
+\emph{(G1, reference)} & $+0.070$ & $-0.296$ & $+0.521^{*}$ & $+0.280$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Why it failed: the mechanism was pointed at the wrong month.} The lever did
+exactly what it was built to do to the albedo --- but not where the reasoning assumed. H1
+all-sky surface albedo change ($\times 100$, ${}^{*}$ = clears that month's threshold):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r r r r r r r}
+\toprule
+ & Jan & Feb & Mar & Apr & May & \textbf{Jun} & Jul & Aug & \textbf{Sep} & \textbf{Oct} & \textbf{Nov} & Dec \\
+\midrule
+H1 & $-0.51^{*}$ & $-0.21$ & $-0.42^{*}$ & $-0.84^{*}$ & $-1.43^{*}$ & $\mathbf{-0.95}^{*}$ &
+$-0.10^{*}$ & $-0.32^{*}$ & $\mathbf{-3.08}^{*}$ & $\mathbf{-8.16}^{*}$ & $\mathbf{-4.66}^{*}$ & $-1.60^{*}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The response concentrates in \textbf{September--November}, the \emph{snow-onset}
+season, and is small in June. The design error is plain in hindsight:
+$\mathrm{ZCVS}=\min(1, d_{\mathrm{cm}}\cdot\mathtt{RQSNCR})$ can only respond where snow is
+\textbf{shallow}, and snow is shallow while it is \emph{accumulating in autumn}, not while it
+is melting in June --- by June the pack either still saturates $\min(1,\cdot)$ under both
+settings or is already gone. \textbf{Shallow snow is an autumn phenomenon, not a melt
+phenomenon.} Consistently, June/July/August T2m move $-0.076/-0.067/+0.205$ (none
+significant) while \textbf{October T2m is $+1.135$\,K}.
+
+\noindent\textbf{The winter cooling is not radiative.} February and March are dark yet cool by
+$-1.65$ and $-1.19$\,K. Reducing the snow-covered fraction moves area from the exposed and
+sheltered \textbf{snow tiles (5, 7)} onto the vegetation tiles, and the snow tile is what
+buffers the surface against radiative cooling in polar night. The lever trades a small autumn
+warming for a large winter cooling through \textbf{tile fractions, not albedo}.
+
+\noindent\textbf{Verdict: rejected}, and \texttt{RQSNCR} reverted. Three things survive:
+\begin{enumerate}\itemsep2pt
+\item The June surface-albedo bias is \textbf{not} dominated by the snow-cover-fraction
+  formulation. Its cause --- snow-albedo decay, vegetation masking of snow albedo, or the
+  snow-free surface albedo itself --- remains unidentified.
+\item \texttt{RQSNCR} has large leverage on \emph{autumn} albedo ($-8$ points in October).
+  If an autumn or snow-onset bias is ever diagnosed, this is the knob.
+\item H2 posts the campaign's best SO SW RMSE ($4.787$), best subpolar N Atl ($4.713$) and
+  best global T2m RMSE ($1.530$) --- but that is D2b's doing, and the winter damage
+  disqualifies the combination. \textbf{G1 remains the configuration to carry forward.}
+\end{enumerate}
 
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize

@@ -107,6 +107,59 @@ for d in amip_*/; do
 done
 ```
 
+### ⚠ Round 13 results (2026-08-02): PREDICTION FALSIFIED — the snow lever is rejected
+
+**The prediction was `+0.2` to `+0.7` K on Siberian JJA T2m. The measurement is `+0.020` K,
+`t = 0.17`, pure noise.** Recorded as a clean failure. Worse, the lever inflicts the largest
+winter cold bias in the campaign: **DJF −1.233 K**, against a ±0.588 K threshold — beating
+B5's −0.720, which was rejected for exactly this.
+
+| | DJF | MAM | JJA | SON |
+|---|---:|---:|---:|---:|
+| H1 `snowcr30` | **−1.233*** | −0.473* | **+0.020** | +0.428 |
+| H2 = G1 + snow | −0.973* | −0.342 | +0.662* | +0.863* |
+| *(G1, for reference)* | +0.070 | −0.296 | +0.521* | +0.280 |
+
+**Why it failed — the mechanism was pointed at the wrong month.** The lever worked exactly as
+designed on albedo; it just does not bite where the reasoning assumed
+(`scripts/analysis/monthly_lever_check.py`, new). H1 all-sky surface albedo change ×100:
+
+| Jan | Feb | Mar | Apr | May | **Jun** | Jul | Aug | **Sep** | **Oct** | **Nov** | Dec |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| −0.51* | −0.21 | −0.42* | −0.84* | −1.43* | **−0.95*** | −0.10* | −0.32* | **−3.08*** | **−8.16*** | **−4.66*** | −1.60* |
+
+The response is concentrated in **October (−8.2), November (−4.7), September (−3.1)** — the
+**snow-onset** season — and is small in June (−0.95). The error in the design reasoning is
+now obvious: `ZCVS = min(1, d_cm · RQSNCR)` only responds where snow is **shallow**, and
+snow is shallow when it is *accumulating in autumn*, not when it is melting in June. By June
+the Siberian snowpack is either still deep enough to saturate `min(1, ·)` under both settings,
+or already gone. **Shallow snow is an autumn phenomenon, not a melt phenomenon.**
+
+Consistent with that, June/July/August T2m move by −0.076 / −0.067 / +0.205, none significant,
+while **October T2m is +1.135 K** — the darker autumn surface does warm, in the season nobody
+asked about.
+
+**Why it cools winter so hard**, given the albedo also *falls* in Dec–Mar: it is not a
+radiative effect. February and March are dark (control albedo is meaningless at that sun
+angle) yet cool by −1.65 and −1.19 K. Reducing the snow-covered fraction moves area from the
+exposed/sheltered **snow tiles (5, 7)** onto the **vegetation tiles**, and the snow tile is
+what buffers the surface against radiative cooling in polar night. The lever therefore trades
+a small autumn warming for a large winter cooling through **tile fractions, not albedo**.
+
+**Verdict: reject.** It fails the target it was built for and damages the coupled model's
+original complaint. `RQSNCR` is reverted; the tree is back at as-released.
+
+**What is still worth keeping from it:**
+1. The June surface-albedo bias is **not** dominated by the snow-cover-fraction formulation.
+   Whatever sets it — snow albedo decay, the vegetation masking of snow albedo, or the
+   albedo of the snow-free surface itself — is still unidentified.
+2. `RQSNCR` has enormous leverage on **autumn** albedo (−8 points in October). If an autumn
+   or snow-onset bias is ever diagnosed, this is the knob.
+3. H2 posts the campaign's best SO SW RMSE (**4.787**), best subpolar N Atl (**4.713**,
+   −0.294) and best global T2m RMSE (**1.530**) — but all of that comes from D2b, and the
+   winter damage disqualifies the combination. **G1 remains the configuration to carry
+   forward.**
+
 ### Round 13 design (2026-08-02): the H-series — snow cover fraction, the June lever
 
 *Written before the runs finished, per the rule learned in round 12.*
@@ -146,6 +199,11 @@ interaction directly against `H1 − control`.
 and August**, where the surface is already snow-free and the residual deficit is cloud.
 *If it warms July as much as June, the mechanism is not the one claimed here* and the result
 should be treated as an accidental global brightening, not a melt-timing fix.
+
+> **⚠ FALSIFIED — see the results section above.** JJA came out at **+0.020 K** (t = 0.17).
+> The failure mode was not the one anticipated: it did not warm July as much as June, it
+> failed to warm *any* summer month, because the albedo response landed in **September–
+> November** instead. Shallow snow is an autumn phenomenon, not a melt phenomenon.
 
 Guardrails to check besides the usual set: DJF and MAM in `seasonal_by_run.py` (a snow change
 is a cold-season change first), NH−SH albedo, and the Nordic Seas SW RMSE that G1 degraded.

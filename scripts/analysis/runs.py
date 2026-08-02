@@ -59,8 +59,11 @@ RUNS = [
     ('F4 rsmin1000', 'amip_F4_rsmin1000'),
     ('F5 all four', 'amip_F5_allveg'),
     ('G1 F4+D2b', 'amip_G1_F4_D2b'),
-    # Round 13 (H): snow cover fraction RQSNCR 1/10 -> 1/30.  In flight 2026-08-02;
-    # evaluators skip them with a warning until the output is complete.
+    # Round 13 (H): snow cover fraction RQSNCR 1/10 -> 1/30.  REJECTED 2026-08-02 --
+    # JJA +0.020 K (predicted +0.2..+0.7) and DJF -1.233 K, the worst winter damage in
+    # the campaign.  Kept in RUNS because a rejected lever is still evidence.
+    # Diagnosis: the albedo response lands in Sep-Nov, not June -- shallow snow is an
+    # autumn phenomenon.  See monthly_lever_check.py.
     ('H1 snowcr30', 'amip_H1_snowcr30'),
     ('H2 G1+snowcr', 'amip_H2_G1_snowcr30'),
 ]
