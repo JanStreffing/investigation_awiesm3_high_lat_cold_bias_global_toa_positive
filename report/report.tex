@@ -27,7 +27,13 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--08--03c}: the snow diagnosis is now grounded on \textbf{observations}
+\textbf{Last updated 2026--08--03d}: the TOA decomposition, previously done for the control
+only, now runs for every lever (\S\ref{sub:toadecomp2}) --- the Southern Ocean result of
+\S\ref{sub:sobands} is unchanged, but the per-band \emph{response} is new: 60--90S is the most
+responsive band in the model, G4 already closes about a quarter of its $+8.4$\,W\,m$^{-2}$ gap as a
+by-product of D2b, and the F/G surface levers are confirmed regionally clean in the tropics.
+\texttt{evaluate.sh} is now the single evaluation entry point.
+\textbf{2026--08--03c}: the snow diagnosis is now grounded on \textbf{observations}
 rather than ERA5 (\S\ref{sec:obs}). CERES confirms the model's June albedo excess independently
 ($+0.046$), and the Rutgers/IMS satellite record shows ERA5 was flattering us: June snow cover is
 close to \emph{double} observed and melt-out runs \textbf{13 days late}. \textcolor{red}{\textbf{G4
@@ -2987,48 +2993,63 @@ may therefore improve AMIP T2m while \emph{harming} forest establishment through
 pathway AMIP cannot see. This should be weighed before G4 is committed to the PI spin-up,
 and it is an argument for running coupled with G4 sooner rather than later.
 
-\subsection{The energy target, decomposed at last}\label{sub:toadecomp2}
-Global net TOA --- \emph{one of the two problems this campaign was started to fix} --- was
-reported as a bare number for 33 runs and never broken down; the decomposition existed only
-for the control. It is now part of the standard table and produced automatically for every
-run (\S\ref{sub:evalsh}).
+\subsection{The energy target, now decomposed PER RUN}\label{sub:toadecomp2}
+\emph{Where} the imbalance lives was settled long ago: \S\ref{sub:sobands} showed the global
+budget is right \emph{by cancellation}, with the Southern Ocean carrying $+5.8$\,W\,m$^{-2}$
+and contributing $+0.57$ on its own, from a cloud deficit --- the Hyder et al.\ signature.
+Nothing below revises that.
+
+What was missing is that the decomposition existed \textbf{only for the control}.
+\texttt{amip\_toa\_decomp.py} never used the \texttt{RUNS} list, so across 33 tuning runs the
+energy target was tracked by a single global number with no idea which band any lever was
+moving. That is now part of the standard table and produced for every run automatically
+(\S\ref{sub:evalsh}). The new information is the \textbf{response}:
 
 \begin{center}\footnotesize
-\begin{tabular}{l r r r r}
+\begin{tabular}{l r r r r r r}
 \toprule
-global [W\,m$^{-2}$] & control & G4 & CERES & ctl$-$CERES \\
+$\Delta$ net TOA vs control [W\,m$^{-2}$] & 60--90S & 30--60S & tropics & 30--60N & 60--90N & global \\
 \midrule
-absorbed SW & $239.98$ & $239.73$ & $241.36$ & $-1.38$ \\
-OLR & $239.34$ & $239.22$ & $240.21$ & $-0.87$ \\
-planetary albedo & $0.295$ & $0.296$ & $0.290$ & $+0.005$ \\
-SW CRE & $-44.42$ & $-44.66$ & $-45.32$ & $+0.90$ \\
-LW CRE & $24.84$ & $25.01$ & $25.77$ & $-0.93$ \\
-clear-sky net TOA & $20.23$ & $20.16$ & $20.52$ & $-0.29$ \\
+\emph{control, absolute} & $-90.44$ & $-22.24$ & $+42.61$ & $-21.78$ & $-97.74$ & $+0.64$ \\
+\emph{CERES} & $-98.82$ & $-21.63$ & $+45.11$ & $-24.29$ & $-97.98$ & --- \\
+\emph{gap to close} & $\mathbf{+8.38}$ & $-0.61$ & $-2.50$ & $+2.51$ & $+0.24$ & \\
 \midrule
-net TOA NH & $0.28$ & $0.46$ & $0.08$ & $+0.20$ \\
-net TOA SH & $1.01$ & $0.57$ & $1.86$ & $-0.85$ \\
-net TOA 60--90N & $-97.74$ & $-97.60$ & $-97.98$ & $+0.24$ \\
-net TOA 30--60N & $-21.78$ & $-21.50$ & $-24.29$ & $+2.51$ \\
-net TOA 30--60S & $-22.24$ & $-22.88$ & $-21.63$ & $-0.61$ \\
-\textbf{net TOA 60--90S} & $\mathbf{-90.44}$ & $-92.41$ & $-98.82$ & $\mathbf{+8.38}$ \\
+A1a \texttt{ovl=0.10} & $-3.33$ & $-2.80$ & $-1.06$ & $-2.44$ & $-2.75$ & $-1.90$ \\
+\textbf{D2a} \texttt{inpsea.2} & $\mathbf{-2.83}$ & $-1.91$ & $-0.38$ & $-0.79$ & $-0.81$ & $-0.93$ \\
+D2b \texttt{inp+p700} & $-1.76$ & $-0.83$ & $+0.09$ & $-0.19$ & $-0.34$ & $-0.28$ \\
+B3 \texttt{clddiff} & $-0.11$ & $+0.89$ & $\mathbf{+2.02}$ & $+0.86$ & $+0.25$ & $+1.34$ \\
+B4 \texttt{entshalp3} & $-0.56$ & $-2.00$ & $-1.55$ & $-0.75$ & $-0.24$ & $-1.33$ \\
+B5 \texttt{capdcycl0} & $-0.47$ & $+0.06$ & $\mathbf{-1.93}$ & $-0.14$ & $+0.18$ & $-1.00$ \\
+F4 \texttt{rsmin1000} & $-0.40$ & $+0.04$ & $+0.07$ & $+0.30$ & $+0.38$ & $+0.10$ \\
+G1 $=$ F4$+$D2b & $-2.03$ & $-0.83$ & $+0.10$ & $+0.26$ & $-0.02$ & $-0.20$ \\
+\textbf{G4} $=$ G1$+$tundra & $-1.98$ & $-0.65$ & $+0.12$ & $+0.28$ & $+0.13$ & $-0.13$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent \textbf{The imbalance is overwhelmingly Antarctic and Southern Ocean.} The
-60--90S band is $+8.4$\,W\,m$^{-2}$ too positive --- more than three times any other band,
-and far larger than the global residual it contributes to. That is the same region as the
-$\sim6$\,pp SO cloud-area deficit which dominates the SW RMSE target, so \textbf{the two
-campaign targets share a root cause}. This is the most useful thing the decomposition
-says, and it reframes the SO cloud-area deficit from ``the one thing nothing has moved''
-into ``the lever that would close both targets at once''. G4 improves the band to $+6.4$
-as a by-product of D2b.
+\noindent Three things this view gives that the global number could not:
 
-\textcolor{red}{\textbf{Do not tune toward the CERES column.}} CERES is present-day
-(2005--2015) and carries the real planetary warming imbalance, so it reads $\sim+1.1$\,W\,m$^{-2}$
-globally. The pre-industrial target is \textbf{net TOA $\approx 0$}: the control's $+0.64$ is
-\emph{too positive} even though it sits \emph{below} CERES. The decomposition is for locating
-the error, not for matching CERES globally.
+\textbf{(i) The 60--90S band is the most responsive in the model}, moving $-0.4$ to $-3.3$
+under levers that were designed for entirely different purposes. It is not inert; it has
+simply never been \emph{targeted}.
+
+\textbf{(ii) The G-series buys about $-2.0$ of the $+8.4$ needed} there, all of it from D2b,
+and D2a alone buys $-2.8$ --- but D2a costs $-0.93$ globally and was rejected on other
+grounds. \emph{Roughly a quarter of the Southern Ocean TOA gap is already closed as a
+by-product}, and the remainder is the same $\sim6$\,pp cloud-area deficit that no lever has
+moved (\S\ref{sub:openlist}).
+
+\textbf{(iii) The surface levers are confirmed regionally clean.} F4 moves the tropics by
+$+0.07$ and G4 by $+0.12$, against B3's $+2.02$ and B5's $-1.93$. The tropical guardrail was
+being checked as a single number; it is now visible as a band, and it shows the F/G family
+does what it was designed to do and nothing else.
+
+\textcolor{red}{\textbf{One trap the guardrail table invited.}} The PI target is
+\textbf{net TOA $\approx 0$}, \emph{not} the CERES column. CERES is present-day (2005--2015)
+and carries the real planetary warming imbalance, so it reads $\sim+1.1$\,W\,m$^{-2}$
+globally: the control's $+0.64$ is \emph{too positive} even though it sits \emph{below}
+CERES. Per-band CERES differences are the right way to use it --- for locating error, never
+as a global tuning target.
 
 \subsection{One command: \texttt{evaluate.sh}}\label{sub:evalsh}
 The protocol had grown to five scripts run from memory, and skipping one has repeatedly

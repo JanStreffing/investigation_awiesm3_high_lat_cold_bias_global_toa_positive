@@ -334,33 +334,37 @@ sooner rather than later.
    doing most of the work in the melt months; and the **`RVVEGALB` vegetation albedo
    table**, which the campaign has never touched.
 3. **SO cloud-area deficit ~6 pp** — untouched by every lever tried.
-4. **⭐ The energy target, now decomposed across every run (2026-08-03).** Global net TOA
-   was reported as a bare number for 33 runs and never broken down — `amip_toa_decomp.py`
-   did it for the control only. It is now part of the standard table
-   (`eval_round10_A.py`, hooked into `evaluate.sh`), so every future run gets it free.
+4. **The energy target, now decomposed PER RUN (2026-08-03).** *Where* the imbalance lives
+   was settled long ago — the global budget is right **by cancellation**, with the Southern
+   Ocean carrying +5.8 W/m² and contributing +0.57 on its own, from a cloud deficit (the
+   Hyder signature). That is unchanged. What was missing: the decomposition existed **only
+   for the control**, so across 33 runs the energy target was a single global number with no
+   idea which band a lever moved. Now in the standard table via `evaluate.sh`.
 
-   | global, W/m² | control | G4 | CERES | ctl−CERES |
-   |---|---:|---:|---:|---:|
-   | absorbed SW | 239.98 | 239.73 | 241.36 | −1.38 |
-   | OLR | 239.34 | 239.22 | 240.21 | −0.87 |
-   | planetary albedo | 0.295 | 0.296 | 0.290 | +0.005 |
-   | SW CRE | −44.42 | −44.66 | −45.32 | +0.90 |
-   | LW CRE | 24.84 | 25.01 | 25.77 | −0.93 |
-   | **net TOA 60–90S** | **−90.44** | −92.41 | −98.82 | **+8.38** |
-   | net TOA 30–60N | −21.78 | −21.50 | −24.29 | +2.51 |
-   | net TOA NH / SH | 0.28 / 1.01 | 0.46 / 0.57 | 0.08 / 1.86 | +0.20 / −0.85 |
+   Δ net TOA vs control [W/m²]:
 
-   **The imbalance is overwhelmingly Antarctic/Southern Ocean**: 60–90S is **+8.4 W/m²**
-   too positive, three times any other band. That is the same 6 pp SO cloud-area deficit
-   that dominates the SW RMSE target — **the two campaign targets share a root cause**,
-   which is the most useful thing this decomposition says. G4 improves it to +6.4 as a
-   by-product of D2b.
+   | | 60–90S | 30–60S | tropics | 30–60N | global |
+   |---|---:|---:|---:|---:|---:|
+   | *gap to close (CERES−ctl)* | **+8.38** | −0.61 | −2.50 | +2.51 | |
+   | A1a ovl=0.10 | −3.33 | −2.80 | −1.06 | −2.44 | −1.90 |
+   | **D2a** inpsea.2 | **−2.83** | −1.91 | −0.38 | −0.79 | −0.93 |
+   | D2b inp+p700 | −1.76 | −0.83 | +0.09 | −0.19 | −0.28 |
+   | B3 clddiff | −0.11 | +0.89 | **+2.02** | +0.86 | +1.34 |
+   | B5 capdcycl0 | −0.47 | +0.06 | **−1.93** | −0.14 | −1.00 |
+   | F4 rsmin1000 | −0.40 | +0.04 | +0.07 | +0.30 | +0.10 |
+   | **G4** | −1.98 | −0.65 | +0.12 | +0.28 | −0.13 |
 
-   ⚠ **Do not tune toward the CERES column.** CERES is present-day (2005–2015) and
-   carries the real warming imbalance (~+1.1 W/m² globally). The PI target is **net
-   TOA ≈ 0**, so the control's +0.64 is too positive even though it sits *below* CERES.
-   The decomposition is for locating the error, not for matching CERES.
+   - **60–90S is the most responsive band in the model**, moving −0.4 to −3.3 under levers
+     designed for other purposes. Not inert — just never targeted.
+   - **G4 already buys ~−2.0 of the +8.4**, all from D2b; roughly a quarter of the SO TOA
+     gap closed as a by-product. The rest is the same ~6 pp cloud-area deficit.
+   - **Surface levers are regionally clean**: F4 +0.07 and G4 +0.12 in the tropics, against
+     B3's +2.02 and B5's −1.93. The tropical guardrail is now visible as a band.
 
+   ⚠ **The PI target is net TOA ≈ 0, NOT the CERES column.** CERES is present-day and carries
+   the real warming imbalance (~+1.1 W/m² globally), so the control's +0.64 is *too positive*
+   even though it sits *below* CERES. Use per-band CERES differences to locate error, never
+   as a global tuning target.
 5. **Tropics net TOA 2.4 W/m² too low** (42.6 vs 45.1).
 6. **Nordic Seas SW RMSE** — G1 degraded it by +0.300 against a ±0.052 threshold, the only
    lever ever to move that box. **G4 largely repairs it** (+0.089), unexpectedly and for no
