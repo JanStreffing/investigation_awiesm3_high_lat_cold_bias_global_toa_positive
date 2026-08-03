@@ -75,6 +75,13 @@ RUNS = [
     ('G2 rsmin500', 'amip_G2_rsmin500'),
     ('G3 rsmin2000', 'amip_G3_rsmin2000'),
     ('G4 tundra225', 'amip_G4_tundra'),
+    # Round 15: sub-grid snow depletion (Niu & Yang 2007), namelist-only.
+    # I1 = G4 + mode 1; I2 = mode 1 alone (isolates the snow route from the
+    # vegetation route); I3 = G4 + mode 2, the SDOR-scaled scale-aware variant,
+    # calibrated to match I1 at TCO95 so any difference is spatial structure.
+    ('I1 scf', 'amip_I1_scf'),
+    ('I2 scf only', 'amip_I2_scf_only'),
+    ('I3 scf sdor', 'amip_I3_scf_sdor'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
