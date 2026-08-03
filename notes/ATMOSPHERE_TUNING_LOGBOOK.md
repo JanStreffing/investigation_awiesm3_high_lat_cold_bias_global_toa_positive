@@ -160,6 +160,102 @@ original complaint. `RQSNCR` is reverted; the tree is back at as-released.
    winter damage disqualifies the combination. **G1 remains the configuration to carry
    forward.**
 
+### ⭐⭐ Round 14 (2026-08-03): the June albedo bias is a SPRING MELT bias — and tundra
+
+Round 13 established what the June bias is *not*. This is what it **is**, from output already
+on disk plus ERA5 — no new integration needed. `albedo_decompose.py`, `albedo_decompose_prep.sh`.
+
+**1. Against ERA5 (land-masked, June, `amip_presentday` vs 1990–2014):**
+
+| June | model | ERA5 | Δ |
+|---|---:|---:|---:|
+| surface albedo `fal` | 0.2147 | 0.1730 | **+0.042** |
+| snow cover fraction | 0.380 | 0.261 | **+0.119** |
+| snow albedo `asn` | 0.658 | 0.759 | **−0.102** |
+
+Both `f_snow` columns are the **same** HTESSEL formula applied to each dataset's snow mass, so
+the gap is **snow AMOUNT, not the cover formula** — exactly why round 13 could not move it.
+And the model's snow is **too dark, not too bright**. Brightening snow pushes the wrong way.
+
+**2. Accumulation is right; the melt is a month late and 30 % too slow.** SWE [mm]:
+
+| | model | ERA5 | Δ | δ(mod) | δ(ERA5) |
+|---|---:|---:|---:|---:|---:|
+| Feb | 106.5 | 97.6 | +9.0 | +16.7 | +15.3 |
+| Mar | 122.1 | 114.5 | +7.7 | +15.6 | +16.9 |
+| **Apr** | 131.6 | 112.8 | +18.7 | **+9.4** | **−1.6** |
+| **May** | 98.1 | 65.3 | **+32.8** | **−33.5** | **−47.5** |
+| Jun | 14.1 | 9.6 | +4.5 | −84.0 | −55.7 |
+| Nov | 49.2 | 41.5 | +7.7 | +25.9 | +25.4 |
+
+Accumulation increments track ERA5 almost exactly. **April: the model still gains while ERA5
+has already peaked — the pack peaks a month late. May: melts 30 % too slowly.**
+
+**3. May is albedo, not cloud — and it is a runaway.** vs CERES:
+
+| | SWnet mod | SWnet CERES | Δ | SW↓ mod | SW↓ CERES | Δ |
+|---|---:|---:|---:|---:|---:|---:|
+| Apr | 87.8 | 86.6 | +1.2 | 176.9 | 187.7 | −10.8 |
+| **May** | 122.5 | 136.4 | **−13.9** | 220.7 | 224.2 | **−3.5** |
+| Jun | 167.6 | 189.7 | −22.2 | 215.7 | 228.2 | −12.5 |
+| Jul | 165.9 | 180.4 | −14.5 | 193.8 | 208.7 | −14.9 |
+
+May's downwelling is nearly right while the net is −13.9 → **almost pure surface albedo**.
+June is half cloud / half albedo; July is essentially all cloud. Loop: late melt → more May
+snow → higher albedo → −13.9 W/m² → less melt energy → snow survives into June. This is why
+the model melts slower *despite* darker snow: extent beats brightness.
+
+**4. ⭐ Tundra is the largest cover type in the box, and F4 misses it.** From the model's own
+`tvh/tvl/cvh/cvl`, area-weighted over land:
+
+| | type | cover | |
+|---|---|---:|---|
+| low | **9 Tundra** | **25.6 %** | **F4 does not touch this** |
+| high | 4 Decid Needleleaf | 19.2 % | F4 |
+| high | 18 Mixed Forest | 5.2 % | |
+| low | 13 Bogs/Marshes | 3.9 % | |
+| high | 3 Evergrn Needleleaf | 3.4 % | F4 |
+
+**`RVRSMIN(9) = 80 s/m` is the lowest value of any vegetated type in HTESSEL** — below crops,
+short grass and tall grass (all 100). The model has arctic tundra transpiring more freely than
+tropical grassland. Its closest analogues, evergreen and deciduous shrubs, are both **225**;
+co-occurring bogs/marshes are 240. This is a **table-consistency** argument, checkable against
+the table and independent of our bias — unlike F4's unanchored 4× excursion.
+
+**Round 14 runs — all namelist-only, one binary, no rebuild, launched together:**
+
+| run | setting | prediction |
+|---|---|---|
+| **G2** | `RVRSMIN(3,4)=500` | if saturating, keeps >60 % of G1's gain (≥ +0.31 K) |
+| **G3** | `RVRSMIN(3,4)=2000` | if saturating, adds < +0.15 K beyond G1 |
+| **G4** | G1 + `RVRSMIN(9)=225` | **+0.2 to +0.5 K beyond G1, concentrated in JUNE**, with a measurable drop in May/June SWE |
+
+**G4's falsifier: if T2m rises with no change in May–June snow mass, the melt mechanism is
+unsupported** and the gain is just the plain sensible-heat route. G2/G3 falsifier: if the
+response is linear in `RVRSMIN` we are riding a ramp with no natural stopping point, which is
+an argument *against* the approach, not for a bigger number.
+
+### Tuning without rebuilding: `NAMSURFTUNE` (2026-08-02)
+
+The ECMWF `surf` library ships no namelist, so every HTESSEL lever was a source edit plus a
+rebuild — serialising experiments against the one model tree, and putting AWI tuning inside
+upstream files where it collides with EC-Earth at every merge.
+
+`surf/module/surfece.F90` is already an AWI module *inside* surf with its own namelist, so the
+overrides live there: `ECE_TUNE_RVRSMIN`, `_RVLAI`, `_RVCOV`, `_RVZ0H`, `_RVLAMSK` (0:20 by
+vegetation type) and scalar `ECE_TUNE_RQSNCR` — the whole F-series, H-series and skin levers.
+Applied by `SURFECE_APPLY_TUNING` from `susurf.F90` **after** `SUSURF_CTL` fills the tables;
+nothing in setup derives from these entries, so a late override equals editing in place.
+Sentinel defaults mean a run setting nothing is bit-identical to untouched code, and every
+override is logged to `NULOUT`.
+
+Own `&NAMSURFTUNE` group, **not** `NAMECECFG` — that one is read **twice** from the same
+`fort.4`, by `ECE_CONFIG` in `arpifs/ecearth.F90` and by `SURFECE_CONFIG` in surf, and a
+Fortran namelist read aborts with *invalid reference to variable* on any name the reading
+module does not declare. Putting the tune entries in `NAMECECFG` killed the arpifs read at
+`su0yoma.F90:152`. **Found by a 1-day test run** — the argument for always doing one.
+Exactly **one line** changes in an ECMWF file. oifs-48r1 commit `1004cba`.
+
 ### Round 13 design (2026-08-02): the H-series — snow cover fraction, the June lever
 
 *Written before the runs finished, per the rule learned in round 12.*

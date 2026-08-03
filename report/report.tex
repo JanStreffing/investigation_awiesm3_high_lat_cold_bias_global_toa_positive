@@ -27,7 +27,16 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--08--02b}: Round 13 (\S\ref{sec:h}) is a clean falsification --- the
+\textbf{Last updated 2026--08--03}: \textbf{The June albedo bias is a SPRING MELT bias}
+(\S\ref{sec:melt}). Snow \emph{accumulation} is right to 7--9\,\%, but the pack peaks a month
+late and May melt is 30\,\% too slow, leaving 50\,\% too much snow; May's SW deficit is
+$-13.9$\,W\,m$^{-2}$ with downwelling nearly correct, so it is albedo, not cloud, and it is a
+runaway. The model's snow is too \emph{dark}, not too bright, so brightening it is the wrong
+direction. And \textbf{tundra --- 25.6\,\% of the box, the largest cover type --- has
+\texttt{RVRSMIN} $=80$\,s\,m$^{-1}$, the lowest of any vegetated type in HTESSEL}, below
+tropical grassland, while its shrub analogues are $225$; the campaign's best lever never touched
+it. Round 14 (G2/G3/G4) tests this, namelist-only (\S\ref{sub:nmltune}).
+\textbf{2026--08--02b}: Round 13 (\S\ref{sec:h}) is a clean falsification --- the
 snow-cover lever gave $+0.020$\,K on the boreal target against a predicted $+0.2$ to $+0.7$, because
 shallow snow turns out to be an \emph{autumn} phenomenon, not a melt one, and it cost $-1.23$\,K in
 winter. Rejected. G1 $=$ F4 $+$ D2b (\S\ref{sub:g1}) remains the best configuration of
@@ -2437,6 +2446,204 @@ warming for a large winter cooling through \textbf{tile fractions, not albedo}.
   best global T2m RMSE ($1.530$) --- but that is D2b's doing, and the winter damage
   disqualifies the combination. \textbf{G1 remains the configuration to carry forward.}
 \end{enumerate}
+
+\section{Round 14 (2026--08--03): the June albedo bias is a SPRING MELT bias}\label{sec:melt}
+Round 13 established what the June albedo bias is \emph{not} (\S\ref{sub:hres}): not the
+snow-cover formulation. This section identifies what it is, entirely from output already on
+disk plus ERA5 --- no new integration was needed to get here.
+
+\subsection{Against ERA5: too much snow, and snow that is too DARK}\label{sub:e5alb}
+\texttt{scripts/analysis/albedo\_decompose.py}, model \texttt{amip\_presentday} vs ERA5
+1990--2014, both land-masked to the Siberian box, June:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+June & model & ERA5 & $\Delta$ \\
+\midrule
+surface albedo \texttt{fal} & $0.2147$ & $0.1730$ & $\mathbf{+0.042}$ \\
+snow cover fraction & $0.380$ & $0.261$ & $\mathbf{+0.119}$ \\
+snow albedo \texttt{asn} & $0.658$ & $0.759$ & $\mathbf{-0.102}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Both \texttt{f\_snow} columns are the \emph{same} HTESSEL formula
+$\min(1, d_{\mathrm{cm}}/10)$ applied to each dataset's snow mass, so the gap is
+\textbf{snow AMOUNT, not the cover formula} --- which is precisely why round 13, which
+changed only the formula, could not move it. The model carries roughly twice ERA5's June
+snow mass.
+
+\noindent\textbf{And the model's snow is too dark, not too bright} ($-0.10$ in June,
+$-0.11$ in May). Making snow albedo more realistic would make June \emph{worse}. Any lever
+that brightens snow is pushing the wrong way; the excess reflection comes from snow
+\emph{extent}, not snow \emph{brightness}.
+
+\emph{Two things this analysis does not claim.} The naive two-term split
+$\alpha_{\mathrm{box}} = f\,\alpha_{\mathrm{snow}} + (1-f)\,\alpha_{\mathrm{free}}$ does
+\textbf{not} close: backing out $\alpha_{\mathrm{free}}$ gives negative values over the box,
+because HTESSEL does not apply \texttt{asn} to the whole snow fraction --- tile 7 is snow
+\emph{sheltered} under high vegetation and carries a canopy-shaded albedo far below
+\texttt{asn}. That the residual is large and negative in exactly the melt months is direct
+evidence the canopy-masking term already does most of the work there, so no snow-free albedo
+is reported. Separately, ERA5's albedo scheme is a relative of HTESSEL, so \texttt{asn}
+agreement is not independent evidence; only ERA5's snow \emph{extent} is observationally
+constrained, via assimilated IMS snow cover.
+
+\subsection{Accumulation is right; the melt is a month late and 30\,\% too slow}\label{sub:melt}
+Snow water equivalent over the box, model vs ERA5 [mm], with the month-to-month increment:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+ & model & ERA5 & $\Delta$ & $\delta$(model) & $\delta$(ERA5) \\
+\midrule
+Jan & $89.8$ & $82.3$ & $+7.5$ & & \\
+Feb & $106.5$ & $97.6$ & $+9.0$ & $+16.7$ & $+15.3$ \\
+Mar & $122.1$ & $114.5$ & $+7.7$ & $+15.6$ & $+16.9$ \\
+\textbf{Apr} & $131.6$ & $112.8$ & $+18.7$ & $\mathbf{+9.4}$ & $\mathbf{-1.6}$ \\
+\textbf{May} & $98.1$ & $65.3$ & $\mathbf{+32.8}$ & $\mathbf{-33.5}$ & $\mathbf{-47.5}$ \\
+Jun & $14.1$ & $9.6$ & $+4.5$ & $-84.0$ & $-55.7$ \\
+Nov & $49.2$ & $41.5$ & $+7.7$ & $+25.9$ & $+25.4$ \\
+Dec & $70.7$ & $63.8$ & $+6.9$ & $+21.5$ & $+22.3$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Accumulation is essentially correct.} Through the accumulation season the
+model is only 7--9\,\% high and the monthly increments track ERA5 almost exactly
+($+16.7$ vs $+15.3$, $+15.6$ vs $+16.9$, $+25.9$ vs $+25.4$, $+21.5$ vs $+22.3$). The
+divergence is entirely in spring:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{April}: the model is still \emph{gaining} ($+9.4$\,mm) while ERA5 has already
+  peaked and begun to melt ($-1.6$). \textbf{The snowpack peaks a month late.}
+\item \textbf{May}: the model melts $33.5$\,mm against ERA5's $47.5$ --- \textbf{30\,\% too
+  slow} --- leaving it with 50\,\% more snow by the end of May.
+\end{itemize}
+
+\subsection{May is albedo, not cloud --- and it is a runaway}\label{sub:mayloop}
+Model \texttt{amip\_presentday} vs CERES on the same box:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+ & SW$_{\mathrm{net}}$ mod & SW$_{\mathrm{net}}$ CERES & $\Delta$ & SW$_\downarrow$ mod & SW$_\downarrow$ CERES & $\Delta$ \\
+\midrule
+Apr & $87.8$ & $86.6$ & $+1.2$ & $176.9$ & $187.7$ & $-10.8$ \\
+\textbf{May} & $122.5$ & $136.4$ & $\mathbf{-13.9}$ & $220.7$ & $224.2$ & $\mathbf{-3.5}$ \\
+Jun & $167.6$ & $189.7$ & $-22.2$ & $215.7$ & $228.2$ & $-12.5$ \\
+Jul & $165.9$ & $180.4$ & $-14.5$ & $193.8$ & $208.7$ & $-14.9$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{In May the downwelling flux is nearly right} ($-3.5$) while the net is
+$-13.9$: the May deficit is \emph{almost pure surface albedo}, i.e. the excess snow
+reflecting. June is roughly half cloud ($-12.5$ of downwelling) and half albedo. July is
+essentially all cloud ($-14.9$ down, $-14.5$ net), consistent with \S\ref{sub:albgrow}.
+
+\noindent This closes a \textbf{self-reinforcing loop}: late melt $\to$ more snow in May
+$\to$ higher albedo $\to$ $-13.9$\,W\,m$^{-2}$ less absorbed $\to$ less melt energy $\to$
+snow survives into June. It also explains why the model melts slower \emph{despite} having
+darker snow than ERA5: the brightness term is working against the bias, and the extent term
+is winning.
+
+\subsection{The gap F4 leaves: tundra is the largest cover type in the box}\label{sub:tundra}
+Area-weighted vegetation cover over land in the evaluation box, from the model's own
+\texttt{tvh}/\texttt{tvl}/\texttt{cvh}/\texttt{cvl} output:
+
+\begin{center}\footnotesize
+\begin{tabular}{l l r l}
+\toprule
+ & type & cover & \\
+\midrule
+low & 9 \ Tundra & $\mathbf{25.6\,\%}$ & \textbf{F4 does not touch this} \\
+high & 4 \ Deciduous Needleleaf & $19.2\,\%$ & F4 \\
+high & 18 Mixed Forest & $5.2\,\%$ & \\
+low & 13 Bogs/Marshes & $3.9\,\%$ & \\
+high & 5 \ Deciduous Broadleaf & $3.6\,\%$ & \\
+high & 19 Interrupted Forest & $3.5\,\%$ & \\
+high & 3 \ Evergreen Needleleaf & $3.4\,\%$ & F4 \\
+high & 16 Evergreen Shrubs & $3.0\,\%$ & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Tundra is the single largest cover type in the box, and the campaign's best
+lever misses it entirely.} F4 reaches about $24\,\%$ of the box (types 3, 4); tundra is
+another $26\,\%$.
+
+\noindent\textbf{Its stomatal resistance is a table-internal outlier.} \texttt{RVRSMIN(9)}
+$= 80$\,s\,m$^{-1}$ is the \emph{lowest value of any vegetated type} in HTESSEL:
+
+\begin{center}\footnotesize
+\texttt{crops 100 \ short grass 100 \ tall grass 100 \ semidesert 150 \ decid.\ broadleaf 175}\\
+\texttt{interrupted forest 175 \ evergreen shrubs 225 \ decid.\ shrubs 225 \ evergr.\ broadleaf 240}\\
+\texttt{bogs/marshes 240 \ desert 250 \ needleleaf 250 \ mixed forest 250 \ \textbf{TUNDRA 80}}
+\end{center}
+
+\noindent The model therefore has arctic tundra transpiring \emph{more freely than tropical
+grassland}. Tundra's closest physiognomic analogues in the same table --- evergreen and
+deciduous shrubs --- are both $225$, and bogs/marshes, which co-occur with tundra in this very
+box, are $240$. This is a \textbf{table-consistency} argument, checkable against the table
+itself and independent of our bias; it is not a value chosen because it helps. Contrast the
+standing criticism of F4, whose $250\to1000$ remains an unanchored $4\times$ excursion.
+
+\subsection{Round 14 runs, and their predictions}\label{sub:r14runs}
+All three are \textbf{namelist-only} (\S\ref{sub:nmltune}) --- one shared binary, no rebuild,
+no serialisation against the model tree. That is what the \texttt{NAMSURFTUNE} work bought.
+
+\begin{itemize}\itemsep3pt
+\item \textbf{G2} --- \texttt{RVRSMIN(3,4)} $=500$. Half-strength F4.
+\item \textbf{G3} --- \texttt{RVRSMIN(3,4)} $=2000$. Double-strength F4.
+
+  G2/G3 bracket G1 and map the response curve, answering the standing criticism that $1000$
+  was never chosen from a measurement. \emph{Prediction:} F5 already hinted at saturation
+  (F1+F2+F3+F4 gave $+0.746$ versus F4 alone at $+0.749$), so if the surface energy balance
+  is saturating, G2 should keep $>60\,\%$ of G1's gain ($\ge +0.31$\,K) and G3 should add
+  little ($< +0.15$\,K beyond G1). \emph{If instead the response is linear in} \texttt{RVRSMIN},
+  we are riding a ramp with no natural stopping point, and that is an argument \textbf{against}
+  the approach, not for a larger number.
+\item \textbf{G4} --- G1 plus \texttt{RVRSMIN(9)} $80\to225$ (tundra), keeping $1000$ for
+  types 3 and 4. \emph{Prediction:} $+0.2$ to $+0.5$\,K beyond G1's $+0.521$, concentrated in
+  \textbf{June} rather than spread across JJA, and accompanied by a measurable drop in
+  May/June snow water equivalent. \textbf{If T2m rises with no change in May--June snow mass,
+  the melt mechanism above is unsupported} and the gain is the plain sensible-heat route.
+  Guardrails: tundra is confined to high latitudes so tropical net TOA should stay near
+  $42.6$; check DJF against its own $\pm0.588$\,K threshold and the Nordic Seas SW RMSE that
+  G1 already degraded.
+\end{itemize}
+
+\subsection{Tuning without rebuilding: \texttt{NAMSURFTUNE}}\label{sub:nmltune}
+The ECMWF \texttt{surf} library deliberately ships no namelist, so every HTESSEL lever in this
+campaign was a source edit plus a rebuild. That serialises experiments against the single
+model tree, and it puts AWI tuning inside upstream ECMWF files where it collides with
+EC-Earth's tuning of the same tables at every merge.
+
+\texttt{surf/module/surfece.F90} is already an AWI module \emph{inside} \texttt{surf} with its
+own namelist, so the overrides live there: \texttt{ECE\_TUNE\_RVRSMIN}, \texttt{\_RVLAI},
+\texttt{\_RVCOV}, \texttt{\_RVZ0H}, \texttt{\_RVLAMSK} (all $0{:}20$, by vegetation type) and
+scalar \texttt{ECE\_TUNE\_RQSNCR} --- covering the whole F-series, the H-series and the
+skin-conductivity levers. They are applied by \texttt{SURFECE\_APPLY\_TUNING} from
+\texttt{susurf.F90} \emph{after} \texttt{SUSURF\_CTL} has filled the tables; nothing in the
+setup path derives from these entries, so a late override is equivalent to editing the table
+in place. Every element defaults to a sentinel meaning ``keep the as-released value'', so a
+run setting none of them is bit-identical to untouched code, and every applied override is
+logged to \texttt{NULOUT}.
+
+They occupy their own \texttt{\&NAMSURFTUNE} group, \emph{not} \texttt{NAMECECFG}:
+\texttt{NAMECECFG} is read twice from the same \texttt{fort.4}, by \texttt{ECE\_CONFIG} in
+\texttt{arpifs/ecearth.F90} and by \texttt{SURFECE\_CONFIG} in \texttt{surf}, and a Fortran
+namelist read aborts with \emph{invalid reference to variable} on any name the reading module
+does not declare --- so adding the tune entries there killed the arpifs read at
+\texttt{su0yoma.F90:152}. Found by a one-day test run, which is the argument for always doing
+one. Exactly \textbf{one line} changes in an ECMWF file. G1 is now
+
+\begin{center}\footnotesize
+\texttt{NAMCLDP: RCL\_INPSEA=0.2, RCL\_INPPMIN=70000.0} \quad
+\texttt{NAMSURFTUNE: ECE\_TUNE\_RVRSMIN(3)=ECE\_TUNE\_RVRSMIN(4)=1000.0}
+\end{center}
 
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize

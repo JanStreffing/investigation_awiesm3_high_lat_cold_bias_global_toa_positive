@@ -66,6 +66,12 @@ RUNS = [
     # autumn phenomenon.  See monthly_lever_check.py.
     ('H1 snowcr30', 'amip_H1_snowcr30'),
     ('H2 G1+snowcr', 'amip_H2_G1_snowcr30'),
+    # Round 14, in flight 2026-08-03.  All namelist-only (&NAMSURFTUNE), one binary.
+    # G2/G3 bracket F4 to map the RVRSMIN response curve; G4 adds tundra (type 9,
+    # 25.6% of the box) whose as-released 80 s/m is the lowest of any vegetated type.
+    ('G2 rsmin500', 'amip_G2_rsmin500'),
+    ('G3 rsmin2000', 'amip_G3_rsmin2000'),
+    ('G4 tundra225', 'amip_G4_tundra'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
