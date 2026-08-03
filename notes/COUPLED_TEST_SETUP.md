@@ -1,72 +1,51 @@
 # Two coupled tests: G4, and G4 + snow depletion
 
-Everything is namelist-driven, so both tests share one binary. Base your runscript on
-`Tuning_test_09C_06V_CRUNCEPinit_newSeaIce`, change only the namelist blocks below.
+Both are namelist-only on one binary. Copy your `09C_06V_CRUNCEPinit_newSeaIce` runscript
+twice and change nothing but the `oifs: add_namelist_changes:` block.
 
-1. **Get the code — it is a plain fast-forward.** Your branch head `f3ccacb` *is* the
-   merge-base, so `investigation/high-lat-cold-bias-round10` is a strict descendant
-   (5 ahead, 0 behind). No cherry-picking, no conflicts:
-   ```bash
-   cd /work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1
-   git fetch origin investigation/high-lat-cold-bias-round10
-   git merge --ff-only origin/investigation/high-lat-cold-bias-round10
-   ```
-   You get `2630bd1` (`RCL_INPSEA`/`RCL_INPPMIN`, needed for D2b), `1004cba`
-   (`&NAMSURFTUNE`), `28b5542` (snow-depletion scheme), `9f12d79` (its calibrated
-   default), and `5bea52e` (comments plus two `bundle.yml` paths that already match your
-   tree). **Every one is a no-op at its defaults**, so merging cannot change your
-   baseline — only the namelist blocks below switch anything on.
-
-2. **Rebuild** with `esm_master recomp-awiesm3-develop/oifs` and **check the library md5
-   actually changed** before submitting — a stale object has cost us five runs before.
-
-3. **Test A — G4** (the best AMIP configuration: boreal +0.952 K, SO SW RMSE 6.88→4.80):
+1. **Code — plain fast-forward**, your `f3ccacb` is the merge-base (5 ahead, 0 behind):
+   `cd /work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1` then
+   `git fetch origin investigation/high-lat-cold-bias-round10 && git merge --ff-only origin/investigation/high-lat-cold-bias-round10`
+2. All five commits are **no-ops at their defaults**, so the merge alone cannot change 09C.
+3. **Rebuild** `esm_master recomp-awiesm3-develop/oifs`, and check the `libsurf.SP.so` md5
+   actually changed before submitting.
+4. **Test A (G4)** — keep your existing four namelist groups exactly as they are, add the
+   two `NAMCLDP` lines and the whole `NAMSURFTUNE` group:
    ```yaml
-   oifs:
-       add_namelist_changes:
            fort.4:
                NAMCLDP:
-                   RCL_INPSEA: 0.2
-                   RCL_INPPMIN: 70000.0
-               NAMSURFTUNE:
-                   "ECE_TUNE_RVRSMIN(3)": 1000.0
-                   "ECE_TUNE_RVRSMIN(4)": 1000.0
-                   "ECE_TUNE_RVRSMIN(9)": 225.0
+                   RVICE: 0.16                     # keep
+                   RCL_INPSEA: 0.2                 # + D2b, Southern Ocean
+                   RCL_INPPMIN: 70000.0            # + D2b, below ~700 hPa only
+               NAMGWWMS:                           # keep as is
+                   GGAUSSB: -0.5
+               NAEPHY:                             # keep as is
+                   LRDALB: False
+               NAMCUMF:                            # keep as is
+                   ENTSTPC3: 1
+               NAMSURFTUNE:                        # + entire group is new
+                   "ECE_TUNE_RVRSMIN(3)": 1000.0   # evergreen needleleaf
+                   "ECE_TUNE_RVRSMIN(4)": 1000.0   # deciduous needleleaf
+                   "ECE_TUNE_RVRSMIN(9)": 225.0    # tundra (80 -> 225)
    ```
-
-4. **Test B — G4 + snow depletion.** Identical, plus two lines in the same
-   `NAMSURFTUNE` block:
+5. **Test B (G4 + snow depletion)** — identical, plus two more lines in `NAMSURFTUNE`:
    ```yaml
-                   ECE_SNOW_SCF: 1
-                   ECE_SNOW_SCF_Z0: 0.016
+                   ECE_SNOW_SCF: 1                 # sub-grid depletion on
+                   ECE_SNOW_SCF_Z0: 0.016          # calibrated vs satellite
    ```
+6. Quote the `RVRSMIN` keys — the brackets need them in YAML. `ECE_SNOW_SCF*` take no
+   brackets and no quotes.
+7. It must be **`NAMSURFTUNE`, not `NAMECECFG`**: `NAMECECFG` is read twice (arpifs
+   `ecearth.F90` and surf `surfece.F90`) and an unknown name there aborts the arpifs read
+   at `su0yoma.F90:152`.
+8. **Verify it took** — `grep -a SURFECE_APPLY_TUNING NODE.001_01` must show the three
+   `RVRSMIN` lines (A and B) and the `snow cover scheme 1 (Niu&Yang)` line (B only).
+   Printed at setup, so a 1-day run is enough to check before committing 100 y.
+9. `LRDALB: False` stays — the snow-cover fraction feeds the albedo blend through that
+   branch, so B only does anything with it as you already have it.
+10. Watch first: snow melt-out date and May/June snow cover, then tree cover. **B matters
+    for the forest** — G4 alone delays melt-out a further 4 days, and later melt is later
+    growing-season onset for LPJG.
 
-5. **`NAMSURFTUNE`, not `NAMECECFG`.** `NAMECECFG` is read twice (arpifs `ecearth.F90`
-   and surf `surfece.F90`); putting these entries there aborts the arpifs read at
-   `su0yoma.F90:152`. Keep `RVICE: 0.16` in `NAMCLDP` if your baseline had it.
-
-6. **Check it took.** `NODE.001_01` must show, once per run:
-   ```
-   SURFECE_APPLY_TUNING: RVRSMIN(  3)   250.0000 ->   1000.0000
-   SURFECE_APPLY_TUNING: snow cover scheme  1 (Niu&Yang) z0= 0.0160 ...
-   ```
-   If those lines are absent the namelist never reached the model. A 1-day run is enough
-   to check — the message is printed at setup, before the first timestep.
-
-7. **Why B might matter more than A for the forest.** G4 buys AMIP summer temperature but
-   *delays* snow melt-out by a further 4 days (24→28 May against 11 May observed). Later
-   melt is later growing-season onset for LPJ-GUESS, so G4 alone could improve T2m while
-   still starving establishment. Test B removes that: it fixes the depletion so melt-out
-   lands within a day of satellite.
-
-8. **What to look at first**, beyond the usual: snow-cover melt-out date and May/June
-   snow cover, then whether tree cover establishes. Both tests should be run long enough
-   for vegetation to respond; the AMIP result cannot tell us whether 48 % of the bias is
-   enough.
-
-9. **Expect B to differ from A mainly in spring.** The scheme is inert in midwinter and
-   does nothing for the autumn cover bias (Sep/Oct stay too snowy — a separate problem).
-
-10. **AMIP counterparts for comparison** are `amip_G4_tundra` and `amip_I1_scf` under
-    `/work/bb1469/a270092/runtime/oifsamip-cy48/`. Full reasoning is in
-    `report/report.pdf` §"Route B resolved" and `notes/RUNS_AND_PARAMETERS.md`.
+AMIP counterparts: `amip_G4_tundra`, `amip_I1_scf` in `/work/bb1469/a270092/runtime/oifsamip-cy48/`.
+Reasoning in `report/report.pdf` §"Route B resolved" and `notes/RUNS_AND_PARAMETERS.md`.
