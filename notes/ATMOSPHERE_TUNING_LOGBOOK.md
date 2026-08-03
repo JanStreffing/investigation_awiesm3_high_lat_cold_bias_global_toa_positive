@@ -160,6 +160,72 @@ original complaint. `RQSNCR` is reverted; the tree is back at as-released.
    winter damage disqualifies the combination. **G1 remains the configuration to carry
    forward.**
 
+### ⭐⭐ Round 14 RESULTS (2026-08-03): G4 adopted — best of campaign, mechanism falsified
+
+| run | setting | Siberia JJA | DJF | verdict |
+|---|---|---:|---:|---|
+| **G2** | `RVRSMIN(3,4)=500` | +0.336* | −0.325 | 64 % of G1's gain |
+| **G3** | `RVRSMIN(3,4)=2000` | +0.876* | **−0.798*** | **rejected** — winter damage |
+| **G4** | G1 + `RVRSMIN(9)=225` | **+0.952*** (t=7.68) | −0.385 | **ADOPTED** |
+
+**G4 is the best configuration of the campaign** and closes **48 %** of the boreal bias
+(G1 closed 26 %):
+
+| metric | control | G1 | **G4** |
+|---|---:|---:|---:|
+| Siberia JJA T2m [°C] | 9.73 | 10.25 | **10.68** (+0.952) |
+| Siberia sfc net SW | 153.78 | 159.31 | **161.88** (+8.10) |
+| SO SW RMSE | 6.877 | 4.809 | **4.800** |
+| subpolar N Atl SW RMSE | 5.007 | 4.872 | **4.738** |
+| Nordic Seas SW RMSE | 9.058 | 9.358 ⚠ | **9.147** (+0.089) |
+| tropics net TOA | 42.61 | 42.71 | 42.73 |
+| global T2m RMSE | 1.579 | 1.553 | **1.543** |
+| DJF / MAM / SON | — | +0.07/−0.30/+0.28 | −0.385 / −0.360 / +0.185, all within noise |
+
+G4 also **largely repairs G1's Nordic Seas damage** (+0.300 → +0.089), which nothing
+predicted and nothing yet explains — an unexplained improvement is as much a loose end as
+an unexplained degradation.
+
+**⚠ THE MECHANISM IS FALSIFIED.** The prediction on record was a measurable drop in
+May–June snow water equivalent. Siberian land box SWE [mm], run × year ANOVA thresholds:
+
+| | Mar (±3.53) | Apr (±3.85) | May (±5.25) | Jun (±2.72) |
+|---|---:|---:|---:|---:|
+| control | 121.98 | 131.07 | 97.12 | 15.39 |
+| G1 | +0.88 | +0.37 | **+5.58*** | **+5.68*** |
+| **G4** | −1.44 | −2.39 | **+2.75** | **+1.60** |
+
+**G4's snow mass did not move.** T2m rose +0.952 K with May/June SWE unchanged within
+noise, so the gain is the **plain sensible-heat route**, exactly as for F4 — *not* the
+melt-timing route that motivated the run. The tundra lever stands on its independent
+table-consistency justification and it works; the mechanism claimed for it does not.
+
+**And F4 makes the snow bias worse.** G1 *significantly increases* May–June SWE (+5.58,
++5.68). The campaign's best boreal lever improves temperature while **aggravating** the
+snow bias it was supposed to help. Leading suspect: cutting evapotranspiration also cuts
+**sublimation**, a genuine snowpack sink. Untested.
+
+**Predictions vs outcome:**
+
+| prediction | outcome |
+|---|---|
+| G2 keeps >60 % of G1's gain if saturating | ✅ 64 % |
+| G3 adds < +0.15 K beyond G1 if saturating | ❌ **+0.355** — not saturating |
+| G4 gains +0.2…+0.5 K beyond G1 | ✅ +0.431 |
+| G4 gain comes with a **May–June SWE drop** | ❌ **FALSIFIED** |
+
+**`RVRSMIN` does not saturate — cap it at 1000.** 500/1000/2000 → +0.336/+0.521/+0.876;
+increments per doubling +0.185 then **+0.355**, i.e. *accelerating*. There is no knee.
+1000 is defensible only as **the largest value before the winter damage starts** — G3 at
+2000 costs DJF −0.798, clearing ±0.588 and joining B5 and H2 in the "warms JJA, cools DJF"
+list. This is the outcome that was flagged in advance as an argument *against* the
+approach, and it stands: F4's magnitude is a fitted ramp, not a corrected bias.
+
+**Two mechanisms for the June albedo bias are now dead**: snow *cover formulation*
+(round 13) and snow *melt rate* (round 14). Untried candidates: snow-albedo decay
+timescale; the canopy-masking tile-7 formulation (which the round-13 residual showed is
+already doing most of the work); and the `RVVEGALB` table, never touched.
+
 ### ⭐⭐ Round 14 (2026-08-03): the June albedo bias is a SPRING MELT bias — and tundra
 
 Round 13 established what the June bias is *not*. This is what it **is**, from output already

@@ -24,24 +24,31 @@ Detection thresholds at 44 yr — **quote `t`, never a bare delta**:
 
 ---
 
-## 1. THE KEPT CONFIGURATION — G1
+## 1. THE KEPT CONFIGURATION — G4
 
-**Carry this forward.** Best configuration of the campaign; the only combination that
-improves both targets, and the only one that superposes additively.
+**Carry this forward.** Best configuration of the campaign on every headline metric,
+seasonally clean, and it repairs most of the Nordic Seas damage G1 introduced.
+G4 $=$ G1 $+$ tundra, i.e. F4 (`RVRSMIN` 250→1000 for veg types 3, 4) $+$ D2b
+$+$ `RVRSMIN(9)` 80→225.
 
-| metric | control | **G1** | Δ | target |
-|---|---:|---:|---:|---:|
-| **SO SW RMSE** (priority) | 6.877 | **4.809** | −2.067 | — |
-| SO TOA SW CRE [W/m²] | −60.29 | −63.13 | −2.84 | −68.14 |
-| **Siberia JJA T2m** [°C] | 9.73 | **10.25** | **+0.521** (t=4.22) | ≈12.2 |
-| Siberia sfc net SW [W/m²] | 153.78 | 159.31 | +5.54 | 166.26 |
-| global net TOA [W/m²] | +0.64 | +0.45 | −0.195 | ~0 |
-| tropics net TOA [W/m²] | 42.61 | 42.71 | +0.096 | 45.11 |
-| global T2m RMSE [K] | 1.579 | 1.553 | −0.026 | — |
-| Nordic Seas SW RMSE | 9.058 | 9.358 | **+0.300** ⚠ | — |
-| DJF / MAM / SON T2m | — | — | +0.070 / −0.296 / +0.280 | all within noise |
+| metric | control | G1 | **G4** | Δ vs control | target |
+|---|---:|---:|---:|---:|---:|
+| **Siberia JJA T2m** [°C] | 9.73 | 10.25 | **10.68** | **+0.952** (t=7.68) | ≈12.2 |
+| Siberia sfc net SW [W/m²] | 153.78 | 159.31 | **161.88** | +8.098 | 166.26 |
+| Siberia cloud area [%] | 78.14 | 75.45 | 74.77 | −3.369 | 69.59 |
+| **SO SW RMSE** (priority) | 6.877 | 4.809 | **4.800** | −2.076 | — |
+| SO TOA SW CRE [W/m²] | −60.29 | −63.13 | −63.04 | −2.753 | −68.14 |
+| SO cloud area [%] | 83.07 | 83.59 | 83.55 | +0.484 | 89.72 |
+| global net TOA [W/m²] | +0.64 | +0.45 | +0.52 | −0.128 | ~0 |
+| tropics net TOA [W/m²] | 42.61 | 42.71 | 42.73 | +0.124 | 45.11 |
+| subpolar N Atl SW RMSE | 5.007 | 4.872 | **4.738** | −0.269 | — |
+| Nordic Seas SW RMSE | 9.058 | 9.358 ⚠ | **9.147** | **+0.089** | — |
+| global T2m RMSE [K] | 1.579 | 1.553 | **1.543** | −0.036 | — |
+| DJF / MAM / SON T2m | — | +0.07/−0.30/+0.28 | −0.385 / −0.360 / +0.185 | all **within** noise | |
 
-### How to set it — namelist only, no source edits (since 2026-08-02)
+**G4 closes 48 % of the boreal bias**, up from G1's 26 %.
+
+### How to set it — namelist only, no source edits
 
 ```yaml
 oifs:
@@ -54,6 +61,7 @@ oifs:
             NAMSURFTUNE:
                 "ECE_TUNE_RVRSMIN(3)": 1000.0   # F4: evergreen needleleaf
                 "ECE_TUNE_RVRSMIN(4)": 1000.0   # F4: deciduous needleleaf
+                "ECE_TUNE_RVRSMIN(9)": 225.0    # tundra, 80 -> 225 (table consistency)
 ```
 
 ⚠ **`NAMSURFTUNE`, not `NAMECECFG`.** `NAMECECFG` is read **twice** from the same
@@ -62,39 +70,47 @@ and a Fortran namelist read aborts with *invalid reference to variable* on any n
 reading module does not declare. Putting the tune entries in `NAMECECFG` kills the arpifs
 read at `su0yoma.F90:152`. Verified the hard way by a 1-day test run.
 
-Runscript: `oifsamip-cy48-levante-TCO95L91_G1nml.yaml`.
+Runscript: `oifsamip-cy48-levante-TCO95L91_G4_tundra.yaml`.
 
-### The two components
+### The three components
 
-| lever | change | mechanism | boreal | SO SW RMSE |
+| lever | change | mechanism | boreal JJA | SO SW RMSE |
 |---|---|---|---:|---:|
-| **F4** | `RVRSMIN` 250→1000 for veg types 3, 4 | less transpiration → more sensible heat | **+0.749** (t=6.06) | −0.217 |
-| **D2b** | `RCL_INPSEA=0.2`, `RCL_INPPMIN=700 hPa` | fewer ice nuclei over ocean → more supercooled liquid → brighter cloud | −0.222 | **−1.914** |
+| **F4** | `RVRSMIN` 250→1000, types 3, 4 | less transpiration → more sensible heat | +0.749 (t=6.06) | −0.217 |
+| **D2b** | `RCL_INPSEA=0.2`, `RCL_INPPMIN=700 hPa` | fewer ocean ice nuclei → more supercooled liquid → brighter cloud | −0.222 | **−1.914** |
+| **tundra** | `RVRSMIN(9)` 80→225 | same as F4, on the 25.6 % of the box F4 misses | **+0.431** (G4−G1) | −0.009 |
 
-**Superposition, measured not assumed** (AB and ABB8 both got it wrong *in sign*):
+**Why tundra is justified — a table-consistency argument, independent of our bias.**
+`RVRSMIN(9) = 80 s/m` is the **lowest value of any vegetated type in HTESSEL**: below
+crops, short grass and tall grass (all 100), semidesert 150, deciduous broadleaf 175,
+evergreen/deciduous shrubs 225, bogs/marshes 240, desert and needleleaf 250. The model
+therefore has arctic tundra transpiring more freely than tropical grassland. Its closest
+physiognomic analogues in the same table are the shrubs at 225, and bogs/marshes — which
+co-occur with tundra in this very box — are 240. Contrast F4, whose 250→1000 remains an
+unanchored 4× excursion.
 
-| | F4 | D2b | predicted | **G1 actual** |
-|---|---:|---:|---:|---:|
-| Siberia JJA T2m | +0.749 | −0.222 | +0.527 | **+0.521** |
-| SO SW RMSE | −0.217 | −1.914 | −2.131 | −2.067 |
-| SO TOA SW CRE | −0.079 | −2.640 | −2.719 | −2.840 |
-| global net TOA | +0.095 | −0.283 | −0.188 | −0.195 |
+Vegetation cover in the box, area-weighted over land (model's own `tvh/tvl/cvh/cvl`):
+**tundra 25.6 %**, decid. needleleaf 19.2 %, mixed forest 5.2 %, bogs/marshes 3.9 %,
+evergr. needleleaf 3.4 %, evergr. shrubs 3.0 %. F4 reaches ~24 %; tundra is another 26 %.
 
-Additive to within noise throughout. The plausible reason it holds here and failed
-before: F4 is a land surface flux in boreal summer, D2b is ice nucleation over ocean
-below 700 hPa. AB/ABB8 combined levers touching the *same* cloud scheme in the *same*
-regime.
+### ⚠ Known costs, caveats, and one falsified mechanism
 
-### Known costs and caveats of G1
-
-- **Nordic Seas SW RMSE +0.300** against a ±0.052 threshold, and *worse* than additive
-  (+0.184 expected). No other lever in 31 runs has moved this box at all. Small box,
-  not the deep-water priority, but do not let it grow.
-- `RVRSMIN` 250→1000 is an **unanchored 4× excursion** from what ECMWF ships. It is
-  defensible as a mechanism (see the F4 cause-vs-symptom tests) but it is not
-  anchored in a measurement.
-- G1 closes **26 %** of the boreal bias and **36 %** of the SO CRE gap. The SO
-  **cloud-area** deficit (~6 pp) is untouched by everything ever tried.
+- **The melt mechanism claimed for G4 is FALSIFIED.** The prediction on record was a
+  measurable drop in May–June snow water equivalent. Measured (thresholds ±5.25 May,
+  ±2.72 Jun): **G4 May +2.75, Jun +1.60 — both within noise.** T2m rose with the snow
+  mass unchanged, so G4's gain is the **plain sensible-heat route**, the same as F4.
+  The lever works and is independently justified, but *not for the reason given*.
+- **G1/F4 significantly *increases* May–June snow** (+5.58, +5.68, both clearing
+  threshold). F4 improves T2m while **aggravating** the snow bias — plausibly by cutting
+  evapotranspiration and therefore sublimation, a real snowpack sink. The warming partly
+  offsets a bias it also worsens. Unresolved.
+- **`RVRSMIN` does not saturate — do NOT go past 1000.** G2/G1/G3 at 500/1000/2000 give
+  +0.336/+0.521/+0.876: increments per doubling are +0.185 then **+0.355**, i.e.
+  *accelerating*, no knee. 1000 is defensible only as *before the winter damage starts*,
+  not as "on the knee". G3 at 2000 costs **DJF −0.798**, clearing ±0.588 — genuine winter
+  damage, joining B5 and H2.
+- SO **cloud-area** deficit (~6 pp) untouched by everything ever tried.
+- Tropics net TOA still ~2.4 W/m² low.
 
 ---
 
@@ -181,21 +197,30 @@ The winter cooling is not radiative — Feb/Mar are dark yet cool by −1.65/−
 Cutting snow-covered fraction moves area from the snow tiles (5, 7) onto vegetation
 tiles, and the snow tile buffers the surface against radiative cooling in polar night.
 
-### Round 14 — in flight (2026-08-03)
+### Round 14 results (2026-08-03) — G4 adopted, F4 magnitude capped, mechanism falsified
 
-All three are **namelist-only**, sharing one binary with no rebuild — the first round the
+All three were **namelist-only**, sharing one binary with no rebuild — the first round the
 `NAMSURFTUNE` work made possible.
 
-| run | setting | question | prediction |
-|---|---|---|---|
-| **G2** | `RVRSMIN(3,4)=500` | is F4 saturating? | if so, keeps >60 % of G1's gain (≥ +0.31 K) |
-| **G3** | `RVRSMIN(3,4)=2000` | is F4 saturating? | if so, adds < +0.15 K beyond G1 |
-| **G4** | G1 + `RVRSMIN(9)=225` | does tundra close the gap? | +0.2 to +0.5 K beyond G1, **concentrated in June**, with a drop in May/June SWE |
+| run | setting | Siberia JJA | DJF | verdict |
+|---|---|---:|---:|---|
+| **G2** | `RVRSMIN(3,4)=500` | +0.336* | −0.325 | half-strength; 64 % of G1's gain |
+| **G3** | `RVRSMIN(3,4)=2000` | +0.876* | **−0.798\*** | **rejected** — winter damage |
+| **G4** | G1 + `RVRSMIN(9)=225` | **+0.952\*** (t=7.68) | −0.385 | **ADOPTED** |
 
-**Falsifiers on record.** G4: if T2m rises with **no** change in May–June snow mass, the
-melt mechanism is unsupported and the gain is the plain sensible-heat route. G2/G3: if the
-response is **linear** in `RVRSMIN`, we are riding a ramp with no natural stopping point —
-an argument *against* the approach, not for a bigger number.
+**Predictions vs outcome, both recorded before the runs finished:**
+
+| prediction | outcome |
+|---|---|
+| G2 keeps >60 % of G1's gain if saturating | ✅ 64 % |
+| G3 adds < +0.15 K beyond G1 if saturating | ❌ **added +0.355** — not saturating |
+| G4 gains +0.2…+0.5 K beyond G1 | ✅ +0.431 |
+| G4 gain accompanied by a **drop in May–June SWE** | ❌ **falsified** — May +2.75, Jun +1.60, both within noise |
+
+So the boreal gain is real and reproducible, but **the spring-melt mechanism that motivated
+G4 is not supported**: the temperature rises without the snow moving. Two mechanisms for the
+June albedo bias have now been falsified — snow *cover formulation* (round 13) and snow
+*melt rate* (round 14).
 
 ### Not tuning levers — never add to `RUNS`
 
@@ -224,7 +249,8 @@ emit the daily LPJG forcing set, not evaluation fields, so they legitimately hav
    Both f_snow columns use the *same* HTESSEL formula, so the difference is **snow
    amount, not the cover formula**. The model carries roughly twice ERA5's June snow
    mass. And its snow is **too dark**, not too bright — making snow albedo more
-   realistic would make June *worse*. **The lever should be snow mass / melt rate.**
+   realistic would make June *worse*. ~~The lever should be snow mass / melt rate.~~
+   **← falsified by round 14, see item 2.**
    (Caveat: ERA5's albedo scheme is a relative of HTESSEL, so `asn` agreement is not
    independent evidence; its snow *extent* is observationally constrained via IMS.)
 
@@ -236,21 +262,33 @@ emit the daily LPJG forcing set, not evaluation fields, so they legitimately hav
    surface albedo, not cloud. Self-reinforcing: late melt → more May snow → brighter →
    less absorbed → less melt energy → snow into June.
 
-2. **⭐ Tundra is the largest cover type in the box and no lever has ever touched it.**
-   Area-weighted land cover from the model's own `tvh/tvl/cvh/cvl`: **tundra (type 9)
-   25.6 %**, deciduous needleleaf 19.2 %, mixed forest 5.2 %, bogs/marshes 3.9 %,
-   evergreen needleleaf 3.4 %. F4 reaches ~24 % of the box; tundra is another 26 %.
-   `RVRSMIN(9) = 80 s/m` is **the lowest of any vegetated type in HTESSEL** — below
-   crops, short grass and tall grass (all 100) — so the model has arctic tundra
-   transpiring more freely than tropical grassland, while its shrub analogues are 225
-   and co-occurring bogs/marshes are 240. A table-consistency argument, independent of
-   our bias. Being tested as **G4**.
+2. **⚠ The spring-melt mechanism is ALSO falsified (round 14).** G4 raised Siberian JJA
+   T2m by +0.952 K with **no** significant change in May–June snow water equivalent
+   (May +2.75 against ±5.25, Jun +1.60 against ±2.72). Temperature moved; snow did not.
+   Two mechanisms are now dead — snow *cover formulation* (round 13) and snow *melt rate*
+   (round 14) — and the June albedo bias remains unexplained.
 
+   Worse, **G1/F4 significantly *increases* May–June snow** (+5.58, +5.68, both clearing
+   threshold), so the campaign's best boreal lever aggravates the snow bias while improving
+   temperature. Leading suspect: cutting evapotranspiration also cuts **sublimation**, a
+   real snowpack sink. Untested.
+
+   Remaining candidates, none yet tried: the **snow-albedo decay timescale**; the
+   **canopy-masking (tile 7) formulation**, which the round-13 residual showed is already
+   doing most of the work in the melt months; and the **`RVVEGALB` vegetation albedo
+   table**, which the campaign has never touched.
 3. **SO cloud-area deficit ~6 pp** — untouched by every lever tried.
 4. **Tropics net TOA 2.4 W/m² too low** (42.6 vs 45.1).
-5. **Nordic Seas SW RMSE** degraded by G1, mechanism unknown.
-6. `RVRSMIN` 4× is unanchored; worth trying to anchor against a transpiration
-   observation rather than leaving it as a fitted value.
+5. **Nordic Seas SW RMSE** — G1 degraded it by +0.300 against a ±0.052 threshold, the only
+   lever ever to move that box. **G4 largely repairs it** (+0.089), unexpectedly and for no
+   reason we understand: adding tundra resistance should not act on a Nordic ocean box.
+   Worth a look before trusting it — an unexplained improvement is as much a loose end as
+   an unexplained degradation.
+6. `RVRSMIN` 4× is unanchored **and does not saturate**. G2/G1/G3 at 500/1000/2000 give
+   +0.336/+0.521/+0.876 — increments per doubling of +0.185 then **+0.355**, accelerating,
+   with no knee to stop at. 1000 is justified only as *the largest value before the winter
+   damage appears* (G3 at 2000 costs DJF −0.798, clearing ±0.588). Anchoring this against a
+   transpiration observation is now **more** important, not less.
 7. Winter surface albedo is ~0.02–0.03 **too low** (opposite sign to June) — a
    separate bias, likely irrelevant to T2m in polar night but real.
 

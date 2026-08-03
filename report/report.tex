@@ -27,7 +27,14 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--08--03}: \textbf{The June albedo bias is a SPRING MELT bias}
+\textbf{Last updated 2026--08--03b}: \textbf{G4 $=$ F4 $+$ D2b $+$ tundra is the best
+configuration of the campaign} (\S\ref{sub:r14res}) --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$,
+$48\,\%$ of the bias, against G1's $26\,\%$), best Southern Ocean SW RMSE, seasonally clean, and it
+repairs most of the Nordic damage G1 caused. \textbf{But its mechanism is falsified}: T2m rose with
+May--June snow mass unchanged, so the gain is the plain sensible-heat route, and F4 in fact
+\emph{increases} spring snow. \texttt{RVRSMIN} does not saturate, so $1000$ is a cap set by winter
+damage rather than a knee. Two mechanisms for the June albedo bias are now dead.
+\textbf{2026--08--03}: \textbf{The June albedo bias is a SPRING MELT bias}
 (\S\ref{sec:melt}). Snow \emph{accumulation} is right to 7--9\,\%, but the pack peaks a month
 late and May melt is 30\,\% too slow, leaving 50\,\% too much snow; May's SW deficit is
 $-13.9$\,W\,m$^{-2}$ with downwelling nearly correct, so it is albedo, not cloud, and it is a
@@ -2599,21 +2606,90 @@ no serialisation against the model tree. That is what the \texttt{NAMSURFTUNE} w
 \item \textbf{G3} --- \texttt{RVRSMIN(3,4)} $=2000$. Double-strength F4.
 
   G2/G3 bracket G1 and map the response curve, answering the standing criticism that $1000$
-  was never chosen from a measurement. \emph{Prediction:} F5 already hinted at saturation
-  (F1+F2+F3+F4 gave $+0.746$ versus F4 alone at $+0.749$), so if the surface energy balance
-  is saturating, G2 should keep $>60\,\%$ of G1's gain ($\ge +0.31$\,K) and G3 should add
-  little ($< +0.15$\,K beyond G1). \emph{If instead the response is linear in} \texttt{RVRSMIN},
-  we are riding a ramp with no natural stopping point, and that is an argument \textbf{against}
-  the approach, not for a larger number.
+  was never chosen from a measurement. \emph{Prediction:} G2 keeps $>60\,\%$ of G1's gain
+  ($\ge +0.31$\,K) \dead{and G3 adds little ($< +0.15$\,K beyond G1)}. First half held
+  (64\,\%); second half \textcolor{red}{\textbf{failed}} --- G3 added $+0.355$
+  (\S\ref{sub:r14res}). \emph{The response is a ramp, which was flagged in advance as an
+  argument} \textbf{against} \emph{the approach, not for a larger number.}
 \item \textbf{G4} --- G1 plus \texttt{RVRSMIN(9)} $80\to225$ (tundra), keeping $1000$ for
-  types 3 and 4. \emph{Prediction:} $+0.2$ to $+0.5$\,K beyond G1's $+0.521$, concentrated in
-  \textbf{June} rather than spread across JJA, and accompanied by a measurable drop in
-  May/June snow water equivalent. \textbf{If T2m rises with no change in May--June snow mass,
-  the melt mechanism above is unsupported} and the gain is the plain sensible-heat route.
+  types 3 and 4. \emph{Prediction:} $+0.2$ to $+0.5$\,K beyond G1's $+0.521$ (held: $+0.431$),
+  \dead{accompanied by a measurable drop in May/June snow water equivalent}
+  \textcolor{red}{\textbf{--- falsified}}, \S\ref{sub:r14res}. As stated in advance,
+  \textbf{T2m rose with no change in May--June snow mass, so the melt mechanism is
+  unsupported} and the gain is the plain sensible-heat route.
   Guardrails: tundra is confined to high latitudes so tropical net TOA should stay near
   $42.6$; check DJF against its own $\pm0.588$\,K threshold and the Nordic Seas SW RMSE that
   G1 already degraded.
 \end{itemize}
+
+\subsection{Round 14 results: G4 adopted, mechanism falsified, \texttt{RVRSMIN} capped}\label{sub:r14res}
+\textbf{G4 is the best configuration of the campaign and closes $48\,\%$ of the boreal bias},
+against G1's $26\,\%$ --- and its stated mechanism is falsified. Both matter.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+metric & control & G1 & G2 (500) & G3 (2000) & \textbf{G4} \\
+\midrule
+\textbf{Siberia JJA T2m} [$^\circ$C] & $9.73$ & $+0.521$ & $+0.336$ & $+0.876$ & $\mathbf{+0.952}$ ($t{=}7.68$) \\
+Siberia sfc net SW & $153.78$ & $+5.54$ & $+3.21$ & $+7.27$ & $\mathbf{+8.10}$ \\
+\textbf{SO SW RMSE} & $6.877$ & $4.809$ & $4.816$ & $4.903$ & $\mathbf{4.800}$ \\
+subpolar N Atl SW RMSE & $5.007$ & $4.872$ & $4.866$ & $4.728$ & $\mathbf{4.738}$ \\
+Nordic Seas SW RMSE & $9.058$ & $+0.300$ & $+0.098$ & $+0.304$ & $\mathbf{+0.089}$ \\
+tropics net TOA & $42.61$ & $+0.096$ & $+0.041$ & $+0.082$ & $+0.124$ \\
+global T2m RMSE [K] & $1.579$ & $1.553$ & $1.558$ & $1.546$ & $\mathbf{1.543}$ \\
+DJF & --- & $+0.070$ & $-0.325$ & $\mathbf{-0.798}^{*}$ & $-0.385$ \\
+MAM / SON & --- & $-0.296/{+}0.280$ & $-0.462^{*}/{-}0.030$ & $-0.217/{-}0.012$ & $-0.360/{+}0.185$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent G4 is seasonally clean on every season's own threshold, and it
+\textbf{largely repairs G1's Nordic Seas damage} ($+0.300 \to +0.089$) --- which nothing
+predicted and nothing yet explains. An unexplained improvement is as much a loose end as an
+unexplained degradation.
+
+\subsubsection*{The melt mechanism is falsified}
+The prediction on record was a measurable drop in May--June snow water equivalent. Siberian
+land box SWE [mm], with run$\times$year ANOVA thresholds:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+ & Mar ($\pm3.53$) & Apr ($\pm3.85$) & May ($\pm5.25$) & Jun ($\pm2.72$) \\
+\midrule
+control & $121.98$ & $131.07$ & $97.12$ & $15.39$ \\
+G1 & $+0.88$ & $+0.37$ & $\mathbf{+5.58}^{*}$ & $\mathbf{+5.68}^{*}$ \\
+\textbf{G4} & $-1.44$ & $-2.39$ & $+2.75$ & $+1.60$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{G4's snow mass did not move.} T2m rose $+0.952$\,K with May and June SWE
+unchanged within noise, so the gain is the \textbf{plain sensible-heat route}, exactly as for
+F4 --- \emph{not} the melt-timing route that motivated the run. The tundra lever stands on its
+independent table-consistency justification (\S\ref{sub:tundra}) and it works; the mechanism
+claimed for it does not.
+
+\noindent \textbf{And F4 makes the snow bias worse.} G1 \emph{significantly increases}
+May--June SWE ($+5.58$, $+5.68$, both clearing threshold). The campaign's best boreal lever
+improves temperature while \textbf{aggravating} the very snow bias it was meant to address.
+Leading suspect: cutting evapotranspiration also cuts \textbf{sublimation}, a genuine
+snowpack sink. Untested.
+
+\subsubsection*{\texttt{RVRSMIN} does not saturate --- cap it at 1000}
+$500/1000/2000$ give $+0.336/+0.521/+0.876$: increments per doubling of $+0.185$ then
+$\mathbf{+0.355}$, i.e.\ \emph{accelerating}. \textbf{There is no knee.} $1000$ is defensible
+only as \emph{the largest value before the winter damage starts} --- G3 at $2000$ costs
+DJF $-0.798$, clearing $\pm0.588$ and joining B5 and H2 in the ``warms JJA, cools DJF'' list.
+F4's magnitude is a fitted ramp, not a corrected bias, and \S\ref{sub:r14runs} flagged this
+outcome in advance as an argument against pushing it further.
+
+\noindent \textbf{Two mechanisms for the June albedo bias are now dead}: the snow
+\emph{cover formulation} (round 13) and the snow \emph{melt rate} (round 14). Untried
+candidates: the snow-albedo decay timescale; the canopy-masking tile-7 formulation, which the
+round-13 residual showed already does most of the work in the melt months; and the
+\texttt{RVVEGALB} vegetation albedo table, which the campaign has never touched.
 
 \subsection{Tuning without rebuilding: \texttt{NAMSURFTUNE}}\label{sub:nmltune}
 The ECMWF \texttt{surf} library deliberately ships no namelist, so every HTESSEL lever in this
