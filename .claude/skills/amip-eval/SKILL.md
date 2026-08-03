@@ -24,15 +24,28 @@ CERES EBAF here is the **07/2005–06/2015** climatology. An indirect estimate o
 measurement. Prefer `amip_presentday` (1990–2014) vs ERA5/CERES in their own period whenever
 the question allows.
 
-## 1. Scripts, in the order to run them
+## 1. Run ONE thing: `scripts/analysis/evaluate.sh`
+
+```bash
+cd scripts/analysis && ./evaluate.sh          # full protocol
+./evaluate.sh --quick                          # main table + significance only
+./evaluate.sh --obs                            # also satellite/ERA5 checks
+```
+
+The protocol used to be five scripts run from memory, and skipping one has
+repeatedly produced wrong conclusions here (B8 promoted on noise, B5's winter
+penalty missed for eleven rounds, the TOA decomposition done only for the
+control). **Run the wrapper, not the individual scripts.** What it calls:
 
 | script | what it gives |
 |---|---|
-| `scripts/analysis/eval_round10_A.py` | the main table: SO, Siberia, global guardrails, deep-water + global RMSE |
-| `scripts/analysis/noise_floor.py` | run × year ANOVA → detection threshold and `t` for Siberian JJA T2m |
-| `scripts/analysis/seasonal_by_run.py` | the same ANOVA **per season**, with a per-season threshold |
-| `scripts/analysis/rmse_significance.py` | same ANOVA on per-year spatial SW RMSE (deep-water boxes) |
-| `scripts/analysis/vertical_profiles_prep.sh` then `vertical_profiles.py` | model − ERA5 profiles of T, q, RH |
+| `eval_round10_A.py` | the main table: SO, Siberia, global guardrails, **global TOA decomposition**, deep-water + global RMSE |
+| `noise_floor.py` | run × year ANOVA → detection threshold and `t` for Siberian JJA T2m |
+| `seasonal_by_run.py` | the same ANOVA **per season**, with a per-season threshold |
+| `rmse_significance.py` | same ANOVA on per-year spatial SW RMSE (deep-water boxes) |
+| `monthly_lever_check.py` | month-by-month T2m, surface SW and albedo response |
+| *(`--obs`)* `albedo_decompose.py`, `snow_budget.py`, `snowcover_vs_satellite.py` | ERA5 + satellite checks; need `albedo_decompose_prep.sh` first |
+| *(separate)* `vertical_profiles_prep.sh` then `vertical_profiles.py` | model − ERA5 profiles of T, q, RH |
 
 **Add new runs in ONE place: `scripts/analysis/runs.py`.** All evaluators import `RUNS` from
 there. They used to carry three separate copies, which drifted three times — each time leaving
@@ -90,6 +103,11 @@ N Atl **±0.024**; Nordic **±0.053**; global SW **±0.023**.
   differently from "−0.17".
 - Check **tropics net TOA** on any lever touching convection or cloud. B5 wins the boreal at
   a cost of −1.94 W/m² there.
+- **The PI energy target is net TOA ≈ 0, NOT the CERES column.** CERES is present-day
+  (2005–2015) and carries the real warming imbalance, so it reads ~+1.1 W/m² globally.
+  Tuning a pre-industrial control toward CERES would build in a spurious drift. The
+  decomposition rows (absorbed SW, OLR, albedo, CRE, and net TOA by band) are for
+  *structure* — where the error sits — not for matching CERES globally.
 - **Check DJF, not only JJA.** B5's −0.72 K winter cooling went unnoticed for the whole
   campaign because only the growing season was ever evaluated, and the coupled model's
   original complaint is a *cold-season* bias. Run `seasonal_by_run.py` every round.

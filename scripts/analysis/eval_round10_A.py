@@ -64,7 +64,12 @@ def ceres(lat, lon):
     tl = np.clip(lat, -89.5, 89.5)
     tlo = np.where(lon < 0, lon + 360, lon)
     keep = ['toa_cre_sw_clim', 'cldarea_total_daynight_clim', 'toa_net_all_clim',
-            'sfc_net_sw_all_clim', 'sfc_cre_net_sw_clim']
+            'sfc_net_sw_all_clim', 'sfc_cre_net_sw_clim',
+            # TOA decomposition references (added 2026-08-03). NOTE CERES reports
+            # OUTGOING sw/lw here, while the model reports NET DOWNWARD, so
+            # absorbed SW = incident - toa_sw_all and OLR = toa_lw_all directly.
+            'toa_sw_all_clim', 'toa_lw_all_clim', 'toa_cre_lw_clim',
+            'toa_net_clr_t_clim']
     return {v: ds[v].interp(lat=xr.DataArray(tl, dims='y'),
                             lon=xr.DataArray(tlo, dims='x')).values for v in keep}
 
@@ -137,7 +142,7 @@ JJA = [5, 6, 7]
 # then invalidate every cache and defeat the point.  --no-cache forces a
 # full recompute.
 # ---------------------------------------------------------------------------
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.eval_cache')
 USE_CACHE = '--no-cache' not in sys.argv
 NPROC = int(os.environ.get('EVAL_NPROC', '8'))
@@ -185,7 +190,35 @@ def metrics(run, lat, lon, C, E5):
         rmse_so=rmse(ssrm, csw, lat, lon, (-65, -45, -180, 180), lsm, 'ocean'),
         rmse_spna=rmse(ssrm, csw, lat, lon, (50, 65, -60, 0), lsm, 'ocean'),
         rmse_nordic=rmse(ssrm, csw, lat, lon, (65, 80, -20, 20), lsm, 'ocean'),
-        rmse_t2m=rmse(d['2t'].mean(0), E5, lat))
+        rmse_t2m=rmse(d['2t'].mean(0), E5, lat),
+        # ---- global TOA decomposition -------------------------------------
+        # Added 2026-08-03. Global net TOA was reported as a single number for
+        # every run, but never DECOMPOSED per run -- amip_toa_decomp.py did that
+        # for the control only. Since the fields are already loaded and cached
+        # here, the decomposition is free, and hooking it in means every future
+        # run gets it without a separate invocation.
+        #
+        # IFS TOA sign convention, all fluxes positive DOWNWARD:
+        #   tsr = net solar (positive), ttr = net thermal = -OLR (negative)
+        #   SW CRE = tsr - tsrc  (negative, clouds reflect)
+        #   LW CRE = ttr - ttrc  (positive, clouds trap OLR)
+        # CERES-EBAF global: absorbed SW 240.5, OLR 240.2, albedo 0.293,
+        #                    SW CRE -45.4, LW CRE +25.8, net CRE -19.6
+        toa_isr=sel(d['tisr'], lat, lon, lsm, (-90, 90)),
+        toa_sw=sel(d['tsr'], lat, lon, lsm, (-90, 90)),
+        toa_olr=-sel(d['ttr'], lat, lon, lsm, (-90, 90)),
+        toa_alb=1 - sel(d['tsr'], lat, lon, lsm, (-90, 90))
+                   / sel(d['tisr'], lat, lon, lsm, (-90, 90)),
+        toa_swcre=sel(swcre, lat, lon, lsm, (-90, 90)),
+        toa_lwcre=sel(d['ttr'] - d['ttrc'], lat, lon, lsm, (-90, 90)),
+        toa_clr=sel(d['tsrc'] + d['ttrc'], lat, lon, lsm, (-90, 90)),
+        # hemispheric and banded net TOA -- where the imbalance actually sits
+        toa_nh=sel(net, lat, lon, lsm, (0, 90)),
+        toa_sh=sel(net, lat, lon, lsm, (-90, 0)),
+        toa_npol=sel(net, lat, lon, lsm, (60, 90)),
+        toa_nmid=sel(net, lat, lon, lsm, (30, 60)),
+        toa_smid=sel(net, lat, lon, lsm, (-60, -30)),
+        toa_spol=sel(net, lat, lon, lsm, (-90, -60)))
 
 
 def _worker(args):
@@ -249,7 +282,28 @@ obs = dict(so_cre=sel(C['toa_cre_sw_clim'], lat, lon, lsm, (-65, -45), sfc='ocea
            so_net=sel(C['toa_net_all_clim'], lat, lon, lsm, (-65, -45), sfc='ocean'),
            sib_sw=sel(C['sfc_net_sw_all_clim'], lat, lon, lsm, (55, 75), (60, 180), 'land', JJA),
            sib_cld=sel(C['cldarea_total_daynight_clim'], lat, lon, lsm, (55, 75), (60, 180), 'land', JJA),
-           trop=sel(C['toa_net_all_clim'], lat, lon, lsm, (-30, 30)))
+           trop=sel(C['toa_net_all_clim'], lat, lon, lsm, (-30, 30)),
+           # ---- TOA decomposition references (CERES EBAF) -----------------
+           # CERES gives OUTGOING sw/lw; the model reports NET downward. So
+           # absorbed SW = incident - toa_sw_all, and OLR = toa_lw_all directly.
+           # `tisr` is not in this CERES subset, so incident solar is taken from
+           # the model's own tisr -- it is an astronomical quantity, identical
+           # between them to well under 1 W/m2, and using it keeps the albedo
+           # and absorbed-SW rows comparable rather than absent.
+           toa_sw=res['control']['toa_isr']
+                  - sel(C['toa_sw_all_clim'], lat, lon, lsm, (-90, 90)),
+           toa_olr=sel(C['toa_lw_all_clim'], lat, lon, lsm, (-90, 90)),
+           toa_alb=sel(C['toa_sw_all_clim'], lat, lon, lsm, (-90, 90))
+                   / res['control']['toa_isr'],
+           toa_swcre=sel(C['toa_cre_sw_clim'], lat, lon, lsm, (-90, 90)),
+           toa_lwcre=sel(C['toa_cre_lw_clim'], lat, lon, lsm, (-90, 90)),
+           toa_clr=sel(C['toa_net_clr_t_clim'], lat, lon, lsm, (-90, 90)),
+           toa_nh=sel(C['toa_net_all_clim'], lat, lon, lsm, (0, 90)),
+           toa_sh=sel(C['toa_net_all_clim'], lat, lon, lsm, (-90, 0)),
+           toa_npol=sel(C['toa_net_all_clim'], lat, lon, lsm, (60, 90)),
+           toa_nmid=sel(C['toa_net_all_clim'], lat, lon, lsm, (30, 60)),
+           toa_smid=sel(C['toa_net_all_clim'], lat, lon, lsm, (-60, -30)),
+           toa_spol=sel(C['toa_net_all_clim'], lat, lon, lsm, (-90, -60)))
 
 c = res['control']
 rows = [('SOUTHERN OCEAN 45-65S ocean (A1 target)', None),
@@ -260,6 +314,14 @@ rows = [('SOUTHERN OCEAN 45-65S ocean (A1 target)', None),
         ('GLOBAL / guardrails', None),
         ('  net TOA [W/m2]', 'g_toa'), ('  surface flux [W/m2]', 'g_sfc'),
         ('  tropics net TOA [W/m2]', 'trop'), ('  NH-SH albedo', 'dalb'),
+        ('GLOBAL TOA DECOMPOSITION (the energy target)', None),
+        ('  absorbed SW [W/m2]', 'toa_sw'), ('  OLR [W/m2]', 'toa_olr'),
+        ('  planetary albedo', 'toa_alb'),
+        ('  SW CRE [W/m2]', 'toa_swcre'), ('  LW CRE [W/m2]', 'toa_lwcre'),
+        ('  clear-sky net TOA [W/m2]', 'toa_clr'),
+        ('  net TOA NH [W/m2]', 'toa_nh'), ('  net TOA SH [W/m2]', 'toa_sh'),
+        ('  net TOA 60-90N', 'toa_npol'), ('  net TOA 30-60N', 'toa_nmid'),
+        ('  net TOA 30-60S', 'toa_smid'), ('  net TOA 60-90S', 'toa_spol'),
         ('SW RMSE vs CERES -- DEEP WATER FORMATION', None),
         ('  Southern Ocean 45-65S', 'rmse_so'), ('  subpolar N Atl 50-65N', 'rmse_spna'),
         ('  Nordic Seas 65-80N', 'rmse_nordic'),

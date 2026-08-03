@@ -334,18 +334,45 @@ sooner rather than later.
    doing most of the work in the melt months; and the **`RVVEGALB` vegetation albedo
    table**, which the campaign has never touched.
 3. **SO cloud-area deficit ~6 pp** — untouched by every lever tried.
-4. **Tropics net TOA 2.4 W/m² too low** (42.6 vs 45.1).
-5. **Nordic Seas SW RMSE** — G1 degraded it by +0.300 against a ±0.052 threshold, the only
+4. **⭐ The energy target, now decomposed across every run (2026-08-03).** Global net TOA
+   was reported as a bare number for 33 runs and never broken down — `amip_toa_decomp.py`
+   did it for the control only. It is now part of the standard table
+   (`eval_round10_A.py`, hooked into `evaluate.sh`), so every future run gets it free.
+
+   | global, W/m² | control | G4 | CERES | ctl−CERES |
+   |---|---:|---:|---:|---:|
+   | absorbed SW | 239.98 | 239.73 | 241.36 | −1.38 |
+   | OLR | 239.34 | 239.22 | 240.21 | −0.87 |
+   | planetary albedo | 0.295 | 0.296 | 0.290 | +0.005 |
+   | SW CRE | −44.42 | −44.66 | −45.32 | +0.90 |
+   | LW CRE | 24.84 | 25.01 | 25.77 | −0.93 |
+   | **net TOA 60–90S** | **−90.44** | −92.41 | −98.82 | **+8.38** |
+   | net TOA 30–60N | −21.78 | −21.50 | −24.29 | +2.51 |
+   | net TOA NH / SH | 0.28 / 1.01 | 0.46 / 0.57 | 0.08 / 1.86 | +0.20 / −0.85 |
+
+   **The imbalance is overwhelmingly Antarctic/Southern Ocean**: 60–90S is **+8.4 W/m²**
+   too positive, three times any other band. That is the same 6 pp SO cloud-area deficit
+   that dominates the SW RMSE target — **the two campaign targets share a root cause**,
+   which is the most useful thing this decomposition says. G4 improves it to +6.4 as a
+   by-product of D2b.
+
+   ⚠ **Do not tune toward the CERES column.** CERES is present-day (2005–2015) and
+   carries the real warming imbalance (~+1.1 W/m² globally). The PI target is **net
+   TOA ≈ 0**, so the control's +0.64 is too positive even though it sits *below* CERES.
+   The decomposition is for locating the error, not for matching CERES.
+
+5. **Tropics net TOA 2.4 W/m² too low** (42.6 vs 45.1).
+6. **Nordic Seas SW RMSE** — G1 degraded it by +0.300 against a ±0.052 threshold, the only
    lever ever to move that box. **G4 largely repairs it** (+0.089), unexpectedly and for no
    reason we understand: adding tundra resistance should not act on a Nordic ocean box.
    Worth a look before trusting it — an unexplained improvement is as much a loose end as
    an unexplained degradation.
-6. `RVRSMIN` 4× is unanchored **and does not saturate**. G2/G1/G3 at 500/1000/2000 give
+7. `RVRSMIN` 4× is unanchored **and does not saturate**. G2/G1/G3 at 500/1000/2000 give
    +0.336/+0.521/+0.876 — increments per doubling of +0.185 then **+0.355**, accelerating,
    with no knee to stop at. 1000 is justified only as *the largest value before the winter
    damage appears* (G3 at 2000 costs DJF −0.798, clearing ±0.588). Anchoring this against a
    transpiration observation is now **more** important, not less.
-7. Winter surface albedo is ~0.02–0.03 **too low** (opposite sign to June) — a
+8. Winter surface albedo is ~0.02–0.03 **too low** (opposite sign to June) — a
    separate bias, likely irrelevant to T2m in polar night but real.
 
 ---
