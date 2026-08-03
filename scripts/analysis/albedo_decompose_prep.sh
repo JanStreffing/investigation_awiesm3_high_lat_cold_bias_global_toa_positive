@@ -26,10 +26,13 @@ Y0=1990; Y1=2014
 mkdir -p "$OUT"
 module load cdo 2>/dev/null || true
 
-# 144 sf   total snowfall      [m w.e. accumulated]
-# 045 smlt snowmelt             [m w.e. accumulated]  -- fc stream, not an
-#                               analysis field, so it lives under sf/fc/1M
-for p in 243 032 141 033; do
+# analysis stream: 243 fal, 032 asn, 141 sd, 033 rsn, 238 tsn (snow temperature)
+# forecast stream (accumulated fluxes, under sf/fc/1M):
+#   144 sf   snowfall      045 smlt snowmelt
+#   146 sshf sensible HF   147 slhf latent HF   (positive DOWNWARD, into surface)
+#   176 ssr  net solar     177 str  net thermal
+#   175 strd down thermal  169 ssrd down solar
+for p in 243 032 141 033 238; do
   tgt="$OUT/era5_${p}_clim_${Y0}-${Y1}.nc"
   if [ -f "$tgt" ]; then echo "have $(basename "$tgt")"; continue; fi
   echo "building $(basename "$tgt") ..."
@@ -51,7 +54,7 @@ done
 
 # --- snow BUDGET fluxes: these are forecast (accumulated) fields, different stream
 POOLF=/pool/data/ERA5/E5/sf/fc/1M
-for p in 144 045; do
+for p in 144 045 146 147 176 177 175 169; do
   tgt="$OUT/era5_${p}_clim_${Y0}-${Y1}.nc"
   if [ -f "$tgt" ]; then echo "have $(basename "$tgt")"; continue; fi
   echo "building $(basename "$tgt") ..."
