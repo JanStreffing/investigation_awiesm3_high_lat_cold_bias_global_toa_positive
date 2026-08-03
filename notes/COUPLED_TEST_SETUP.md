@@ -3,10 +3,22 @@
 Both are namelist-only on one binary. Copy your `09C_06V_CRUNCEPinit_newSeaIce` runscript
 twice and change nothing but the `oifs: add_namelist_changes:` block.
 
-1. **Code — plain fast-forward**, your `f3ccacb` is the merge-base (5 ahead, 0 behind):
-   `cd /work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1` then
-   `git fetch origin investigation/high-lat-cold-bias-round10 && git merge --ff-only origin/investigation/high-lat-cold-bias-round10`
-2. All five commits are **no-ops at their defaults**, so the merge alone cannot change 09C.
+1. **Code.** Repo `https://git.smhi.se/jan.streffing/oifs48r1.git`, checked out at
+   `/work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1`.
+   You are on **`movcav-landice+co2-concdriven` @ `f3ccacb`**; you want
+   **`investigation/high-lat-cold-bias-round10` @ `9f12d79`**. `f3ccacb` *is* the
+   merge-base (5 ahead, 0 behind), so it is a **plain fast-forward, no cherry-pick**:
+   ```bash
+   cd /work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1
+   git fetch origin investigation/high-lat-cold-bias-round10
+   git merge --ff-only origin/investigation/high-lat-cold-bias-round10   # -> 9f12d79
+   ```
+   The five commits: `5bea52e` comments + bundle paths, `2630bd1` `RCL_INPSEA`/
+   `RCL_INPPMIN`, `1004cba` `&NAMSURFTUNE`, `28b5542` snow-depletion scheme,
+   `9f12d79` its calibrated default.
+2. All five are **no-ops at their defaults**, so the merge alone cannot change 09C.
+   **esm_tools needs no change** — `add_namelist_changes` is generic, so stay on whatever
+   branch you already run 09C with (FESOM/OASIS/XIOS are untouched).
 3. **Rebuild** `esm_master recomp-awiesm3-develop/oifs`, and check the `libsurf.SP.so` md5
    actually changed before submitting.
 4. **Test A (G4)** — keep your existing four namelist groups exactly as they are, add the
