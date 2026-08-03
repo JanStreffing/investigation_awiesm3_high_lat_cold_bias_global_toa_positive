@@ -234,6 +234,62 @@ emit the daily LPJG forcing set, not evaluation fields, so they legitimately hav
 
 ---
 
+## 3b. The causal web, and what is still dark
+
+Status markers: **[OBS]** established against observation (CERES, Rutgers/IMS satellite);
+**[MOD]** model-vs-model only (ERA5 is an HTESSEL sibling — suggestive, not authoritative);
+**[DEAD]** tested and falsified; **[?]** unknown.
+
+```
+        ROUTE A  (transpiration -> cloud)          ROUTE B  (snow -> albedo)
+        =================================          =========================
+ RVRSMIN too low (tundra 80 s/m)             [?] unknown Mar-Apr energy sink
+        |                                             |
+        v                                             v
+ over-transpiration                    [MOD]   melt-out 13 days late          [OBS]
+   +-> latent cooling                                 |
+   +-> moist boundary layer                           v
+        |                                      Jun snow cover 2x observed      [OBS]
+        v                                             |
+ JJA cloud +8.5 pp                     [OBS]          v
+        |                                      Jun albedo +0.046               [OBS]
+        v                                             |
+ -7.0 W/m2 surface SW                  [OBS]   -5.6 W/m2 surface SW            [OBS]
+        |                                             |  [?] does this reach T2m?
+        +------> Siberian JJA T2m ~2.0 K too cold <---+
+                          |
+                          |  (severed deliberately in AMIP)
+                          v
+              forest fails -> tundra -> brighter+smoother -> colder  (coupled runaway)
+
+ G4 CLOSES ROUTE A: cloud term -7.04 -> +1.20, T2m +0.952 K, 48 % of the bias
+ ROUTE B UNTOUCHED: albedo term -5.45 -> -5.59, and G4 makes the snow WORSE
+```
+
+**Route A is closed.** Excess stomatal conductance cools latently and moistens the
+boundary layer → low cloud → SW removed → cold. G4 removes the cloud term entirely.
+Defensible on table-internal grounds for tundra; **not** for needleleaf, where
+`RVRSMIN` 250→1000 is unanchored and does not saturate.
+
+**Route B is open**, and everything easy is already dead: not the cover formulation
+(round 13), not energy supply (model absorbs *more* net SW than CERES in Mar–Apr), not
+snow brightness (model snow is *darker* than observed), probably not cold content [MOD].
+**[?] Where the March–April energy goes is the central unknown.** Candidates: turbulent
+flux (unconstrained by any observation), conduction/refreeze in the pack, or the
+canopy-shaded snow tile (7).
+
+**⚠ The link that may not exist.** G4 raised T2m by +0.952 K while May–June snow mass
+did **not** change and snow cover and melt date got **worse**. Temperature moved a full
+kelvin with the snow term stationary or degrading. Either the June albedo error is
+weakly coupled to T2m, or the routes offset in a way we have not separated. **Until this
+is resolved the prize for fixing Route B is unknown** — it may buy far less than its
+−5.6 W/m² suggests.
+
+**⚠ New coupled risk.** G4 delays melt-out 24 → 28 May. Later melt is later
+growing-season onset for LPJ-GUESS, so G4 may improve AMIP T2m while *harming* forest
+establishment through a pathway AMIP cannot see. Argues for running coupled with G4
+sooner rather than later.
+
 ## 4. Open problems
 
 1. **The June surface-albedo bias is still unexplained**, but round 13 plus the ERA5

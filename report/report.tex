@@ -27,7 +27,15 @@
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
 \date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--08--03b}: \textbf{G4 $=$ F4 $+$ D2b $+$ tundra is the best
+\textbf{Last updated 2026--08--03c}: the snow diagnosis is now grounded on \textbf{observations}
+rather than ERA5 (\S\ref{sec:obs}). CERES confirms the model's June albedo excess independently
+($+0.046$), and the Rutgers/IMS satellite record shows ERA5 was flattering us: June snow cover is
+close to \emph{double} observed and melt-out runs \textbf{13 days late}. \textcolor{red}{\textbf{G4
+makes the snow field worse}} (June cover $0.380\to0.447$, melt-out 24$\to$28 May), so JJA temperature
+is being bought at the cost of the spring snow cycle --- a risk for the coupled forest, since later
+melt means later growing-season onset for LPJ-GUESS. One claim is withdrawn: ERA5's turbulent fluxes
+are unconstrained HTESSEL output, so the sensible-heat lead is a hypothesis, not a finding.
+\textbf{2026--08--03b}: \textbf{G4 $=$ F4 $+$ D2b $+$ tundra is the best
 configuration of the campaign} (\S\ref{sub:r14res}) --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$,
 $48\,\%$ of the bias, against G1's $26\,\%$), best Southern Ocean SW RMSE, seasonally clean, and it
 repairs most of the Nordic damage G1 caused. \textbf{But its mechanism is falsified}: T2m rose with
@@ -2481,6 +2489,10 @@ $\min(1, d_{\mathrm{cm}}/10)$ applied to each dataset's snow mass, so the gap is
 changed only the formula, could not move it. The model carries roughly twice ERA5's June
 snow mass.
 
+\emph{Corroborated independently by CERES} (\S\ref{sub:ceresalb}), which puts the June
+excess slightly higher at $+0.046$; and the cover excess is larger still against
+satellite, $+0.176$ rather than $+0.119$ (\S\ref{sub:satsnow}).
+
 \noindent\textbf{And the model's snow is too dark, not too bright} ($-0.10$ in June,
 $-0.11$ in May). Making snow albedo more realistic would make June \emph{worse}. Any lever
 that brightens snow is pushing the wrong way; the excess reflection comes from snow
@@ -2528,6 +2540,10 @@ divergence is entirely in spring:
 \item \textbf{May}: the model melts $33.5$\,mm against ERA5's $47.5$ --- \textbf{30\,\% too
   slow} --- leaving it with 50\,\% more snow by the end of May.
 \end{itemize}
+
+\noindent Both figures come from ERA5. The satellite record confirms the timing directly
+and makes it worse: melt-out is 13 days late, and June cover is nearly double observed
+(\S\ref{sub:satsnow}).
 
 \subsection{May is albedo, not cloud --- and it is a runaway}\label{sub:mayloop}
 Model \texttt{amip\_presentday} vs CERES on the same box:
@@ -2720,6 +2736,276 @@ one. Exactly \textbf{one line} changes in an ECMWF file. G1 is now
 \texttt{NAMCLDP: RCL\_INPSEA=0.2, RCL\_INPPMIN=70000.0} \quad
 \texttt{NAMSURFTUNE: ECE\_TUNE\_RVRSMIN(3)=ECE\_TUNE\_RVRSMIN(4)=1000.0}
 \end{center}
+
+\section{Observational grounding: what ERA5 can and cannot settle}\label{sec:obs}
+Rounds 13 and 14 leaned on ERA5 for the snow diagnosis. That is a methodological
+weakness worth stating plainly: \textbf{ERA5's land surface is the same HTESSEL family
+as ours}, so comparing our snow and flux fields to ERA5's is partly comparing a scheme
+against a sibling of itself. This section replaces ERA5 with genuine observations
+wherever one exists, and marks the places where none does.
+
+\subsection{Surface albedo: CERES corroborates ERA5, and the model bias is real}\label{sub:ceresalb}
+CERES supplies \texttt{sfc\_sw\_up} and \texttt{sfc\_sw\_down} separately, so their ratio
+is a surface albedo derived from a \emph{radiative retrieval} rather than a land model.
+Siberian land box, 1990--2014, against model \texttt{amip\_presentday} and ERA5
+\texttt{fal}:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+ & CERES & ERA5 & model & ERA5$-$CERES & \textbf{model$-$CERES} & SW$_\downarrow$ \\
+\midrule
+Mar & $0.5540$ & $0.5325$ & $0.5055$ & $-0.021$ & $\mathbf{-0.049}$ & $109$ \\
+Apr & $0.5386$ & $0.5045$ & $0.4990$ & $-0.034$ & $\mathbf{-0.040}$ & $188$ \\
+\textbf{May} & $0.3918$ & $0.3722$ & $0.4285$ & $-0.020$ & $\mathbf{+0.037}$ & $224$ \\
+\textbf{Jun} & $0.1685$ & $0.1730$ & $0.2147$ & $+0.005$ & $\mathbf{+0.046}$ & $228$ \\
+Jul & $0.1357$ & $0.1362$ & $0.1487$ & $+0.001$ & $+0.013$ & $209$ \\
+Oct--Feb & --- & --- & --- & $+0.10\ldots+0.13$ & --- & $6$--$42$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{ERA5 and CERES agree to $\pm0.02$ in every month with enough sun to
+retrieve} (Mar--Sep), which is what licenses ERA5's albedo for this purpose. The June
+excess is confirmed \emph{independently} at $+0.046$ --- slightly larger than the
+$+0.042$ measured against ERA5 (\S\ref{sub:e5alb}). The two diverge badly Oct--Feb, but
+at $6$--$42$\,W\,m$^{-2}$ downwelling no albedo retrieval is trustworthy at these
+latitudes, so that is expected rather than disqualifying.
+
+\subsection{Snow cover and melt date: satellite, and ERA5 was flattering us}\label{sub:satsnow}
+The Rutgers NH 24\,km Weekly Snow Cover Extent CDR (NSIDC G10035, 1980--2024; NOAA
+visible-band snow charts to 1999, NOAA/NIC IMS thereafter) gives snow \emph{extent} and
+\emph{melt timing} from observation. \texttt{scripts/analysis/snowcover\_vs\_satellite.py}.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+snow cover fraction & \textbf{Rutgers (sat.)} & ERA5 & model & \textbf{G4} \\
+\midrule
+Apr & $0.950$ & $0.991$ & $0.964$ & $0.961$ \\
+\textbf{May} & $\mathbf{0.647}$ & $0.796$ & $0.890$ & $0.893$ \\
+\textbf{Jun} & $\mathbf{0.203}$ & $0.261$ & $0.380$ & $\mathbf{0.447}$ \\
+Sep & $0.075$ & $0.178$ & $0.257$ & $0.249$ \\
+Oct & $0.612$ & $0.755$ & $0.825$ & $0.834$ \\
+\midrule
+\textbf{melt-out (50\,\% crossing)} & \textbf{11 May} & $\sim$17 May & \textbf{24 May} & \textbf{28 May} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three consequences.
+
+\textbf{(i) ERA5 was flattering the model.} ERA5 itself runs $+0.058$ high in June and
+$+0.149$ in May against satellite, so the model excess quoted in \S\ref{sub:e5alb} as
+$+0.119$ is really $\mathbf{+0.176}$ --- June snow cover is close to \emph{double} the
+observed value.
+
+\textbf{(ii) The model melts about 13 days late}, now measured against an observation
+rather than inferred from a sibling model. This is round 14's ``peaks a month late''
+(\S\ref{sub:melt}) confirmed independently and given a number.
+
+\textbf{(iii) \textcolor{red}{G4 makes the snow field worse.}} June cover
+$0.380 \to 0.447$; melt-out 24 May $\to$ 28 May. The campaign's best \emph{temperature}
+configuration pushes the spring snow cycle \emph{further} from satellite, consistent
+with G1/F4 significantly increasing May--June SWE (\S\ref{sub:r14res}). \textbf{This
+matters for the coupled goal:} a later melt is a later growing-season onset for
+LPJ-GUESS, which is a plausible route to losing boreal forest even while AMIP T2m
+improves. It should be weighed before G4 is committed to the PI spin-up.
+
+\emph{Comparability caveat:} Rutgers SCE is a \textbf{binary} classification per 24\,km
+cell, whereas HTESSEL's \texttt{ZCVS} is a \emph{sub-grid} fraction within a ${\sim}100$\,km
+cell. The two agree on ``how much of the region is snow'' but differ in how a partially
+covered cell is counted, which matters most mid-melt. The \textbf{crossing date} is the
+robust comparison; absolute mid-melt fractions are not over-read here.
+
+\subsection{Where no observation exists: the turbulent fluxes}\label{sub:noobs}
+\textcolor{red}{\textbf{A claim is withdrawn here.}} The surface energy budget
+(\texttt{scripts/analysis/snow\_energy.py}) appeared to show the model venting
+$3$--$5$\,W\,m$^{-2}$ more upward sensible heat than ERA5 in February--April, which would
+have made turbulent exchange over snow the round-15 target. \dead{The model loses its
+March--April melt energy to the atmosphere as sensible heat.} \textbf{That comparison has
+no observational authority}: ERA5's \texttt{sshf}/\texttt{slhf} are pure HTESSEL output,
+unconstrained by any assimilated observation, so it compares our scheme to a sibling of
+itself. It survives only as a hypothesis. The same caveat applies to the cold-content
+test on \texttt{tsn} (model within a few tenths of a K of ERA5), which is likewise
+model-versus-model --- though as a \emph{null} result it is the less dangerous of the two.
+
+\textbf{No satellite product measures surface turbulent fluxes.} Only eddy-covariance
+towers can, and the Siberian candidates (Spasskaya Pad, ZOTTO) are point sites, not a
+gridded field. Any round-15 lever aimed at turbulent exchange over snow would therefore
+be tested against its \emph{consequences} --- melt date and snow cover, both now
+observationally anchored --- rather than against the flux itself.
+
+\subsection{Summary: what each reference can support}\label{sub:refsummary}
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+quantity & reference & status \\
+\midrule
+surface albedo & CERES up/down & \textbf{observational}; confirms model $+0.046$ June \\
+snow cover extent, melt date & Rutgers/IMS & \textbf{observational}; model 13 days late \\
+TOA and surface SW fluxes & CERES & \textbf{observational} \\
+snow water equivalent & ERA5 & partly constrained (SYNOP, IMS); forest bias \\
+snowfall, snowmelt & ERA5 & model output, weakly constrained \\
+\texttt{sshf}, \texttt{slhf}, \texttt{str}, \texttt{tsn} & ERA5 & \textbf{unconstrained --- HTESSEL output} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent ERA5 assimilates IMS snow cover, so ERA5 agreeing with Rutgers on extent is
+\emph{expected} and is not independent corroboration --- but it is what justifies having
+treated extent as ERA5's trustworthy field throughout.
+
+\section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
+This section is the campaign's current best account of \emph{why} the boreal cold bias
+exists, assembled from every round. It is written to be falsifiable: each link carries a
+status marker, and the unknowns are listed rather than glossed.
+
+\begin{center}\footnotesize
+\begin{tabular}{ll}
+\ding{51}\,\textbf{OBS} & established against observation (CERES, Rutgers/IMS satellite) \\
+\ding{108}\,\textbf{MOD} & established only model-vs-model (ERA5 = HTESSEL sibling); suggestive, not authoritative \\
+\ding{55}\,\textbf{DEAD} & tested and falsified \\
+\textbf{?} & unknown --- no evidence either way \\
+\end{tabular}
+\end{center}
+
+\subsection{The picture}\label{sub:causalmap}
+\begin{footnotesize}
+\begin{verbatim}
+                    ROUTE A  (transpiration - cloud)        ROUTE B  (snow - albedo)
+                    ===============================         ========================
+
+   RVRSMIN too low                                       ?  unknown Mar-Apr energy sink
+   (tundra 80 s/m,                                          |
+    lowest in table)  OBS-adjacent: table-internal           v
+          |                                              melt-out 13 days late      OBS
+          v                                                  |
+   over-transpiration                        MOD               v
+          |                                              Jun snow cover 2x observed OBS
+          +--> too much latent cooling                        |
+          |                                                   v
+          +--> moist boundary layer                      Jun surface albedo +0.046  OBS
+                     |                                        |
+                     v                                        v
+             Siberian JJA cloud +8.5 pp     OBS          -5.6 W/m2 surface SW       OBS
+                     |                                        |
+                     v                                        |  ? does this reach T2m?
+             -7.0 W/m2 surface SW           OBS                |    G4 gained +0.95 K with
+                     |                                        |    snow UNCHANGED, so the
+                     v                                        v    link may be weak
+             ================  Siberian JJA T2m ~2.0 K too cold  ================
+                                          |
+                                          |  (AMIP: severed deliberately)
+                                          v
+                              boreal forest fails to establish
+                                          |
+                                          v
+                              tundra replaces forest -> brighter, smoother
+                                          |
+                                          +-------> colder  (runaway, coupled only)
+
+   G4 CLOSES ROUTE A:  cloud term -7.04 -> +1.20 W/m2, T2m +0.952 K, 48% of the bias
+   ROUTE B UNTOUCHED:  albedo term -5.45 -> -5.59 W/m2, and G4 makes the snow WORSE
+\end{verbatim}
+\end{footnotesize}
+
+\subsection{Route A --- transpiration to cloud: closed}\label{sub:routea}
+\textbf{Status: the strongest result of the campaign.} Excess stomatal conductance
+cools the surface latently and moistens the boundary layer; the moisture becomes low
+cloud; the cloud removes shortwave; the surface cools.
+
+\begin{itemize}\itemsep2pt
+\item \ding{51}\,\textbf{OBS} Siberian JJA cloud fraction was $78.1\,\%$ against CERES
+  $69.6\,\%$, and the cloud share of the SW deficit was $-7.04$\,W\,m$^{-2}$
+  (\S\ref{sub:r14res}).
+\item \ding{51}\,\textbf{OBS} G4 removes it: cloud term $-7.04 \to +1.20$\,W\,m$^{-2}$,
+  worth $+0.952$\,K.
+\item The lever is defensible on \emph{table-internal} grounds for tundra
+  (\texttt{RVRSMIN(9)}$=80$, the lowest of any vegetated type, \S\ref{sub:tundra}) but
+  \textbf{not} for needleleaf, where $250\to1000$ remains an unanchored $4\times$
+  excursion that does not saturate (\S\ref{sub:r14res}).
+\item \textbf{?} G4 slightly \emph{overshoots} in August ($+3.19$\,W\,m$^{-2}$ cloud
+  term). A new bias in the making; watch it.
+\end{itemize}
+
+\subsection{Route B --- snow to albedo: open, and the interesting one}\label{sub:routeb}
+\begin{itemize}\itemsep2pt
+\item \ding{51}\,\textbf{OBS} June surface albedo $+0.046$ too high (CERES,
+  \S\ref{sub:ceresalb}); June snow cover $0.380$ vs satellite $0.203$; melt-out $13$
+  days late (\S\ref{sub:satsnow}).
+\item \ding{108}\,\textbf{MOD} Snow \emph{accumulation} is right; the loss term is
+  mistimed --- too weak in Mar--Apr, too strong in May (\S\ref{sub:melt}).
+\item \ding{55}\,\textbf{DEAD} It is not the snow-\emph{cover formulation}: round 13
+  changed \texttt{RQSNCR} and moved the albedo response into Sep--Nov instead
+  (\S\ref{sub:hres}).
+\item \ding{55}\,\textbf{DEAD} It is not an energy \emph{supply} problem: the model
+  absorbs \emph{more} net SW than CERES in Mar--Apr ($+2.5$, $+1.2$), because its spring
+  albedo is too \emph{low} (\S\ref{sub:ceresalb}).
+\item \ding{55}\,\textbf{DEAD} It is not snow \emph{brightness}: model snow is
+  \emph{darker} than both ERA5 and CERES. Brightening snow would worsen June.
+\item \ding{108}\,\textbf{MOD} It is probably not cold content: \texttt{tsn} is within a
+  few tenths of a K of ERA5 --- but this is model-vs-model (\S\ref{sub:noobs}).
+\item \textbf{?} \textbf{So where does the March--April energy go?} This is the central
+  unknown. The absorbed shortwave is present and the snow does not melt. Candidates:
+  turbulent flux to the atmosphere (\emph{unconstrained by any observation});
+  conduction/refreeze within the pack; or the canopy-shaded snow tile (7) behaving
+  differently from exposed snow --- the round-13 residual showed canopy masking already
+  dominates in the melt months (\S\ref{sub:e5alb}).
+\end{itemize}
+
+\subsection{The link that may not exist}\label{sub:weaklink}
+\textbf{The most consequential uncertainty in this report.} Route B is a well-measured
+\emph{radiative} bias, but its effect on \emph{temperature} is unproven:
+
+\begin{quote}
+G4 raised Siberian JJA T2m by $+0.952$\,K while May--June snow mass did \emph{not}
+change (\S\ref{sub:r14res}), and while snow cover and melt date got \emph{worse}
+(\S\ref{sub:satsnow}).
+\end{quote}
+
+\noindent Temperature moved a full kelvin with the snow term stationary or degrading.
+Either the June albedo error is weakly coupled to T2m --- a real radiative bias that the
+atmosphere largely exports --- or the two routes offset each other in a way we have not
+separated. \textbf{Until this is resolved, the size of the prize in fixing Route B is
+unknown}, and it is possible that closing it buys far less than its $-5.6$\,W\,m$^{-2}$
+suggests. A clean test would be a run that changes the snow term alone with Route A held
+fixed; round 13 attempted exactly that and failed for an unrelated reason (it moved the
+wrong season).
+
+\subsection{The coupled amplifier, deliberately severed}\label{sub:amplifier}
+The AMIP configuration exists to cut the vegetation--albedo feedback so the root cause can
+be hunted with the loop open. In coupled mode with LPJ-GUESS the chain closes: cold summers
+$\to$ boreal forest fails to establish $\to$ tundra replaces forest $\to$ higher albedo and
+lower roughness $\to$ colder. That runaway is why a $2$\,K AMIP bias becomes forest loss in
+the coupled model, and it is why $48\,\%$ closure may or may not be sufficient --- \textbf{a
+question AMIP structurally cannot answer.}
+
+\textcolor{red}{\textbf{A new risk sits precisely here.}} G4 delays melt-out from 24 to
+28 May (\S\ref{sub:satsnow}). Later melt is later growing-season onset for LPJ-GUESS. G4
+may therefore improve AMIP T2m while \emph{harming} forest establishment through a
+pathway AMIP cannot see. This should be weighed before G4 is committed to the PI spin-up,
+and it is an argument for running coupled with G4 sooner rather than later.
+
+\subsection{The open list}\label{sub:openlist}
+\begin{enumerate}\itemsep2pt
+\item \textbf{?} Where the March--April melt energy goes. Unconstrained; no satellite
+  product measures turbulent flux.
+\item \textbf{?} Why F4/G1 \emph{increases} May--June snow mass ($+5.58$, $+5.68$\,mm,
+  both significant). Sublimation was the suspect and is \emph{not} implicated in Mar--Apr;
+  May snowfall rises significantly instead, for reasons unknown.
+\item \textbf{?} Whether the June albedo bias reaches T2m at all (\S\ref{sub:weaklink}).
+\item \textbf{?} Why G4 \emph{repairs} G1's Nordic Seas SW RMSE damage
+  ($+0.300 \to +0.089$). Adding tundra resistance should not act on a Nordic ocean box.
+  An unexplained improvement is as much a loose end as an unexplained degradation.
+\item \textbf{?} The Southern Ocean cloud-\emph{area} deficit ($\sim6$\,pp), untouched by
+  every lever in 33 runs.
+\item \textbf{?} Tropics net TOA $2.4$\,W\,m$^{-2}$ too low.
+\item \textbf{\ding{51}\,but unaddressed} Global net TOA $+0.52$\,W\,m$^{-2}$ against a
+  $\sim0$ target --- \emph{one of the two original problems}, barely moved by the whole
+  campaign (control $+0.64$). For a PI spin-up this drift matters more than the last
+  tenths of Siberian warming.
+\end{enumerate}
 
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize
