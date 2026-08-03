@@ -172,6 +172,22 @@ The winter cooling is not radiative — Feb/Mar are dark yet cool by −1.65/−
 Cutting snow-covered fraction moves area from the snow tiles (5, 7) onto vegetation
 tiles, and the snow tile buffers the surface against radiative cooling in polar night.
 
+### Round 14 — in flight (2026-08-03)
+
+All three are **namelist-only**, sharing one binary with no rebuild — the first round the
+`NAMSURFTUNE` work made possible.
+
+| run | setting | question | prediction |
+|---|---|---|---|
+| **G2** | `RVRSMIN(3,4)=500` | is F4 saturating? | if so, keeps >60 % of G1's gain (≥ +0.31 K) |
+| **G3** | `RVRSMIN(3,4)=2000` | is F4 saturating? | if so, adds < +0.15 K beyond G1 |
+| **G4** | G1 + `RVRSMIN(9)=225` | does tundra close the gap? | +0.2 to +0.5 K beyond G1, **concentrated in June**, with a drop in May/June SWE |
+
+**Falsifiers on record.** G4: if T2m rises with **no** change in May–June snow mass, the
+melt mechanism is unsupported and the gain is the plain sensible-heat route. G2/G3: if the
+response is **linear** in `RVRSMIN`, we are riding a ramp with no natural stopping point —
+an argument *against* the approach, not for a bigger number.
+
 ### Not tuning levers — never add to `RUNS`
 
 `amip_A2_kkland150` (superseded), and 11 LPJG forcing-generator runs from 3–5 July 2026
@@ -203,12 +219,30 @@ emit the daily LPJG forcing set, not evaluation fields, so they legitimately hav
    (Caveat: ERA5's albedo scheme is a relative of HTESSEL, so `asn` agreement is not
    independent evidence; its snow *extent* is observationally constrained via IMS.)
 
-2. **SO cloud-area deficit ~6 pp** — untouched by every lever tried.
-3. **Tropics net TOA 2.4 W/m² too low** (42.6 vs 45.1).
-4. **Nordic Seas SW RMSE** degraded by G1, mechanism unknown.
-5. `RVRSMIN` 4× is unanchored; worth trying to anchor against a transpiration
+   **Narrowed further (round 14).** Accumulation is right — through the accumulation
+   season the model is 7–9 % high and monthly increments track ERA5 almost exactly.
+   The divergence is spring: **April the pack still gains (+9.4 mm) while ERA5 has
+   peaked (−1.6)**, and **May melts 30 % too slowly** (−33.5 vs −47.5). Against CERES,
+   May's SW↓ is nearly right (−3.5) while SW_net is **−13.9** → May is almost pure
+   surface albedo, not cloud. Self-reinforcing: late melt → more May snow → brighter →
+   less absorbed → less melt energy → snow into June.
+
+2. **⭐ Tundra is the largest cover type in the box and no lever has ever touched it.**
+   Area-weighted land cover from the model's own `tvh/tvl/cvh/cvl`: **tundra (type 9)
+   25.6 %**, deciduous needleleaf 19.2 %, mixed forest 5.2 %, bogs/marshes 3.9 %,
+   evergreen needleleaf 3.4 %. F4 reaches ~24 % of the box; tundra is another 26 %.
+   `RVRSMIN(9) = 80 s/m` is **the lowest of any vegetated type in HTESSEL** — below
+   crops, short grass and tall grass (all 100) — so the model has arctic tundra
+   transpiring more freely than tropical grassland, while its shrub analogues are 225
+   and co-occurring bogs/marshes are 240. A table-consistency argument, independent of
+   our bias. Being tested as **G4**.
+
+3. **SO cloud-area deficit ~6 pp** — untouched by every lever tried.
+4. **Tropics net TOA 2.4 W/m² too low** (42.6 vs 45.1).
+5. **Nordic Seas SW RMSE** degraded by G1, mechanism unknown.
+6. `RVRSMIN` 4× is unanchored; worth trying to anchor against a transpiration
    observation rather than leaving it as a fitted value.
-6. Winter surface albedo is ~0.02–0.03 **too low** (opposite sign to June) — a
+7. Winter surface albedo is ~0.02–0.03 **too low** (opposite sign to June) — a
    separate bias, likely irrelevant to T2m in polar night but real.
 
 ---
