@@ -136,6 +136,8 @@ as released.
 | `ECE_TUNE_RVZ0H(0:20)` | roughness length for heat [m] | veg type | F1 |
 | `ECE_TUNE_RVLAMSK(0:20)` | unstable skin conductivity | veg type | B8 / E1 |
 | `ECE_TUNE_RQSNCR` | inverse critical snow depth [1/cm] | scalar | H (rejected) |
+| `ECE_SNOW_SCF` | **0** = as-released cover formula, **1** = Niu & Yang (2007) depletion | scalar | new, round 15 |
+| `ECE_SNOW_SCF_Z0` / `_M` / `_RHONEW` | depletion tuning (0.02 m / 1.6 / 100 kg m⁻³) | scalar | new |
 
 Design points that matter:
 
@@ -292,47 +294,41 @@ sooner rather than later.
 
 ## 4. Open problems
 
-1. **The June surface-albedo bias is still unexplained**, but round 13 plus the ERA5
-   decomposition (`scripts/analysis/albedo_decompose.py`) narrowed it sharply. Against
-   ERA5 1990–2014, land-masked, Siberian box, June:
+1. **⭐ RESOLVED — HTESSEL has no sub-grid snow depletion.** Cover comes from the
+   **cell-mean** depth alone, `ZCVS = min(1, d̄_cm/10)`, so it stays pinned near 1 until
+   the mean itself drops below 10 cm. The model's median May cell still holds **27 cm**
+   (p10 4.5, p50 27.1, p90 56.5), so the formula returns ~full cover while satellite
+   shows 0.647. Real 100 km regions at 27 cm mean are patchy — ridges blown bare,
+   hollows holding metre drifts. That single gap produces the late melt-out (13 days),
+   June cover ~2× observed, the +0.046 June albedo and the −5.6 W/m² June SW deficit.
 
-   | | model | ERA5 | Δ |
-   |---|---:|---:|---:|
-   | surface albedo `fal` | 0.2147 | 0.1730 | **+0.042** |
-   | snow cover fraction | 0.380 | 0.261 | **+0.119** |
-   | snow albedo `asn` | 0.658 | 0.759 | **−0.102** |
+   **It also explains why the two previous attempts failed.** Round 13 changed the
+   *threshold* 10→30 cm, which does nothing at 27–51 cm depth; it could only act where
+   depths sit near the threshold (13–27 cm) — October/November, exactly where the
+   response appeared. The commented-out `tanh`/`sqrt` variants share the defect
+   (`tanh(27/10)=0.99`). Snow brightness is the wrong direction; energy supply is not
+   short in Mar–Apr.
 
-   Both f_snow columns use the *same* HTESSEL formula, so the difference is **snow
-   amount, not the cover formula**. The model carries roughly twice ERA5's June snow
-   mass. And its snow is **too dark**, not too bright — making snow albedo more
-   realistic would make June *worse*. ~~The lever should be snow mass / melt rate.~~
-   **← falsified by round 14, see item 2.**
-   (Caveat: ERA5's albedo scheme is a relative of HTESSEL, so `asn` agreement is not
-   independent evidence; its snow *extent* is observationally constrained via IMS.)
+   **Fix implemented, opt-in:** `ECE_SNOW_SCF=1` gives
+   `SCF = tanh(d / (2.5·z0·(ρ_bulk/ρ_new)^m))` (Niu & Yang 2007; Noah-MP, CLM). The
+   density ratio supplies the spring depletion — aged melting snow is denser and patches
+   out at a given depth — and needs **no new prognostic**. Validated offline *before*
+   coding, vs Rutgers 1990–2014:
 
-   **Narrowed further (round 14).** Accumulation is right — through the accumulation
-   season the model is 7–9 % high and monthly increments track ERA5 almost exactly.
-   The divergence is spring: **April the pack still gains (+9.4 mm) while ERA5 has
-   peaked (−1.6)**, and **May melts 30 % too slowly** (−33.5 vs −47.5). Against CERES,
-   May's SW↓ is nearly right (−3.5) while SW_net is **−13.9** → May is almost pure
-   surface albedo, not cloud. Self-reinforcing: late melt → more May snow → brighter →
-   less absorbed → less melt energy → snow into June.
+   | | satellite | as-released | z0=0.01 | z0=0.02 |
+   |---|---:|---:|---:|---:|
+   | Jan–Mar | 0.999 | 0.964 | 0.964 | 0.952 |
+   | Apr | 0.950 | 0.964 | 0.948 | 0.893 |
+   | **May** | **0.647** | 0.890 | 0.772 | **0.588** |
+   | **Jun** | **0.203** | 0.380 | 0.321 | **0.180** |
 
-2. **⚠ The spring-melt mechanism is ALSO falsified (round 14).** G4 raised Siberian JJA
-   T2m by +0.952 K with **no** significant change in May–June snow water equivalent
-   (May +2.75 against ±5.25, Jun +1.60 against ±2.72). Temperature moved; snow did not.
-   Two mechanisms are now dead — snow *cover formulation* (round 13) and snow *melt rate*
-   (round 14) — and the June albedo bias remains unexplained.
+   Default is `0` (as-released), so it is inert unless switched on. oifs-48r1 `28b5542`.
 
-   Worse, **G1/F4 significantly *increases* May–June snow** (+5.58, +5.68, both clearing
-   threshold), so the campaign's best boreal lever aggravates the snow bias while improving
-   temperature. Leading suspect: cutting evapotranspiration also cuts **sublimation**, a
-   real snowpack sink. Untested.
-
-   Remaining candidates, none yet tried: the **snow-albedo decay timescale**; the
-   **canopy-masking (tile 7) formulation**, which the round-13 residual showed is already
-   doing most of the work in the melt months; and the **`RVVEGALB` vegetation albedo
-   table**, which the campaign has never touched.
+2. **⚠ Still open, and weaker: the March–April mass deficit.** Loss −13.7/−14.0 mm/month
+   rests on ERA5 SWE, which is forest-biased; may be a second effect or partly artifact.
+   And **the temperature leverage of the whole Route B is unproven** — G4 gained +0.952 K
+   with snow mass unchanged and cover *worse*, so fixing cover may buy far less T2m than
+   −5.6 W/m² suggests. Where it should matter is **coupled**, via LPJG growing-season onset.
 3. **SO cloud-area deficit ~6 pp** — untouched by every lever tried.
 4. **The energy target, now decomposed PER RUN (2026-08-03).** *Where* the imbalance lives
    was settled long ago — the global budget is right **by cancellation**, with the Southern
