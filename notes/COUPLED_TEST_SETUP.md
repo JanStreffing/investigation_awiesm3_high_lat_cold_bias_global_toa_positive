@@ -3,17 +3,19 @@
 Everything is namelist-driven, so both tests share one binary. Base your runscript on
 `Tuning_test_09C_06V_CRUNCEPinit_newSeaIce`, change only the namelist blocks below.
 
-1. **Get the code.** In `/work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1`
-   (branch `movcav-landice+co2-concdriven`, currently at `f3ccacb`), cherry-pick four
-   commits from `investigation/high-lat-cold-bias-round10` — none of them are in your
-   branch yet, and they are all no-ops at their defaults:
+1. **Get the code — it is a plain fast-forward.** Your branch head `f3ccacb` *is* the
+   merge-base, so `investigation/high-lat-cold-bias-round10` is a strict descendant
+   (5 ahead, 0 behind). No cherry-picking, no conflicts:
    ```bash
+   cd /work/ab0246/$USER/model_codes/awiesm3-develop/oifs-48r1
    git fetch origin investigation/high-lat-cold-bias-round10
-   git cherry-pick 2630bd1 1004cba 28b5542 9f12d79
+   git merge --ff-only origin/investigation/high-lat-cold-bias-round10
    ```
-   `2630bd1` adds `RCL_INPSEA`/`RCL_INPPMIN` (needed for D2b), `1004cba` adds the
-   `&NAMSURFTUNE` namelist, `28b5542` adds the snow-depletion scheme, `9f12d79` sets its
-   calibrated default. Expect a conflict only if you have touched `cloudsc.F90`.
+   You get `2630bd1` (`RCL_INPSEA`/`RCL_INPPMIN`, needed for D2b), `1004cba`
+   (`&NAMSURFTUNE`), `28b5542` (snow-depletion scheme), `9f12d79` (its calibrated
+   default), and `5bea52e` (comments plus two `bundle.yml` paths that already match your
+   tree). **Every one is a no-op at its defaults**, so merging cannot change your
+   baseline — only the namelist blocks below switch anything on.
 
 2. **Rebuild** with `esm_master recomp-awiesm3-develop/oifs` and **check the library md5
    actually changed** before submitting — a stale object has cost us five runs before.
