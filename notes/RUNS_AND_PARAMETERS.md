@@ -51,10 +51,16 @@ oifs:
                 RVICE: 0.16              # match the coupled tuning runs explicitly
                 RCL_INPSEA: 0.2          # D2b: ocean ice nuclei -> 20 %
                 RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa
-            NAMECECFG:
+            NAMSURFTUNE:
                 "ECE_TUNE_RVRSMIN(3)": 1000.0   # F4: evergreen needleleaf
                 "ECE_TUNE_RVRSMIN(4)": 1000.0   # F4: deciduous needleleaf
 ```
+
+⚠ **`NAMSURFTUNE`, not `NAMECECFG`.** `NAMECECFG` is read **twice** from the same
+`fort.4` — by `ECE_CONFIG` in `arpifs/ecearth.F90` and by `SURFECE_CONFIG` in `surf` —
+and a Fortran namelist read aborts with *invalid reference to variable* on any name the
+reading module does not declare. Putting the tune entries in `NAMECECFG` kills the arpifs
+read at `su0yoma.F90:152`. Verified the hard way by a 1-day test run.
 
 Runscript: `oifsamip-cy48-levante-TCO95L91_G1nml.yaml`.
 
@@ -98,10 +104,13 @@ The ECMWF `surf` library deliberately ships no namelist, so every HTESSEL lever 
 to be a source edit plus a rebuild — which serialises experiments against the single
 model tree and puts AWI tuning inside upstream files where it collides with EC-Earth.
 
-`surf/module/surfece.F90` is an AWI module *inside* surf with its own `NAMECECFG`
-namelist (it already carried `ECE_CPL_LPJG`, the LANDICE API, etc.). The tuning-table
-overrides live there, applied by `SURFECE_APPLY_TUNING` from `susurf.F90` **after**
-`SUSURF_CTL` has filled the tables.
+`surf/module/surfece.F90` is an AWI module *inside* surf that already carried
+`ECE_CPL_LPJG`, the LANDICE API and its own `NAMECECFG` read. The tuning-table overrides
+live there too but in their **own `&NAMSURFTUNE` group** (see the warning above for why
+they cannot share `NAMECECFG`), applied by `SURFECE_APPLY_TUNING` from `susurf.F90`
+**after** `SUSURF_CTL` has filled the tables. The `&NAMSURFTUNE` read is *optional* — a
+`fort.4` without the block is not an error, the sentinel defaults simply leave the tables
+as released.
 
 | namelist variable | overrides | index | former source lever |
 |---|---|---|---|
