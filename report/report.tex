@@ -2947,6 +2947,21 @@ Apr & $0.950$ & $0.964$ & $0.948$ & $0.893$ \\
 cover; $z_0 = 0.01$ is conservative, leaving winter untouched and closing about half
 the May--June gap.
 
+\emph{Provenance.} The problem and the two standard remedies are well established in the
+land-surface literature: Liston (2004) sets out why a cell-mean depth cannot represent
+depletion; Niu \& Yang (2007) give the density-dependent $\tanh$ form used here, calibrated
+against North American basin observations and adopted in Noah-MP and CLM; Swenson \&
+Lawrence (2012) give the main alternative, separate accumulation and depletion curves driven
+by a snow-depth standard deviation, which is more faithful but needs an extra prognostic;
+Roesch et al.\ (2001) take the third route of adding sub-grid \emph{orographic} variance in a
+GCM. Douville et al.\ (1995) is the classic depth-threshold form that HTESSEL's
+\texttt{RQSNCR} formulation resembles, and Dutra et al.\ (2010) documents the \texttt{LESN09}
+scheme this campaign has been modifying. That CMIP-class models share the bias found here is
+documented by Thackeray et al.\ (2015), and its consequence for the snow-albedo feedback
+spread by Qu \& Hall (2014) and Loranty et al.\ (2014). Betts \& Ball (1997) remains the
+reference for boreal canopy masking, which is why the tile-7 residual behaves as it does
+(\S\ref{sub:e5alb}).
+
 \textbf{Implemented as \texttt{ECE\_SNOW\_SCF} in \texttt{\&NAMSURFTUNE}}
 (\S\ref{sub:nmltune}), with \texttt{ECE\_SNOW\_SCF\_Z0}, \texttt{\_M}, \texttt{\_RHONEW}.
 \textbf{Default is $0$ = the as-released formula}, so the change is inert unless
@@ -3306,8 +3321,12 @@ in \texttt{suvdfs.F90}).
 {\footnotesize\setlength{\parindent}{0pt}\setlength{\parskip}{2.5pt}
 Alessandri, A.\ et al.\ (2017). Multi-scale enhancement of climate prediction over land by increasing the model
 sensitivity to vegetation variability in EC-Earth. \emph{Clim.\ Dyn.}\ 49, 1215--1237.\par
+Balsamo, G.\ et al.\ (2009). A revised hydrology for the ECMWF model: verification from field site to terrestrial
+water storage and impact in the ECMWF-IFS. \emph{J.\ Hydrometeorol.}\ 10, 623--643. \emph{(HTESSEL.)}\par
 Beljaars, A.C.M.\ \& Viterbo, P.\ (1998). Role of the boundary layer in a numerical weather prediction model. In
 \emph{Clear and Cloudy Boundary Layers}, KNAW, 287--304.\par
+Betts, A.K.\ \& Ball, J.H.\ (1997). Albedo over the boreal forest. \emph{J.\ Geophys.\ Res.}\ 102,
+28901--28909. \emph{(BOREAS observations; canopy masking of snow albedo.)}\par
 Betts, R.A.\ (2000). Offset of the potential carbon sink from boreal forestation by decreases in surface albedo.
 \emph{Nature} 408, 187--190.\par
 Bonan, G.B.\ (2008). Forests and climate change: forcings, feedbacks, and the climate benefits of forests.
@@ -3317,8 +3336,20 @@ Bonan, G.B., Pollard, D.\ \& Thompson, S.L.\ (1992). Effects of boreal forest ve
 Chapin, F.S.\ et al.\ (2005). Role of land-surface changes in Arctic summer warming. \emph{Science} 310, 657--660.\par
 de Lavergne, C.\ et al.\ (2014). Cessation of deep convection in the open Southern Ocean under anthropogenic climate
 change. \emph{Nat.\ Clim.\ Change} 4, 278--282.\par
+Douville, H., Royer, J.-F.\ \& Mahfouf, J.-F.\ (1995). A new snow parameterization for the M\'et\'eo-France
+climate model. \emph{Clim.\ Dyn.}\ 12, 21--35. \emph{(The classic depth-threshold cover form.)}\par
 D\"oscher, R.\ et al.\ (2022). The EC-Earth3 Earth system model for CMIP6. \emph{Geosci.\ Model Dev.}\ 15,
 2973--3020.\par
+Dutra, E.\ et al.\ (2010). An improved snow scheme for the ECMWF land surface model: description and offline
+validation. \emph{J.\ Hydrometeorol.}\ 11, 899--916. \emph{(The \texttt{LESN09} scheme whose \texttt{RQSNCR}
+this campaign modifies.)}\par
+Essery, R.\ et al.\ (2013). A comparison of 1701 snow models using observations from an alpine site.
+\emph{Adv.\ Water Resour.}\ 55, 131--148.\par
+Estilow, T.W., Young, A.H.\ \& Robinson, D.A.\ (2015). A long-term Northern Hemisphere snow cover extent data
+record for climate studies and monitoring. \emph{Earth Syst.\ Sci.\ Data} 7, 137--142.
+\emph{(The Rutgers CDR used here.)}\par
+Helfrich, S.R.\ et al.\ (2007). Enhancements to, and forthcoming developments in the Interactive Multisensor
+Snow and Ice Mapping System (IMS). \emph{Hydrol.\ Process.}\ 21, 1576--1586.\par
 Herzschuh, U.\ (2020). Legacy of the Last Glacial on the present-day distribution of deciduous versus evergreen
 boreal forests. \emph{Glob.\ Ecol.\ Biogeogr.}\ 29, 198--206.\par
 Heuz\'e, C.\ (2021). Antarctic bottom water and North Atlantic deep water in CMIP6 models. \emph{Ocean Sci.}\ 17,
@@ -3331,8 +3362,14 @@ Hyder, P.\ et al.\ (2018). Critical Southern Ocean climate model biases traced t
 \emph{Nat.\ Commun.}\ 9, 3625.\par
 Jiang, Y.\ et al.\ (2012). [Boreal tree/grass fraction spread across dynamic global vegetation models.]
 \emph{Ecol.\ Evol.}\ (structural-uncertainty reference; details to verify).\par
+Kato, S.\ et al.\ (2018). Surface irradiances of Edition 4.0 CERES EBAF data product. \emph{J.\ Climate} 31,
+4501--4527. \emph{(The surface SW up/down used for the observational albedo check.)}\par
 K\"orner, C.\ \& Paulsen, J.\ (2004). A world-wide study of high altitude treeline temperatures. \emph{J.\
 Biogeogr.}\ 31, 713--732.\par
+Liston, G.E.\ (2004). Representing subgrid snow cover heterogeneities in regional and global models.
+\emph{J.\ Climate} 17, 1381--1397. \emph{(Why cell-mean depth is insufficient.)}\par
+Loeb, N.G.\ et al.\ (2018). Clouds and the Earth's Radiant Energy System (CERES) Energy Balanced and Filled
+(EBAF) Top-of-Atmosphere (TOA) Edition-4.0 data product. \emph{J.\ Climate} 31, 895--918.\par
 Loranty, M.M.\ et al.\ (2014). Vegetation controls on northern high-latitude snow-albedo feedback. \emph{Glob.\
 Change Biol.}\ 20, 594--606.\par
 Louis, J.-F.\ (1979). A parametric model of vertical eddy fluxes in the atmosphere. \emph{Bound.-Layer Meteorol.}\
@@ -3344,8 +3381,17 @@ NASA Langley Research Center (2019). CERES Energy Balanced and Filled (EBAF) Edi
 Level-3B monthly product. DOI:
 \href{https://doi.org/10.5067/TERRA-AQUA/CERES/EBAF_L3B004.1}
 {10.5067/TERRA-AQUA/CERES/EBAF\_L3B004.1}.\par
+Niu, G.-Y.\ \& Yang, Z.-L.\ (2007). An observation-based formulation of snow cover fraction and its evaluation
+over large North American river basins. \emph{J.\ Geophys.\ Res.}\ 112, D21101.
+\textbf{\emph{(The depletion formulation implemented as \texttt{ECE\_SNOW\_SCF}.)}}\par
 Pithan, F., Medeiros, B.\ \& Mauritsen, T.\ (2014). Mixed-phase clouds cause climate model biases in Arctic
 wintertime temperature inversions. \emph{Clim.\ Dyn.}\ 43, 289--303.\par
+Qu, X.\ \& Hall, A.\ (2014). On the persistent spread in snow-albedo feedback. \emph{Clim.\ Dyn.}\ 42,
+69--81.\par
+Robinson, D.A., Estilow, T.W.\ \& NOAA CDR Program (2012). NOAA Climate Data Record (CDR) of Northern Hemisphere
+(NH) Snow Cover Extent (SCE), Version 1. NOAA NCEI. DOI: 10.7289/V5N014G9.\par
+Roesch, A., Wild, M., Gilgen, H.\ \& Ohmura, A.\ (2001). A new snow cover fraction parametrization for the
+ECHAM4 GCM. \emph{Clim.\ Dyn.}\ 17, 933--946. \emph{(Adds sub-grid orography; the other main GCM approach.)}\par
 Sandu, I.\ et al.\ (2013). Why is it so difficult to represent stably stratified conditions in numerical weather
 prediction models? \emph{J.\ Adv.\ Model.\ Earth Syst.}\ 5, 117--133.\par
 Sitch, S.\ et al.\ (2003). Evaluation of ecosystem dynamics, plant geography and terrestrial carbon cycling in the
@@ -3354,10 +3400,20 @@ Smith, B.\ et al.\ (2001). Representation of vegetation dynamics in the modellin
 \emph{Glob.\ Ecol.\ Biogeogr.}\ 10, 621--637.\par
 Smith, B.\ et al.\ (2014). Implications of incorporating N cycling and N limitations on primary production in an
 individual-based dynamic vegetation model. \emph{Biogeosciences} 11, 2027--2054.\par
+Swenson, S.C.\ \& Lawrence, D.M.\ (2012). A new fractional snow-covered area parameterization for the Community
+Land Model and its effect on the surface energy balance. \emph{J.\ Geophys.\ Res.}\ 117, D21107.
+\emph{(Separate accumulation/depletion curves; the alternative to Niu \& Yang.)}\par
+Thackeray, C.W., Fletcher, C.G.\ \& Derksen, C.\ (2015). Quantifying the skill of CMIP5 models in simulating
+seasonal albedo and snow cover evolution. \emph{J.\ Geophys.\ Res.\ Atmos.}\ 120, 5831--5849.
+\emph{(CMIP5 models show the same late-melt/high-albedo bias found here.)}\par
 Zhang, Y.\ et al.\ (2011). On the computation of planetary boundary-layer height / polar inversion strength in
 climate models. \emph{J.\ Climate} 24, 5167--5186.\par
 \vspace{2pt}\emph{Citations added in response to internal review (rev.\ 2026-07-06); bibliographic details for
-Beljaars \& Viterbo 1998, Jiang et al.\ 2012, Medeiros et al.\ 2011 and Zhang et al.\ 2011 to be page-verified.}
+Beljaars \& Viterbo 1998, Jiang et al.\ 2012, Medeiros et al.\ 2011 and Zhang et al.\ 2011 to be page-verified.
+Snow-cover references added 2026-08-03: volume/page numbers for Essery et al.\ 2013, Helfrich et al.\ 2007 and
+Thackeray et al.\ 2015 are from memory and should be page-verified before external use; the Niu \& Yang 2007,
+Swenson \& Lawrence 2012, Roesch et al.\ 2001, Liston 2004, Dutra et al.\ 2010 and Betts \& Ball 1997 entries
+are the load-bearing ones for \S\ref{sec:scf}.}
 }
 
 \end{document}
