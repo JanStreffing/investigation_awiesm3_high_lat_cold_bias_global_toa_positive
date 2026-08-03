@@ -26,6 +26,9 @@ Y0=1990; Y1=2014
 mkdir -p "$OUT"
 module load cdo 2>/dev/null || true
 
+# 144 sf   total snowfall      [m w.e. accumulated]
+# 045 smlt snowmelt             [m w.e. accumulated]  -- fc stream, not an
+#                               analysis field, so it lives under sf/fc/1M
 for p in 243 032 141 033; do
   tgt="$OUT/era5_${p}_clim_${Y0}-${Y1}.nc"
   if [ -f "$tgt" ]; then echo "have $(basename "$tgt")"; continue; fi
@@ -44,4 +47,19 @@ echo
 echo "done. contents:"
 for f in "$OUT"/era5_*_clim_${Y0}-${Y1}.nc; do
   [ -f "$f" ] && printf "  %-40s %s\n" "$(basename "$f")" "$(cdo -s showname "$f" 2>/dev/null | tr -s ' ')"
+done
+
+# --- snow BUDGET fluxes: these are forecast (accumulated) fields, different stream
+POOLF=/pool/data/ERA5/E5/sf/fc/1M
+for p in 144 045; do
+  tgt="$OUT/era5_${p}_clim_${Y0}-${Y1}.nc"
+  if [ -f "$tgt" ]; then echo "have $(basename "$tgt")"; continue; fi
+  echo "building $(basename "$tgt") ..."
+  files=()
+  for y in $(seq $Y0 $Y1); do
+    f="$POOLF/$p/E5sf12_1M_${y}_${p}.grb"
+    [ -f "$f" ] && files+=("$f")
+  done
+  if [ ${#files[@]} -eq 0 ]; then echo "  !! no input for $p"; continue; fi
+  cdo -s -f nc -ymonmean -setgridtype,regular -cat "${files[@]}" "$tgt"
 done
