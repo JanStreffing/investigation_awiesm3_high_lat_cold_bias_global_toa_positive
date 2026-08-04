@@ -290,6 +290,75 @@ its warming is genuine, **but I1/I2 cool `stl4` by ~2.1 K** — and LPJ-GUESS is
 H1 cooled DJF by −1.233 through a completely different route to the same tile fractions,
 so this is the second time cutting snow-tile fraction has cooled winter hard.
 
+### ⭐⭐ I3 evaluated (2026-08-04) — strongest summer lever built, NOT adopted
+
+I3 = G4 + mode 2 (SDOR-scaled), calibrated to match I1 **over the Siberian box** so any
+remaining difference would be spatial structure. It does not behave like I1.
+
+**What it wins:**
+
+| | control | G4 | I1 | **I3** | CERES |
+|---|---:|---:|---:|---:|---:|
+| Siberian JJA T2m [°C] | 9.728 | +0.952 | +1.250 | **+1.322** (t=10.61) | — |
+| Siberian surface net SW [W/m²] | 153.78 | +8.10 | +12.77 | **166.58** | **166.26** |
+| global T2m RMSE vs ERA5 [K] | 1.579 | −0.036 | **+0.048** | **−0.023** | — |
+| global net TOA [W/m²] | 0.643 | −0.128 | −0.021 | +0.056 | — |
+| SO SW RMSE | 6.877 | −2.076 | −1.906 | −2.065 | — |
+
++1.322 K is the **largest JJA gain of 36 evaluated runs**, and the Siberian surface SW
+deficit that opened the whole albedo thread **closes to within 0.3 W/m² of CERES**. Where I1
+*degrades* global T2m RMSE, I3 improves it. Per season it dominates I1 outright:
+
+| Δ vs control [K] | DJF | MAM | JJA | SON |
+|---|---:|---:|---:|---:|
+| threshold (own season) | ±0.601 | ±0.394 | ±0.244 | ±0.441 |
+| G4 | −0.385 | −0.360 | +0.952\* | +0.185 |
+| I1 | −2.759\* | −0.306 | +1.250\* | −0.766\* |
+| **I3** | **−2.439\*** | −0.214 | **+1.322\*** | **−0.105** |
+
+**⚠ What only the FULL guardrail set revealed** — the Siberian-box scripts alone would have
+promoted I3, and the verdict "best lever of the campaign" *was* drafted on them before the
+guardrails were run:
+
+| guardrail | control | I1 | **I3** | CERES |
+|---|---:|---:|---:|---:|
+| net TOA 60–90N [W/m²] | −97.74 | +0.87 | **−96.02 (+1.72)** | **−97.98** |
+| net TOA NH [W/m²] | 0.280 | +0.245 | **0.952 (+0.672)** | **0.08** |
+| NH−SH albedo | −0.003 | −0.002 | **−0.007 (−0.004)** | — |
+| Nordic Seas SW RMSE | 9.058 | +0.196 | **9.557 (+0.499)** | — |
+
+This is the mechanism **working as designed** — less high-latitude snow cover admits more SW
+at high latitude — but the Arctic had no energy spare. The control sat almost exactly on the
+observation at 60–90N (−97.74 vs −97.98). The NH TOA and NH−SH albedo changes are each the
+**largest of all 37 runs**, and Nordic Seas is the **only significant SW RMSE degradation in
+the campaign** (`rmse_significance.py` flags two runs there; I3 is one, +0.07 vs ±0.051).
+
+*Caveat, so this is not over-read:* these are PI runs scored against present-day CERES, and
+the standing rule is that the PI target is net TOA ≈ 0, **not** the CERES column. That
+weakens the "away from CERES" reading of the two regional TOA rows. It does **not** weaken
+NH−SH albedo or Nordic Seas, which are model-vs-model and model-vs-RMSE.
+
+**Why this matters more for coupled than AMIP:** all four are Arctic energy-*gain*
+guardrails, and AMIP structurally hides the consequence — prescribed SST and sea ice absorb
+1.7 W/m² without responding. The coupled PI spin-up will not.
+
+### ✅ The Siberian winter penalty is NOT radiative (2026-08-04)
+
+| Siberian DJF | snow albedo | SWE [m] | absorbed SW [W/m²] |
+|---|---:|---:|---:|
+| control | 0.6789 | 0.6933 | 8.16 |
+| G4 | 0.6760 | 0.6901 | 8.18 |
+| I1 | 0.6800 | 0.6926 | 8.16 |
+| I2 | 0.6796 | 0.6958 | 8.16 |
+| **I3** | 0.6797 | 0.6944 | 8.22 |
+
+Albedo, snowpack and absorbed SW are **unchanged to three decimals**, on a midwinter budget
+of only ~8 W/m². **A −2.4 K penalty cannot be built from that.** This generalises the finding
+that killed the compensating-error story (winter cover 0.963 vs 0.964) from cover to the
+whole radiative chain, and it holds for I2, which carries the penalty with no vegetation
+change at all. The route is **thermal — the snow/exposed-tile coupling** — which is exactly
+what round 16 tests.
+
 ### Round 16 — in flight (2026-08-04)
 
 `vlamsk_mod.F90` hardcoded the snow-tile skin conductivities, so they were untunable
@@ -313,6 +382,13 @@ k_snow 0.1–0.4 W m⁻¹ K⁻¹ and d_skin 0.01–0.05 m, so **roughly 2–40**
 the winter bias lies in boundary-layer mixing instead (Holtslag et al. 2013, Sandu et al.
 2013). Also watching that melt-out and May/June cover **stay** fixed — drift back toward
 the control would mean the two changes interact and the pair is not separable.
+
+⚠ **Both J runs are built on I1, before I3 was shown to be the better base in every season.**
+That was correct with the information available, and the round is still diagnostic — it tests
+whether λ_sk is the winter route at all, and I1/I3 share the same non-radiative penalty, so
+an answer on I1 transfers. **But if λ_sk proves to be the route, the production pair must be
+re-run on I3**, and the Arctic guardrails re-checked on the combination rather than assumed
+to superpose. Superposition has been wrong in *sign* twice in this campaign.
 
 ### Not tuning levers — never add to `RUNS`
 
@@ -454,11 +530,82 @@ clear-sky downward SW at the surface. And **this must be reconciled with `sub:al
 found all-sky land albedo near-perfect outside high latitudes — different quantities, and one
 of them may be wrong. That reconciliation is the first job, not a run.
 
+## 3e. ⭐ Land albedo (2026-08-04): half of it is the SNOW TILE
+
+*This is the reconciliation §3d asked for, and it mostly vindicates `sub:albreg`.*
+
+Measured assumption-free (each dataset divided by its **own** downward flux — an earlier pass
+that borrowed the CERES denominator inflated the land excess from +0.015 to +0.030), all-sky
+land surface albedo is **+0.0154** too high.
+
+**The trap: snow is a TILE, not a vegetation type.** The first attribution split that by
+dominant vegetation type from `tvh`/`cvh`/`tvl`/`cvl`. That map contains no snow — in HTESSEL
+snow is a separate tile (5 on low veg, 7 under high) that **overlies** every vegetation type.
+So each type was part-time snow and the ranking was largely a map of *snow duration*: evergreen
+needleleaf 53.9 % of the year, tundra 63.2 %, "bare soil" 49.2 % (Sahara and high-Arctic bare
+ground in one bucket). An annual-mean T2m > 5 °C filter does **not** fix this — a cell
+averaging 6 °C still has months of snow.
+
+Masking snow **per cell per month** (SWE < 1 mm, sunlit months only) splits it almost exactly
+in half: **snow +0.0074, snow-free surface +0.0080.** The per-type ranking inverts:
+
+| type | snow-covered | all months | **snow-free** |
+|---|---:|---:|---:|
+| Evgr Needleleaf | 53.9 % | +0.0250 | **+0.0032** |
+| Bogs/Marshes | 37.1 % | +0.0143 | +0.0039 |
+| Evgr Shrubs | 41.2 % | +0.0150 | +0.0058 |
+| Evgr Broadleaf (tropical) | 6.9 % | +0.0017 | **−0.0003** |
+| **Crops** | 25.9 % | +0.0215 | **+0.0204** |
+| **Semidesert** | 22.5 % | +0.0342 | **+0.0169** |
+| **bare soil** | 49.2 % | +0.0240 | **+0.0145** |
+| **Irrig Crops** | 24.6 % | +0.0253 | **+0.0138** |
+| **Tundra** | 63.2 % | +0.0064 | **+0.0105** ← gets *worse* |
+
+**Every forest type falls inside +0.006 once snow is removed**, tropical broadleaf to −0.0003.
+So `RVVEGALB`'s high-vegetation entries are **sound** and `sub:albreg`/`sub:albsnow` hold. What
+is *new* is the +0.0080 residual on **sparse and cultivated** surfaces where the soil background
+shows through — plus tundra, where snow was hiding a genuine snow-free *summer* error.
+**Nothing in 41 runs has touched that half.**
+
+**The snow half already has a lever** (model-internal, snow-covered sunlit months):
+
+| run | snow-month albedo | vs G4 | all-land |
+|---|---:|---:|---:|
+| G4 | 0.5185 | — | 0.2586 |
+| I1 = G4 + mode 1 | 0.5011 | −0.0174 | −0.0024 |
+| I2 = mode 1 alone | 0.4996 | −0.0189 | −0.0018 |
+| **I3 = G4 + mode 2** | **0.4689** | **−0.0496** | **−0.0052** |
+
+**I3 removes ~70 % of the snow half**, I1 ~32 % — and I3 was calibrated to match I1 *in the
+Siberian box*, so globally it is **twice as strong as intended**. Same over-reach the Arctic
+guardrails bill it for: the SDOR scaling does most of its work outside the box it was tuned in.
+
+### ⚠ The two halves cannot simply be stacked
+
+Keeping I3 and adding a vegetation-albedo correction on top is **not additive in the direction
+that matters**. A darker land surface at high latitude adds absorbed SW to exactly the region
+I3 has already pushed 1.72 W/m² past CERES. They compete for one energy budget.
+
+- **Mid-latitude / subtropical entries are the safe ones** — crops (+0.0204), semidesert
+  (+0.0169), bare soil (+0.0145), irrigated crops (+0.0138) lie outside the Arctic, so fixing
+  them attacks the ~0.7 K **universal** bias without adding to the 60–90N surplus.
+- **Tundra (+0.0105) is the dangerous one** — the single entry that *would* stack with I3,
+  being boreal and in-season, hence both the most attractive and the most likely to break the
+  Arctic guardrails.
+- **Where bare fraction dominates, `RVVEGALB` cannot reach it** — the background soil albedo
+  climatology carries it, and that is an ancillary field, not a namelist parameter.
+
+*Asset:* `land_albedo_snow_split.py`, chained into `evaluate.sh --obs`.
+
 ## 4. Open problems
 
-0. **⭐⭐ THE CURRENT BLOCKER — a −4.7 K Siberian winter bias, previously hidden.**
-   Correcting the snow cover removed a compensating error: excess cover had been propping
-   DJF up by ~2.7 K. Against ERA5 the control is too cold in every season (−1.95 / −1.97 /
+0. **⭐⭐ THE CURRENT BLOCKER — a −4.7 K Siberian winter bias accompanying the snow fix.**
+   ~~Correcting the snow cover removed a compensating error: excess cover had been propping
+   DJF up by ~2.7 K.~~ **Retracted** — winter cover is unchanged (0.963 vs 0.964); see §3.
+   Now **positively excluded as radiative at all**: DJF snow albedo, SWE and absorbed SW are
+   identical across control/G4/I1/I2/I3 to three decimals, on an ~8 W/m² midwinter budget
+   that cannot build −2.4 K. The route is **thermal**.
+   Against ERA5 the control is too cold in every season (−1.95 / −1.97 /
    −2.58 / −2.69) and I1 sits at **−4.71** in DJF. It is **not** a radiation-supply problem
    (DJF downward LW is +0.9 W/m² vs CERES, essentially exact, which rules out Pithan et al.
    2014 for midwinter). With radiation right and the surface still too cold, the deficit is

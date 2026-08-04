@@ -9,3 +9,5 @@
 missfont.log
 __pycache__/
 *.pyc
+scripts/analysis/.box_cache/
+scripts/analysis/.eval_cache/

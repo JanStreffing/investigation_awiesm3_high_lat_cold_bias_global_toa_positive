@@ -63,6 +63,7 @@ if [ "$OBS" -eq 1 ]; then
   run "BIAS BY SURFACE TYPE     (is the cold bias boreal or global?)"   bias_by_tile.py
   run "VERTICAL COLUMN          (soil L4 -> 100 hPa)"                   vertical_bias_column.py
   run "TROPOSPHERIC SECTION     (lat x pressure, and clear-sky SW)"     tropo_bias_section.py
+  run "LAND ALBEDO SPLIT        (snow tile vs snow-free surface)"       land_albedo_snow_split.py
 fi
 
 cat <<'EOF'

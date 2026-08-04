@@ -42,8 +42,12 @@ is open and the root cause can be hunted without the coupled runaway closing ove
 \medskip\noindent\textbf{Where we are (2026--08--04).} \textbf{G4} $=$ F4 $+$ D2b $+$ tundra
 is the carried-forward configuration --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$, $48\,\%$ of
 the bias) and Southern Ocean SW RMSE $6.88\to4.80$ --- and the campaign's blocker is now Siberian \emph{winter}: the
-snow-cover correction (run I1) cools DJF to $-4.7$\,K against ERA5 by a route not yet
-identified (\S\ref{sub:r15compensate}); G4 itself sits at $-2.33$\,K.
+snow-cover correction (run I1) cools DJF to $-4.7$\,K against ERA5 by a route now shown to be
+\emph{non-radiative} (\S\ref{sub:djfnotrad}); G4 itself sits at $-2.33$\,K.
+\textbf{I3} is the strongest summer lever built ($+1.322$\,K, $t{=}10.61$, and it closes the
+Siberian surface SW deficit to CERES) but is \textbf{not adopted}: the guardrails price it at
+$+1.72$\,W\,m$^{-2}$ over 60--90N, a bill AMIP structurally cannot feel and the coupled
+spin-up would (\S\ref{sub:i3}).
 
 \medskip\noindent Read \S\ref{sec:causal} for the causal web and what is still dark;
 \S\ref{sec:obs} for what the observations can and cannot settle; \S\ref{sec:falsified} for
@@ -2367,7 +2371,12 @@ $0.1461$ CERES, entirely independent of cloud. F4 does not touch it ($0.1749$).
 \subsection{Not a global albedo error, and not the forest}\label{sub:albreg}
 Temperate and tropical land is essentially perfect (Europe, Amazon, Great Plains, steppe,
 Australia all within $\pm0.004$), so the albedo \emph{scheme} is sound and a global fix would
-be wrong. The error is concentrated at high latitude: Siberian tundra $+0.094$ ($-16.0$\,W/m$^2$),
+be wrong. \emph{This held up, with one amendment.} \S\ref{sub:snowtile} later measured land
+albedo globally and by type with snow masked per cell per month: every forest type is inside
+$+0.006$ and tropical broadleaf is at $-0.0003$, confirming the scheme --- but a residual
+$+0.0080$ does exist on crops, semidesert and bare soil, so ``a global fix would be wrong''
+is right about the \emph{vegetation table} and too strong about the \emph{soil background}.
+The error is concentrated at high latitude: Siberian tundra $+0.094$ ($-16.0$\,W/m$^2$),
 Canada boreal $+0.032$, Siberia boreal $+0.029$, Sahara $+0.020$ --- but \textbf{Fennoscandia,
 the same needleleaf type, is correct at $+0.002$}. Splitting Siberia by latitude gives $+0.011$
 in the forest core and $+0.087$ at 70--75N.
@@ -3035,8 +3044,10 @@ run: the switch logs to \texttt{NULOUT}, no namelist errors, the model steps nor
 \section{Round 15 (2026--08--04): the snow fix works, buys no summer, and cools winter}\label{sec:r15}
 Three runs, all namelist-only on one binary: \textbf{I1} $=$ G4 $+$ depletion,
 \textbf{I2} $=$ depletion alone (isolating the snow route from the vegetation route), and
-\textbf{I3} $=$ G4 $+$ the SDOR-scaled variant. \textbf{I3 completed after this section was
-written and is not yet evaluated} --- everything below is I1 and I2 only.
+\textbf{I3} $=$ G4 $+$ the SDOR-scaled variant. Sections \S\ref{sub:r15works}--\S\ref{sub:skinsoil}
+were written on I1 and I2 alone; \textbf{I3 is evaluated in \S\ref{sub:i3}}, and it changes
+the round's verdict --- the snow route \emph{does} buy summer temperature, but only in the
+scale-aware formulation, and it presents a bill in the Arctic energy budget.
 
 \subsection{The scheme does exactly what it was built to do}\label{sub:r15works}
 \begin{center}\footnotesize
@@ -3169,6 +3180,112 @@ winter behaviour.
 and skin fields had been written off as dead (\S\ref{sub:r15lw}) on the basis of an
 analysis-side scaling bug.
 
+\subsection{I3 (2026--08--04): the strongest summer lever, and the Arctic bill}\label{sub:i3}
+I3 $=$ G4 $+$ mode~2, the SDOR-scaled depletion, calibrated to match I1 \emph{over the
+Siberian box} so that any remaining difference would be spatial structure
+(\S\ref{sub:scffix}). It does not behave like I1, and the differences are the point.
+
+\textbf{What it wins.}
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+ & control & G4 & I1 & \textbf{I3} & CERES \\
+\midrule
+Siberian JJA T2m [$^\circ$C] & $9.728$ & $+0.952$ & $+1.250$ & $\mathbf{+1.322}$ ($t{=}10.61$) & --- \\
+Siberian surface net SW [W\,m$^{-2}$] & $153.78$ & $+8.10$ & $+12.77$ & $\mathbf{166.58}$ & $\mathbf{166.26}$ \\
+global T2m RMSE vs ERA5 [K] & $1.579$ & $-0.036$ & $\mathbf{+0.048}$ & $\mathbf{-0.023}$ & --- \\
+global net TOA [W\,m$^{-2}$] & $0.643$ & $-0.128$ & $-0.021$ & $+0.056$ & --- \\
+SO SW RMSE & $6.877$ & $-2.076$ & $-1.906$ & $-2.065$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent $+1.322$\,K is the \textbf{largest JJA gain of 36 evaluated tuning runs}, and the
+Siberian surface SW deficit that \S\ref{sec:albedo} opened this whole thread with
+\textbf{closes to within $0.3$\,W\,m$^{-2}$} of CERES. Global TOA does not move, and where I1
+\emph{degrades} global T2m RMSE ($+0.048$), I3 improves it. Per season it dominates I1
+outright --- more JJA, $0.32$\,K less DJF damage, and I1's significant autumn penalty
+($-0.766^*$) collapses to a null:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+$\Delta$ vs control [K] & DJF & MAM & JJA & SON \\
+\midrule
+threshold (own season) & $\pm0.601$ & $\pm0.394$ & $\pm0.244$ & $\pm0.441$ \\
+G4 & $-0.385$ & $-0.360$ & $+0.952^*$ & $+0.185$ \\
+I1 & $-2.759^*$ & $-0.306$ & $+1.250^*$ & $-0.766^*$ \\
+\textbf{I3} & $\mathbf{-2.439^*}$ & $-0.214$ & $\mathbf{+1.322^*}$ & $\mathbf{-0.105}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textcolor{red}{\textbf{What only the full guardrail set revealed.}} The Siberian-box scripts
+alone would have promoted I3. They were run first, and the verdict ``best lever of the
+campaign'' was drafted on them --- prematurely, and caught only because the guardrails were
+demanded before writing. Four guardrails move together, all one way:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+guardrail & control & I1 & \textbf{I3} & CERES \\
+\midrule
+net TOA 60--90N [W\,m$^{-2}$] & $-97.74$ & $+0.87$ & $\mathbf{-96.02\ (+1.72)}$ & $\mathbf{-97.98}$ \\
+net TOA NH [W\,m$^{-2}$] & $0.280$ & $+0.245$ & $\mathbf{0.952\ (+0.672)}$ & $\mathbf{0.08}$ \\
+NH$-$SH albedo & $-0.003$ & $-0.002$ & $\mathbf{-0.007\ (-0.004)}$ & --- \\
+Nordic Seas SW RMSE & $9.058$ & $+0.196$ & $\mathbf{9.557\ (+0.499)}$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent This is the mechanism \emph{working as designed}: removing high-latitude snow cover
+admits more shortwave at high latitude. The Arctic did not have that energy spare. The control
+sat almost exactly on the observation at 60--90N ($-97.74$ vs $-97.98$); I3 leaves it $1.96$
+away. The NH net TOA change ($+0.672$) and the NH$-$SH albedo change ($-0.004$) are each the
+\textbf{largest of all 37 runs}, and Nordic Seas is the \textbf{only significant SW RMSE
+degradation in the campaign} --- \texttt{rmse\_significance.py} flags exactly two runs there and
+I3 is one ($+0.07$ against a $\pm0.051$ threshold).
+
+\emph{Caveat against these four, stated so it is not over-read}: these are PI runs scored
+against present-day CERES, and this report's own rule (\S\ref{sub:evalsh}) is that the PI
+target is net TOA ${\approx}0$, \textbf{not} the CERES column. That weakens the
+``away from CERES'' reading of the two regional TOA rows. It does \emph{not} weaken the
+NH$-$SH albedo or Nordic Seas results, which are model-versus-model and model-versus-RMSE.
+
+\textbf{Why this matters more for the coupled run than for AMIP.} All four are Arctic
+energy-\emph{gain} guardrails, and AMIP structurally hides their consequence: prescribed SST
+and prescribed sea ice absorb $1.7$\,W\,m$^{-2}$ without responding. In the coupled PI
+spin-up --- the configuration I3 is a candidate for --- they would not. This is the same
+structural blindness as \S\ref{sub:amplifier}, in the opposite direction.
+
+\subsection{The winter penalty is not radiative}\label{sub:djfnotrad}
+\S\ref{sub:r15lw} left the DJF route unidentified. It can now be excluded as radiative.
+Siberian land, DJF, all four configurations:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+Siberian DJF & snow albedo & SWE [m] & absorbed SW [W\,m$^{-2}$] \\
+\midrule
+control & $0.6789$ & $0.6933$ & $8.16$ \\
+G4 & $0.6760$ & $0.6901$ & $8.18$ \\
+I1 & $0.6800$ & $0.6926$ & $8.16$ \\
+I2 & $0.6796$ & $0.6958$ & $8.16$ \\
+\textbf{I3} & $0.6797$ & $0.6944$ & $8.22$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Albedo, snowpack and absorbed shortwave are \textbf{unchanged to three decimals},
+and there are only ${\sim}8$\,W\,m$^{-2}$ of insolation in the box in midwinter regardless.
+\textbf{A $-2.4$\,K penalty cannot be constructed from that budget.} This generalises the
+finding that killed the compensating-error story (\S\ref{sub:r15compensate}, winter cover
+$0.963$ vs $0.964$) from cover to the whole radiative chain, and it holds for I2, which
+carries the penalty with no vegetation change at all. The route must be
+\textbf{thermal --- the snow/exposed-tile coupling} --- which is precisely what round 16
+(\S\ref{sec:lamsk}) tests, so the diagnosis and the running experiment agree.
+
 \medskip
 \section{Round 16 (2026--08--04): the snow-tile skin conductivity}\label{sec:lamsk}
 \texttt{vlamsk\_mod.F90} hardcoded the snow-tile skin conductivities, so they were untunable.
@@ -3210,6 +3327,118 @@ run & setting & prediction \\
 route}, and the winter bias lies in boundary-layer mixing instead (Holtslag et al.\ 2013;
 Sandu et al.\ 2013). Also watched: melt-out and May/June cover must \emph{stay} fixed --- drift
 back toward the control would mean the two changes interact and the pair is not separable.
+
+\emph{Both J runs were built on I1, before \S\ref{sub:i3} showed I3 to be the better base in
+every season.} That was the correct decision with the information available and the round is
+still diagnostic --- it tests whether $\lambda_{sk}$ is the winter route at all, and
+\S\ref{sub:djfnotrad} shows I1 and I3 share the same non-radiative penalty, so an answer on
+I1 transfers. But if $\lambda_{sk}$ does prove to be the route, \textbf{the production pair
+must be re-run on I3}, and the Arctic guardrails of \S\ref{sub:i3} re-checked on the
+combination rather than assumed to superpose --- superposition has been wrong in sign twice
+in this campaign (\S\ref{sub:evalsh}).
+
+\section{Land albedo (2026--08--04): half of it is the snow tile}\label{sec:landalb}
+With the boreal budget nearly spent (\S\ref{sub:tilebias}) the target moved to the
+${\sim}0.7$\,K \emph{universal} land bias, and \S\ref{sub:vprof} localised its energy to a
+clear-sky shortwave deficit --- cloud is the wrong sign. Decomposing that deficit
+assumption-free (each dataset divided by its \emph{own} downward flux) gives an all-sky land
+surface albedo $+0.0154$ too high against CERES.
+
+\subsection{Snow is a tile, not a vegetation type}\label{sub:snowtile}
+The first attribution split that $+0.0154$ by \emph{dominant vegetation type}, built from
+\texttt{tvh}/\texttt{cvh}/\texttt{tvl}/\texttt{cvl}. That map has no snow in it: in HTESSEL
+snow is a separate tile (5 on low vegetation, 7 under high) that \textbf{overlies} every
+vegetation type. So each type was part-time snow, and the ranking the split produced was
+largely a map of \emph{snow duration} --- evergreen needleleaf is snow-covered $53.9\,\%$ of
+the year, tundra $63.2\,\%$, ``bare soil'' $49.2\,\%$ (a bucket holding the Sahara and
+high-Arctic bare ground together). An annual-mean $T_{2m}>5^\circ$C filter does not fix this:
+a cell averaging $6^\circ$C still has months of snow.
+
+Masking snow \textbf{per cell per month} (SWE $<1$\,mm, sunlit months only) splits the error
+almost exactly in half:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+$\Delta$ albedo vs CERES & \multicolumn{2}{c}{all sunlit months} & \multicolumn{2}{c}{snow-free only} \\
+\midrule
+ALL LAND & \multicolumn{2}{c}{$\mathbf{+0.0154}$} & \multicolumn{2}{c}{$\mathbf{+0.0080}$} \\
+\multicolumn{5}{l}{\emph{$\Rightarrow$ snow contributes $+0.0074$, the snow-free surface $+0.0080$}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent and the per-type ranking \emph{inverts}:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+type & snow-covered & all months & \textbf{snow-free} \\
+\midrule
+Evgr Needleleaf & $53.9\,\%$ & $+0.0250$ & $\mathbf{+0.0032}$ \\
+Bogs/Marshes & $37.1\,\%$ & $+0.0143$ & $+0.0039$ \\
+Evgr Shrubs & $41.2\,\%$ & $+0.0150$ & $+0.0058$ \\
+Evgr Broadleaf (tropical) & $6.9\,\%$ & $+0.0017$ & $\mathbf{-0.0003}$ \\
+\midrule
+\textbf{Crops} & $25.9\,\%$ & $+0.0215$ & $\mathbf{+0.0204}$ \\
+\textbf{Semidesert} & $22.5\,\%$ & $+0.0342$ & $\mathbf{+0.0169}$ \\
+\textbf{bare soil} & $49.2\,\%$ & $+0.0240$ & $\mathbf{+0.0145}$ \\
+\textbf{Irrig Crops} & $24.6\,\%$ & $+0.0253$ & $\mathbf{+0.0138}$ \\
+\textbf{Tundra} & $63.2\,\%$ & $+0.0064$ & $\mathbf{+0.0105}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Every forest type falls inside $+0.006$ once snow is removed}, tropical
+broadleaf to $-0.0003$. \textbf{This vindicates \S\ref{sub:albreg} and \S\ref{sub:albsnow}}:
+\texttt{RVVEGALB}'s high-vegetation entries are sound and the snow season really is the story.
+What is \emph{new} is the residual $+0.0080$, which sits on the sparse and cultivated surfaces
+where the soil background shows through --- and on tundra, which gets \textbf{worse} under
+masking ($+0.0064\to+0.0105$) because snow was hiding a genuine snow-free summer error.
+Nothing in 41 runs has touched that half.
+
+\subsection{The snow half already has a lever}\label{sub:snowhalflever}
+Land albedo over snow-covered sunlit months, model-internal:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+run & snow-month albedo & vs G4 & all-land \\
+\midrule
+G4 & $0.5185$ & --- & $0.2586$ \\
+I1 $=$ G4 $+$ mode~1 & $0.5011$ & $-0.0174$ & $-0.0024$ \\
+I2 $=$ mode~1 alone & $0.4996$ & $-0.0189$ & $-0.0018$ \\
+\textbf{I3 $=$ G4 $+$ mode~2} & $\mathbf{0.4689}$ & $\mathbf{-0.0496}$ & $\mathbf{-0.0052}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{I3 removes ${\sim}70\,\%$ of the snow half}, I1 ${\sim}32\,\%$ --- and I3 was
+calibrated to match I1 \emph{in the Siberian box}, so globally it is twice as strong as
+intended. That is new information about mode~2 and it is the same over-reach that
+\S\ref{sub:i3} bills at 60--90N: the SDOR scaling does most of its work outside the box it was
+tuned in.
+
+\subsection{Why the two halves cannot simply be stacked}\label{sub:stacking}
+The obvious next move --- keep I3 and add a vegetation-albedo correction on top --- is
+\textbf{not additive in the direction that matters}. A darker land surface at high latitude
+adds absorbed shortwave to precisely the region I3 has already pushed $1.72$\,W\,m$^{-2}$ past
+CERES. The two changes compete for one energy budget. Consequences for the plan:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{The mid-latitude and subtropical entries are the safe ones.} Crops
+  ($+0.0204$), semidesert ($+0.0169$), bare soil ($+0.0145$) and irrigated crops
+  ($+0.0138$) lie outside the Arctic, so correcting them attacks the ${\sim}0.7$\,K
+  \emph{universal} bias without adding to the 60--90N surplus.
+\item \textbf{Tundra ($+0.0105$) is the dangerous one.} It is the single entry that
+  \emph{would} stack with I3, being boreal and in-season --- which makes it both the most
+  attractive for the summer target and the one most likely to break the Arctic guardrails.
+\item \textbf{The snow-free half is not reachable by \texttt{RVVEGALB} alone} where bare
+  fraction dominates; there the background soil albedo climatology carries it, and that is an
+  ancillary field, not a namelist parameter (\S\ref{sub:albbuild}).
+\end{itemize}
+
+\emph{Assets}: \texttt{land\_albedo\_snow\_split.py}, chained into \texttt{evaluate.sh --obs}.
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
@@ -3464,6 +3693,17 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   temperature leverage (\S\ref{sub:r15notemp}).
 \item \textbf{The snow field can now be made correct}: melt-out 12~May against a satellite
   11~May, June cover $0.160$ vs $0.203$ (\S\ref{sub:r15works}).
+\item \textbf{I3 is the strongest summer lever built}: Siberian JJA $+1.322$\,K ($t{=}10.61$),
+  and it closes the Siberian surface SW deficit to $166.58$ against CERES $166.26$ --- the
+  deficit \S\ref{sec:albedo} opened the albedo thread with. It is \textbf{not adopted}: it
+  buys that with $+1.72$\,W\,m$^{-2}$ at 60--90N, the largest NH$-$SH albedo shift of any run,
+  and the campaign's only significant Nordic Seas RMSE degradation (\S\ref{sub:i3}).
+\item \textbf{The Siberian winter penalty is not radiative.} DJF snow albedo, SWE and absorbed
+  SW are identical across control/G4/I1/I2/I3 to three decimals, on an $8$\,W\,m$^{-2}$
+  midwinter budget that cannot build $-2.4$\,K (\S\ref{sub:djfnotrad}). The route is thermal.
+\item \textbf{Half the land albedo excess is the snow tile.} Of $+0.0154$ against CERES,
+  $+0.0074$ is snow and $+0.0080$ the snow-free surface; every forest type is inside $+0.006$
+  once snow is masked per cell per month (\S\ref{sub:snowtile}).
 \item \textbf{\texttt{RVRSMIN} does not saturate}; $1000$ is a cap set by winter damage, not a
   knee (\S\ref{sub:r14res}).
 \item \textbf{The energy target is Antarctic/Southern Ocean}, and the two campaign targets
@@ -3474,9 +3714,23 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
 
 \subsection{Open, in priority order}\label{sub:open}
 \begin{enumerate}\itemsep2pt
-\item \textbf{The blocker: a $-4.7$\,K Siberian winter bias}, previously masked by excessive
-  snow cover (\S\ref{sub:r15compensate}). Not a radiation-supply problem
-  (\S\ref{sub:r15lw}). Round 16 tests skin conductivity; if that fails, boundary-layer mixing.
+\item \textbf{The blocker: a $-4.7$\,K Siberian winter bias} accompanying the snow fix
+  (\S\ref{sub:r15compensate}). Not a radiation-supply problem (\S\ref{sub:r15lw}) and now
+  positively excluded as radiative at all (\S\ref{sub:djfnotrad}), so the route is thermal.
+  Round 16 tests skin conductivity; if that fails, boundary-layer mixing. \emph{J1/J2 are
+  built on I1, not I3} --- diagnostic either way, but the production pair needs re-running on
+  the better base (\S\ref{sec:lamsk}).
+\item \textbf{Decide the coupled base: I3 or I1.} I3 gives $+0.072$\,K more JJA and a better
+  global T2m RMSE, but carries the Arctic energy bill of \S\ref{sub:i3}, which \textbf{AMIP
+  structurally cannot price} --- prescribed SST and ice absorb $1.7$\,W\,m$^{-2}$ without
+  responding, and the coupled spin-up will not. Open question: whether a recalibrated mode~2
+  keeps the $+1.3$\,K without the 60--90N surplus, since the SDOR scaling does most of its
+  work outside the box it was tuned in (\S\ref{sub:snowhalflever}).
+\item \textbf{The snow-free land albedo residual $+0.0080$} --- crops $+0.0204$, semidesert
+  $+0.0169$, bare soil $+0.0145$, tundra $+0.0105$ --- is untouched by all 41 runs and is the
+  one lever aimed at the ${\sim}0.7$\,K \emph{universal} bias rather than the boreal one. It
+  \textbf{must not simply be stacked on I3} (\S\ref{sub:stacking}): the mid-latitude entries
+  are safe, the tundra entry competes for the same Arctic energy budget.
 \item \textbf{Global net TOA $+0.52$\,W\,m$^{-2}$} against a PI target of $\sim0$ --- one of the
   two original faults, barely moved by the whole campaign. Note this sits oddly beside a cold
   troposphere: in AMIP the prescribed SST absorbs the imbalance without warming, so the two are
@@ -3547,6 +3801,18 @@ was treated as disqualifying for H1. Route unidentified. & \S\ref{sub:r15compens
 \dead{Sublimation explains why F4 increases spring snow} &
 March--April evaporation changes are inside the noise floor; May \emph{snowfall} rises
 instead, for reasons still unknown. & \S\ref{sub:openlist} \\
+\dead{The measured $+0.0154$ land albedo excess contradicts \S\ref{sub:albreg}: Europe
+$+0.0099$, Great Plains $+0.0153$, Sahara $+0.0207$, Siberia $+0.0165$, so temperate land is
+\emph{not} within $\pm0.004$ and the ``no global fix'' conclusion needs revisiting} &
+Those are all-months numbers and snow is not a vegetation type --- it is a tile overlying every
+type. Masked per cell per month, every forest type falls inside $+0.006$ and tropical broadleaf
+to $-0.0003$. \S\ref{sub:albreg} was right about the vegetation table; the real finding is a
+$+0.0080$ residual on \emph{sparse and cultivated} surfaces. & \S\ref{sub:snowtile} \\
+\dead{I3 is the best lever the campaign has produced} &
+Drafted on the Siberian-box scripts alone before the guardrails were run. True for JJA T2m
+($+1.322$\,K) and Siberian SW, but I3 carries $+1.72$\,W\,m$^{-2}$ at 60--90N, the largest
+NH$-$SH albedo shift of all 37 runs, and the only significant Nordic Seas degradation.
+Not adopted. & \S\ref{sub:i3} \\
 \bottomrule
 \end{tabular}
 \end{center}
