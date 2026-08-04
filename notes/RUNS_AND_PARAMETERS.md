@@ -386,6 +386,35 @@ against satellite 11 May) — but on its own it costs −2.7 K in DJF until the 
 question (round 16) is settled. Do not ship the snow fix into a coupled run until J1/J2
 report.
 
+## 3c. The near-surface cold is global, not boreal (2026-08-04)
+
+**Already known** (report `sub:vprof`): above 700 hPa Siberia merely shares a global
+tropospheric cold bias that no boreal lever can touch; the Siberia-specific excess lives
+below 850 hPa. The F-series was framed correctly.
+
+**New.** Resolving the 2 m bias by dominant surface type: **all 20 types are cold in every
+season, none warm.** Global land DJF −1.73, MAM −1.60, JJA −1.35. Bare soil is the worst
+(−2.16 JJA), tropical evergreen broadleaf −1.46.
+
+Two controls bound it:
+- **elevation-dependent** — −0.70 K below 200 m rising to −2.43 K above 2000 m (smoothed
+  model orography vs ERA5's 25 km), so all-land figures overstate it
+- **prescribed-SST ocean is −0.72 K** — ~0.7 K exists where the land surface is absent
+
+**Extending the column into the soil** (`vertical_bias_column.py`), JJA, land <500 m:
+soil L1 −0.36, L2 −0.38, L3 −0.72, L4 −0.89, skin −0.53, **2 m −1.00**, 850 hPa −0.92,
+700 −0.89, 500 −1.24, 200 −2.97. **The soil and skin are the least-biased parts of the whole
+column**, and 2 m sits ~0.5 K below the skin under it. The ground is not holding the
+near-surface cold.
+
+**Consequence.** Siberia's JJA −2.58 ≈ 0.7 universal + 0.3 orographic + 1.3–1.6
+boreal-specific. **G4 has taken ~0.95 of the boreal budget** — which explains F5 = F4 far
+better than any parameter limit. *The boreal budget is nearly spent.*
+
+**Benign side-effect:** because every type is cold, a vegetation-indexed lever does not damage
+the regions it leaks into (types 4/9 outside the boreal zone are cold too, JJA −0.68/−1.06).
+That licenses the round-17 restriction.
+
 ## 4. Open problems
 
 0. **⭐⭐ THE CURRENT BLOCKER — a −4.7 K Siberian winter bias, previously hidden.**

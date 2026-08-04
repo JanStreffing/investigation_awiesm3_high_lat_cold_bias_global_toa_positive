@@ -2280,6 +2280,83 @@ liquid absent, exactly the supercooled-liquid deficit the INP hypothesis predict
 \texttt{q} is fine. The XIOS \texttt{r} output yields silent garbage and must not be used; RH
 above is recomputed from \texttt{t} and \texttt{q}.
 
+\subsection{Extending the column downward: the soil is the least-biased part}\label{sub:soilcol}
+\S\ref{sub:vprof} stops at 1000\,hPa. Continuing into the skin and the four soil layers
+(\texttt{scripts/analysis/vertical\_bias\_column.py}), JJA, model \texttt{amip\_presentday}
+minus ERA5. Low-lying land ($<500$\,m) is shown alongside because the all-land figure is
+inflated by orographic mismatch (\S\ref{sub:tilebias}):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+JJA & global land & land $<500$\,m & Siberian box \\
+\midrule
+700\,hPa & $-0.83$ & $-0.89$ & $-1.22$ \\
+850\,hPa & $-0.79$ & $-0.92$ & $-1.99$ \\
+925\,hPa & $-0.82$ & $-1.02$ & $-2.17$ \\
+\textbf{2\,m} & $-1.34$ & $\mathbf{-1.00}$ & $-2.04$ \\
+skin & $-0.83$ & $\mathbf{-0.53}$ & $-1.66$ \\
+soil L1 (7\,cm) & $-0.40$ & $\mathbf{-0.36}$ & $-1.73$ \\
+soil L2 (28\,cm) & $-0.42$ & $-0.38$ & $-1.90$ \\
+soil L3 (1\,m) & $-0.78$ & $-0.72$ & $-2.14$ \\
+soil L4 (2.9\,m) & $-1.09$ & $-0.89$ & $-1.02$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Over ordinary low-lying land the \textbf{soil and skin are the least-biased parts of
+the entire column}, and 2\,m sits about $0.5$\,K \emph{below} the skin under it. The ground is
+not what holds the near-surface cold; if anything it is doing better than the air above it.
+Siberia is the exception that \S\ref{sub:vprof} already identified --- there the soil is cold
+too ($-1.7$ to $-2.1$\,K), which is the surface-confined excess the F-series was built to
+attack.
+
+\emph{Caveats.} The 1000\,hPa row is unreliable over land, where much of that level is below
+ground and both datasets extrapolate; 925/850 are the lowest honest levels. ERA5's soil and
+skin are HTESSEL output, so those rows are model-versus-sibling rather than observation --- the
+2\,m and pressure-level rows are the observation-constrained ones.
+
+\subsection{The near-surface cold is not boreal: every surface type is cold}\label{sub:tilebias}
+The campaign has only ever scored one box, so it had never checked whether its levers address a
+local fault or a global one. Resolving the 2\,m bias by dominant surface type
+(\texttt{scripts/analysis/bias\_by\_tile.py}) gives an unambiguous answer:
+\textbf{all 20 surface types are cold, in every season. Not one is warm.}
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+dominant type & area & DJF & MAM & JJA & SON \\
+\midrule
+bare soil & $25.3\,\%$ & $-1.86$ & $-2.12$ & $-2.16$ & $-2.03$ \\
+Evgr Broadleaf (tropical) & $8.7\,\%$ & $-1.78$ & $-1.79$ & $-1.46$ & $-1.42$ \\
+Tundra & $5.2\,\%$ & $-2.51$ & $-0.18$ & $-1.43$ & $-1.84$ \\
+Evgr Needleleaf & $4.7\,\%$ & $-2.00$ & $-1.84$ & $-1.16$ & $-1.05$ \\
+Dec Needleleaf & $3.0\,\%$ & $-1.22$ & $-1.55$ & $-1.87$ & $-1.69$ \\
+\midrule
+\textbf{ALL LAND} & $100\,\%$ & $\mathbf{-1.73}$ & $\mathbf{-1.60}$ & $\mathbf{-1.35}$ & $\mathbf{-1.39}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Two controls bound how much of this is real.} The land figure is
+\emph{elevation-dependent} --- $-0.70$\,K below 200\,m rising to $-2.43$\,K above 2000\,m, the
+expected signature of the model's smoothed orography against ERA5's 25\,km --- so the all-land
+number overstates it and the low-lying value is the honest one. And over \textbf{prescribed-SST
+ocean} 2\,m is $-0.72$\,K: about $0.7$\,K of near-surface cold exists where the land surface is
+absent entirely.
+
+\textbf{Consequence for the campaign.} Siberia's JJA $-2.58$\,K decomposes roughly as
+${\sim}0.7$\,K universal, ${\sim}0.3$\,K orographic, and $1.3$--$1.6$\,K boreal-specific. G4 has
+taken ${\sim}0.95$\,K of that boreal budget --- which is a far better explanation of the
+F-series saturation (F5 $=$ F4 to within noise, \S\ref{sec:round12}) than any parameter limit.
+\emph{The boreal budget is nearly spent, and the remainder is not reachable by a
+boreal-indexed lever.}
+
+\textbf{One benign consequence.} Because every type is cold, a lever indexed by vegetation type
+does not damage the regions it leaks into: the non-boreal areas of types 4 and 9 are cold too
+(JJA $-0.68$ and $-1.06$). That is what licenses the round-17 restriction to those two types
+(\S\ref{sec:lamsk}).
+
 \section{Surface albedo: half the Siberian SW deficit is not cloud}\label{sec:albedo}
 Every boreal lever so far has attacked cloud. Decomposed against CERES on the identical box
 and mask, the $12.5$\,W/m$^2$ Siberian JJA surface-SW deficit is only half cloud:
@@ -3373,6 +3450,14 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   ERA5, so the defensible span is \textbf{37--73\,\%}, SO SW RMSE $6.88\to4.80$, subpolar N Atl $5.01\to4.74$,
   tropics untouched ($+0.124$), every season inside its own threshold. Namelist-only
   (\S\ref{sub:nmltune}).
+\item \textbf{The boreal budget is nearly spent.} Siberia's JJA $-2.58$\,K is
+  ${\sim}0.7$ universal (present over prescribed-SST ocean too), ${\sim}0.3$ orographic and
+  $1.3$--$1.6$ boreal-specific; G4 has taken ${\sim}0.95$ of the last (\S\ref{sub:tilebias}).
+  The remainder is not reachable by a boreal-indexed lever, and this --- not a parameter
+  limit --- is why F5 $=$ F4.
+\item \textbf{The near-surface cold is global, and the soil is not the cause.} All 20 surface
+  types are cold in every season, and over low-lying land the soil and skin are the
+  \emph{least}-biased parts of the column (\S\ref{sub:soilcol}, \S\ref{sub:tilebias}).
 \item \textbf{The boreal cold bias had two routes.} Route~A (over-transpiration $\to$ low
   cloud $\to$ SW loss) is \textbf{closed}: the Siberian JJA cloud term went $-7.04 \to +1.20$\,W\,m$^{-2}$.
   Route~B (late melt $\to$ June albedo) is \textbf{diagnosed and fixable} but carries almost no
@@ -3393,7 +3478,12 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   snow cover (\S\ref{sub:r15compensate}). Not a radiation-supply problem
   (\S\ref{sub:r15lw}). Round 16 tests skin conductivity; if that fails, boundary-layer mixing.
 \item \textbf{Global net TOA $+0.52$\,W\,m$^{-2}$} against a PI target of $\sim0$ --- one of the
-  two original faults, barely moved by the whole campaign.
+  two original faults, barely moved by the whole campaign. Note this sits oddly beside a cold
+  troposphere: in AMIP the prescribed SST absorbs the imbalance without warming, so the two are
+  not contradictory, but the pairing is unexplained.
+\item \textbf{The global tropospheric cold bias} of \S\ref{sub:vprof} ($-0.9$\,K at 700--850\,hPa,
+  $-2.8$ to $-3.0$\,K at 200\,hPa) is now the dominant remaining term for land 2\,m temperature
+  and has never been worked on. It is out of reach of every lever this campaign has built.
 \item \textbf{SO cloud-area deficit ${\sim}6$\,pp}, untouched by all 34 evaluated levers, and now
   known to drive the energy target too.
 \item \textbf{$-12$\,W\,m$^{-2}$ downward-LW deficit in Oct--Nov}, unexplained.
