@@ -26,68 +26,36 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ 2026--07--06: restructured into three parts.\\
-\textbf{Last updated 2026--08--03e}: \textbf{Route B is resolved} (\S\ref{sec:scf}). HTESSEL sets
-snow cover from the CELL-MEAN depth, so cover stays pinned near 1 while the median May cell still
-holds 27\,cm --- satellite says 0.647. That produces the late melt-out, the doubled June cover and
-the $+0.046$ albedo, and it explains why round 13 could not have worked: changing the threshold
-$10\to30$\,cm does nothing at $27$--$51$\,cm, and could only bite in autumn, which is what it did.
-A Niu \& Yang (2007) depletion is implemented opt-in as \texttt{ECE\_SNOW\_SCF}, default off,
-validated offline against satellite before coding.
-\textbf{2026--08--03d}: the TOA decomposition, previously done for the control
-only, now runs for every lever (\S\ref{sub:toadecomp2}) --- the Southern Ocean result of
-\S\ref{sub:sobands} is unchanged, but the per-band \emph{response} is new: 60--90S is the most
-responsive band in the model, G4 already closes about a quarter of its $+8.4$\,W\,m$^{-2}$ gap as a
-by-product of D2b, and the F/G surface levers are confirmed regionally clean in the tropics.
-\texttt{evaluate.sh} is now the single evaluation entry point.
-\textbf{2026--08--03c}: the snow diagnosis is now grounded on \textbf{observations}
-rather than ERA5 (\S\ref{sec:obs}). CERES confirms the model's June albedo excess independently
-($+0.046$), and the Rutgers/IMS satellite record shows ERA5 was flattering us: June snow cover is
-close to \emph{double} observed and melt-out runs \textbf{13 days late}. \textcolor{red}{\textbf{G4
-makes the snow field worse}} (June cover $0.380\to0.447$, melt-out 24$\to$28 May), so JJA temperature
-is being bought at the cost of the spring snow cycle --- a risk for the coupled forest, since later
-melt means later growing-season onset for LPJ-GUESS. One claim is withdrawn: ERA5's turbulent fluxes
-are unconstrained HTESSEL output, so the sensible-heat lead is a hypothesis, not a finding.
-\textbf{2026--08--03b}: \textbf{G4 $=$ F4 $+$ D2b $+$ tundra is the best
-configuration of the campaign} (\S\ref{sub:r14res}) --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$,
-$48\,\%$ of the bias, against G1's $26\,\%$), best Southern Ocean SW RMSE, seasonally clean, and it
-repairs most of the Nordic damage G1 caused. \textbf{But its mechanism is falsified}: T2m rose with
-May--June snow mass unchanged, so the gain is the plain sensible-heat route, and F4 in fact
-\emph{increases} spring snow. \texttt{RVRSMIN} does not saturate, so $1000$ is a cap set by winter
-damage rather than a knee. Two mechanisms for the June albedo bias are now dead.
-\textbf{2026--08--03}: \textbf{The June albedo bias is a SPRING MELT bias}
-(\S\ref{sec:melt}). Snow \emph{accumulation} is right to 7--9\,\%, but the pack peaks a month
-late and May melt is 30\,\% too slow, leaving 50\,\% too much snow; May's SW deficit is
-$-13.9$\,W\,m$^{-2}$ with downwelling nearly correct, so it is albedo, not cloud, and it is a
-runaway. The model's snow is too \emph{dark}, not too bright, so brightening it is the wrong
-direction. And \textbf{tundra --- 25.6\,\% of the box, the largest cover type --- has
-\texttt{RVRSMIN} $=80$\,s\,m$^{-1}$, the lowest of any vegetated type in HTESSEL}, below
-tropical grassland, while its shrub analogues are $225$; the campaign's best lever never touched
-it. Round 14 (G2/G3/G4) tests this, namelist-only (\S\ref{sub:nmltune}).
-\textbf{2026--08--02b}: Round 13 (\S\ref{sec:h}) is a clean falsification --- the
-snow-cover lever gave $+0.020$\,K on the boreal target against a predicted $+0.2$ to $+0.7$, because
-shallow snow turns out to be an \emph{autumn} phenomenon, not a melt one, and it cost $-1.23$\,K in
-winter. Rejected. G1 $=$ F4 $+$ D2b (\S\ref{sub:g1}) remains the best configuration of
-the campaign --- Southern Ocean SW RMSE $6.88\to4.81$ and Siberian JJA T2m $+0.52$\,K together, and the
-first combination that superposes additively rather than wrong in sign. A per-season noise floor
-(\S\ref{sub:seasonal}) corrects two levers wrongly called winter-damaged and leaves B5 as the only real
-case. Round 13 (\S\ref{sec:h}) tests the snow-cover-fraction lever behind the June albedo bias.
-\textbf{2026--07--29}: Part~IV and the four-arm forcing sensitivity added. A feedback-free AMIP
-reference puts $\approx45\,\%$ of the
-TOA imbalance and \emph{all} of the boreal summer cold bias in the atmosphere; CERES shows the summer deficit
-is a \emph{land-only cloud} error of $11$\,W/m$^2$ (not the $33$ inferred from CRUNCEP3, which is itself
-$\approx21$\,W/m$^2$ too bright), while the global radiation budget already matches CERES to $0.1$\,W/m$^2$.
-A controlled two-arm spin-up test shows the forcing change alone --- CRUNCEP\,$\to$\,AMIP, byte-identical
-parameters --- costs $54\,\%$ of Siberian tree cover, substantially qualifying the
-``competition, not climate'' verdict of \S\ref{sub:decisive}. Replacing only CRUNCEP
-\texttt{rsns}/\texttt{rlns} by CERES-constrained radiation removes only $\sim8\,\%$ of the NH tree-fraction
-contrast, locating most of the transfer penalty outside net radiation alone.)}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--04})}
 
 \begin{document}
 \maketitle
 \vspace{-0.6cm}
 
-\section*{Update (2026--07--28): new-sea-ice branch \texttt{Tuning\_test\_09A/09B/09C}}
+\begin{abstract}\noindent
+AWI--ESM3 v3.4 (OpenIFS 48r1 / FESOM2 / LPJ-GUESS, TCO95L91) is being tuned for a
+pre-industrial spin-up against two faults: a positive TOA and surface radiative imbalance,
+and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal forest. An
+AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
+is open and the root cause can be hunted without the coupled runaway closing over it.
+
+\medskip\noindent\textbf{Where we are (2026--08--04).} \textbf{G4} $=$ F4 $+$ D2b $+$ tundra
+is the carried-forward configuration --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$, $48\,\%$ of
+the bias) and Southern Ocean SW RMSE $6.88\to4.80$ --- and the campaign's blocker is now a
+Siberian \emph{winter} cold bias of $-4.7$\,K that correcting the snow field has exposed
+(\S\ref{sec:lamsk}).
+
+\medskip\noindent Read \S\ref{sec:causal} for the causal web and what is still dark;
+\S\ref{sec:obs} for what the observations can and cannot settle; \S\ref{sec:falsified} for
+every mechanism this campaign has killed, with the measurement that killed it. Parts~I--III
+are the coupled work that preceded the AMIP testbed; Part~IV is the atmosphere-only campaign
+in the order it happened.
+\end{abstract}
+
+\section*{Front-matter note --- new-sea-ice branch \texttt{Tuning\_test\_09A/09B/09C}}
+
+\emph{The dated account of this branch is \S\ref{sec:round09} in the timeline; what follows is the run-identity reference only.}
+
 
 This report now includes the new three-way coupled comparison branch:
 \texttt{09A} (baseline + new sea ice), \texttt{09B} (new sea ice + tuned stack), and
@@ -188,7 +156,7 @@ Dotted lines = baseline; lower-left is better. Colour = parameter family.}
 None has flattened within 30\,yr, so treat the mean level as a \emph{ranking}, not a final equilibrium value.}
 \end{figure}
 
-\section{Master metric table (all 22 runs, sorted by TOA imbalance)}
+\section{Master metric table (coupled \texttt{Tuning\_test\_06*} runs, sorted by TOA imbalance)}
 \begin{center}\small
 \begin{tabular}{l r r r r r}
 \toprule
@@ -2983,6 +2951,130 @@ run: the switch logs to \texttt{NULOUT}, no namelist errors, the model steps nor
   the $z_0$ choice should not be over-fitted to them.
 \end{itemize}
 
+\section{Round 15 (2026--08--04): the snow fix works, buys no summer, and unmasks a hidden bias}\label{sec:r15}
+Three runs, all namelist-only on one binary: \textbf{I1} $=$ G4 $+$ depletion,
+\textbf{I2} $=$ depletion alone (isolating the snow route from the vegetation route), and
+\textbf{I3} $=$ G4 $+$ the SDOR-scaled variant.
+
+\subsection{The scheme does exactly what it was built to do}\label{sub:r15works}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+Siberian snow cover & satellite & control & G4 & \textbf{I1} & \textbf{I2} \\
+\midrule
+Apr & $0.950$ & $0.962$ & $0.961$ & $0.931$ & $0.931$ \\
+May & $0.647$ & $0.891$ & $0.893$ & $\mathbf{0.703}$ & $\mathbf{0.721}$ \\
+Jun & $0.203$ & $0.413$ & $0.447$ & $\mathbf{0.160}$ & $\mathbf{0.175}$ \\
+\midrule
+\textbf{melt-out} & \textbf{11 May} & 26 May & 28 May & \textbf{12 May} & \textbf{13 May} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\noindent Melt-out went from \textbf{15 days late to 1 day late}, against the satellite record.
+
+\subsection{And it delivers no summer temperature}\label{sub:r15notemp}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+ & surface SW gain & JJA T2m & K per W\,m$^{-2}$ \\
+\midrule
+G4 (vegetation route) & $+8.10$ & $\mathbf{+0.952}$ & $0.12$ \\
+\textbf{I2 (snow route alone)} & $+2.91$ & $\mathbf{+0.094}$ (noise) & $\mathbf{0.03}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{This settles \S\ref{sub:weaklink}: the link is weak.} Route~B was a genuine,
+satellite-measured radiative bias with almost no temperature leverage --- per watt it is
+\textbf{four times less efficient} than the vegetation route. The reading is clean: energy
+added over a \emph{melting} snowpack goes into melt, not sensible heat, which is precisely
+what it did. Fixing it remains right --- the snow field is now correct, which is what matters
+for LPJ-GUESS growing-season onset --- but Route~B is not where the remaining boreal kelvin
+lives.
+
+\subsection{The winter response is a compensating error being removed}\label{sub:r15compensate}
+Scored against ERA5 rather than against the control (period-clean, \texttt{amip\_presentday}):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+bias vs ERA5 [K] & DJF & MAM & JJA & SON \\
+\midrule
+control & $-1.95$ & $-1.97$ & $-2.58$ & $-2.69$ \\
+G4 & $-2.33$ & $-2.33$ & $\mathbf{-1.63}$ & $-2.51$ \\
+I1 & $\mathbf{-4.71}$ & $-2.28$ & $\mathbf{-1.33}$ & $-3.46$ \\
+I2 & $-4.63$ & $-2.36$ & $-2.49$ & $-3.77$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The control is too cold in every season}, so there was never a warm bias to
+protect. The excess snow cover had been propping DJF up by ${\sim}2.7$\,K, \textbf{masking a
+$-4.7$\,K bias that was there all along}. Restoring the wrong snow field to hide it again
+would be the worst available option; the fix is kept and the winter is addressed on its own
+terms (\S\ref{sec:lamsk}).
+
+\emph{This is the campaign's clearest compensating-error episode}, and it was caught only
+because the seasonal biases were finally scored against \emph{observations} rather than
+against the control --- something eleven rounds had not done.
+
+\subsection{Ruled out by measurement: it is not a radiation-supply problem}\label{sub:r15lw}
+Downward longwave over the box, model vs CERES [W\,m$^{-2}$]: Oct $\mathbf{-12.9}$,
+Nov $\mathbf{-11.9}$, Dec $-3.1$, Jan $+0.1$, Feb $+5.6$ --- \textbf{DJF mean $+0.9$,
+essentially exact}. That kills the Pithan et al.\ (2014) supercooled-liquid route for
+midwinter. The Oct/Nov deficit is real and is a \emph{separate} autumn problem. The
+$+30$\,pp polar-night cloud excess against CERES is retrieval failure over snow at night,
+not evidence.
+
+\emph{Still unresolved:} winter cover is \textbf{unchanged} ($0.963$ vs $0.964$ --- both
+formulas saturate at 43\,cm) and winter SWE is slightly \emph{higher}, so the DJF response is
+not a direct cover or mass effect. \texttt{str} and \texttt{sshf} shifts are the surface being
+colder, i.e.\ responses. \texttt{stl1} and \texttt{skt} are \textbf{unusable} ($\sim0.07$\,K
+--- the same dead-field trap as pressure-level \texttt{r}, \S\ref{sub:vprof}). H1 cooled DJF by
+$-1.233$ through a different route to the same tile fractions, so this is the second time
+cutting snow-tile fraction has cooled winter hard.
+
+\section{Round 16 (2026--08--04): the snow-tile skin conductivity}\label{sec:lamsk}
+\texttt{vlamsk\_mod.F90} hardcoded the snow-tile skin conductivities, so they were untunable.
+$\lambda_{sk}$ sets how tightly the skin couples to the medium below it; a small value lets it
+radiatively decouple and crash in polar night. Physically
+$\lambda_{sk} \approx k_{\mathrm{snow}}/d_{\mathrm{skin}}$ with $k_{\mathrm{snow}}$
+$0.1$--$0.4$\,W\,m$^{-1}$\,K$^{-1}$ and $d_{\mathrm{skin}}$ $0.01$--$0.05$\,m, so
+\textbf{roughly 2--40}. As released:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r l}
+\toprule
+constant & value & tile \\
+\midrule
+\textbf{\texttt{ZSNOW}} & $\mathbf{7}$ & 5, \textbf{exposed snow} --- the weakly coupled one, and the tile covering tundra ($25.6\,\%$ of the box) \\
+\texttt{ZSNOW\_GLACIER} & $8$ & 5, where SWE $>9000$\,mm \\
+\texttt{ZSNOWHVEG} & $20$ & 7, snow under high vegetation \\
+\texttt{ZLARGESN} & $50$ & 5, when melting \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The as-released $7$ sits at the decoupled end of the physical range, on precisely
+the tile whose \emph{fraction} round 15 corrected. Now exposed as
+\texttt{ECE\_LAMSK\_SN/\_SNGL/\_SNHV/\_SNMLT}, all defaulting to the shipped values.
+
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+run & setting & prediction \\
+\midrule
+\textbf{J1} & I1 $+$ \texttt{ECE\_LAMSK\_SN: 15} & DJF $+1$ to $+3$\,K, JJA barely moves \\
+\textbf{J2} & I1 $+$ \texttt{ECE\_LAMSK\_SN: 25} & same, stronger \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Falsifier on record: if DJF does not respond, skin conductivity is not the
+route}, and the winter bias lies in boundary-layer mixing instead (Holtslag et al.\ 2013;
+Sandu et al.\ 2013). Also watched: melt-out and May/June cover must \emph{stay} fixed --- drift
+back toward the control would mean the two changes interact and the pair is not separable.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -3202,6 +3294,93 @@ effective is to make skipping it require effort.
   campaign (control $+0.64$). For a PI spin-up this drift matters more than the last
   tenths of Siberian warming.
 \end{enumerate}
+
+\section{State of the campaign (2026--08--04)}\label{sec:state}
+A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
+
+\subsection{Proven}\label{sub:proven}
+\begin{itemize}\itemsep2pt
+\item \textbf{G4 is the carried-forward configuration}: Siberian JJA T2m $+0.952$\,K
+  ($t{=}7.68$, $48\,\%$ of the bias), SO SW RMSE $6.88\to4.80$, subpolar N Atl $5.01\to4.74$,
+  tropics untouched ($+0.124$), every season inside its own threshold. Namelist-only
+  (\S\ref{sub:nmltune}).
+\item \textbf{The boreal cold bias had two routes.} Route~A (over-transpiration $\to$ low
+  cloud $\to$ SW loss) is \textbf{closed}: the Siberian JJA cloud term went $-7.04 \to +1.20$\,W\,m$^{-2}$.
+  Route~B (late melt $\to$ June albedo) is \textbf{diagnosed and fixable} but carries almost no
+  temperature leverage (\S\ref{sub:r15notemp}).
+\item \textbf{The snow field can now be made correct}: melt-out 12~May against a satellite
+  11~May, June cover $0.160$ vs $0.203$ (\S\ref{sub:r15works}).
+\item \textbf{\texttt{RVRSMIN} does not saturate}; $1000$ is a cap set by winter damage, not a
+  knee (\S\ref{sub:r14res}).
+\item \textbf{The energy target is Antarctic/Southern Ocean}, and the two campaign targets
+  share that root cause (\S\ref{sub:sobands}, \S\ref{sub:toadecomp2}).
+\item \textbf{Tuning is namelist-driven and mergeable with EC-Earth} --- one added line in an
+  ECMWF file (\S\ref{sub:nmltune}).
+\end{itemize}
+
+\subsection{Open, in priority order}\label{sub:open}
+\begin{enumerate}\itemsep2pt
+\item \textbf{The blocker: a $-4.7$\,K Siberian winter bias}, previously masked by excessive
+  snow cover (\S\ref{sub:r15compensate}). Not a radiation-supply problem
+  (\S\ref{sub:r15lw}). Round 16 tests skin conductivity; if that fails, boundary-layer mixing.
+\item \textbf{Global net TOA $+0.52$\,W\,m$^{-2}$} against a PI target of $\sim0$ --- one of the
+  two original faults, barely moved by the whole campaign.
+\item \textbf{SO cloud-area deficit ${\sim}6$\,pp}, untouched by every lever in 38 runs, and now
+  known to drive the energy target too.
+\item \textbf{$-12$\,W\,m$^{-2}$ downward-LW deficit in Oct--Nov}, unexplained.
+\item Tropics net TOA $2.4$\,W\,m$^{-2}$ too low; Nordic Seas SW RMSE moved by G1 and partly
+  repaired by G4, both unexplained.
+\item Whether $48\,\%$ of the boreal bias suffices for forest survival --- \textbf{AMIP
+  structurally cannot answer this}; it needs the coupled tests.
+\end{enumerate}
+
+\section{Falsified claims, kept}\label{sec:falsified}
+Every mechanism this campaign has killed, with the measurement that killed it. Retained
+because the history has to stay honest, and because three of them were killed only after
+being built on.
+
+\begin{center}\footnotesize
+\begin{tabular}{p{0.30\textwidth} p{0.42\textwidth} l}
+\toprule
+claim & what killed it & where \\
+\midrule
+\dead{B8 (\texttt{RVLAMSK}$\to$5) is the best boreal lever, $+0.502$\,K} &
+44-year re-evaluation: $-0.038$\,K, pure noise. Two runs had already been built on it. &
+\S\ref{sub:noisefloor} \\
+\dead{The band contributions show no region carrying an anomalous TOA imbalance} &
+Artefact of comparing bands to each other, not to CERES. Differenced against CERES the
+Southern Ocean carries most of it. & \S\ref{sub:sobands} \\
+\dead{About half the boreal bias is the reference period ($+1.12$\,K)} &
+Indirect HadCRUT5 chain; direct measurement gives $+0.42$\,K, wrong by $2.7\times$. &
+\S\ref{sub:perdirect} \\
+\dead{D1: reformulating the \texttt{RCAPDCYCL} land closure will warm the boreal} &
+Measured $-0.170$\,K. Clean prediction failure. & \S\ref{sec:round11res} \\
+\dead{Round 13: raising the snow-cover threshold $10\to30$\,cm recovers June's albedo term} &
+JJA $+0.020$\,K ($t{=}0.17$). Arithmetically incapable of acting in spring --- it can only
+bite where depths are near the threshold, i.e.\ autumn, which is what it did. &
+\S\ref{sub:hres}, \S\ref{sub:scffail} \\
+\dead{G4's gain comes via the melt-timing route} &
+May--June SWE did not move ($+2.75$, $+1.60$, both inside noise) while T2m rose $+0.952$\,K.
+The gain is the plain sensible-heat route. & \S\ref{sub:r14res} \\
+\dead{\texttt{RVRSMIN} saturates near 1000, so the value sits on a knee} &
+$500/1000/2000 \to +0.336/+0.521/+0.876$: increments \emph{accelerate}. No knee. &
+\S\ref{sub:r14res} \\
+\dead{The model vents its March--April melt energy as sensible heat} &
+Compared our scheme against ERA5's, which is unconstrained HTESSEL output --- a sibling of
+itself. No observational authority; survives only as a hypothesis. & \S\ref{sub:noobs} \\
+\dead{The June albedo bias is worth ${\sim}5.6$\,W\,m$^{-2}$ of boreal warming} &
+Fixing it to satellite accuracy gained $+0.094$\,K --- four times less efficient per watt than
+the vegetation route. & \S\ref{sub:r15notemp} \\
+\dead{Sublimation explains why F4 increases spring snow} &
+March--April evaporation changes are inside the noise floor; May \emph{snowfall} rises
+instead, for reasons still unknown. & \S\ref{sub:openlist} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Two further items are \emph{provisional} rather than dead: the March--April mass
+deficit rests on ERA5 SWE (forest-biased), and mode~2's scale-awareness carries only
+${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
 
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize

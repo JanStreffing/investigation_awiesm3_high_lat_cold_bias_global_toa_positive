@@ -136,8 +136,11 @@ as released.
 | `ECE_TUNE_RVZ0H(0:20)` | roughness length for heat [m] | veg type | F1 |
 | `ECE_TUNE_RVLAMSK(0:20)` | unstable skin conductivity | veg type | B8 / E1 |
 | `ECE_TUNE_RQSNCR` | inverse critical snow depth [1/cm] | scalar | H (rejected) |
-| `ECE_SNOW_SCF` | **0** = as-released cover formula, **1** = Niu & Yang (2007) depletion | scalar | new, round 15 |
-| `ECE_SNOW_SCF_Z0` / `_M` / `_RHONEW` | depletion tuning (0.02 m / 1.6 / 100 kg m⁻³) | scalar | new |
+| `ECE_SNOW_SCF` | **0** = as-released, **1** = Niu & Yang (2007) depletion, **2** = + SDOR scale-awareness | scalar | round 15 |
+| `ECE_SNOW_SCF_Z0` / `_M` / `_RHONEW` | depletion tuning (**0.016 m** / 1.6 / 100 kg m⁻³) | scalar | round 15 |
+| `ECE_SNOW_SCF_CSD` | SDOR coefficient, mode 2 only (6.0e-5 m/m) | scalar | round 15 |
+| `ECE_LAMSK_SN` | **exposed-snow** skin conductivity `ZSNOW` (7) | scalar | round 16 |
+| `ECE_LAMSK_SNGL` / `_SNHV` / `_SNMLT` | `ZSNOW_GLACIER` (8), `ZSNOWHVEG` (20), `ZLARGESN` (50) | scalar | round 16 |
 
 Design points that matter:
 
@@ -224,6 +227,83 @@ G4 is not supported**: the temperature rises without the snow moving. Two mechan
 June albedo bias have now been falsified — snow *cover formulation* (round 13) and snow
 *melt rate* (round 14).
 
+### ⭐⭐ Round 15 results (2026-08-04) — the snow fix works, buys no summer, and unmasks a hidden bias
+
+The scheme did **exactly** what it was designed to do:
+
+| Siberian snow cover | satellite | control | G4 | **I1** | **I2** |
+|---|---:|---:|---:|---:|---:|
+| Apr | 0.950 | 0.962 | 0.961 | 0.931 | 0.931 |
+| May | 0.647 | 0.891 | 0.893 | **0.703** | **0.721** |
+| Jun | 0.203 | 0.413 | 0.447 | **0.160** | **0.175** |
+| **melt-out** | **11 May** | 26 May | 28 May | **12 May** | **13 May** |
+
+Melt-out went from **15 days late to 1 day late**.
+
+**And it delivers no summer temperature.** I2 (snow change alone, no vegetation levers):
+
+| | surface SW gain | JJA T2m | K per W/m² |
+|---|---:|---:|---:|
+| G4 (vegetation route) | +8.10 | **+0.952** | 0.12 |
+| **I2 (snow route alone)** | +2.91 | **+0.094** (noise) | **0.03** |
+
+**`sub:weaklink` is confirmed.** Route B was a genuine, satellite-measured radiative bias
+with almost no T2m leverage — 4× less efficient per W/m² than the vegetation route. The
+physical reading is clean: energy added over a *melting* snowpack goes into melt, not
+sensible heat, which is precisely what it did.
+
+**⚠ The winter response is a COMPENSATING ERROR being removed, not a new one created.**
+Scored against ERA5 rather than against the control (period-clean, `amip_presentday`):
+
+| bias vs ERA5 | DJF | MAM | JJA | SON |
+|---|---:|---:|---:|---:|
+| control | −1.95 | −1.97 | −2.58 | −2.69 |
+| G4 | −2.33 | −2.33 | **−1.63** | −2.51 |
+| I1 | **−4.71** | −2.28 | **−1.33** | −3.46 |
+| I2 | −4.63 | −2.36 | −2.49 | −3.77 |
+
+The control is too cold in **every** season, so there was never a warm bias to protect.
+The excess snow cover had been propping DJF up by ~2.7 K, **masking a −4.7 K bias that was
+there all along**. Restoring the wrong snow field to hide it again would be the worst
+available option — so the snow fix is kept and the winter is fixed on its own terms.
+
+**Not a radiation-supply problem.** Downward LW over the box, model vs CERES:
+Oct **−12.9**, Nov **−11.9**, Dec −3.1, Jan +0.1, Feb +5.6 — **DJF mean +0.9 W/m², essentially
+exact.** That rules out the Pithan et al. (2014) supercooled-liquid route for midwinter.
+(The Oct/Nov deficit is real and is a *separate* autumn problem.) The +30 pp polar-night
+cloud excess against CERES is retrieval failure over snow at night, not evidence.
+
+*Unresolved:* winter cover is **unchanged** (0.963 vs 0.964 — both formulas saturate at
+43 cm) and winter SWE is slightly *higher*, so the DJF response is not a direct cover or
+mass effect. `str` and `sshf` shifts are the surface being colder, i.e. responses. `stl1`
+and `skt` are **unusable** (~0.07 K — the same dead-field trap as pressure-level `r`).
+H1 cooled DJF by −1.233 through a completely different route to the same tile fractions,
+so this is the second time cutting snow-tile fraction has cooled winter hard.
+
+### Round 16 — in flight (2026-08-04)
+
+`vlamsk_mod.F90` hardcoded the snow-tile skin conductivities, so they were untunable
+until now. λ_sk sets how tightly the skin couples to the medium below; a small value lets
+it radiatively decouple and crash in polar night. Physically λ ≈ k_snow/d_skin with
+k_snow 0.1–0.4 W m⁻¹ K⁻¹ and d_skin 0.01–0.05 m, so **roughly 2–40**. As released:
+
+| constant | value | tile |
+|---|---:|---|
+| **`ZSNOW`** | **7** | 5, **exposed snow** — the weakly coupled one, and the tile covering tundra (25.6 % of the box) |
+| `ZSNOW_GLACIER` | 8 | 5, where SWE > 9000 mm |
+| `ZSNOWHVEG` | 20 | 7, snow under high vegetation |
+| `ZLARGESN` | 50 | 5, when melting |
+
+| run | setting | prediction |
+|---|---|---|
+| **J1** | I1 + `ECE_LAMSK_SN: 15` | DJF +1…+3 K, JJA barely moves |
+| **J2** | I1 + `ECE_LAMSK_SN: 25` | same, stronger |
+
+**Falsifier on record: if DJF does not respond, skin conductivity is not the route** and
+the winter bias lies in boundary-layer mixing instead (Holtslag et al. 2013, Sandu et al.
+2013). Also watching that melt-out and May/June cover **stay** fixed — drift back toward
+the control would mean the two changes interact and the pair is not separable.
+
 ### Not tuning levers — never add to `RUNS`
 
 `amip_A2_kkland150` (superseded), and 11 LPJG forcing-generator runs from 3–5 July 2026
@@ -280,19 +360,34 @@ snow brightness (model snow is *darker* than observed), probably not cold conten
 flux (unconstrained by any observation), conduction/refreeze in the pack, or the
 canopy-shaded snow tile (7).
 
-**⚠ The link that may not exist.** G4 raised T2m by +0.952 K while May–June snow mass
-did **not** change and snow cover and melt date got **worse**. Temperature moved a full
-kelvin with the snow term stationary or degrading. Either the June albedo error is
-weakly coupled to T2m, or the routes offset in a way we have not separated. **Until this
-is resolved the prize for fixing Route B is unknown** — it may buy far less than its
-−5.6 W/m² suggests.
+**✅ RESOLVED (round 15): the link is weak, and Route B is not where the kelvin lives.**
+I2 fixed the snow field to satellite accuracy — melt-out 1 day late instead of 15 — and
+gained **+0.094 K** in JJA, inside the noise floor. Per W/m² of surface shortwave the snow
+route is **4× less efficient** than the vegetation route (0.03 vs 0.12 K per W/m²), because
+energy added over a *melting* pack goes into melt rather than sensible heat. Route B was a
+real, satellite-measured radiative bias with almost no temperature leverage. **Fixing it is
+still right** — the snow field is now correct, which is what matters for LPJG growing-season
+onset — but it is not the remaining boreal kelvin.
 
-**⚠ New coupled risk.** G4 delays melt-out 24 → 28 May. Later melt is later
-growing-season onset for LPJ-GUESS, so G4 may improve AMIP T2m while *harming* forest
-establishment through a pathway AMIP cannot see. Argues for running coupled with G4
-sooner rather than later.
+**⚠ Coupled risk, now with a fix available.** G4 alone delays melt-out 24 → 28 May, which
+is later growing-season onset for LPJ-GUESS and a plausible route to harming forest
+establishment while AMIP T2m improves. **`ECE_SNOW_SCF=1` removes that** (melt-out 12 May
+against satellite 11 May) — but on its own it costs −2.7 K in DJF until the skin-conductivity
+question (round 16) is settled. Do not ship the snow fix into a coupled run until J1/J2
+report.
 
 ## 4. Open problems
+
+0. **⭐⭐ THE CURRENT BLOCKER — a −4.7 K Siberian winter bias, previously hidden.**
+   Correcting the snow cover removed a compensating error: excess cover had been propping
+   DJF up by ~2.7 K. Against ERA5 the control is too cold in every season (−1.95 / −1.97 /
+   −2.58 / −2.69) and I1 sits at **−4.71** in DJF. It is **not** a radiation-supply problem
+   (DJF downward LW is +0.9 W/m² vs CERES, essentially exact, which rules out Pithan et al.
+   2014 for midwinter). With radiation right and the surface still too cold, the deficit is
+   non-radiative — skin decoupling or boundary-layer mixing. **Round 16 (J1/J2) tests the
+   first**; if it fails, the second (Holtslag 2013, Sandu 2013) is next.
+
+   Related and separate: a **−12 W/m² downward-LW deficit in Oct–Nov**, unexplained.
 
 1. **⭐ RESOLVED — HTESSEL has no sub-grid snow depletion.** Cover comes from the
    **cell-mean** depth alone, `ZCVS = min(1, d̄_cm/10)`, so it stays pinned near 1 until
