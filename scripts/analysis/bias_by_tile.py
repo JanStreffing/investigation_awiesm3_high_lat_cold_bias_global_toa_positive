@@ -148,19 +148,33 @@ print('  lever justified by the boreal cold bias -- the same namelist entry acts
 #    warming lever applied to those types is directionally correct everywhere it
 #    acts. The 30-38 % leak does not damage the regions it reaches.
 #
+# 1b. ELEVATION CHECK (added after the first pass overstated the land number).
+#    The land bias IS elevation-dependent -- 0-200 m: -0.70, 200-500: -1.26,
+#    500-1000: -1.56, 1000-2000: -1.64, >2000 m: -2.43 K -- which is the expected
+#    signature of the model's smoothed orography against ERA5's 25 km. So the
+#    all-land -1.35 K is partly an interpolation artefact and should NOT be quoted
+#    as the bias.
+#
+#    What survives: near-sea-level land (<200 m, a quarter of all land, where the
+#    artefact is minimal) is still -0.70 K, and PRESCRIBED-SST ocean is -0.72 K.
+#    Those two agreeing is the real result: a ~0.7 K near-surface cold bias that is
+#    independent of elevation AND independent of the land surface. Whatever causes
+#    it is not a land-surface parameter.
+#
 # 2. THE COLD BIAS IS NOT BOREAL. Every one of the 20 surface types is cold in
 #    every season -- not one is warm. Global land is DJF -1.73, MAM -1.60,
 #    JJA -1.35, SON -1.39. The Siberian JJA bias (-2.58) is about TWICE the
 #    global-land JJA bias, so there is a real boreal enhancement, but most of the
 #    Siberian bias is shared with all land.
 #
-#    Rough decomposition of the -2.6 K Siberian JJA bias:
-#        ~0.7 K  present even over PRESCRIBED-SST ocean (-0.72 K there)
-#        ~0.7 K  additional over land generally
-#        ~1.2 K  additional over the boreal zone
-#    G4 has recovered ~0.95 K, i.e. most of the boreal-specific budget -- which
-#    is very likely WHY the F-series saturated (F5 = F4 to within noise). A
-#    boreal-indexed lever cannot reach the other ~1.4 K.
+#    Rough decomposition of the -2.6 K Siberian JJA bias, after the elevation check:
+#        ~0.7 K  UNIVERSAL -- present over flat land and prescribed-SST ocean alike
+#        ~0.3 K  elevation/orographic mismatch (Siberia is mostly low-lying)
+#      ~1.3-1.6 K boreal-specific
+#    G4 has recovered ~0.95 K of that boreal-specific 1.3-1.6 K, which is very
+#    likely WHY the F-series saturated (F5 = F4 to within noise): the boreal budget
+#    was nearly spent. It leaves ~0.4-0.6 K that is genuinely boreal and reachable,
+#    plus ~0.7 K universal that no boreal-indexed lever can touch.
 #
 # CAVEATS. ERA5's land surface is HTESSEL, though 2m temperature is strongly
 # constrained by assimilated screen observations, so it is a fairer reference
