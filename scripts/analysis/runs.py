@@ -89,6 +89,13 @@ RUNS = [
     # non-radiative: skin decoupling in polar night.
     ('J1 lamsk15', 'amip_J1_lamsk15'),
     ('J2 lamsk25', 'amip_J2_lamsk25'),
+    # Round 17: moss/litter insulating layer as a skin-conductivity proxy,
+    # lambda_sk 10 -> 2.9 / 1.7 on vegetation types 4 (larch) and 9 (tundra)
+    # only -- the two most boreal-confined types (62%/70% of their global area
+    # is >50N).  Gaillard 2025 attributes most of their >2 K high-latitude
+    # summer gain to a surface organic layer, which HTESSEL lacks entirely.
+    ('L1 moss2.9', 'amip_L1_moss29'),
+    ('L2 moss1.7', 'amip_L2_moss17'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
