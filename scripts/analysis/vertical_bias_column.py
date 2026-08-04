@@ -234,3 +234,45 @@ print('  ERA5 soil/skin rows are HTESSEL-vs-HTESSEL and are not independent evid
 # is cold -- in AMIP the prescribed SST absorbs that imbalance without warming, so
 # a positive TOA imbalance and a cold atmosphere are not contradictory here.
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# RESULT (2026-08-04). READ sub:vprof IN THE REPORT FIRST -- most of the
+# atmospheric part of this was already established there and is NOT new here.
+#
+# ALREADY KNOWN (report sub:vprof): the free troposphere over Siberia is cold by
+# ~1.2 K at 700 hPa and this is shared with the global mean, so "above 700 hPa
+# Siberia merely shares a global tropospheric cold bias that no boreal lever will
+# touch"; the Siberia-SPECIFIC excess lives entirely below 850 hPa. This script
+# reproduces that table to within ~0.2 K (700 hPa global -1.15 there, -0.89 here;
+# Siberia-specific -0.07 there). The F-series was therefore framed correctly.
+#
+# WHAT IS NEW HERE, and only this:
+#
+# 1. THE SOIL AND SKIN END OF THE COLUMN. sub:vprof starts at 1000 hPa. Extending
+#    downward, over low-lying land in JJA:
+#        soil L1 -0.36, L2 -0.38, L3 -0.72, L4 -0.89, skin -0.53, 2 m -1.00
+#    The soil and skin are the LEAST biased parts of the whole column, and 2 m is
+#    ~0.5 K colder than the skin beneath it. Whatever is wrong, the ground is not
+#    the thing holding the near-surface cold -- if anything the surface is warmer
+#    than its overlying air relative to ERA5.
+#
+# 2. THE BREADTH ACROSS SURFACE TYPES (see bias_by_tile.py): the near-surface cold
+#    is present over EVERY one of the 20 surface types, not only boreal ones.
+#
+# 3. TWO CONTROLS that bound how much of the land number is real:
+#    - PRESCRIBED-SST ocean is -0.72 K at 2 m, so ~0.7 K of the near-surface bias
+#      exists where the land surface is absent entirely.
+#    - The land bias is elevation-dependent (-0.70 K below 200 m rising to -2.43 K
+#      above 2000 m), so quoting an all-land figure overstates it; the low-lying
+#      value is the honest one.
+#
+# CONSEQUENCE for "warm the land surface by 0.7 K": that framing is wrong. The
+# lower free troposphere is cold by ~0.9 K and the surface sits in near-equilibrium
+# with it, so surface levers can only reach the ~0.2-0.4 K by which 2 m departs
+# from 850 hPa. The rest is the pre-existing tropospheric problem of sub:vprof.
+#
+# CAVEATS. The 1000 hPa row is unreliable over land -- much of that level is below
+# ground and both datasets extrapolate; 925/850 are the lowest honest levels. ERA5
+# soil and skin are HTESSEL output, so rows 1-5 are model-vs-sibling, not
+# observation; 2 m and the pressure levels are observation-constrained.
+# ---------------------------------------------------------------------------
