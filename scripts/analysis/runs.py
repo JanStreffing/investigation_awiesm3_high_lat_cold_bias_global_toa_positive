@@ -82,6 +82,13 @@ RUNS = [
     ('I1 scf', 'amip_I1_scf'),
     ('I2 scf only', 'amip_I2_scf_only'),
     ('I3 scf sdor', 'amip_I3_scf_sdor'),
+    # Round 16: exposed-snow skin conductivity ZSNOW 7 -> 15/25, on top of I1.
+    # Round 15 showed the snow-depletion fix removes a COMPENSATING error --
+    # excess cover had been propping DJF up ~2.7 K, hiding a -4.7 K bias vs ERA5.
+    # DJF downward LW is already correct (+0.9 W/m2 vs CERES), so the deficit is
+    # non-radiative: skin decoupling in polar night.
+    ('J1 lamsk15', 'amip_J1_lamsk15'),
+    ('J2 lamsk25', 'amip_J2_lamsk25'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs

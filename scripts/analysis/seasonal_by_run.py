@@ -19,6 +19,7 @@ import numpy as np, xarray as xr, os, warnings
 warnings.filterwarnings('ignore')
 
 from runs import RUNS, RT, LSMF, Y0, Y1
+from boxcache import load_all        # shared cache; see boxcache.py
 
 YEARS = list(range(Y0, Y1 + 1))
 BOX = ((55, 75), (60, 180))          # Siberia land, as everywhere else
@@ -60,14 +61,8 @@ def per_year_seasons(run):
     return {s: np.array(v) - 273.15 for s, v in out.items()}
 
 
-labs, data = [], {s: [] for s in SEASONS}
-for lab, run in RUNS:
-    r = per_year_seasons(run)
-    if r is None:
-        print(f'  !! {lab}: incomplete, skipped'); continue
-    labs.append(lab)
-    for s in SEASONS:
-        data[s].append(r[s])
+labs, M = load_all(RUNS, '2t')          # [run, year, month], degC
+data = {s: M[:, :, idx].mean(axis=2) for s, idx in SEASONS.items()}
 
 ctl = labs.index('control')
 thr, delta = {}, {}
@@ -75,7 +70,7 @@ print(f'\nSiberia 55-75N 60-180E land, T2m by season. {len(labs)} runs x '
       f'{len(YEARS)} yr ({Y0}-{Y1}). Run x year ANOVA per season.\n')
 
 for s in SEASONS:
-    X = np.array(data[s]); nr, ny = X.shape
+    X = data[s]; nr, ny = X.shape
     mu = X.mean(); a = X.mean(1) - mu; g = X.mean(0) - mu
     eps = X - (mu + a[:, None] + g[None, :])
     sd = np.sqrt((eps ** 2).sum() / ((nr - 1) * (ny - 1)))

@@ -41,6 +41,9 @@ ACC = 3600.0
 
 # RUNS lives in runs.py so the evaluators cannot drift apart (they did, 3x).
 from runs import RUNS
+# Box means come from the SHARED per-run cache, so this script, seasonal_by_run.py
+# and monthly_lever_check.py read each file once between them rather than once each.
+from boxcache import load_all
 
 lsm = xr.open_dataset(LSMF)['lsm'].isel(time_counter=0).values
 
@@ -75,13 +78,8 @@ def per_year(run, var='2t'):
 
 
 # ---- assemble the run x year matrix ----------------------------------------
-labs, X = [], []
-for lab, run in RUNS:
-    v = per_year(run)
-    if v is None:
-        print(f'  !! {lab}: incomplete, skipped'); continue
-    labs.append(lab); X.append(v)
-X = np.array(X) - 273.15
+labs, M = load_all(RUNS, '2t')          # [run, year, month], degC
+X = M[:, :, JJA].mean(axis=2)          # JJA mean per run-year
 n_run, n_yr = X.shape
 
 # ---- two-way decomposition --------------------------------------------------

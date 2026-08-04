@@ -103,15 +103,36 @@ def clim(run, var, years):
     return (acc / n, lat, lon) if n else (None, None, None)
 
 
+# Which snow-cover scheme each run actually used. Reconstructing f_snow with the
+# as-released formula for a run that used Niu & Yang would report a cover the model
+# never saw -- so the scheme is keyed by run, never assumed.
+#   ('rqsncr', rq)          ZCVS = min(1, d_cm*rq)          as released
+#   ('niuyang', z0, m, rn)  SCF  = tanh(d/(2.5*z0*(rho/rn)**m))
+SCHEME = {
+    'amip_H1_snowcr30':    ('rqsncr', 1.0 / 30.0),
+    'amip_H2_G1_snowcr30': ('rqsncr', 1.0 / 30.0),
+    'amip_I1_scf':         ('niuyang', 0.016, 1.6, 100.0),
+    'amip_I2_scf_only':    ('niuyang', 0.016, 1.6, 100.0),
+    'amip_I3_scf_sdor':    ('niuyang', 0.014, 1.6, 100.0),   # + CSD*SDOR, see note below
+}
+
+
 def model_fsnow(run, years, rq=RQSNCR):
     sd, lat, lon = clim(run, 'sd', years)
     rsn, _, _ = clim(run, 'rsn', years)
     if sd is None:
         return None
+    sch = SCHEME.get(run, ('rqsncr', rq))
     out = []
     for m in range(12):
-        dcm = 100.0 * sd[m] * 1000.0 / np.maximum(rsn[m], 1.0)
-        out.append(bm(np.clip(dcm * rq, 0, 1), lat, lon))
+        d_m = sd[m] * 1000.0 / np.maximum(rsn[m], 1.0)          # depth [m]
+        if sch[0] == 'rqsncr':
+            fs = np.clip(d_m * 100.0 * sch[1], 0, 1)
+        else:
+            _, z0, mm, rn = sch
+            scl = 2.5 * z0 * np.power(np.maximum(rsn[m], 50.0) / rn, mm)
+            fs = np.clip(np.tanh(d_m / np.maximum(scl, 1e-9)), 0, 1)
+        out.append(bm(fs, lat, lon))
     return np.array(out)
 
 
@@ -137,7 +158,8 @@ e5f = np.array([bm5(np.clip(100.0 * sd5[m] * 1000.0 / np.maximum(rsn5[m], 1.0) *
                 for m in range(12)])
 
 runs = [('presentday', 'amip_presentday', PD), ('control', 'amip_pi_base', PI),
-        ('G4 tundra', 'amip_G4_tundra', PI)]
+        ('G4 tundra', 'amip_G4_tundra', PI),
+        ('I1 scf', 'amip_I1_scf', PI), ('I2 scf only', 'amip_I2_scf_only', PI)]
 M = {}
 for lab, r, years in runs:
     v = model_fsnow(r, years)
