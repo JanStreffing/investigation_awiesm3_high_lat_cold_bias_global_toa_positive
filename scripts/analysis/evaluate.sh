@@ -60,6 +60,9 @@ if [ "$OBS" -eq 1 ]; then
   run "ALBEDO DECOMPOSITION  (vs ERA5, with CERES cross-check)"         albedo_decompose.py
   run "SNOW BUDGET           (snowfall vs loss, vs ERA5)"               snow_budget.py
   run "SNOW COVER vs SATELLITE  (Rutgers/IMS melt timing)"              snowcover_vs_satellite.py
+  run "BIAS BY SURFACE TYPE     (is the cold bias boreal or global?)"   bias_by_tile.py
+  run "VERTICAL COLUMN          (soil L4 -> 100 hPa)"                   vertical_bias_column.py
+  run "TROPOSPHERIC SECTION     (lat x pressure, and clear-sky SW)"     tropo_bias_section.py
 fi
 
 cat <<'EOF'

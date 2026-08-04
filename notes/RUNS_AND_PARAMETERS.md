@@ -415,6 +415,45 @@ better than any parameter limit. *The boreal budget is nearly spent.*
 the regions it leaks into (types 4/9 outside the boreal zone are cold too, JJA −0.68/−1.06).
 That licenses the round-17 restriction.
 
+## 3d. ⭐ NEW DIRECTION (2026-08-04): the clear-sky SURFACE shortwave deficit
+
+With the boreal surface budget nearly spent, the dominant remaining term for land 2 m
+temperature is the global tropospheric cold bias `sub:vprof` identified weeks ago and nobody
+has worked on. First look (`tropo_bias_section.py`):
+
+**Shape.** The cold **maximises at the tropopause at every latitude** — 200–300 hPa in the
+extratropics, ~100 hPa in the tropics — reaching −4.2 K (90–60S) and −4.5 K (60–90N)
+annually, −5.6 K over the Arctic in JJA. The lower troposphere is a fairly uniform −0.6 to
+−1.2 K everywhere except 90–60S, which is near zero.
+
+**Energetically consistent, and NOT cloud:**
+
+| global | model | CERES | diff |
+|---|---:|---:|---:|
+| absorbed SW | 239.98 | 241.36 | **−1.38** |
+| planetary albedo | 0.2951 | 0.2900 | +0.0051 |
+| SW CRE | −44.42 | −45.32 | **+0.90** ← clouds reflect *less* |
+| **clear-sky absorbed SW** | **284.40** | **286.68** | **−2.28** |
+
+Cloud is the *wrong sign* to explain the deficit. **Every lever in 38 runs was a cloud or
+surface-vegetation lever; none touched clear-sky shortwave.**
+
+**And it is at the SURFACE, not in the atmosphere** — atmospheric clear-sky absorption is
+**+0.78** (wrong sign, so not aerosol/vapour/ozone), while the surface absorbs −3.46:
+
+| | per unit area | global contribution | Δalbedo |
+|---|---:|---:|---:|
+| **land** | **−6.85** | −2.00 | +0.030 |
+| ocean ice-free | −1.38 | −0.89 | +0.005 |
+| **sea ice** | **−8.59** | −0.57 | +0.056 |
+
+**Caveats before anyone spends a run.** CERES *surface* fluxes are a derived product
+(Kato et al. 2018) with several W/m² regional uncertainty, not direct observation. The albedo
+column uses CERES clear-sky downward as a common denominator because the model does not output
+clear-sky downward SW at the surface. And **this must be reconciled with `sub:albreg`**, which
+found all-sky land albedo near-perfect outside high latitudes — different quantities, and one
+of them may be wrong. That reconciliation is the first job, not a run.
+
 ## 4. Open problems
 
 0. **⭐⭐ THE CURRENT BLOCKER — a −4.7 K Siberian winter bias, previously hidden.**
