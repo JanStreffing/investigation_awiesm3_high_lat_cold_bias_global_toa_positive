@@ -22,7 +22,7 @@ from concurrent.futures import ProcessPoolExecutor
 from runs import RT, LSMF, Y0, Y1
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.box_cache')
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 USE_CACHE = os.environ.get('NOCACHE', '') == ''
 
 BOX = ((55, 75), (60, 180))
@@ -102,7 +102,14 @@ def monthly(run, var='2t'):
         a = ds[var].values
         lat, lon = ds[var].lat.values, ds[var].lon.values
         ds.close()
-        if var not in ('2t', 'tcc', 'fal', 'asn', 'rsn', 'sd'):
+        # INSTANTANEOUS fields must NOT be divided by the accumulation period.
+        # Omitting stl1-4/skt/tsn here once made them read as ~0.07 K and they were
+        # wrongly written off as dead fields; they are perfectly good kelvin.
+        INSTANT = ('2t', 'tcc', 'fal', 'asn', 'rsn', 'sd', 'skt', 'tsn', '2d',
+                   'stl1', 'stl2', 'stl3', 'stl4', 'istl1', 'swvl1', 'swvl2',
+                   'swvl3', 'swvl4', 'msl', 'sst', 'ci', 'lcc', 'mcc', 'hcc',
+                   '10u', '10v', 'tcw', 'tcwv', 'tclw', 'tciw')
+        if var not in INSTANT:
             a = a / ACC
         out.append([box_mean(a[m], lat, lon) for m in range(12)])
     v = np.array(out)

@@ -3043,11 +3043,56 @@ not evidence.
 \emph{Still unresolved:} winter cover is \textbf{unchanged} ($0.963$ vs $0.964$ --- both
 formulas saturate at 43\,cm) and winter SWE is slightly \emph{higher}, so the DJF response is
 not a direct cover or mass effect. \texttt{str} and \texttt{sshf} shifts are the surface being
-colder, i.e.\ responses. \texttt{stl1} and \texttt{skt} are \textbf{unusable} ($\sim0.07$\,K
---- the same dead-field trap as pressure-level \texttt{r}, \S\ref{sub:vprof}). H1 cooled DJF by
+colder, i.e.\ responses. \dead{\texttt{stl1} and \texttt{skt} are unusable ($\sim0.07$\,K
+--- the same dead-field trap as pressure-level \texttt{r}).} \textcolor{red}{\textbf{That was
+wrong}}: both fields are sound (210--319\,K). The $0.07$ was $273/3600$ --- an analysis-side
+bug that divided an \emph{instantaneous} temperature by the accumulation period. Fixed in
+\texttt{boxcache.py}; unlike pressure-level \texttt{r}, which really is identically zero,
+these fields were never broken. Using them (\S\ref{sub:skinsoil}) shows I1 and I2 cool
+\texttt{stl4} by ${\sim}2.1$\,K, so the unexplained winter signal reaches the \emph{deep
+soil} --- which matters because LPJ-GUESS is fed \texttt{ST1L}--\texttt{ST4L}. H1 cooled DJF by
 $-1.233$ through a different route to the same tile fractions, so this is the second time
 cutting snow-tile fraction has cooled winter hard.
 
+\subsection{Does the warming reach the skin and the soil?}\label{sub:skinsoil}
+A lever that raises 2\,m air temperature by mixing heat \emph{away} from the surface would
+improve the metric we score while degrading the surface itself. That is not a cosmetic
+concern: \textbf{LPJ-GUESS is fed \texttt{ST1L}--\texttt{ST4L\_LPJ} (soil temperature, layers
+1--4) and \texttt{SM1L}--\texttt{SM4L\_LPJ}} alongside \texttt{T2M\_LPJG}
+(\texttt{lpj\_guess/framework/OasisCoupler.cpp:17-95}), so a warmer-air/colder-ground
+configuration would hand the vegetation model an incoherent state. Skin temperature itself is
+not coupled.
+
+Siberian land box, JJA, deltas against control [K]:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+ & T2m & \texttt{skt} & \texttt{stl1} & \texttt{stl4} & $\Delta$(\texttt{skt}$-$T2m) \\
+\midrule
+\emph{control (absolute)} & $9.73$ & $10.18$ & $9.31$ & $-1.31$ & $0.45$ \\
+\textbf{G4} & $+0.952$ & $\mathbf{+0.990}$ & $\mathbf{+0.883}$ & $+0.157$ & $+0.037$ \\
+I1 & $+1.250$ & $+1.318$ & $+1.160$ & $\mathbf{-2.092}$ & $+0.068$ \\
+I2 & $+0.094$ & $+0.100$ & $+0.046$ & $\mathbf{-2.190}$ & $+0.006$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{G4's warming is genuine, not a redistribution}: skin and layer-1 soil warm
+\emph{as much as} the air and the skin-to-2\,m gradient barely moves ($+0.037$\,K). What
+LPJ-GUESS would receive from G4 is coherent.
+
+\textcolor{red}{\textbf{But I1 and I2 cool the deep soil by ${\sim}2.1$\,K}}, I2 doing so with
+essentially no surface change at all. The unexplained winter response of the snow scheme
+therefore reaches \texttt{stl4}, which \emph{is} a coupled field. That is a second, independent
+reason to keep the snow-depletion scheme out of a coupled run until round 16 explains the
+winter behaviour.
+
+\emph{This subsection exists because the diagnostic was wrongly believed impossible}: the soil
+and skin fields had been written off as dead (\S\ref{sub:r15lw}) on the basis of an
+analysis-side scaling bug.
+
+\medskip
 \section{Round 16 (2026--08--04): the snow-tile skin conductivity}\label{sec:lamsk}
 \texttt{vlamsk\_mod.F90} hardcoded the snow-tile skin conductivities, so they were untunable.
 $\lambda_{sk}$ sets how tightly the skin couples to the medium below it; a small value lets it

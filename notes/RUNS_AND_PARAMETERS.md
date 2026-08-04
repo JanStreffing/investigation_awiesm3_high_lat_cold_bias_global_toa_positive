@@ -280,8 +280,13 @@ cloud excess against CERES is retrieval failure over snow at night, not evidence
 
 *Unresolved:* winter cover is **unchanged** (0.963 vs 0.964 — both formulas saturate at
 43 cm) and winter SWE is slightly *higher*, so the DJF response is not a direct cover or
-mass effect. `str` and `sshf` shifts are the surface being colder, i.e. responses. `stl1`
-and `skt` are **unusable** (~0.07 K — the same dead-field trap as pressure-level `r`).
+mass effect. `str` and `sshf` shifts are the surface being colder, i.e. responses.
+~~`stl1` and `skt` are unusable (~0.07 K — the same dead-field trap as pressure-level `r`).~~
+**That was wrong** — both are sound (210–319 K); the 0.07 was 273/3600, an analysis bug that
+divided an *instantaneous* temperature by the accumulation period (fixed in `boxcache.py`).
+Using them properly: G4 warms skin (+0.990) and `stl1` (+0.883) as much as T2m (+0.952), so
+its warming is genuine, **but I1/I2 cool `stl4` by ~2.1 K** — and LPJ-GUESS is fed
+`ST1L`–`ST4L`, so that reaches the vegetation model.
 H1 cooled DJF by −1.233 through a completely different route to the same tile fractions,
 so this is the second time cutting snow-tile fraction has cooled winter hard.
 
