@@ -263,9 +263,14 @@ Scored against ERA5 rather than against the control (period-clean, `amip_present
 | I2 | −4.63 | −2.36 | −2.49 | −3.77 |
 
 The control is too cold in **every** season, so there was never a warm bias to protect.
-The excess snow cover had been propping DJF up by ~2.7 K, **masking a −4.7 K bias that was
-there all along**. Restoring the wrong snow field to hide it again would be the worst
-available option — so the snow fix is kept and the winter is fixed on its own terms.
+
+⚠ **RETRACTED (2026-08-04):** the reading that *"excess snow cover was propping DJF up ~2.7 K,
+masking a −4.7 K bias"* is **not supported**. Winter cover is *unchanged* between the two
+schemes (0.963 vs 0.964, both saturate at 43 cm), so excess **winter** cover cannot have done
+the propping. What is measured is only that **I1 cools DJF by −2.76 K by an unidentified
+route**. Whether that unmasks a pre-existing bias or creates a new one is **untested** — and
+H1 produced the same signature (−1.233 K by cutting snow-tile fraction) and was *rejected*
+for it. Identical evidence cannot be disqualifying in one run and revelatory in another.
 
 **Not a radiation-supply problem.** Downward LW over the box, model vs CERES:
 Oct **−12.9**, Nov **−11.9**, Dec −3.1, Jan +0.1, Feb +5.6 — **DJF mean +0.9 W/m², essentially

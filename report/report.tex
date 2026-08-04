@@ -41,9 +41,9 @@ is open and the root cause can be hunted without the coupled runaway closing ove
 
 \medskip\noindent\textbf{Where we are (2026--08--04).} \textbf{G4} $=$ F4 $+$ D2b $+$ tundra
 is the carried-forward configuration --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$, $48\,\%$ of
-the bias) and Southern Ocean SW RMSE $6.88\to4.80$ --- and the campaign's blocker is now a
-Siberian \emph{winter} cold bias of $-4.7$\,K that correcting the snow field has exposed
-(\S\ref{sec:lamsk}).
+the bias) and Southern Ocean SW RMSE $6.88\to4.80$ --- and the campaign's blocker is now Siberian \emph{winter}: the
+snow-cover correction (run I1) cools DJF to $-4.7$\,K against ERA5 by a route not yet
+identified (\S\ref{sub:r15compensate}); G4 itself sits at $-2.33$\,K.
 
 \medskip\noindent Read \S\ref{sec:causal} for the causal web and what is still dark;
 \S\ref{sec:obs} for what the observations can and cannot settle; \S\ref{sec:falsified} for
@@ -2097,9 +2097,11 @@ measure. The ice-nucleation hypothesis (\S\ref{sub:d2}) is therefore supported, 
 pressure gate did what it was designed to do: D2a's tropical cost ($-0.38$) vanishes ($+0.09$)
 while $55\,\%$ of the SO gain is retained.
 
-\textbf{D1 is cleanly falsified.} It was predicted to recover part of B5's $+0.407$\,K by
+\textbf{D1's prediction is excluded, but as a NULL, not a sign reversal.} It was predicted to recover part of B5's $+0.407$\,K by
 switching the land CAPE closure to mode-1's buoyancy-flux scaling; it delivered
-$\mathbf{-0.170}$\,K, the wrong sign. So B5's boreal gain requires \emph{removing} the land
+$\mathbf{-0.170}$\,K --- which does \emph{not} clear the $\pm0.242$\,K detection floor
+(\S\ref{sub:noisefloor}), so the predicted recovery is excluded but the sign is unresolved.
+Quoting it as ``the wrong sign'' was the very error \S\ref{sub:noisefloor} exists to prevent. So B5's boreal gain requires \emph{removing} the land
 correction, not rescaling it --- the effect is not about which quantity the closure scales on.
 Stating the prediction in advance is what made the refutation unambiguous.
 
@@ -2350,7 +2352,6 @@ $\approx1.2$\,K land-wide cold bias therefore has no albedo signature at all, co
 the global tropospheric cold bias of \S\ref{sub:vprof}. Fixing albedo is worth doing; it is not
 the root cause.
 
-\appendix
 \section{Round 13: snow cover fraction, the June lever}\label{sec:h}
 \subsection{Design and prediction}\label{sub:hdesign}
 The albedo decomposition (\S\ref{sec:albedo}) splits the $12.5$\,W\,m$^{-2}$ Siberian JJA
@@ -2781,8 +2782,11 @@ $+0.149$ in May against satellite, so the model excess quoted in \S\ref{sub:e5al
 $+0.119$ is really $\mathbf{+0.176}$ --- June snow cover is close to \emph{double} the
 observed value.
 
-\textbf{(ii) The model melts about 13 days late}, now measured against an observation
-rather than inferred from a sibling model. This is round 14's ``peaks a month late''
+\textbf{(ii) The model melts about 15 days late} (control; \texttt{amip\_presentday} is 13),
+now measured against an observation rather than inferred from a sibling model.
+\emph{Note the two runs differ} --- June cover $0.413$ / melt-out 26~May for the control,
+$0.380$ / 24~May for \texttt{amip\_presentday} --- and earlier drafts of this report quoted
+them interchangeably. This is round 14's ``peaks a month late''
 (\S\ref{sub:melt}) confirmed independently and given a number.
 
 \textbf{(iii) \textcolor{red}{G4 makes the snow field worse.}} June cover
@@ -2951,10 +2955,11 @@ run: the switch logs to \texttt{NULOUT}, no namelist errors, the model steps nor
   the $z_0$ choice should not be over-fitted to them.
 \end{itemize}
 
-\section{Round 15 (2026--08--04): the snow fix works, buys no summer, and unmasks a hidden bias}\label{sec:r15}
+\section{Round 15 (2026--08--04): the snow fix works, buys no summer, and cools winter}\label{sec:r15}
 Three runs, all namelist-only on one binary: \textbf{I1} $=$ G4 $+$ depletion,
 \textbf{I2} $=$ depletion alone (isolating the snow route from the vegetation route), and
-\textbf{I3} $=$ G4 $+$ the SDOR-scaled variant.
+\textbf{I3} $=$ G4 $+$ the SDOR-scaled variant. \textbf{I3 completed after this section was
+written and is not yet evaluated} --- everything below is I1 and I2 only.
 
 \subsection{The scheme does exactly what it was built to do}\label{sub:r15works}
 \begin{center}\footnotesize
@@ -3009,14 +3014,23 @@ I2 & $-4.63$ & $-2.36$ & $-2.49$ & $-3.77$ \\
 \end{center}
 
 \noindent \textbf{The control is too cold in every season}, so there was never a warm bias to
-protect. The excess snow cover had been propping DJF up by ${\sim}2.7$\,K, \textbf{masking a
-$-4.7$\,K bias that was there all along}. Restoring the wrong snow field to hide it again
-would be the worst available option; the fix is kept and the winter is addressed on its own
-terms (\S\ref{sec:lamsk}).
+protect --- scoring against observations rather than against the control is what makes that
+visible, and eleven rounds had not done it.
 
-\emph{This is the campaign's clearest compensating-error episode}, and it was caught only
-because the seasonal biases were finally scored against \emph{observations} rather than
-against the control --- something eleven rounds had not done.
+\textcolor{red}{\textbf{What this does NOT establish.}}
+\dead{The excess snow cover had been propping DJF up by ${\sim}2.7$\,K, masking a $-4.7$\,K
+bias that was there all along.} That reading was asserted here and is \textbf{not supported}:
+winter cover is \emph{unchanged} between the two schemes ($0.963$ vs $0.964$, both saturating
+at 43\,cm, \S\ref{sub:r15lw}), so excess \emph{winter} cover cannot have been doing the
+propping. What is measured is only that \textbf{I1 cools DJF by $-2.76$\,K by an unidentified
+route}. Whether that unmasks a pre-existing bias or creates a new one is \textbf{untested}.
+
+The point is sharpened by a precedent this report got the other way round: H1 produced the
+same signature ($-1.233$\,K DJF by cutting snow-tile fraction, \S\ref{sub:hres}) and was
+\emph{rejected} for it. Identical evidence cannot be disqualifying in one run and revelatory
+in another. Until the route is identified, the honest position is that the snow fix and the
+winter response are two findings, not one story --- which is also why round 16 tests the
+winter on its own terms rather than assuming it is recoverable.
 
 \subsection{Ruled out by measurement: it is not a radiation-supply problem}\label{sub:r15lw}
 Downward longwave over the box, model vs CERES [W\,m$^{-2}$]: Oct $\mathbf{-12.9}$,
@@ -3130,9 +3144,16 @@ status marker, and the unknowns are listed rather than glossed.
 \end{footnotesize}
 
 \subsection{Route A --- transpiration to cloud: closed}\label{sub:routea}
-\textbf{Status: the strongest result of the campaign.} Excess stomatal conductance
-cools the surface latently and moistens the boundary layer; the moisture becomes low
-cloud; the cloud removes shortwave; the surface cools.
+\textbf{Status: the strongest \emph{measured} result of the campaign --- but the mechanism is
+only partly established.} The chain as proposed is: excess stomatal conductance cools the
+surface latently \emph{and moistens the boundary layer}; the moisture becomes low cloud; the
+cloud removes shortwave; the surface cools.
+
+\textcolor{red}{\textbf{The moisture step is contradicted by this report's own profiles.}}
+\S\ref{sub:vprof} finds the excess boreal cloud is \emph{thermally} driven, not
+moisture-driven: Siberian RH is $+5.6$ to $+8.2\,\%$ too high while $q$ is \emph{too low}
+($-0.2$ to $-0.3$\,g\,kg$^{-1}$). What was measured is the \emph{correlation} F4 $\to$ less
+cloud $\to$ warmer; the moisture pathway is \textbf{[?]}, not \ding{51}\,OBS.
 
 \begin{itemize}\itemsep2pt
 \item \ding{51}\,\textbf{OBS} Siberian JJA cloud fraction was $78.1\,\%$ against CERES
@@ -3216,7 +3237,7 @@ and contributing $+0.57$ on its own, from a cloud deficit --- the Hyder et al.\ 
 Nothing below revises that.
 
 What was missing is that the decomposition existed \textbf{only for the control}.
-\texttt{amip\_toa\_decomp.py} never used the \texttt{RUNS} list, so across 33 tuning runs the
+\texttt{amip\_toa\_decomp.py} never used the \texttt{RUNS} list, so across the tuning runs the
 energy target was tracked by a single global number with no idea which band any lever was
 moving. That is now part of the standard table and produced for every run automatically
 (\S\ref{sub:evalsh}). The new information is the \textbf{response}:
@@ -3287,7 +3308,7 @@ effective is to make skipping it require effort.
   ($+0.300 \to +0.089$). Adding tundra resistance should not act on a Nordic ocean box.
   An unexplained improvement is as much a loose end as an unexplained degradation.
 \item \textbf{?} The Southern Ocean cloud-\emph{area} deficit ($\sim6$\,pp), untouched by
-  every lever in 33 runs.
+  every lever in all 34 evaluated runs.
 \item \textbf{?} Tropics net TOA $2.4$\,W\,m$^{-2}$ too low.
 \item \textbf{\ding{51}\,but unaddressed} Global net TOA $+0.52$\,W\,m$^{-2}$ against a
   $\sim0$ target --- \emph{one of the two original problems}, barely moved by the whole
@@ -3301,7 +3322,10 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
 \subsection{Proven}\label{sub:proven}
 \begin{itemize}\itemsep2pt
 \item \textbf{G4 is the carried-forward configuration}: Siberian JJA T2m $+0.952$\,K
-  ($t{=}7.68$, $48\,\%$ of the bias), SO SW RMSE $6.88\to4.80$, subpolar N Atl $5.01\to4.74$,
+  ($t{=}7.68$). \emph{Closure depends on a denominator this report does not pin down}:
+  against the $\approx2.0$\,K working figure it is $48\,\%$, but \S\ref{sub:perdirect} gives an
+  honest range of $-1.3$ to $-2.0$\,K and \S\ref{sub:r15compensate} measures $-2.58$\,K against
+  ERA5, so the defensible span is \textbf{37--73\,\%}, SO SW RMSE $6.88\to4.80$, subpolar N Atl $5.01\to4.74$,
   tropics untouched ($+0.124$), every season inside its own threshold. Namelist-only
   (\S\ref{sub:nmltune}).
 \item \textbf{The boreal cold bias had two routes.} Route~A (over-transpiration $\to$ low
@@ -3325,7 +3349,7 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   (\S\ref{sub:r15lw}). Round 16 tests skin conductivity; if that fails, boundary-layer mixing.
 \item \textbf{Global net TOA $+0.52$\,W\,m$^{-2}$} against a PI target of $\sim0$ --- one of the
   two original faults, barely moved by the whole campaign.
-\item \textbf{SO cloud-area deficit ${\sim}6$\,pp}, untouched by every lever in 38 runs, and now
+\item \textbf{SO cloud-area deficit ${\sim}6$\,pp}, untouched by all 34 evaluated levers, and now
   known to drive the energy target too.
 \item \textbf{$-12$\,W\,m$^{-2}$ downward-LW deficit in Oct--Nov}, unexplained.
 \item Tropics net TOA $2.4$\,W\,m$^{-2}$ too low; Nordic Seas SW RMSE moved by G1 and partly
@@ -3354,7 +3378,7 @@ Southern Ocean carries most of it. & \S\ref{sub:sobands} \\
 Indirect HadCRUT5 chain; direct measurement gives $+0.42$\,K, wrong by $2.7\times$. &
 \S\ref{sub:perdirect} \\
 \dead{D1: reformulating the \texttt{RCAPDCYCL} land closure will warm the boreal} &
-Measured $-0.170$\,K. Clean prediction failure. & \S\ref{sec:round11res} \\
+Measured $-0.170$\,K, inside the $\pm0.242$ floor --- recovery excluded, sign unresolved. & \S\ref{sec:round11res} \\
 \dead{Round 13: raising the snow-cover threshold $10\to30$\,cm recovers June's albedo term} &
 JJA $+0.020$\,K ($t{=}0.17$). Arithmetically incapable of acting in spring --- it can only
 bite where depths are near the threshold, i.e.\ autumn, which is what it did. &
@@ -3371,6 +3395,20 @@ itself. No observational authority; survives only as a hypothesis. & \S\ref{sub:
 \dead{The June albedo bias is worth ${\sim}5.6$\,W\,m$^{-2}$ of boreal warming} &
 Fixing it to satellite accuracy gained $+0.094$\,K --- four times less efficient per watt than
 the vegetation route. & \S\ref{sub:r15notemp} \\
+\dead{The boreal void is a ``no closed canopy'' artefact of \texttt{FORESTFPC}$=0$} &
+Diagnostic error in the void metric itself, not a model result; the most-repeated retraction
+in this report. & \S\ref{sec:lpjg} \\
+\dead{Siberian JJA net SW is $33$\,W\,m$^{-2}$ too low} &
+Inferred from CRUNCEP, which is itself ${\approx}21$\,W\,m$^{-2}$ too bright. Against CERES
+the deficit is $11$, and later $12.5$ split $7.0$ cloud $+$ $5.5$ albedo. & \S\ref{sec:jja} \\
+\dead{\texttt{RVRSMIN} $500$ is the IFS default and was halved in this build} &
+Misread of the table; $250$ is as-released for types 3/4. & \S\ref{app:params} \\
+\dead{``Competition, not climate'' --- the boreal failure is an LPJG-internal competition error} &
+The controlled forcing-transfer test reproduces most of the loss with byte-identical
+parameters. & \S\ref{sub:xfer} \\
+\dead{The excess snow cover was propping DJF up ${\sim}2.7$\,K, masking a $-4.7$\,K bias} &
+Asserted, not measured: winter cover is unchanged between the schemes, and the same signature
+was treated as disqualifying for H1. Route unidentified. & \S\ref{sub:r15compensate} \\
 \dead{Sublimation explains why F4 increases spring snow} &
 March--April evaporation changes are inside the noise floor; May \emph{snowfall} rises
 instead, for reasons still unknown. & \S\ref{sub:openlist} \\
@@ -3381,6 +3419,8 @@ instead, for reasons still unknown. & \S\ref{sub:openlist} \\
 \noindent Two further items are \emph{provisional} rather than dead: the March--April mass
 deficit rests on ERA5 SWE (forest-biased), and mode~2's scale-awareness carries only
 ${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
+
+\appendix
 
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize
