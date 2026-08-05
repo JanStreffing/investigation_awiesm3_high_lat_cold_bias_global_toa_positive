@@ -137,4 +137,10 @@ NOT_LEVERS = [
     # N2 minus N1 isolates ECE_SNOW_SCF=1 at daily resolution.
     'amip_N1_snowdiag',
     'amip_N2_snowdiag_scf',
+    # Round 19 O series: the SAME scheme re-parameterised so density actually separates
+    # autumn from spring (z0 0.018, rho_new 170, m 4.0 / 3.0 vs the current 0.016/100/1.6).
+    # Namelist-only.  Same K1 base, 10 yr and daily output as N1/N2 so all four difference
+    # directly.  Not scorable against the 44-yr thresholds -- diagnostic pair, not levers.
+    'amip_O1_scf_m4',
+    'amip_O2_scf_m3',
 ]

@@ -532,10 +532,14 @@ depletion is lost, and the scheme becomes all winter cost and no summer benefit.
    oscillation in snow-covered fraction. Real melt-out is irreversible within a season.
    The correct formulation (Swenson & Lawrence 2012) carries a prognostic seasonal
    `SWE_max` and depletes against it — but that is a **new surface prognostic**.
-2. **Density cannot substitute for melt state.** October snow is ρ≈170, May ρ≈315, but
+2. ~~**Density cannot substitute for melt state.** October snow is ρ≈170, May ρ≈315, but
    May depth is still 0.29 m — so any exponent that saturates cover in October also
    saturates it in May. The two regimes are inseparable by density at their respective
-   depths, which is *why* the present scheme buys spring depletion at the cost of autumn.
+   depths.~~ **WRONG — corrected the same day, see the O-series entry below.** That was
+   argued from the *current* parameters, not from what the formula can do. Density
+   separates them fine (m>1.23 suffices for the right ordering, m=4 gives a factor 5.5);
+   m=1.6 merely does it so weakly (separation 0.077) that the October cover deficit is
+   the price paid for a negligible spring gain. This is what the O series tests.
 
 **WHAT TO LOOK FOR**
 - *Sep–Nov*: does `stl1` diverge only on days the cover differs, or keep falling after the
@@ -553,6 +557,69 @@ untouched and no other run is affected.
 - The first verification **counted `field_ref="sd"` across the whole file** — already 12
   from pre-existing `1mo`/`6h` blocks — so it reported success on a no-op. **Verify
   per-block, in the GENERATED `file_def.xml`, not the template.**
+
+### Round 19 — O series, the RE-PARAMETERISED depletion, IN FLIGHT (2026-08-05)
+
+Paired with N1/N2 above: same K1 base, same 10 yr, same daily output, so all four
+difference directly. **Namelist-only** — no source change, no new prognostic.
+
+| run | z0 | ρ_new | m | predicted SCF Oct | predicted SCF May |
+|---|---:|---:|---:|---:|---:|
+| N2 (current) | 0.016 | 100 | 1.6 | 0.894 | 0.817 |
+| **O1** `amip_O1_scf_m4` | 0.018 | 170 | **4.0** | **0.995** | **0.495** |
+| **O2** `amip_O2_scf_m3` | 0.018 | 170 | **3.0** | 0.995 | 0.764 |
+
+**⚠ CORRECTION to the N-series entry above.** It records that "density cannot substitute
+for melt state ... the two regimes are genuinely inseparable by density at their
+respective depths". **That is wrong**, and was based on the *current* parameters rather
+than on what the formula can do. Density separates them fine; m=1.6 simply barely does.
+
+**The arithmetic.** SCF = tanh(d/L), L = 2.5·z0·(ρ/ρ_new)^m. The ratio of the two tanh
+arguments for the two months that matter, using Siberian box means (d_Oct 0.135 m,
+ρ_Oct 170; d_May 0.288 m, ρ_May 315):
+
+```
+x_Oct / x_May = (d_Oct/d_May) · (ρ_May/ρ_Oct)^m = 0.469 · 1.853^m
+```
+
+**Depth works against us** — October's pack is half as deep, pushing it toward *less*
+cover. Density works for us, and whether it wins is entirely down to `m`:
+
+- **m > 1.23** needed merely for October to hold more cover than May
+- **m = 1.6** clears that bar but gives a ratio of only **1.23** → SCF 0.894 vs 0.817,
+  separation **0.077**. Almost none.
+- **m = 4** gives **5.5** — ample.
+
+So the fault is not that density cannot discriminate; it is that at m=1.6 it *barely*
+does, and the **−0.075 October cover deficit that seeds the winter soil collapse is the
+price paid for a spring depletion only 0.08 deeper**.
+
+**Raising m alone makes October worse.** October ρ=170 already exceeds ρ_new=100, so it
+sits on the depleting branch and a steeper exponent depletes it harder (m=4, ρ_new=100 →
+SCF_Oct **0.383**). Both parameters must move: recentre ρ_new on autumn density so
+October becomes the reference state, *then* steepen.
+
+**Why this beats the hysteresis it replaces.** It sidesteps the reversibility objection
+that killed the ripe/not-ripe state test: **density is a genuine physical memory
+variable**. It ripens monotonically through the season and does not flip back overnight,
+so the depletion cannot walk backwards the way a melt-state switch would. And it needs
+no new surface prognostic.
+
+**⚠ This is curve-fitting until the daily data supports it:**
+- m=4 is far from Niu & Yang's calibrated 1.6 and needs justifying as more than a fit to
+  the two numbers it was derived from.
+- Those are **box-mean monthly** densities; the model sees a cell-by-cell distribution and
+  a steep exponent **amplifies spread**, so the box mean may mislead badly. N1/N2's daily
+  output is what settles this.
+- Recentring ρ_new changes depletion **globally**, including where the original
+  calibration was validated against Rutgers/IMS satellite cover.
+
+**PRE-REGISTERED FALSIFIERS**
+1. **Winter soil must return to the N1 reference.** If O1 still shows the −16 K DJF
+   collapse, the density route is dead and the prognostic `SWE_max` rewrite is the only
+   remaining option.
+2. **May/June cover must still deplete.** If not, the summer gain is lost and O1 is all
+   cost — the same failure mode predicted for the ripeness gate.
 
 ### Round 18 — aerosol diagnostics, IN FLIGHT (2026-08-05)
 
