@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--04})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--05})}
 
 \begin{document}
 \maketitle
@@ -39,15 +39,23 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--08--04).} \textbf{G4} $=$ F4 $+$ D2b $+$ tundra
-is the carried-forward configuration --- Siberian JJA T2m $+0.952$\,K ($t{=}7.68$, $48\,\%$ of
-the bias) and Southern Ocean SW RMSE $6.88\to4.80$ --- and the campaign's blocker is now Siberian \emph{winter}: the
-snow-cover correction (run I1) cools DJF to $-4.7$\,K against ERA5 by a route now shown to be
-\emph{non-radiative} (\S\ref{sub:djfnotrad}); G4 itself sits at $-2.33$\,K.
-\textbf{I3} is the strongest summer lever built ($+1.322$\,K, $t{=}10.61$, and it closes the
-Siberian surface SW deficit to CERES) but is \textbf{not adopted}: the guardrails price it at
-$+1.72$\,W\,m$^{-2}$ over 60--90N, a bill AMIP structurally cannot feel and the coupled
-spin-up would (\S\ref{sub:i3}).
+\medskip\noindent\textbf{Where we are (2026--08--05).} \textbf{K1} $=$ G4 $+$ the snow-free
+land albedo correction is the carried-forward configuration --- Siberian JJA T2m
+$+1.036$\,K ($t{=}8.29$), global T2m RMSE $1.579\to1.524$ (the campaign's best bar K2),
+Southern Ocean SW RMSE $6.88\to4.80$, every season inside its own threshold and no Arctic
+energy penalty (\S\ref{sub:r17k}). \textbf{I3} reaches further in summer ($+1.322$\,K,
+$t{=}10.61$) but is \textbf{not adopted}: the guardrails price it at $+1.72$\,W\,m$^{-2}$ over
+60--90N, a bill AMIP structurally cannot feel and the coupled spin-up would
+(\S\ref{sub:i3}); its snow scheme is \textbf{deactivated} outright for destroying the winter
+soil against direct station observations (\S\ref{sub:rihmi}, \S\ref{sub:scfoff}).
+
+\medskip\noindent\textbf{What is left.} Three routes are now closed by measurement rather than
+opinion: transpiration$\to$cloud (\S\ref{sub:routea}), snow-melt albedo
+(\S\ref{sub:r15notemp}), and land surface albedo, which buys at most one sixth of the
+universal bias (\S\ref{sub:r17budget}). Skin conductivity is falsified for both the winter
+route (\S\ref{sub:r16res}) and the boreal organic layer (\S\ref{sub:r17l}). The dominant
+remaining term is the \textbf{global tropospheric cold bias} of \S\ref{sub:vprof}, untouched
+by all 45 runs.
 
 \medskip\noindent Read \S\ref{sec:causal} for the causal web and what is still dark;
 \S\ref{sec:obs} for what the observations can and cannot settle; \S\ref{sec:falsified} for
@@ -3436,6 +3444,31 @@ route}, and the winter bias lies in boundary-layer mixing instead (Holtslag et a
 Sandu et al.\ 2013). Also watched: melt-out and May/June cover must \emph{stay} fixed --- drift
 back toward the control would mean the two changes interact and the pair is not separable.
 
+\subsection{Round 16 result (2026--08--05): falsified, and the falsifier was on record}\label{sub:r16res}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+$\Delta$ vs control [K] & DJF & JJA & SON & global T2m RMSE \\
+\midrule
+I1 (the base) & $-2.759^*$ & $+1.250^*$ & $-0.766^*$ & $1.627$ \\
+\textbf{J1} ($\lambda_{sk}\,15$) & $\mathbf{-2.834^*}$ & $+1.313^*$ & $-1.132^*$ & $1.581$ \\
+\textbf{J2} ($\lambda_{sk}\,25$) & $\mathbf{-3.226^*}$ & $+1.246^*$ & $-0.879^*$ & $1.597$ \\
+\emph{control} & --- & --- & --- & $1.579$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The prediction was \textbf{DJF $+1$ to $+3$\,K}. Measured: DJF got \textbf{worse},
+and \emph{monotonically with the knob} --- $-2.834$ at $\lambda_{sk}{=}15$, $-3.226$ at $25$,
+against I1's $-2.759$. Both runs carry a global T2m RMSE \emph{worse than the control}.
+
+\textbf{The pre-registered falsifier fires: skin conductivity is not the winter route.} By
+\S\ref{sub:djfnotrad} the route is non-radiative, and $\lambda_{sk}$ was the leading
+non-radiative candidate; with it excluded, \textbf{boundary-layer mixing} (Holtslag et al.\
+2013; Sandu et al.\ 2013) is what remains. The round is doubly moot in practice, since its
+base I1 is now deactivated (\S\ref{sub:scfoff}) --- but the falsification stands on its own
+and the diagnosis it leaves behind is the useful part.
+
 \emph{Both J runs were built on I1, before \S\ref{sub:i3} showed I3 to be the better base in
 every season.} That was the correct decision with the information available and the round is
 still diagnostic --- it tests whether $\lambda_{sk}$ is the winter route at all, and
@@ -3547,6 +3580,101 @@ CERES. The two changes compete for one energy budget. Consequences for the plan:
 \end{itemize}
 
 \emph{Assets}: \texttt{land\_albedo\_snow\_split.py}, chained into \texttt{evaluate.sh --obs}.
+
+\section{Round 17 (2026--08--05): K1 adopted, and land albedo closed out}\label{sec:r17}
+Two families on the G4 base, run concurrently and deliberately orthogonal: \textbf{L} puts a
+moss/organic layer on the boreal types, \textbf{K} corrects the snow-free land albedo
+diagnosed in \S\ref{sec:landalb}.
+
+\subsection{L: the moss proxy is falsified, monotonically the wrong way}\label{sub:r17l}
+$\lambda_{sk}$ $10\to2.9$ (L1) and $10\to1.7$ (L2) on types 4 (larch) and 9 (tundra) only ---
+the two most boreal-confined types, 62\,\% and 70\,\% of their area poleward of 50N. Gaillard
+(2025) attributes most of a ${>}2$\,K high-latitude summer gain to a surface organic layer,
+which HTESSEL lacks entirely.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r l}
+\toprule
+ & JJA & vs G4 & verdict (threshold $\pm0.244$) \\
+\midrule
+G4 & $+0.952^*$ & --- & the base \\
+L1 ($\lambda_{sk}\,2.9$) & $+0.784^*$ & $-0.168$ & inside $\to$ null \\
+\textbf{L2} ($\lambda_{sk}\,1.7$) & $+0.638^*$ & $\mathbf{-0.314}$ & \textbf{outside $\to$ significant degradation} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \emph{More} moss is \emph{worse}, the opposite of the prediction, and the monotonic
+ordering makes a noise explanation implausible. \textbf{Caveat that limits the claim}:
+$\lambda_{sk}$ is only a \emph{proxy} for an organic layer --- it changes the skin-to-substrate
+coupling but not the heat capacity, not the moisture retention, and not the summer
+evaporative regime. This falsifies \emph{the proxy}, not necessarily the Gaillard mechanism.
+A real organic layer would need a soil-column change, which is a much larger piece of work.
+
+\subsection{K: adopted}\label{sub:r17k}
+K1 $=$ G4 $+$ \texttt{RVVEGALB} on crops ($\times0.887$), irrigated crops ($\times0.910$) and
+semidesert ($\times0.906$) $+$ \texttt{ECE\_TUNE\_SOILALB} $0.95$. K2 is the soil background
+\emph{alone}, isolating the ${\sim}25\,\%$ of land that \texttt{RVVEGALB} cannot reach.
+\textbf{Tundra was deliberately excluded} so K stayed orthogonal to L and did not add
+absorbed shortwave to the Arctic (\S\ref{sub:stacking}).
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+ & Siberian JJA & DJF & net TOA 60--90N & \textbf{global T2m RMSE} \\
+\midrule
+control & --- & --- & $-97.737$ & $1.579$ \\
+G4 & $+0.952^*$ & $-0.385$ & $-97.603$ & $1.543$ \\
+I3 & $+1.322^*$ & $-2.439^*$ & $\mathbf{-96.017}$ & $1.556$ \\
+\textbf{K1} & $\mathbf{+1.036^*}$ & $-0.496$ & $-97.463$ & $\mathbf{1.524}$ \\
+K2 & $+0.913^*$ & $-0.144$ & $-97.525$ & $\mathbf{1.518}$ \\
+\emph{CERES} & --- & --- & $-97.98$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Both are clean} --- every season inside its own threshold --- and they are
+the \textbf{two best global T2m RMSE of the campaign}. The tundra exclusion did its job: 60--90N
+stays near the control, against I3's $+1.72$\,W\,m$^{-2}$ excursion. In the Siberian box
+neither K is significant against G4 ($+0.084$, $-0.039$, both inside $\pm0.244$), \emph{which
+was predicted in advance} --- K's mass is crops, semidesert and the subtropical desert belt.
+
+\subsection{What K bought, measured on the metric it was designed for}\label{sub:r17budget}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+global LAND, vs G4 & land T2m & land SW$_{net}$ & land albedo \\
+\midrule
+\textbf{K1} & $\mathbf{+0.089}$\,K & $+0.77$\,W\,m$^{-2}$ & $-0.0059$ \\
+K2 & $+0.076$\,K & $+0.48$ & $-0.0038$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The lever did what it was built to do.} The snow-free residual was
+$+0.0080$; K1 removed $-0.0059$ of it, \textbf{74\,\%}. The measured sensitivity is
+$0.089/0.77 = \mathbf{0.116}$\,K per W\,m$^{-2}$ against the $0.12$ assumed --- essentially
+exact. The geography is right too: land equatorward of 60N warms $+0.109$\,K while land
+poleward of 60N \emph{cools} $0.055$\,K, exactly what excluding tundra was meant to achieve.
+
+\dead{Predicted ${\sim}1.1$\,W\,m$^{-2}$ and $0.1$--$0.2$\,K of land warming.} Measured
+$0.77$\,W\,m$^{-2}$ and $0.089$\,K --- the SW gain was $70\,\%$ of the prediction and the
+temperature at or below its low end. The sensitivity assumption was right; the forcing
+estimate was optimistic.
+
+\textcolor{red}{\textbf{THE NEGATIVE RESULT IS WORTH MORE THAN THE $0.089$\,K.}} Three quarters
+of a \emph{directly measured} land albedo bias has now been removed, and it recovered
+$0.089$\,K of the ${\sim}0.7$\,K universal bias. Extrapolating, a \emph{perfect} albedo fix
+buys ${\sim}0.12$\,K --- about \textbf{one sixth} of the target. \textbf{Land surface albedo is
+therefore closed out as the explanation for the universal cold bias}, which is a real
+constraint on where the remaining ${\sim}0.6$\,K lives.
+
+\dead{K3 should push the soil-albedo scale further, since K2 alone gives the best global RMSE.}
+\textbf{Retracted before it was run.} The remaining $26\,\%$ of the residual is worth roughly
+$0.03$\,K, and the $0.95$ scale was calibrated to the \emph{measured} $-0.0163$ bias --- pushing
+past it means tuning \emph{against} the observation, which is the same overfitting-to-present-day
+trap that ruled out editing the soil ancillary (\S\ref{sub:stacking}). \textbf{K1 is adopted and
+albedo tuning stops here.}
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
@@ -3775,12 +3903,20 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--04)}\label{sec:state}
+\section{State of the campaign (2026--08--05)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
 \begin{itemize}\itemsep2pt
-\item \textbf{G4 is the carried-forward configuration}: Siberian JJA T2m $+0.952$\,K
+\item \textbf{K1 is the carried-forward configuration (adopted 2026--08--05)} $=$ G4 $+$ the
+  snow-free land albedo correction. Siberian JJA $+1.036$\,K ($t{=}8.29$), global T2m RMSE
+  $1.579\to\mathbf{1.524}$ (the campaign's best bar K2), every season inside its own
+  threshold, and no Arctic energy penalty --- 60--90N net TOA $-97.463$ against a control
+  $-97.737$ and CERES $-97.98$ (\S\ref{sub:r17k}). Namelist-only on top of G4.
+\item \textbf{Land surface albedo is CLOSED as an explanation for the universal bias.}
+  Removing $74\,\%$ of a directly measured bias bought $0.089$\,K of ${\sim}0.7$\,K; a perfect
+  fix buys ${\sim}0.12$\,K, one sixth of the target (\S\ref{sub:r17budget}).
+\item \textbf{G4 is the base K1 is built on}: Siberian JJA T2m $+0.952$\,K
   ($t{=}7.68$). \emph{Closure depends on a denominator this report does not pin down}:
   against the $\approx2.0$\,K working figure it is $48\,\%$, but \S\ref{sub:perdirect} gives an
   honest range of $-1.3$ to $-2.0$\,K and \S\ref{sub:r15compensate} measures $-2.58$\,K against
@@ -3922,6 +4058,25 @@ Those are all-months numbers and snow is not a vegetation type --- it is a tile 
 type. Masked per cell per month, every forest type falls inside $+0.006$ and tropical broadleaf
 to $-0.0003$. \S\ref{sub:albreg} was right about the vegetation table; the real finding is a
 $+0.0080$ residual on \emph{sparse and cultivated} surfaces. & \S\ref{sub:snowtile} \\
+\dead{Round 16: raising the exposed-snow skin conductivity will warm Siberian DJF by
+$+1$ to $+3$\,K} &
+DJF got \emph{worse}, monotonically: $-2.834$ at $\lambda_{sk}{=}15$, $-3.226$ at $25$, against
+I1's $-2.759$. Both runs score a global T2m RMSE worse than the control. Skin conductivity is
+not the winter route. & \S\ref{sub:r16res} \\
+\dead{A moss/organic layer on larch and tundra recovers ${>}2$\,K of boreal summer
+(Gaillard 2025)} &
+$-0.168$\,K vs G4 at $\lambda_{sk}{=}2.9$ and $-0.314$ at $1.7$ --- more moss is \emph{worse},
+and the stronger run is a significant degradation. Falsifies the $\lambda_{sk}$ \emph{proxy};
+a real organic layer needs heat capacity and moisture, not just skin coupling. &
+\S\ref{sub:r17l} \\
+\dead{The land albedo correction is worth ${\sim}1.1$\,W\,m$^{-2}$ and $0.1$--$0.2$\,K of land
+warming} &
+Measured $0.77$\,W\,m$^{-2}$ and $0.089$\,K. The sensitivity assumption ($0.12$\,K per
+W\,m$^{-2}$) was right to $0.116$; the forcing estimate was optimistic. & \S\ref{sub:r17budget} \\
+\dead{K3 should push the soil-albedo scale further, since K2 alone gives the best global RMSE} &
+Retracted \emph{before} it was run: the residual $26\,\%$ is worth ${\sim}0.03$\,K, and $0.95$
+already delivers the measured $-0.0163$ --- going further is tuning against the observation. &
+\S\ref{sub:r17budget} \\
 \dead{I3 is the best lever the campaign has produced} &
 Drafted on the Siberian-box scripts alone before the guardrails were run. True for JJA T2m
 ($+1.322$\,K) and Siberian SW, but I3 carries $+1.72$\,W\,m$^{-2}$ at 60--90N, the largest

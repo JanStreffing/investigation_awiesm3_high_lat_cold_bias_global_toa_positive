@@ -24,6 +24,82 @@ Detection thresholds at 44 yr — **quote `t`, never a bare delta**:
 
 ---
 
+## 0. ⭐ ROUND 17 RESULTS (2026-08-05) — K1 ADOPTED, J and L falsified
+
+**The kept configuration is now K1 = G4 + the snow-free land albedo correction.**
+Section 1 below describes G4, which K1 is built on and which remains valid.
+
+### K1 adopted
+
+| | Siberian JJA | DJF | net TOA 60–90N | **global T2m RMSE** |
+|---|---:|---:|---:|---:|
+| control | — | — | −97.737 | 1.579 |
+| G4 | +0.952\* | −0.385 | −97.603 | 1.543 |
+| I3 | +1.322\* | −2.439\* | **−96.017** | 1.556 |
+| **K1** | **+1.036\*** (t=8.29) | −0.496 | −97.463 | **1.524** |
+| K2 | +0.913\* | −0.144 | −97.525 | **1.518** |
+| *CERES* | — | — | −97.98 | — |
+
+Both clean, every season inside its own threshold, the two best global T2m RMSE of the
+campaign. Tundra exclusion worked — no Arctic penalty, against I3's +1.72 W/m².
+In the Siberian box neither K is significant vs G4 (+0.084 / −0.039, inside ±0.244), **as
+predicted in advance**: K's mass is crops, semidesert and the subtropical desert belt.
+
+**What it bought, on the metric it was designed for** (global land, vs G4):
+
+| | land T2m | land SWnet | land albedo |
+|---|---:|---:|---:|
+| **K1** | **+0.089 K** | +0.77 W/m² | −0.0059 |
+| K2 | +0.076 K | +0.48 | −0.0038 |
+
+The lever worked: it removed **74 %** of the +0.0080 snow-free residual, at a measured
+sensitivity of **0.116 K per W/m²** against the 0.12 assumed. Geography right too — land
+<60N warms +0.109 K, land >60N *cools* 0.055 K.
+
+⚠ **Prediction was too optimistic.** ~~~1.1 W/m² and 0.1–0.2 K~~ → measured 0.77 and 0.089.
+The sensitivity assumption was right; the forcing estimate was not.
+
+### 🛑 THE NEGATIVE RESULT MATTERS MORE THAN THE 0.089 K
+
+Three quarters of a **directly measured** land albedo bias removed → 0.089 K of the ~0.7 K
+universal bias. A *perfect* fix buys ~0.12 K, **one sixth** of the target.
+**Land surface albedo is closed out as the explanation for the universal cold bias.**
+
+⚠ **K3 RETRACTED before it was run.** ~~Push the soil-albedo scale further since K2 alone
+gives the best global RMSE.~~ The residual 26 % is worth ~0.03 K, and 0.95 already delivers
+the measured −0.0163 — going further is tuning **against** the observation, the same
+overfitting-to-present-day trap that ruled out editing the soil ancillary. **Albedo tuning
+stops here.**
+
+### J falsified (round 16) — skin conductivity is not the winter route
+
+| Δ vs control | DJF | JJA | SON | global T2m RMSE |
+|---|---:|---:|---:|---:|
+| I1 (base) | −2.759\* | +1.250\* | −0.766\* | 1.627 |
+| **J1** (λ_sk 15) | **−2.834\*** | +1.313\* | −1.132\* | 1.581 |
+| **J2** (λ_sk 25) | **−3.226\*** | +1.246\* | −0.879\* | 1.597 |
+| control | — | — | — | 1.579 |
+
+Predicted **DJF +1…+3 K**. Measured: DJF got **worse, monotonically with the knob**, and both
+runs score a global RMSE worse than the control. The pre-registered falsifier fired. With
+λ_sk excluded and the route known to be non-radiative, **boundary-layer mixing** (Holtslag
+2013, Sandu 2013) is what remains. Doubly moot: built on I1, now deactivated.
+
+### L falsified (round 17) — the moss proxy, monotonically the wrong way
+
+| | JJA | vs G4 | verdict (±0.244) |
+|---|---:|---:|---|
+| G4 | +0.952\* | — | the base |
+| L1 (λ_sk 2.9) | +0.784\* | −0.168 | inside → null |
+| **L2** (λ_sk 1.7) | +0.638\* | **−0.314** | **significant degradation** |
+
+More moss is *worse* — opposite of Gaillard (2025), and the monotonic ordering makes noise
+implausible. ⚠ **Caveat:** λ_sk is only a *proxy* for an organic layer — it changes skin
+coupling but not heat capacity, moisture retention or the evaporative regime. This falsifies
+**the proxy**, not necessarily the mechanism. A real organic layer needs a soil-column change.
+
+---
+
 ## 1. THE KEPT CONFIGURATION — G4
 
 **Carry this forward.** Best configuration of the campaign on every headline metric,
