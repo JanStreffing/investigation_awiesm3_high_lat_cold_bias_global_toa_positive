@@ -953,7 +953,12 @@ conclusion: the \emph{roughness} mechanism survives (even leafless, larch is $\g
 seasonality fingerprint (\S\ref{sub:seasonality}) shows the LPJG cold effect is co-equal in the \emph{sunless}
 Nov--Jan months --- i.e.\ the dark-season roughness/inversion part is what carries the larch zone.
 
-\textbf{The coupled winter cold is a self-inflicted trap, not the trigger.} At the cells where prescribed veg has
+\textbf{The coupled winter cold is a self-inflicted trap, not the trigger} --- \emph{for the
+evergreens}. \textcolor{red}{\textbf{This paragraph applies to BNE/BINE only}}: as
+\S\ref{sub:tworoutes} shows, larch (BNS) has no cold gate at all, clears its GDD gate on
+$84\,\%$ of NE-Siberian cells, and is lost to \emph{growing-season competition with grass}
+($5.8\times$ its LAI) rather than to any gate. Since NE Siberia is ${\sim}80\,\%$ larch, the
+mechanism below does not explain the region that matters most. At the cells where prescribed veg has
 forest but LPJG does not (1785 boreal-land cells), the growing-season gates are already cleared in every run
 (JJA $\ge12$\,\textdegree C, GDD5 $>500$); only the winter \texttt{tcmin\_est}$=-30$ evergreen gate binds. But against
 the \emph{forested} WITHOUT-LPJG climate it excludes evergreens on just $23\%$ of cells ($\approx$ERA5's $22\%$),
@@ -3676,6 +3681,90 @@ past it means tuning \emph{against} the observation, which is the same overfitti
 trap that ruled out editing the soil ancillary (\S\ref{sub:stacking}). \textbf{K1 is adopted and
 albedo tuning stops here.}
 
+\section{The boreal forest fails by TWO different routes (2026--08--05)}\label{sec:tworoutes}
+The report has carried a single story for the missing forest: the winter evergreen cold gate
+(\S\ref{sub:levervsera5}). Evaluating the \texttt{Tuning\_test\_07*}/\texttt{08*} LPJ-GUESS
+families (\texttt{lai.out}, \texttt{fpc.out}, \texttt{est\_limits.out}) shows that story is
+\textbf{correct but only half the picture}, and that it does not apply at all to the region
+that matters most --- NE Siberia, which is ${\sim}80\,\%$ larch.
+
+\subsection{BNE is gate-excluded; BNS is permitted and outcompeted}\label{sub:tworoutes}
+Larch zone, 60--72\textdegree N $\times$ 100--160\textdegree E, 2520 cells, last decade:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r}
+\toprule
+ & 080a (CRUNCEP base) & 09A (newSeaIce) \\
+\midrule
+\texttt{mTmin20} & $-38.94\,^\circ$C & $-41.89\,^\circ$C \\
+\textbf{BNE} gate \texttt{tcmin\_est}$=-30$ & \textbf{0.7\,\% clear} & \textbf{0.0\,\% clear} \\
+\textbf{BNS} cold gate & \textbf{none, 100\,\%} & \textbf{none, 100\,\%} \\
+\texttt{agdd5} vs BNS \texttt{gdd5min\_est}$=350$ & \textbf{83.6\,\% clear} & $79.0\,\%$ \\
+\midrule
+BNE LAI & $\mathbf{0.000}$ & $\mathbf{0.000}$ \\
+BNS LAI & $0.129$ & $0.103$ \\
+C3G LAI & $0.751$ & $0.510$ \\
+\textbf{grass\,:\,larch} & $\mathbf{5.8\times}$ & $5.0\times$ \\
+cells with C3G $>$ BNS & $65\,\%$ & $60\,\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The two PFTs fail for completely different reasons.}
+
+\begin{itemize}\itemsep2pt
+\item \textbf{BNE/BINE: a climate gate.} $0.7\,\%$ of larch-zone cells clear
+  \texttt{tcmin\_est}$=-30$, and their LAI is \emph{exactly} $0.000$. The winter-cold story of
+  \S\ref{sub:levervsera5} is right, and this is where it applies --- the evergreen zone of
+  west Eurasia and North America, \emph{not} NE Siberia.
+\item \textbf{BNS (larch): no gate at all, and it loses.} It has no cold limit and clears its
+  \texttt{gdd5min\_est}$=350$ on $84\,\%$ of cells, so it is \textbf{climatically permitted}
+  across the zone --- yet grass carries $5$--$6\times$ its LAI, grass exceeds larch on
+  $65\,\%$ of cells, and larch is absent outright from half the cells where it is allowed.
+  \textbf{Larch is not excluded; it is outcompeted in the growing season.}
+\end{itemize}
+
+\textbf{This is a correction to this report, not a new hypothesis.} \S\ref{sub:levervsera5}
+already states that BNS has no cold gate and is ``\emph{already permitted}'' --- and then never
+explains why it is absent anyway. A reader was left applying the winter-gate mechanism to a
+zone where it explains nothing, with only the roughness leg (\S\ref{sub:roughness}) for the
+$80\,\%$-larch region.
+
+\subsection{Reconciling this with the falsified ``competition, not climate''}\label{sub:compreconcile}
+\S\ref{sec:falsified} carries \emph{``the boreal failure is an LPJG-internal competition
+error''} as dead, killed by the forcing-transfer test reproducing most of the loss with
+byte-identical parameters. \textbf{That falsification stands and is not weakened here}, because
+it and the result above are different claims:
+
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+claim & status & \\
+\midrule
+competition is an LPJG \emph{parameter error} & \textbf{dead} & forcing reproduces the loss unchanged \\
+competition is the \emph{pathway} by which climate removes larch & \textbf{supported} & permitted on 84\,\%, loses 5.8:1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Forcing is the \emph{driver}; grass-versus-larch is the \emph{mechanism}. Both hold
+at once. As written, the report recorded only the falsification, so a reader would reasonably
+conclude that growing-season competition had been ruled out --- it had not been tested.
+
+\emph{No contradiction with \S\ref{sub:seasonality} either}, though the two look opposed. That
+section measures vegetation$\to$climate (the LPJG cold effect on T2m, which vanishes in
+July--August). This measures climate$\to$vegetation (how the growing season sets larch cover).
+Opposite directions of the same coupling; both can be true.
+
+\textbf{Weak evidence, flagged as such.} Weakening grass (\texttt{C3G pstemp\_low}$=12$, run
+08G) moves BNS $0.129\to0.156$ and TREEFPC $0.060\to0.072$ while C3G falls $0.751\to0.583$ ---
+directionally exactly what competition predicts. But the 08 runs sit on \emph{different
+atmospheric bases} (06T vs 06V), so this is not a clean attribution and should not be quoted as
+one. The gate/permission evidence above is the load-bearing part; the knob evidence is
+suggestive only. On the old forcing, \textbf{07A (BNS \texttt{greff\_min} relaxed) did not
+recover BNS at all} ($0.024\to0.021$), which is why a forcing-consistent re-spin remains the
+precondition for any competition tuning (\S\ref{sub:xfer}).
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -3928,6 +4017,12 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   $1.3$--$1.6$ boreal-specific; G4 has taken ${\sim}0.95$ of the last (\S\ref{sub:tilebias}).
   The remainder is not reachable by a boreal-indexed lever, and this --- not a parameter
   limit --- is why F5 $=$ F4.
+\item \textbf{The boreal forest fails by TWO routes, not one} (\S\ref{sub:tworoutes}).
+  BNE/BINE are \emph{gate-excluded} --- $0.7\,\%$ of NE-Siberian cells clear
+  \texttt{tcmin\_est}$=-30$ and their LAI is exactly $0.000$. BNS (larch) has \emph{no} cold
+  gate, clears its GDD gate on $84\,\%$ of cells, and is \emph{outcompeted}: grass carries
+  $5.8\times$ its LAI. Since NE Siberia is ${\sim}80\,\%$ larch, the winter-gate mechanism
+  does not explain the region that matters most.
 \item \textbf{The near-surface cold is global, and the soil is not the cause.} All 20 surface
   types are cold in every season, and over low-lying land the soil and skin are the
   \emph{least}-biased parts of the column (\S\ref{sub:soilcol}, \S\ref{sub:tilebias}).
@@ -4044,7 +4139,15 @@ the deficit is $11$, and later $12.5$ split $7.0$ cloud $+$ $5.5$ albedo. & \S\r
 Misread of the table; $250$ is as-released for types 3/4. & \S\ref{app:params} \\
 \dead{``Competition, not climate'' --- the boreal failure is an LPJG-internal competition error} &
 The controlled forcing-transfer test reproduces most of the loss with byte-identical
-parameters. & \S\ref{sub:xfer} \\
+parameters. \textbf{Narrowed 2026--08--05}: what died is competition as a \emph{parameter
+error}. Competition as the \emph{pathway} by which climate removes larch is
+\textbf{supported} --- BNS is permitted on $84\,\%$ of NE-Siberian cells and loses to grass
+$5.8{:}1$. Forcing is the driver, competition the mechanism. & \S\ref{sub:xfer},
+\S\ref{sub:compreconcile} \\
+\dead{The missing boreal forest is explained by the winter evergreen cold gate} &
+True for BNE/BINE ($0.7\,\%$ of larch-zone cells clear $-30$\,\textdegree C, LAI exactly
+$0.000$) and false for the ${\sim}80\,\%$-larch NE Siberia, where BNS has no cold gate and is
+outcompeted instead. Two routes, not one. & \S\ref{sub:tworoutes} \\
 \dead{The excess snow cover was propping DJF up ${\sim}2.7$\,K, masking a $-4.7$\,K bias} &
 Asserted, not measured: winter cover is unchanged between the schemes, and the same signature
 was treated as disqualifying for H1. Route unidentified. & \S\ref{sub:r15compensate} \\

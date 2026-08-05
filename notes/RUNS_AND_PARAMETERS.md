@@ -853,3 +853,49 @@ I3 has already pushed 1.72 W/m² past CERES. They compete for one energy budget.
   to a rebuild; new experiments stage from the shared tree.
 - Legs ≤ 8 h wallclock; throughput varies 3–4× with system load, so size against the
   **slowest** observed rate (~12,700 steps/h → 8-year legs).
+
+---
+
+## 6. ⭐ THE BOREAL FOREST FAILS BY TWO ROUTES (2026-08-05)
+
+Evaluated from `Tuning_test_07*`/`08*` in `/work/bb1469/a270270/runtime/awiesm3-v3.4`
+(`lai.out`, `fpc.out`, `est_limits.out`). Larch zone 60–72N × 100–160E, 2520 cells:
+
+| | 080a CRUNCEP base | 09A newSeaIce |
+|---|---:|---:|
+| `mTmin20` | −38.94 °C | −41.89 °C |
+| **BNE** gate `tcmin_est` −30 | **0.7 % clear** | **0.0 % clear** |
+| **BNS** cold gate | **none → 100 %** | **none → 100 %** |
+| `agdd5` vs BNS `gdd5min_est` 350 | **83.6 % clear** | 79.0 % |
+| BNE LAI | **0.000** | **0.000** |
+| BNS LAI | 0.129 | 0.103 |
+| C3G LAI | 0.751 | 0.510 |
+| **grass : larch** | **5.8×** | 5.0× |
+| cells with C3G > BNS | 65 % | 60 % |
+
+- **BNE/BINE = climate gate.** 0.7 % of cells clear −30 °C; LAI exactly 0.000. The
+  winter-cold story applies **here** — evergreen west Eurasia and N America.
+- **BNS (larch) = no gate, outcompeted.** No cold limit, clears GDD on 84 % of cells, so it is
+  **climatically permitted** — yet grass carries 5–6× its LAI and larch is absent from half
+  the cells where it is allowed. **NE Siberia is ~80 % larch, so the winter-gate mechanism
+  does not explain the region that matters most.**
+
+### Reconciliation with the falsified "competition, not climate"
+
+| claim | status |
+|---|---|
+| competition is an LPJG **parameter error** | **dead** (forcing-transfer reproduces the loss unchanged) |
+| competition is the **pathway** by which climate removes larch | **supported** (permitted on 84 %, loses 5.8:1) |
+
+Forcing is the **driver**, grass-vs-larch the **mechanism**. Both hold. The report previously
+recorded only the falsification, so a reader would wrongly conclude growing-season competition
+had been ruled out — it had never been tested.
+
+No conflict with the "cold-season not growing-season" seasonality result either: that measures
+vegetation→climate, this measures climate→vegetation. Opposite directions of one coupling.
+
+⚠ **Knob evidence is weak, flagged as such.** 08G (`C3G pstemp_low`=12) moves BNS 0.129→0.156
+and TREEFPC 0.060→0.072 while C3G falls 0.751→0.583 — right direction, but the 08 runs sit on
+different atmospheric bases (06T vs 06V), so it is not a clean attribution. On the old forcing
+**07A (BNS `greff_min` relaxed) did not recover BNS at all** (0.024→0.021). A
+forcing-consistent re-spin remains the precondition for competition tuning.
