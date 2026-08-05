@@ -96,6 +96,20 @@ RUNS = [
     # summer gain to a surface organic layer, which HTESSEL lacks entirely.
     ('L1 moss2.9', 'amip_L1_moss29'),
     ('L2 moss1.7', 'amip_L2_moss17'),
+    # Round 17 (K): the snow-free LAND ALBEDO residual, on the G4 base.  Global
+    # land albedo is +0.0154 too high vs CERES; masking snow per cell per month
+    # splits that into +0.0074 snow (the I-series lever) and +0.0080 snow-free.
+    # Every FOREST type is already correct once snow is masked (all within
+    # +0.006), so RVVEGALB's high-vegetation entries are untouched; the error is
+    # on sparse/cultivated surfaces.  K1 corrects the vegetation table (crops
+    # x0.887, irrigated crops x0.910, semidesert x0.906) AND the bare-soil
+    # background (x0.95); K2 is the soil background ALONE, isolating the ~25% of
+    # land that RVVEGALB cannot reach (its table row is identically zero there).
+    # TUNDRA IS DELIBERATELY EXCLUDED so K stays orthogonal to J and L, which both
+    # act on boreal tiles.  NOT a Siberian lever -- score on bias_by_tile.py and
+    # global T2m RMSE, with the Siberian box as a guardrail only.
+    ('K1 landalb', 'amip_K1_landalb'),
+    ('K2 soilalb', 'amip_K2_soilalb'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
@@ -107,4 +121,13 @@ NOT_LEVERS = [
     'amip_lpjgforce_chk', 'amip_nolpjg_forc', 'amip_nolpjg_forcing', 'amip_nolpjg_pi1870',
     'amip_pi_clean1', 'amip_pi_clean2', 'amip_pi_dbg1', 'amip_pi_dbg2', 'amip_pi_dbg3',
     'amip_pi_fixtest', 'amip_pi_forcing',
+    # Round 18 aerosol DIAGNOSTICS (2026-08-05). These sit on the PRESENT-DAY base
+    # (1989-2015), not amip_pi_base (1872-1915), because MACv2-SP is transient and
+    # at 1870-1915 the anthropogenic plumes are already near zero -- the test would
+    # show nothing there. They must NOT enter the scored RUNS list: evaluate.sh
+    # would difference them against the PI control over the wrong years.
+    # Compare them against amip_presentday, and on BOTH reflection columns
+    # (clear-sky and cloud) by latitude band, never the all-sky total.
+    'amip_M1_noanthaer',   # LMACV2SP=.false. -- anthropogenic aerosol removed
+    'amip_M2_aer3d',       # LAER3D=.true.    -- 3D CAMS vertical distribution
 ]

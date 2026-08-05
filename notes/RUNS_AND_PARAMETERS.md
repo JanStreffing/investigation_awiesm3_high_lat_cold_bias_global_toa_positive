@@ -494,6 +494,56 @@ source change plus a run family while a 20 K soil error is unexplained.
 
 *Asset:* `soil_temp_vs_rihmi.py`; obs at `/work/ab0246/a270092/obs/RIHMI-WDC/`.
 
+### Round 18 — aerosol diagnostics, IN FLIGHT (2026-08-05)
+
+⚠ **On the PRESENT-DAY base (1989-2015), not the PI base.** MACv2-SP anthropogenic
+aerosol is TRANSIENT, so at the usual 1872-1915 the plumes are already near zero and
+these tests would show nothing. Present-day is also the period the +2.68 W/m² was
+measured over and the only one comparable to CERES. **Listed in `NOT_LEVERS`** so
+`evaluate.sh` cannot difference them against the PI control over the wrong years.
+Compare against `amip_presentday`.
+
+| run | change | asks |
+|---|---|---|
+| **M1** `amip_M1_noanthaer` | `LMACV2SP: false`, `LMACV2SP_CCNF: false` | is the clear-sky excess ANTHROPOGENIC? |
+| **M2** `amip_M2_aer3d` | `LAER3D: true` | is it the VERTICAL DISTRIBUTION of the same aerosol? |
+
+**The aerosol configuration, traced end to end** (several wrong turns before this stuck):
+
+| component | source | year-dependent? | tunable? |
+|---|---|---|---|
+| anthropogenic | MACv2-SP plumes, `SPv2.1_1850-2023_CMIP7.nc` | **yes** | plume amplitude |
+| natural background | CAMS/MACC monthly climatology (`NAERMACC=1`) | **no, fixed** | **dust only** |
+| GHG, ozone, strat. aerosol | CMIP7 | yes | — |
+| `CMIP6_..._aerosol_radiation_2D` file in the input dir | **not read by this version** | — | — |
+
+- `suecrad.F90:1115`: `IF (LMACV2SP) NAERMACC = 1` — CAMS supplies the background,
+  MACv2-SP adds the anthropogenic plumes on top.
+- `LAER3D=.false.` comes from `esm_tools/configs/components/oifs/oifs48.tuning.yaml`.
+  **ECMWF's own TCO95L91 reference `fort.4` sets nothing in `&NAERAD`**, so ECMWF takes
+  the shipped default `.TRUE.` (3D CAMS). Ours is an EC-Earth/AWI choice.
+- The 3D file **is** staged (`ifsdata/aerosol_cams_climatology_43R3_3D.nc`) and carries
+  the SAME mass as the 2D to 0.4 % — so M2 changes only *where* the aerosol sits.
+- **Sea salt has NO scaling knob anywhere in the radiation tree.** Only dust does
+  (`RDUMULF`, `RWGHTDU1/2/3`), and those are **not namelist-settable** — hardcoded in
+  `suecrad.F90` (`LAERADJDU=.FALSE.`, all factors 1.0), so no aerosol scaling is active
+  in any campaign run.
+- ⚠ `LMACV2SP_CCNF=.true.` feeds aerosol into cloud droplet number, so **neither run is
+  a clean clear-sky lever** — score both columns.
+
+**Expectations, and the falsifier.** MACv2-SP is NH continental outflow, not a Southern
+Ocean signal. If M1 recovers most of the +4.22 at 30-60N but leaves the SO's +5.10
+intact, the residual is the CAMS sea-salt background — and `Sea_Salt_bin2` is 77 % of
+SO AOD (119 mg/m², implied AOD550 0.107 of 0.140).
+
+**Prior evidence says expect little.** MISR gives SO AOD 0.107 vs the model's ~0.140;
+that +0.033 is worth only ~0.7 W/m², **13 % of the +5.10**. And the clear-sky deficit
+is predominantly a SURFACE problem: globally the surface absorbs 3.46 W/m² too little
+while the atmosphere absorbs 0.78 too *much*.
+
+⚠ **DO NOT ADOPT EITHER.** Removing anthropogenic aerosol from a present-day run is
+physically wrong; these attribute a residual, nothing more.
+
 ### Round 16 — in flight (2026-08-04)
 
 `vlamsk_mod.F90` hardcoded the snow-tile skin conductivities, so they were untunable
