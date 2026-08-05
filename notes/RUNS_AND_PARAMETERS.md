@@ -899,3 +899,110 @@ and TREEFPC 0.060→0.072 while C3G falls 0.751→0.583 — right direction, but
 different atmospheric bases (06T vs 06V), so it is not a clean attribution. On the old forcing
 **07A (BNS `greff_min` relaxed) did not recover BNS at all** (0.024→0.021). A
 forcing-consistent re-spin remains the precondition for competition tuning.
+
+---
+
+## 7. PARKED (2026-08-05) — sea ice, melt ponds, and the clear-sky SW split
+
+**Not a lever for either campaign target.** Filed because it is a genuine model defect
+that matters for sea-ice realism in the coupled PI spin-up, and because the diagnosis
+cost real effort. Deliberately kept out of the tex.
+
+### Why it is not usable for Siberia or the Southern Ocean
+
+- **Siberia: no.** The Siberian target lives in AMIP, where sea ice is *prescribed* and
+  FESIM does not exist. Coupled, the chain ice albedo -> Arctic Ocean energy -> advection
+  into Siberia is long and weak against a land-surface bias.
+- **Southern Ocean: marginal.** Reducing Antarctic ponds brightens the ice, which is the
+  *correct* direction (surface −0.032 too dark, ponds 2–3× too abundant — consistent),
+  and more reflection helps the SO energy target. But it is worth ~0.1–0.2 W/m² globally
+  against a **−7.65 W/m² SO cloud deficit** that dominates the band.
+
+### The solid finding: melt pond fraction is 2–3× too high in BOTH hemispheres
+
+Measured from `apnd` in the gen-10 coupled runs (`/work/bb1469/a270270/runtime/awiesm3-v3.4`):
+
+| | model | observed | ratio |
+|---|---:|---:|---:|
+| Arctic July | **0.51** | 0.15–0.25 (MODIS, Rösel et al. 2012) | 2–3× |
+| Arctic August | 0.53 | declining | — |
+| Antarctic February | **0.12** | <0.05 | 2–3× |
+
+**The global scheme discriminates the hemispheres correctly on physics alone** — SH ponding
+is a quarter of NH, and SH ice keeps 0.28 m of snow through summer while NH snow goes to
+~0.001 m. **No hemispheric parameter is needed or justified**: inventing one would fix the
+model to present-day geography and destroy its ability to respond in another climate state
+(the same principle that ruled out a spatial land-albedo correction, §3e).
+
+**Prime suspect: `rfracmax = 1.0`** in `&meltpond` — 100 % of meltwater retained in ponds at
+maximum, against CICE's default **0.85**. Second candidate `pndaspect = 0.8`. Both global,
+both physical, and a single fix should improve both hemispheres at once.
+
+### The sea-ice albedo bias is ARCTIC, and the hemispheres oppose
+
+AMIP (`amip_presentday`, OIFS `RALBICE_AR`/`_AN` tables — no FESIM):
+
+| | season | model | CERES | bias |
+|---|---|---:|---:|---:|
+| **Arctic** | melt (JJA) | 0.4948 | 0.3752 | **+0.1196** |
+| Arctic | annual | 0.5839 | 0.4810 | +0.1029 |
+| **Antarctic** | melt (DJF) | 0.2490 | 0.3263 | **−0.0772** |
+| Antarctic | annual | 0.4088 | 0.4412 | −0.0324 |
+
+⚠ **Correction:** the "+0.0327 sea-ice albedo excess" quoted earlier was a *global* sea-ice
+mean that averaged a large Arctic positive against an Antarctic negative and hid both.
+
+⚠ This AMIP bias is an **OIFS table problem with no FESIM in the configuration**. It does
+*not* constrain the pond scheme, and the pond scheme does not explain it.
+
+### Two corrections to earlier claims in this thread
+
+1. ~~Coupled runs have an output gap: only `ci` and `ssrd` are written, so sea-ice albedo is
+   unmeasurable.~~ **Wrong.** Full SW output exists under CMIP names in the `atmos_*` streams
+   (`rsus`, `rsds`, `rsuscs`, `rsdscs`, `rsdt`, `rsut`, `rsutcs`). Only the
+   `atm_remapped_1d_*` stream is sparse. No esm_tools change is needed.
+2. Coupled sea-ice albedo *is* measurable (`rsus/rsds`), but the comparison is **confounded
+   by ice extent**: each run samples a different cell set, so the CERES value itself shifts
+   between runs (NH JJA 0.327 for 10A vs 0.334 for 10B). A common ice mask and period are
+   required before quoting any coupled albedo bias.
+
+### The clear-sky / cloud split that framed all of this
+
+TOA reflected SW vs CERES, model − CERES [W/m²], + = model reflects more:
+
+| band | clear-sky | cloud |
+|---|---:|---:|
+| 60–90N | +4.42 | +1.36 |
+| 30–60N | +4.22 | −4.22 |
+| tropics | +1.55 | +0.41 |
+| **SO 45–65S** | **+5.10** | **−7.65** |
+| 60–90S | +2.34 | −8.19 |
+| GLOBAL | +2.68 | −1.17 |
+
+**Two independent errors that hide each other**: in the SO they nearly cancel (+5.10 and
+−7.65 give only −2.54 all-sky), so the SO looks nearly right in the all-sky total while both
+halves are badly wrong. Probably why the campaign's two targets have fought each other —
+A1a bought 82 % of the SO cloud gap and cost −0.75 K in Siberia.
+
+SO 45–65S clear-sky excess by surface: ice-free ocean +3.56 (79 % of area), **sea ice +11.22
+(19.8 % of area, 44 % of the total)**, land +5.93 (1.2 %).
+
+Attribution of the SO +5.10, as far as it goes:
+
+| term | W/m² | share | evidence |
+|---|---:|---:|---|
+| sea-ice albedo | ~2.2 | 44 % | but see the hemispheric split above |
+| ocean surface albedo | ~0.9 | 18 % | +0.0072 to +0.0109 at 45–65S, and SH-specific |
+| aerosol (+0.033 AOD vs MISR) | ~0.7 | 13 % | MISR 0.107 vs model ~0.140 |
+| **unexplained** | **~1.3** | **25 %** | — |
+
+⚠ The ocean-albedo term is **asymmetric** (+0.0109 at 55–65S vs +0.0027 at 55–65N), so a
+pure zenith-angle formula error is excluded — something SH-specific (whitecaps under
+stronger winds? marginal-ice leakage? CERES retrieval) is involved and is not identified.
+
+⚠ The Antarctic shows +4.61 W/m² clear-sky excess while its surface is too *dark*. That
+cannot be surface albedo and is unexplained.
+
+*Assets:* MISR/MODIS AOD are on `/pool/data/ICDC/atmosphere/{misr,modis_*}_aerosol` — no
+download needed. CAMS aerosol climatology is `ifsdata/aerosol_cams_climatology_43R3*.nc`;
+the 2D and 3D versions carry the same mass to 0.4 %.
