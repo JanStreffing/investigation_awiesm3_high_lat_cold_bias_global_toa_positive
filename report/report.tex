@@ -3286,6 +3286,114 @@ carries the penalty with no vegetation change at all. The route must be
 \textbf{thermal --- the snow/exposed-tile coupling} --- which is precisely what round 16
 (\S\ref{sec:lamsk}) tests, so the diagnosis and the running experiment agree.
 
+\subsection{Direct observations at last: RIHMI-WDC station soil temperature (2026--08--05)}\label{sub:rihmi}
+Every soil claim in this report had rested on ERA5, whose land surface \emph{is} HTESSEL ---
+the same snow scheme, the same soil thermal conductivity --- so it is a sibling, not a
+witness. \textbf{RIHMI-WDC (Sherstyukov v3)} ends that: daily soil temperature at Russian
+meteorological stations, 1963--2024, twelve depths from 2 to 320\,cm, measured
+\textbf{under natural cover} so the snowpack is intact. 43 of the 110 stations lie in the
+campaign box. Model and ERA5 are sampled \emph{at the station points}, not box-averaged, which
+is the one representativeness control available without land-cover weighting.
+
+\textbf{What the archive cannot do:} depths 2/5/10/15\,cm carry \emph{no} winter data --- the
+Russian network withdraws the shallow Savinov thermometers for the cold season. So
+\texttt{stl1} (0--7\,cm), where the damage is largest, \textbf{has no observational
+counterpart}; \texttt{stl2} is the shallowest verifiable layer and bounds it. Only
+\texttt{tsoil\_qc == 0} is used.
+
+\begin{center}\footnotesize
+\begin{tabular}{l l r r r r r}
+\toprule
+ & obs depth & OBS & model & bias & OBS offset & model offset \\
+\midrule
+\texttt{stl2} & 20\,cm & $-6.07$ & $-5.03$ & $\mathbf{+1.04}$ & $\mathbf{+17.78}$ & $+20.11$ \\
+\texttt{stl3} & 40/80\,cm & $-3.58$ & $-3.19$ & $\mathbf{+0.39}$ & $\mathbf{+20.28}$ & $+21.95$ \\
+\texttt{stl4} & 120--240\,cm & $+0.34$ & $-0.23$ & $\mathbf{-0.57}$ & $\mathbf{+24.18}$ & $+24.85$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Model is \texttt{amip\_presentday} (1990--2014), period-clean. Offset $=$ soil minus
+2\,m air, each dataset using its \emph{own} air, which is what makes it insensitive to the
+$2.8$\,K air-temperature change the I-series also carries.
+
+\textbf{Two results.} The control soil is \textbf{correct to ${\sim}1$\,K at every verifiable
+depth} --- there was no pre-existing soil bias to remove. And the model is mildly
+\emph{over}-insulated, by $+0.7$ to $+2.3$\,K of offset; a small real bias, in the opposite
+direction to the I-series.
+
+\dead{The winter soil-air offset under a deep Siberian snowpack is +10 to +20\,K.} That was
+quoted from memory of the permafrost literature and is too low: the station record gives
+$+17.8$ to $+24.2$\,K. The correction strengthens rather than weakens the conclusion below.
+
+Scored on offset (the tuning runs are 1872--1915, so absolutes are not period-comparable):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+ & \texttt{stl1} & \texttt{stl2} & \texttt{stl3} & \texttt{stl4} \\
+\midrule
+control & $19.87$ & $20.39$ & $22.24$ & $25.13$ \\
+G4 & $20.27$ & $20.81$ & $22.72$ & $25.82$ \\
+\textbf{I1} & $\mathbf{1.53}$ & $\mathbf{2.61}$ & $\mathbf{6.36}$ & $\mathbf{15.25}$ \\
+\textbf{I3} & $1.41$ & $2.54$ & $6.46$ & $15.63$ \\
+\midrule
+\textbf{OBSERVED} & --- & $\mathbf{+17.78}$ & $\mathbf{+20.28}$ & $\mathbf{+24.18}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent I1 is \textbf{$-15.2$\,K wrong at 20\,cm}, $-13.9$ at 40--80\,cm, $-8.9$ at
+1.2--2.4\,m. In raw terms its soil sits at $-25.8\,^\circ$C where stations measure
+$-6.1\,^\circ$C. The snowpack has stopped insulating at every depth.
+
+\subsection{DEACTIVATED (2026--08--05): what reactivation would require}\label{sub:scfoff}
+\textbf{\texttt{ECE\_SNOW\_SCF} is switched off and stays off.} The carried-forward
+configuration (G4) does not set it; no production run should. The default remains
+\texttt{0}~$=$~as-released, so this is a decision not to use an available option, not a code
+removal --- the implementation stays in the source for whoever picks the problem up.
+
+\textbf{Why.} Verified against \emph{direct observations} --- RIHMI-WDC station soil
+temperature, 43 stations in the box, under natural cover (\S\ref{sub:rihmi}) --- the scheme
+destroys the winter snow insulation. Observed thermal offset (soil minus 2\,m air) is
+$+17.8$\,K at 20\,cm, $+20.3$ at 40--80\,cm, $+24.2$ at 1.2--2.4\,m. The control reproduces
+those to within $0.7$--$2.3$\,K. I1 gives $+2.6$, $+6.4$, $+15.3$: an error of $-15$\,K at
+20\,cm. The control soil itself is correct to ${\sim}1$\,K at every depth the Russian network
+reports in winter, so this is a \textbf{new error, not the removal of an old one}. Since
+\texttt{ST1L}--\texttt{ST4L} feed LPJ-GUESS, that alone disqualifies it for coupling.
+
+\textbf{What we still do not know, and it matters.} The mechanism is \emph{unidentified}. The
+monthly decomposition rules out the obvious candidates: Siberian snow cover changes by
+$-0.02$ in October and SWE not at all, so it is neither a cover nor a mass effect. The soil
+\emph{leads} the air (October: soil $-4.19$\,K, air $-0.02$), so it is a surface-coupling
+change rather than an atmospheric one. Winter snow density falls $20$--$27$\,kg\,m$^{-3}$,
+which with unchanged SWE means a \emph{deeper, less dense} pack --- that insulates
+\emph{better}, so density is a consequence of a cold pack, not its cause.
+\dead{The tanh formula bites hardest in October when snow is shallow, cutting cover and
+exposing the soil.} Measured: cover is essentially unchanged. That explanation was written
+into \texttt{soil\_temp\_vs\_obs.py} before it was checked and is wrong.
+
+\textbf{Reactivation therefore needs three things, in order:}
+\begin{enumerate}\itemsep2pt
+\item \textbf{Diagnose \texttt{ZCVS}.} It is not in the output stream, which is why the
+  mechanism is still open --- every field we do write exonerates itself. Nothing should be
+  rebuilt before the snow-tile fraction can actually be seen.
+\item \textbf{Accumulation/ablation hysteresis.} Our implementation applies one depletion
+  curve year-round. Both Niu \& Yang (2007) and Swenson \& Lawrence (2012) use
+  \emph{different} curves for accumulation and ablation, and that omission is the most likely
+  structural defect. It would also match the measured timing: the benefit is May--June, the
+  damage begins in October, so the two are cleanly separable in season.
+\item \textbf{Re-verify on the SOIL OFFSET, not on snow cover.} The scheme was accepted in
+  round 15 because it fixed melt-out to within a day of satellite. That was true and it was
+  not sufficient. \S\ref{sub:rihmi} is the test any successor must pass.
+\end{enumerate}
+
+\textbf{And weigh the prize before spending the effort.} I2 --- the scheme alone, no
+vegetation levers --- bought \textbf{$+0.094$\,K JJA, inside the noise floor}. The value of
+the snow fix is not temperature; it is that the snow field becomes correct, which matters for
+LPJ-GUESS growing-season onset. That is a real but narrow benefit, and it does not justify a
+source change plus a run family while a $20$\,K soil error remains unexplained.
+
 \medskip
 \section{Round 16 (2026--08--04): the snow-tile skin conductivity}\label{sec:lamsk}
 \texttt{vlamsk\_mod.F90} hardcoded the snow-tile skin conductivities, so they were untunable.
@@ -3692,7 +3800,13 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   Route~B (late melt $\to$ June albedo) is \textbf{diagnosed and fixable} but carries almost no
   temperature leverage (\S\ref{sub:r15notemp}).
 \item \textbf{The snow field can now be made correct}: melt-out 12~May against a satellite
-  11~May, June cover $0.160$ vs $0.203$ (\S\ref{sub:r15works}).
+  11~May, June cover $0.160$ vs $0.203$ (\S\ref{sub:r15works}) --- but the scheme that does it
+  is \textbf{deactivated}, because it destroys the winter soil (\S\ref{sub:scfoff}).
+\item \textbf{The control soil is right, verified against direct observations.} RIHMI-WDC
+  station soil temperature under natural cover puts the control within ${\sim}1$\,K at every
+  depth the Russian network reports in winter, and its thermal offset within $0.7$--$2.3$\,K
+  of the observed $+17.8$ to $+24.2$\,K (\S\ref{sub:rihmi}). The campaign no longer depends on
+  ERA5 --- an HTESSEL sibling --- for any soil claim.
 \item \textbf{I3 is the strongest summer lever built}: Siberian JJA $+1.322$\,K ($t{=}10.61$),
   and it closes the Siberian surface SW deficit to $166.58$ against CERES $166.26$ --- the
   deficit \S\ref{sec:albedo} opened the albedo thread with. It is \textbf{not adopted}: it

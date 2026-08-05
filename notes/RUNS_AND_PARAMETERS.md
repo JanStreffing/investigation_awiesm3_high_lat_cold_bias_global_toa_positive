@@ -359,6 +359,65 @@ whole radiative chain, and it holds for I2, which carries the penalty with no ve
 change at all. The route is **thermal — the snow/exposed-tile coupling** — which is exactly
 what round 16 tests.
 
+### 🛑 `ECE_SNOW_SCF` DEACTIVATED (2026-08-05) — and what reactivation needs
+
+**The switch stays at 0 (as-released). No production run sets it.** The default is
+`ECE_SNOW_SCF: 0`, so this is a decision not to use an option, not a code removal — the
+implementation stays in the source for whoever picks the problem up.
+
+**Why — direct observations, not ERA5.** RIHMI-WDC (Sherstyukov v3) station soil temperature,
+43 stations in the box, **under natural cover** so the snowpack is intact. Sampled at the
+station points, not box-averaged:
+
+| | obs depth | OBS | model | bias | OBS offset | model offset |
+|---|---|---:|---:|---:|---:|---:|
+| `stl2` | 20 cm | −6.07 | −5.03 | **+1.04** | **+17.78** | +20.11 |
+| `stl3` | 40/80 cm | −3.58 | −3.19 | **+0.39** | **+20.28** | +21.95 |
+| `stl4` | 120–240 cm | +0.34 | −0.23 | **−0.57** | **+24.18** | +24.85 |
+
+Offset = soil − 2 m air, each dataset using its **own** air (insensitive to the 2.8 K air
+change the I-series also carries). Scored on offset:
+
+| | stl1 | stl2 | stl3 | stl4 |
+|---|---:|---:|---:|---:|
+| control | 19.87 | 20.39 | 22.24 | 25.13 |
+| G4 | 20.27 | 20.81 | 22.72 | 25.82 |
+| **I1** | **1.53** | **2.61** | **6.36** | **15.25** |
+| **I3** | 1.41 | 2.54 | 6.46 | 15.63 |
+| **OBSERVED** | — | **+17.78** | **+20.28** | **+24.18** |
+
+I1 is **−15.2 K wrong at 20 cm**. Raw: its soil sits at −25.8 °C where stations measure
+−6.1 °C. **The control was correct to ~1 K at every verifiable depth**, so this is a NEW
+error, not the removal of an old one. `ST1L`–`ST4L` feed LPJ-GUESS → disqualifying.
+
+⚠ **`stl1` (0–7 cm) has NO winter observations** — the Russian network withdraws shallow
+Savinov thermometers for the cold season. `stl2` is the shallowest verifiable layer.
+
+⚠ **Correction:** the "+10 to +20 K" offset band quoted earlier was from memory of the
+permafrost literature and is too low. The station record gives **+17.8 to +24.2 K**.
+
+**The mechanism is UNIDENTIFIED**, and the obvious candidates are ruled out:
+- ~~the tanh cuts cover in October when snow is shallow~~ — **wrong**: cover changes −0.02 in
+  Oct, SWE not at all.
+- The soil **leads** the air (Oct: soil −4.19 K, air −0.02) → surface coupling, not atmosphere.
+- Winter snow density falls 20–27 kg/m³ with unchanged SWE → a *deeper, less dense* pack,
+  which insulates **better**. Density is a consequence of a cold pack, not its cause.
+
+**Reactivation needs three things, in order:**
+1. **Diagnose `ZCVS`** — it is not in the output stream, which is exactly why the mechanism is
+   still open. Rebuild nothing before the snow-tile fraction can be seen.
+2. **Accumulation/ablation hysteresis** — we apply one curve year-round; Niu & Yang (2007) and
+   Swenson & Lawrence (2012) both use different curves for accumulation and ablation. Matches
+   the measured timing: benefit in May–June, damage from October, cleanly separable in season.
+3. **Re-verify on the SOIL OFFSET, not snow cover.** Round 15 accepted it because melt-out
+   matched satellite to within a day. That was true and insufficient.
+
+**Weigh the prize first:** I2 (scheme alone) bought **+0.094 K JJA — inside the noise floor**.
+The value is a correct snow field for LPJG phenology, not temperature. That does not justify a
+source change plus a run family while a 20 K soil error is unexplained.
+
+*Asset:* `soil_temp_vs_rihmi.py`; obs at `/work/ab0246/a270092/obs/RIHMI-WDC/`.
+
 ### Round 16 — in flight (2026-08-04)
 
 `vlamsk_mod.F90` hardcoded the snow-tile skin conductivities, so they were untunable
