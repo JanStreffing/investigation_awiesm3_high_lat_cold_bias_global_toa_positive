@@ -46,8 +46,10 @@ Southern Ocean SW RMSE $6.88\to4.80$, every season inside its own threshold and 
 energy penalty (\S\ref{sub:r17k}). \textbf{I3} reaches further in summer ($+1.322$\,K,
 $t{=}10.61$) but is \textbf{not adopted}: the guardrails price it at $+1.72$\,W\,m$^{-2}$ over
 60--90N, a bill AMIP structurally cannot feel and the coupled spin-up would
-(\S\ref{sub:i3}); its snow scheme is \textbf{deactivated} outright for destroying the winter
-soil against direct station observations (\S\ref{sub:rihmi}, \S\ref{sub:scfoff}).
+(\S\ref{sub:i3}); its snow scheme is \textbf{rejected} for destroying the winter soil ---
+$-16.2$\,K DJF coupled, $-18.3$\,K in January, against direct station observations
+(\S\ref{sub:rihmi}, \S\ref{sub:scfcoupled}). Round 19 tests whether re-parameterising its
+density dependence keeps the summer gain without the winter cost (\S\ref{sub:r19}).
 
 \medskip\noindent\textbf{What is left.} Three routes are now closed by measurement rather than
 opinion: transpiration$\to$cloud (\S\ref{sub:routea}), snow-melt albedo
@@ -3450,11 +3452,13 @@ the scheme. And 10A's summer soil is the outlier against every earlier baseline
 ($+1.4$ to $+3.0$); \textbf{the scheme restores the baseline range rather than departing from
 it}, recovering $2.7$\,K of the ${\sim}12$\,K deficit.
 
-\textbf{Standing position.} The scheme is \textbf{not rejected}. The AMIP soil error is real
-and observationally verified, and is a genuine defect in OIFS's land surface worth fixing on
-its own terms --- but it is \textbf{not disqualifying for coupling}, where the scheme is the
-difference between a badly degraded and a substantially recovered boreal forest. The DJF air
-penalty (\S\ref{sub:r15compensate}) remains a separate cost to weigh.
+\dead{Standing position: the scheme is not rejected. The AMIP soil error is real, but it is
+not disqualifying for coupling, where the scheme is the difference between a badly degraded
+and a substantially recovered boreal forest.} \textcolor{red}{\textbf{RETRACTED the same day
+--- see \S\ref{sub:scfcoupled}.}} The claim that the winter damage does not appear coupled was
+an \emph{artefact of where I sampled}: I measured only the larch zone, where 10A is already
+saturated near $-21\,^\circ$C, so both runs looked alike. Across the full station network 10B
+is $-16.2$\,K in DJF and $-18.3$\,K in January. The AMIP testbed had predicted exactly this.
 
 \textbf{Why.} Verified against \emph{direct observations} --- RIHMI-WDC station soil
 temperature, 43 stations in the box, under natural cover (\S\ref{sub:rihmi}) --- the scheme
@@ -3855,6 +3859,124 @@ suggestive only. On the old forcing, \textbf{07A (BNS \texttt{greff\_min} relaxe
 recover BNS at all} ($0.024\to0.021$), which is why a forcing-consistent re-spin remains the
 precondition for any competition tuning (\S\ref{sub:xfer}).
 
+\section{The snow scheme, settled on coupled soil (2026--08--05)}\label{sub:scfcoupled}
+A colleague's figure --- OpenIFS \texttt{stl2} against RIHMI-WDC at 105 stations, coupled
+gen-10 runs --- overturned \S\ref{sub:scfoff}. Reproduced independently to within rounding:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+stl2 $-$ RIHMI 20\,cm [K] & DJF & MAM & JJA & SON & annual \\
+\midrule
+AMIP K1 (adopted, tuned) & $+0.49$ & $-1.60$ & $-1.44$ & $-1.30$ & $-0.96$ \\
+COUPLED 10A (G4) & $-4.33$ & $\mathbf{-6.57}$ & $-3.62$ & $-3.61$ & $-4.53$ \\
+\textbf{COUPLED 10B} ($+$scheme) & $\mathbf{-16.19}$ & $-6.04$ & $\mathbf{-2.44}$ & $-5.95$ & $-7.66$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent January reaches $-18.3$\,K. The scheme buys $1.2$\,K of summer and pays $12$\,K of
+winter. \textbf{It is rejected for coupling.}
+
+\textbf{Why the earlier verdict was wrong, recorded because the error is repeatable.} I
+sampled the larch zone alone (60--72\textdegree N, 100--160\textdegree E), where 10A already
+sits near $-21\,^\circ$C in DJF --- \emph{saturated}. Both runs looked identical there. The
+damage is only visible across the wider, more southerly station network where 10A still
+retains its snow insulation. \textbf{I measured in the one place the signal was flat.}
+Worse, the AMIP run had already predicted it: the I1 delta is DJF $-13.57$\,K, composing to
+${\approx}-13.3$ against the $-16.2$ measured. When the coupled LAI figure appeared I treated
+it as overturning the AMIP evidence instead of asking why the two disagreed.
+
+\subsection{Reconstructing \texttt{ZCVS}, and what it excludes}\label{sub:zcvsrecon}
+\texttt{ZCVS} is not an output field, and neither are the tile fractions
+($\texttt{ZCVS}=\texttt{FRTI}(5)+\texttt{FRTI}(7)$ exactly, from
+\texttt{surfbc\_ctl\_mod.F90}:421,423, since the three cover fractions sum to one). But it is
+a pure function of \texttt{sd} and \texttt{rsn}, both of which \emph{are} written, so it can
+be reconstructed offline from each run's own snowpack:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+Siberian land & Sep & \textbf{Oct} & Nov & Dec & Jan & May \\
+\midrule
+$\Delta$\texttt{ZCVS} & $+0.026$ & $\mathbf{-0.075}$ & $-0.008$ & $-0.001$ & $-0.000$ & $-0.188$ \\
+$\Delta$soil [K] & $+0.0$ & $\mathbf{-4.2}$ & $-16.2$ & $-22.2$ & $-23.8$ & $+2.4$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Midwinter cover is identical} ($-0.0004$ in January): at $0.43$\,m depth
+the tanh is saturated. So the $-19$\,K January soil \textbf{cannot be a cover effect}. The
+cover difference \emph{peaks in October exactly as the soil begins to diverge}, then vanishes
+while the soil runs on to $-24$\,K --- autumn seeding plus thermal memory, with nothing in
+midwinter needing to differ at all.
+
+\textbf{A mechanism proposed and falsified within the hour.} \dead{The snow fraction is
+applied twice on the conduction path: \texttt{ZHFLUX} is already area-weighted while
+\texttt{ZSNCONDH} is multiplied by \texttt{PFRSN} again, so the pack drains through a
+conductance scaled by area a second time.} \textbf{Wrong.} \texttt{ZHFLUX} is W per m$^2$ of
+\emph{grid box} (which is why the \texttt{/ZFRSN} at
+\texttt{srfsn\_driver\_mod.F90}:271 is commented out), \texttt{ZDSN} uses \emph{grid-mean}
+SWE, and \texttt{ZSNCONDH} is therefore also per m$^2$ of grid box. Flux, conductance and heat
+capacity are all in the same units. There is no second division for the factor to pair with.
+
+\emph{Supporting evidence for the surviving reading}: the snowpack cools only $3.9$\,K and the
+air $2.6$\,K while the soil cools $23.8$\,K. In January the control holds a $+21.7$\,K
+gradient between snow surface and soil; I1 holds $+1.8$\,K. The insulation has gone, with SWE
+identical and density \emph{lower} --- deeper, less conductive snow. No physical field changed
+in a way that could do it, which is what pointed at autumn seeding rather than a winter
+process.
+
+\subsection{Rounds 19: what is running, and what would falsify it}\label{sub:r19}
+Four AMIP runs on the K1 base, 10\,yr, with daily \texttt{sd}/\texttt{rsn}/\texttt{tsn}/
+\texttt{asn}/\texttt{stl1}/\texttt{stl2} added through a per-run \texttt{add\_config\_sources}
+override, so all four difference directly.
+
+\begin{center}\footnotesize
+\begin{tabular}{l l r r r r r}
+\toprule
+run & role & $z_0$ & $\rho_{new}$ & $m$ & SCF Oct & SCF May \\
+\midrule
+N1 & reference, scheme off & --- & --- & --- & --- & --- \\
+N2 & current parameters & $0.016$ & $100$ & $1.6$ & $0.894$ & $0.817$ \\
+\textbf{O1} & re-parameterised & $0.018$ & $170$ & $\mathbf{4.0}$ & $\mathbf{0.995}$ & $\mathbf{0.495}$ \\
+O2 & re-parameterised, milder & $0.018$ & $170$ & $3.0$ & $0.995$ & $0.764$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The O series rests on one piece of arithmetic.} With
+$\mathrm{SCF}=\tanh(d/L)$ and $L=2.5z_0(\rho/\rho_{new})^m$,
+\[
+\frac{x_{Oct}}{x_{May}}=\frac{d_{Oct}}{d_{May}}\left(\frac{\rho_{May}}{\rho_{Oct}}\right)^{m}
+= 0.469\times1.853^{\,m}.
+\]
+Depth works \emph{against} us --- October's pack is half as deep. Density works for us, and
+$m>1.23$ is needed merely for October to hold more cover than May. \textbf{$m=1.6$ clears that
+bar but gives a ratio of only $1.23$}, hence a separation of $0.077$: the $-0.075$ October
+deficit that seeds the winter collapse buys a spring depletion only $0.08$ deeper. $m=4$ gives
+$5.5$. Raising $m$ alone makes October \emph{worse} ($0.383$), because $\rho_{Oct}=170$ already
+exceeds $\rho_{new}=100$ --- so $\rho_{new}$ must be recentred on autumn density first.
+
+\dead{Density cannot substitute for melt state; the two regimes are inseparable by density at
+their respective depths.} \textbf{Wrong, corrected the same day}: that was argued from the
+current parameters rather than from what the formula can do.
+
+\textbf{Why this replaced the hysteresis it was meant to be.} A ripe/not-ripe state test is
+\emph{not} hysteresis --- it is reversible, so cover would flip back every night and every cold
+snap, injecting a spurious diurnal oscillation into the tile fractions. Real melt-out is
+irreversible within a season. Swenson \& Lawrence (2012) avoid this with a prognostic seasonal
+$\mathrm{SWE}_{max}$, which is a new surface prognostic. \textbf{Density sidesteps the problem
+entirely}: it is a genuine physical memory variable, ripening monotonically and not walking
+backwards. And it is namelist-only.
+
+\textbf{Pre-registered falsifiers.} (i) Winter soil must return to the N1 reference; if O1
+still shows the $-16$\,K DJF collapse the density route is dead and only the
+$\mathrm{SWE}_{max}$ rewrite remains. (ii) May/June cover must still deplete, or the summer
+gain is lost and O1 is all cost. \emph{And this is curve-fitting until the daily data supports
+it}: $m=4$ is far from Niu \& Yang's calibrated $1.6$ and was derived from two box-mean
+monthly numbers, while a steep exponent amplifies cell-to-cell spread.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -4120,9 +4242,14 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
   cloud $\to$ SW loss) is \textbf{closed}: the Siberian JJA cloud term went $-7.04 \to +1.20$\,W\,m$^{-2}$.
   Route~B (late melt $\to$ June albedo) is \textbf{diagnosed and fixable} but carries almost no
   temperature leverage (\S\ref{sub:r15notemp}).
-\item \textbf{The snow field can now be made correct}: melt-out 12~May against a satellite
-  11~May, June cover $0.160$ vs $0.203$ (\S\ref{sub:r15works}) --- but the scheme that does it
-  is \textbf{deactivated}, because it destroys the winter soil (\S\ref{sub:scfoff}).
+\item \textbf{The snow field can be made correct, but not at this price}: melt-out 12~May
+  against a satellite 11~May (\S\ref{sub:r15works}) --- and the scheme that does it costs
+  $-16.2$\,K of coupled DJF soil for $+1.2$\,K of summer (\S\ref{sub:scfcoupled}).
+  \textbf{Rejected}; round 19 tests a re-parameterisation (\S\ref{sub:r19}).
+\item \textbf{The winter damage is seeded in AUTUMN, not winter.} Midwinter snow cover is
+  identical between the schemes ($\Delta$\texttt{ZCVS} $=-0.0004$ in January); the deficit
+  peaks in October ($-0.075$) exactly as the soil begins to diverge, then vanishes while the
+  soil runs to $-24$\,K (\S\ref{sub:zcvsrecon}).
 \item \textbf{The control soil is right, verified against direct observations.} RIHMI-WDC
   station soil temperature under natural cover puts the control within ${\sim}1$\,K at every
   depth the Russian network reports in winter, and its thermal offset within $0.7$--$2.3$\,K
@@ -4270,6 +4397,18 @@ W\,m$^{-2}$) was right to $0.116$; the forcing estimate was optimistic. & \S\ref
 Retracted \emph{before} it was run: the residual $26\,\%$ is worth ${\sim}0.03$\,K, and $0.95$
 already delivers the measured $-0.0163$ --- going further is tuning against the observation. &
 \S\ref{sub:r17budget} \\
+\dead{The snow scheme's winter soil damage does not appear in the coupled runs, so it is not
+disqualifying for coupling} &
+Artefact of sampling the larch zone alone, where 10A is already saturated near
+$-21\,^\circ$C so both runs look alike. Across the full station network 10B is $-16.2$\,K
+DJF; the AMIP run had already predicted it ($-13.6$\,K). & \S\ref{sub:scfcoupled} \\
+\dead{The snow fraction is applied twice on the conduction path, so the pack drains through an
+area-scaled conductance a second time} &
+\texttt{ZHFLUX}, \texttt{ZDSN} and \texttt{ZSNCONDH} are all per m$^2$ of grid box; there is
+no second division to pair with. Proposed and falsified within the hour. & \S\ref{sub:zcvsrecon} \\
+\dead{Density cannot separate the autumn and spring regimes at their respective depths} &
+Argued from the current parameters, not the formula. $m>1.23$ gives the right ordering and
+$m=4$ a factor $5.5$; $m=1.6$ merely separates them by $0.077$. & \S\ref{sub:r19} \\
 \dead{I3 is the best lever the campaign has produced} &
 Drafted on the Siberian-box scripts alone before the guardrails were run. True for JJA T2m
 ($+1.322$\,K) and Siberian SW, but I3 carries $+1.72$\,W\,m$^{-2}$ at 60--90N, the largest
