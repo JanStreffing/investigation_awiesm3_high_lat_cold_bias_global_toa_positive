@@ -3330,10 +3330,15 @@ counterpart}; \texttt{stl2} is the shallowest verifiable layer and bounds it. On
 2\,m air, each dataset using its \emph{own} air, which is what makes it insensitive to the
 $2.8$\,K air-temperature change the I-series also carries.
 
-\textbf{Two results.} The control soil is \textbf{correct to ${\sim}1$\,K at every verifiable
-depth} --- there was no pre-existing soil bias to remove. And the model is mildly
-\emph{over}-insulated, by $+0.7$ to $+2.3$\,K of offset; a small real bias, in the opposite
-direction to the I-series.
+\textbf{Two results, \textcolor{red}{both DJF-only}.} In \emph{winter} the control soil is
+correct to ${\sim}1$\,K at every verifiable depth --- there was no pre-existing \emph{winter}
+soil bias to remove --- and the model is mildly \emph{over}-insulated, by $+0.7$ to $+2.3$\,K
+of offset.
+
+\dead{The control soil is correct to ${\sim}1$\,K at every verifiable depth.} \textbf{That was
+measured in DJF only and does not hold in summer} (\S\ref{sub:summersoil}): the same control
+is $-3.4$ to $-5.4$\,K too cold in JJA, a bias \emph{larger} than the $2.58$\,K Siberian air
+bias this campaign has been chasing. The winter statement stands; the unqualified one does not.
 
 \dead{The winter soil-air offset under a deep Siberian snowpack is +10 to +20\,K.} That was
 quoted from memory of the permafrost literature and is too low: the station record gives
@@ -3360,11 +3365,96 @@ G4 & $20.27$ & $20.81$ & $22.72$ & $25.82$ \\
 1.2--2.4\,m. In raw terms its soil sits at $-25.8\,^\circ$C where stations measure
 $-6.1\,^\circ$C. The snowpack has stopped insulating at every depth.
 
-\subsection{DEACTIVATED (2026--08--05): what reactivation would require}\label{sub:scfoff}
-\textbf{\texttt{ECE\_SNOW\_SCF} is switched off and stays off.} The carried-forward
-configuration (G4) does not set it; no production run should. The default remains
-\texttt{0}~$=$~as-released, so this is a decision not to use an available option, not a code
-removal --- the implementation stays in the source for whoever picks the problem up.
+\subsection{The summer soil bias, and why it dwarfs the air bias}\label{sub:summersoil}
+The DJF validation above was extended to JJA at the same 43 stations, and it changes the
+picture completely.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+ & \multicolumn{3}{c}{DJF} & \multicolumn{3}{c}{\textbf{JJA}} \\
+\texttt{amip\_presentday} & OBS & model & bias & OBS & model & \textbf{bias} \\
+\midrule
+boreal \texttt{stl2} 20\,cm & $-6.07$ & $-5.03$ & $+1.04$ & $13.68$ & $10.33$ & $\mathbf{-3.35}$ \\
+boreal \texttt{stl3} 40/80\,cm & $-3.60$ & $-3.19$ & $+0.42$ & $10.17$ & $5.84$ & $\mathbf{-4.33}$ \\
+larch \texttt{stl2} 20\,cm & $-11.05$ & $-7.76$ & $+3.29$ & $12.52$ & $8.33$ & $\mathbf{-4.19}$ \\
+larch \texttt{stl3} 40/80\,cm & $-7.80$ & $-5.54$ & $+2.26$ & $7.64$ & $2.29$ & $\mathbf{-5.35}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The soil is $3$--$5$\,K too cold in summer while being slightly too warm in
+winter}, and the summer soil bias is \emph{larger than the $2.58$\,K Siberian air bias} the
+campaign has spent 45 runs on. It was never looked at because no soil diagnostic was scored
+until \S\ref{sub:rihmi}.
+
+\textbf{It is far worse coupled.} LPJ-GUESS's \texttt{soiltemp25cm} is the OIFS soil
+temperature received through OASIS, so it measures the same quantity:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r}
+\toprule
+larch zone, ${\approx}25$\,cm & DJF & \textbf{JJA} \\
+\midrule
+\textbf{RIHMI obs} (20/40\,cm bracket) & $-11.4$ / $-8.3$ & $\mathbf{+12.5\ /\ +10.0}$ \\
+06 Baseline & $-15.96$ & $+1.80$ \\
+080a CRUNCEP & $-16.35$ & $+1.38$ \\
+09A newSeaIce & $-18.09$ & $+0.72$ \\
+\textbf{10A} (G4) & $-21.04$ & $\mathbf{-0.37}$ \\
+\textbf{10B} (G4 $+$ snow depletion) & $-20.85$ & $\mathbf{+2.31}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Against an observed ${\approx}+11.8\,^\circ$C at 25\,cm, every coupled run sits at
+$+0.7$ to $+2.3\,^\circ$C: a \textbf{${\sim}10$\,K summer soil cold bias}. \textbf{Larch cannot
+build cover in soil near freezing all summer}, which makes this a more plausible driver of the
+forest collapse than either the evergreen gate or grass competition (\S\ref{sec:tworoutes}) ---
+those describe \emph{which} PFT wins, this describes why none of them grow.
+
+\emph{Representativeness caveat, and it is a real one.} RIHMI plots are open, bare or
+short-grass sites in full sun; a forested cell's summer soil is legitimately cooler under
+canopy shade. Part of AMIP's $-4$\,K is therefore representativeness and cannot be separated
+without land-cover weighting. What is \emph{not} representativeness is the ${\sim}6$\,K gap
+between AMIP and coupled at the same stations with the same comparison --- that is real
+degradation contributed by the coupled vegetation feedback.
+
+\subsection{The snow scheme, reconsidered on coupled evidence (2026--08--05)}\label{sub:scfoff}
+\dead{\texttt{ECE\_SNOW\_SCF} is switched off and stays off; no production run should set it.}
+\textbf{Retracted the same day.} That verdict was reached on AMIP alone, and \textbf{AMIP was
+the wrong testbed for it}: it has no vegetation response, which is precisely the thing the
+scheme was helping. On the coupled 10A/10B pair --- identical binaries, identical settings
+(\texttt{ECE\_SNOW\_SCF=1}, \texttt{Z0=0.016}), differing \emph{only} in the scheme:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+larch zone & BNS LAI & C3G LAI & grass\,:\,larch & TREEFPC \\
+\midrule
+09C reference & $0.096$ & $0.400$ & $4.2\times$ & $0.048$ \\
+\textbf{10A} (G4) & $\mathbf{0.019}$ & $0.388$ & $\mathbf{20.4\times}$ & $\mathbf{0.019}$ \\
+\textbf{10B} (G4 $+$ scheme) & $\mathbf{0.134}$ & $0.830$ & $6.2\times$ & $\mathbf{0.065}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{10B carries $7\times$ the larch and $3.4\times$ the tree cover of 10A}, and
+G4 alone (10A) is \emph{worse than the 09C reference} --- it actively degrades the forest. NH
+total LAI bias against the Lund CRUNCEP reference halves, $-0.62$ ($-28.1\,\%$) $\to$ $-0.28$
+($-12.9\,\%$).
+
+\textbf{And the winter soil damage does not appear coupled.} 10A and 10B are $-21.04$ and
+$-20.85$ in DJF --- identical --- while JJA goes $-0.37 \to +2.31$. The ${\sim}5$\,K winter
+cooling relative to the 06/070/080a baselines came in with G4 $+$ CERES-init, \emph{not} with
+the scheme. And 10A's summer soil is the outlier against every earlier baseline
+($+1.4$ to $+3.0$); \textbf{the scheme restores the baseline range rather than departing from
+it}, recovering $2.7$\,K of the ${\sim}12$\,K deficit.
+
+\textbf{Standing position.} The scheme is \textbf{not rejected}. The AMIP soil error is real
+and observationally verified, and is a genuine defect in OIFS's land surface worth fixing on
+its own terms --- but it is \textbf{not disqualifying for coupling}, where the scheme is the
+difference between a badly degraded and a substantially recovered boreal forest. The DJF air
+penalty (\S\ref{sub:r15compensate}) remains a separate cost to weigh.
 
 \textbf{Why.} Verified against \emph{direct observations} --- RIHMI-WDC station soil
 temperature, 43 stations in the box, under natural cover (\S\ref{sub:rihmi}) --- the scheme
