@@ -496,9 +496,17 @@ source change plus a run family while a 20 K soil error is unexplained.
 
 ### Round 19 — N series, DAILY snow/soil process diagnostic, IN FLIGHT (2026-08-05)
 
-⚠ **NOT tuning candidates.** N1/N2 exist to test two inferences that monthly data cannot
-settle — and that I had to **retract once each** on 2026-08-05 before building on them.
-K1 base, 10 yr (1870–1880), identical except the scheme under test.
+N1/N2 test two inferences that monthly data cannot settle — and that I had to **retract
+once each** on 2026-08-05 before building on them. K1 base, **full campaign length
+(1870–1916, evaluate 1872–1915 = 44 yr)**, identical except the scheme under test.
+
+⚠ **An earlier 10-yr version was cancelled and resubmitted at full length.** At 10 yr these
+could not be scored against the campaign detection thresholds (Siberian JJA ±0.244 K etc.,
+all calibrated at 44 yr), so they would not have been comparable with the other 43 runs —
+which defeats the point of asking whether O1 is a *viable lever* rather than merely a
+process illustration. Daily output costs ~31 GB per run at this length; that is not a
+reason to break comparability. **N2, O1 and O2 are now in the scored `RUNS` list**; only
+N1 stays out, as the daily-output twin of K1 and a reproducibility check.
 
 | run | change | asks |
 |---|---|---|
@@ -560,8 +568,9 @@ untouched and no other run is affected.
 
 ### Round 19 — O series, the RE-PARAMETERISED depletion, IN FLIGHT (2026-08-05)
 
-Paired with N1/N2 above: same K1 base, same 10 yr, same daily output, so all four
-difference directly. **Namelist-only** — no source change, no new prognostic.
+Paired with N1/N2 above: same K1 base, **same full 46-yr campaign length**, same daily
+output, so all four difference directly *and* are scorable against the standard
+thresholds. **Namelist-only** — no source change, no new prognostic.
 
 | run | z0 | ρ_new | m | predicted SCF Oct | predicted SCF May |
 |---|---:|---:|---:|---:|---:|

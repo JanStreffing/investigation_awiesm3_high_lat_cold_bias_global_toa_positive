@@ -110,6 +110,19 @@ RUNS = [
     # global T2m RMSE, with the Siberian box as a guardrail only.
     ('K1 landalb', 'amip_K1_landalb'),
     ('K2 soilalb', 'amip_K2_soilalb'),
+    # Round 19: the snow-cover depletion revisited on the K1 base, at FULL campaign
+    # length so it is scorable against the 44-yr thresholds.  N2 is the scheme at its
+    # current parameters (z0 0.016, rho_new 100, m 1.6); O1/O2 re-parameterise it so
+    # density actually separates autumn from spring.  The ratio that matters is
+    #     x_Oct/x_May = (d_Oct/d_May)*(rho_May/rho_Oct)^m = 0.469*1.853^m
+    # so m>1.23 gives the right ordering but m=1.6 separates the two regimes by only
+    # 0.077 -- which is why the -0.075 October cover deficit that seeds the winter soil
+    # collapse buys a spring depletion just 0.08 deeper.  m=4 gives a factor 5.5, but
+    # rho_new must be recentred on autumn density first or October depletes harder still.
+    # All three carry daily sd/rsn/tsn/asn/stl1/stl2 via a per-run file_def override.
+    ('N2 scf current', 'amip_N2_snowdiag_scf'),
+    ('O1 scf m4', 'amip_O1_scf_m4'),
+    ('O2 scf m3', 'amip_O2_scf_m3'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
@@ -130,17 +143,8 @@ NOT_LEVERS = [
     # (clear-sky and cloud) by latitude band, never the all-sky total.
     'amip_M1_noanthaer',   # LMACV2SP=.false. -- anthropogenic aerosol removed
     'amip_M2_aer3d',       # LAER3D=.true.    -- 3D CAMS vertical distribution
-    # Round 19 N series: DAILY snow/soil process diagnostic on the K1 base, 10 yr only
-    # (1870-1880). Not tuning candidates and far too short for the 44-yr thresholds --
-    # they exist to resolve whether the winter soil collapse is seeded by the October
-    # cover deficit, and whether the pack is ripe when the spring depletion is needed.
-    # N2 minus N1 isolates ECE_SNOW_SCF=1 at daily resolution.
+    # N1 is the daily-output TWIN of K1 (identical configuration, scheme off).  Kept out
+    # of RUNS so it does not appear as a duplicate column; it doubles as a reproducibility
+    # check -- N1 must match K1 to within the noise floor.
     'amip_N1_snowdiag',
-    'amip_N2_snowdiag_scf',
-    # Round 19 O series: the SAME scheme re-parameterised so density actually separates
-    # autumn from spring (z0 0.018, rho_new 170, m 4.0 / 3.0 vs the current 0.016/100/1.6).
-    # Namelist-only.  Same K1 base, 10 yr and daily output as N1/N2 so all four difference
-    # directly.  Not scorable against the 44-yr thresholds -- diagnostic pair, not levers.
-    'amip_O1_scf_m4',
-    'amip_O2_scf_m3',
 ]
