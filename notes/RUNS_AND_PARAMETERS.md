@@ -494,6 +494,66 @@ source change plus a run family while a 20 K soil error is unexplained.
 
 *Asset:* `soil_temp_vs_rihmi.py`; obs at `/work/ab0246/a270092/obs/RIHMI-WDC/`.
 
+### Round 19 — N series, DAILY snow/soil process diagnostic, IN FLIGHT (2026-08-05)
+
+⚠ **NOT tuning candidates.** N1/N2 exist to test two inferences that monthly data cannot
+settle — and that I had to **retract once each** on 2026-08-05 before building on them.
+K1 base, 10 yr (1870–1880), identical except the scheme under test.
+
+| run | change | asks |
+|---|---|---|
+| **N1** `amip_N1_snowdiag` | K1 + daily `sd`/`rsn`/`tsn`/`asn`/`stl1`/`stl2` | reference |
+| **N2** `amip_N2_snowdiag_scf` | N1 + `ECE_SNOW_SCF: 1`, `Z0: 0.016` | the scheme, at daily resolution |
+
+**INFERENCE 1 — the winter soil collapse is SEEDED IN AUTUMN.** `ZCVS` is not an output
+field (it equals `FRTI(5)+FRTI(7)`, and neither is written either), so it was
+reconstructed offline from each run's own snowpack:
+
+| month | Sep | **Oct** | Nov | Dec | Jan |
+|---|---:|---:|---:|---:|---:|
+| ΔZCVS | +0.026 | **−0.075** | −0.008 | −0.001 | −0.000 |
+| Δsoil [K] | +0.0 | **−4.2** | −16.2 | −22.2 | −23.8 |
+
+The cover difference **peaks in October exactly as the soil starts to diverge**, then
+vanishes while the soil runs to −24 K. Reading: ~7 % more bare ground in October, before
+the insulating pack closes, cools the soil while it still can be; from November the pack
+seals and the anomaly is locked in. Midwinter cover is **identical** (Jan ΔZCVS −0.0004).
+⚠ **NOT DEMONSTRATED**: that the Nov amplification (−4 → −16 K) follows from the Oct seed.
+
+**INFERENCE 2 — would a melt-state gate fire when the spring depletion is needed?**
+Monthly-mean `tsn` is 271.0 K in May, reaching 273.0 only in June, yet melt-out is late
+May. If the pack is ripe only intermittently in May the gate fires **late**, the spring
+depletion is lost, and the scheme becomes all winter cost and no summer benefit.
+
+**WHY THE HYSTERESIS WAS NOT SIMPLY BUILT** — both found by trying to falsify it:
+
+1. **A ripe/not-ripe STATE TEST IS NOT HYSTERESIS.** It is reversible: cover would flip
+   back to the linear formula every night and every cold snap, giving a spurious diurnal
+   oscillation in snow-covered fraction. Real melt-out is irreversible within a season.
+   The correct formulation (Swenson & Lawrence 2012) carries a prognostic seasonal
+   `SWE_max` and depletes against it — but that is a **new surface prognostic**.
+2. **Density cannot substitute for melt state.** October snow is ρ≈170, May ρ≈315, but
+   May depth is still 0.29 m — so any exponent that saturates cover in October also
+   saturates it in May. The two regimes are inseparable by density at their respective
+   depths, which is *why* the present scheme buys spring depletion at the cost of autumn.
+
+**WHAT TO LOOK FOR**
+- *Sep–Nov*: does `stl1` diverge only on days the cover differs, or keep falling after the
+  cover difference closes? Only the latter confirms seeding + memory.
+- *Apr–Jun*: fraction of days with `tsn` ≥ 273.15. If small in May, inference 2 fails and
+  ripeness is the wrong criterion.
+
+**IMPLEMENTATION NOTE.** Daily output added via a **per-run** `add_config_sources`
+override (`namelists/oifs/48r1/xios/file_def_snowdiag.xml.j2`), so the shared template is
+untouched and no other run is affected.
+
+⚠ **Two process traps hit while building this**, both worth avoiding again:
+- The first patch landed in a **6 h** block: the remapped section has one *before* the
+  daily block, and "first anchor after `atm_remapped`" found the wrong one.
+- The first verification **counted `field_ref="sd"` across the whole file** — already 12
+  from pre-existing `1mo`/`6h` blocks — so it reported success on a no-op. **Verify
+  per-block, in the GENERATED `file_def.xml`, not the template.**
+
 ### Round 18 — aerosol diagnostics, IN FLIGHT (2026-08-05)
 
 ⚠ **On the PRESENT-DAY base (1989-2015), not the PI base.** MACv2-SP anthropogenic

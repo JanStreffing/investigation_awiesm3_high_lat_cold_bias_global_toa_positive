@@ -130,4 +130,11 @@ NOT_LEVERS = [
     # (clear-sky and cloud) by latitude band, never the all-sky total.
     'amip_M1_noanthaer',   # LMACV2SP=.false. -- anthropogenic aerosol removed
     'amip_M2_aer3d',       # LAER3D=.true.    -- 3D CAMS vertical distribution
+    # Round 19 N series: DAILY snow/soil process diagnostic on the K1 base, 10 yr only
+    # (1870-1880). Not tuning candidates and far too short for the 44-yr thresholds --
+    # they exist to resolve whether the winter soil collapse is seeded by the October
+    # cover deficit, and whether the pack is ripe when the spring depletion is needed.
+    # N2 minus N1 isolates ECE_SNOW_SCF=1 at daily resolution.
+    'amip_N1_snowdiag',
+    'amip_N2_snowdiag_scf',
 ]
