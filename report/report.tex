@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--05})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--06})}
 
 \begin{document}
 \maketitle
@@ -3979,6 +3979,207 @@ $\mathrm{SWE}_{max}$ rewrite remains. (ii) May/June cover must still deplete, or
 gain is lost and O1 is all cost. \emph{And this is curve-fitting until the daily data supports
 it}: $m=4$ is far from Niu \& Yang's calibrated $1.6$ and was derived from two box-mean
 monthly numbers, while a steep exponent amplifies cell-to-cell spread.
+
+\section{Round 19 results and Round 20 (2026--08--06): the \texttt{tanh} is falsified on
+observations, and the curve is rebuilt}\label{sec:r20}
+The O series failed its own pre-registered falsifier, and so did every mechanism proposed to
+explain the failure. Three hypotheses died in sequence before the real one was found, and
+\emph{two of the deaths were caused by my own analysis errors} --- both recorded in
+\S\ref{sub:r20errors} because both are easy to repeat.
+
+\subsection{The measurement: cover is identical, the soil is 23\,K apart}\label{sub:r20meas}
+All four runs at 46\,yr on the K1 base, Siberian box, differenced against N1:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+ & $\Delta$cover DJF & $\Delta$SWE DJF & $\Delta$depth DJF & \textbf{$\Delta$soil DJF} & Jan $f_{\text{full}}$ \\
+\midrule
+N1 reference & --- & --- & --- & --- & $\mathbf{0.960}$ \\
+N2 current $m{=}1.6$ & $-0.002$ & $+0.65$ & $+0.064$ & $\mathbf{-22.77}$ & $\mathbf{0.773}$ \\
+O1 $m{=}4$ & $+0.001$ & $-0.60$ & $+0.047$ & $-18.72$ & $0.947$ \\
+O2 $m{=}3$ & $+0.001$ & $+0.12$ & $+0.043$ & $-16.93$ & $0.958$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{DJF snow cover is identical to within $0.002$ across all four runs while the
+soil differs by 23\,K.} October soil damage is $-4.94/-5.02/-4.95$\,K --- identical to
+$0.08$\,K --- while October cover spans $0.10$. Mean cover is not the winter channel, and no
+re-parameterisation of a cover curve could ever have been.
+
+\subsection{The mechanism: same mean, opposite state}\label{sub:r20mech}
+The exposed area is $1-\overline{\mathrm{cover}}$ by definition, so it is \emph{identical}
+between the schemes. Where it sits is not, and the soil response is nonlinear in it.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/snow_depletion_mechanism.png}
+\caption{\textbf{(a)} January snow cover across the Siberian box. N1 and N2 have the same
+box-mean cover to within $0.002$ and the same total exposed area, but N1 (clipping ramp) puts
+$93.5\%$ of the box at cover \emph{exactly} $1.0$ while N2 (\texttt{tanh}) dumps a quarter of
+it into $0.99$--$0.999$. A sliver of bare ground in \emph{every} cell instead of a few
+genuinely bare cells: each sliver couples that cell's soil to the air through exposed tiles at
+$\lambda_{sk}=10$\,W\,m$^{-2}$\,K$^{-1}$, about $16\times$ stiffer per unit area than the whole
+snow column ($0.61$), so no soil is left insulated. \textbf{(b)} The depletion curve against
+36\,492 RIHMI snow-course surveys. \texttt{tanh} has range $(0,1)$ \emph{open at 1} and so
+cannot represent complete cover at any parameters; the as-released ramp reaches 1 but ignores
+density and so has no spring depletion; the fitted form does both.}
+\label{fig:depletion}
+\end{figure}
+
+\noindent The signature in the model is unmistakable: \textbf{N1 holds a 22\,K gradient from
+soil ($265.0$\,K) to snowpack ($242.7$\,K); N2 holds 2\,K ($240.4/238.6$)}. A 2\,K gradient
+under half a metre of snow cannot be produced by conduction --- N2's soil sits at air
+temperature under a deep pack. \texttt{RTHRFRTI}$\,=\,$\texttt{EPSILON}
+(\texttt{su0phy.F90:1308}), so no tile is ever culled and every sliver is fully active.
+
+$f_{\text{full}}$, the area fraction at cover $\ge0.999$, is the only quantity found that
+predicts the damage: per-cell correlation with $\Delta$soil is $+0.75/+0.52/+0.52$ against
+$+0.32/+0.19/+0.10$ for mean cover.
+
+\subsection{RIHMI-WDC settles it: the as-released cover was right}\label{sub:r20rihmi}
+Snow-course transects (\texttt{snmar}, 1--2\,km, the direct observational analogue of
+\texttt{ZCVS}): \textbf{14\,331 of 14\,369 Siberian DJF surveys report cover of exactly
+$10/10$ --- $99.74\%$}, mean $0.9995$. Complete cover is real, not an artefact of clipping.
+Soil temperature (\texttt{tpg}, 43 stations, 174\,676 DJF observations at $0.2$\,m against
+\texttt{stl2}):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+ & $f_{\text{full}}$ DJF & soil at $0.2$\,m & \textbf{bias} \\
+\midrule
+\textbf{observed} & $\mathbf{0.997}$ & $\mathbf{-6.1}$\,\textdegree C & --- \\
+N1, scheme off & $0.990$ & $-5.3$ & $\mathbf{+0.8}$ \\
+N2, \texttt{tanh} & $\mathbf{0.678}$ & $-26.3$ & $\mathbf{-20.2}$ \\
+O1 & $0.932$ & $-22.2$ & $-16.1$ \\
+O2 & $0.965$ & $-20.8$ & $-14.7$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Field January $f(\text{complete cover})$: \textbf{observed $0.996$, \texttt{tanh}
+$0.290$}. Period caveat: observations are 1963--2024 against a PI model, so the PI-equivalent
+observation is nearer $-9$\,\textdegree C, making N1 $\sim+3$\,K warm --- the scheme is still
+$-13$ to $-18$\,K wrong. \textbf{This retracts \S\ref{sub:r15compensate}}: for soil temperature
+the as-released cover was correct and the scheme replaced a good field with a broken one.
+
+\subsection{Two analysis errors, and four dead mechanisms}\label{sub:r20errors}
+\dead{The soil collapse is seeded by an October cover deficit and carried by thermal memory.}
+Killed by its own pre-registered test: O1/O2 produced \emph{positive} autumn cover anomalies
+and still lost 18--20\,K.
+
+\dead{A melt-state (ripe/not-ripe) gate can separate spring from autumn.} May ripe-day fraction
+is $0.04$ in every run; the gate would fire in June, after melt-out.
+
+\dead{The residual exposed fraction at saturation explains it --- \texttt{tanh} never reaches
+1 while the ramp clips to exactly 1.} Right about the codomain, wrong about the box: N1's own
+January cover is $0.963$, not $1.0$, so both schemes leave the \emph{same} exposed area. The
+distribution, not the total, is what differs.
+
+\dead{Drying the soil before freeze-up removes the latent-heat buffer.} The freeze-up buffer
+differs by only $-0.51/-0.72/-0.68$\,K against 17--25\,K to explain, and is not ordered with
+the damage --- O1 has the largest water deficit and not the largest cooling.
+
+\dead{More cover means a colder soil, because $\mathtt{ZSNCONDH}\propto\mathtt{PFRSN}$.}
+$\mathrm{d}G/\mathrm{d}f = 0.61-10\approx-9.4$: the exposed route swamps the snow route, so
+more cover means a \emph{warmer} soil. The blanket intuition holds; the exposed fraction is
+what matters.
+
+\noindent\textbf{Both of my errors were the same error: averaging before applying a nonlinear
+function.} \texttt{snow\_daily\_diag.py} averaged depth and density over 40 years and
+\emph{then} applied the \texttt{tanh}; its $\Delta$cover numbers are void and the conclusions
+drawn from them were withdrawn. The first monthly fit check evaluated
+$\mathrm{SCF}(\overline{d},\overline{\rho})$ against $\overline{\mathrm{cover}}$, which made a
+good fit look like it saturated in May. \textbf{$\mathrm{SCF}(\overline{x})\neq
+\overline{\mathrm{SCF}(x)}$ --- apply the formula per sample, always.}
+
+\subsection{Round 20: \texttt{ECE\_SNOW\_SCF} $=3$, fitted to observations}\label{sub:r20fit}
+A source change this time (\texttt{surfbc\_ctl\_mod.F90} branch, \texttt{surfece.F90}
+parameters); modes 1/2 retained so N/O stay reproducible.
+\[
+\mathrm{SCF} = (1-c_{vh})\min\!\left(1,(d/d_{cl})^{b_l}\right)
+             + c_{vh}\min\!\left(1,(d/d_{ch})^{b_h}\right),\qquad
+d_c = \min\!\left(D_{max},\ S\cdot D\cdot(\rho/\rho_{ref})^{M}\right)
+\]
+$\min(1,\cdot)$ \textbf{reaches 1 exactly} --- that is the entire fix; everything else is
+calibration. It nests the as-released ramp at $D=0.1$, $M=0$, $b=1$. Split by vegetation
+\textbf{type and fraction only} (via \texttt{PCVH}), never gridpoint or hemisphere, so it stays
+portable to other climate states and follows the vegetation if LPJ-GUESS moves the treeline.
+\textbf{No new prognostic and no new input}: \texttt{PSNM1M}, \texttt{PRSNM1M} and
+\texttt{PCVH} are already arguments of \texttt{SURFBC\_CTL}, and \textbf{nothing knows the
+date} --- the seasonal cycle is an output of the snow physics, not an input to the formula.
+
+Parameters are fitted to 36\,492 snow-course surveys, each measuring depth, density and covered
+fraction on the same transect, split by course type (1 = \emph{pole}/field $\to$ low
+vegetation, 2 = \emph{les}/forest $\to$ high). Constrained fit: hold Oct--Feb saturated, then
+minimise Mar--May error.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r r r}
+\toprule
+ & Oct & Nov & Dec & Jan & Feb & Mar & Apr & \textbf{May} \\
+\midrule
+field observed & $0.998$ & $0.999$ & $0.999$ & $0.999$ & $0.999$ & $0.994$ & $0.974$ & $\mathbf{0.914}$ \\
+field fit & $0.999$ & $1.000$ & $0.998$ & $1.000$ & $1.000$ & $0.996$ & $0.970$ & $\mathbf{0.915}$ \\
+forest observed & $0.999$ & $1.000$ & $1.000$ & $1.000$ & $1.000$ & $1.000$ & $0.987$ & $\mathbf{0.931}$ \\
+forest fit & $0.999$ & $1.000$ & $1.000$ & $1.000$ & $1.000$ & $1.000$ & $0.987$ & $\mathbf{0.931}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Mar--May RMSE $0.0025/0.0001$ against $0.0229/0.0156$ (as-released) and
+$0.1207/0.0964$ (\texttt{tanh}). \textbf{The frontier is flat} --- the same parameters win at
+every winter floor from $0.000$ to $0.998$, so the winter/spring trade-off that dominated
+rounds 15--19 was an artefact of the \texttt{tanh} being unable to do either, not a real
+tension. Kept: $D_{cl}=0.014$, $D_{ch}=0.026$\,m at $\rho_{ref}=200$, $M=4.70$, $b_l=1.46$,
+$b_h=0.40$, $D_{max}=0.30$.
+
+The physical reading is that $d_c$ runs from ${\sim}2$\,mm at $\rho=130$ to 8--14\,cm at
+$\rho=285$: fresh low-density snow drapes over everything, while old snow is dense
+\emph{because} it has been wind-redistributed and melt-metamorphosed, and that same history is
+what leaves bare patches. \textbf{Density is the proxy for age and melt state} --- the
+hysteresis the campaign spent two rounds trying to build, delivered by a state variable.
+
+\subsection{The runs, and what would falsify them}\label{sub:r20runs}
+P1 (\texttt{amip\_P1\_scffit}, $S=1$) takes the observations literally. P2
+(\texttt{amip\_P2\_scffit\_x3}, $S=3$) scales $d_c$ for 100\,km sub-grid variance. Both on the
+K1 base at 46\,yr with the daily snow/soil output retained so $f_{\text{full}}$ can be measured
+directly.
+
+\textbf{$S$ is the one uncalibrated knob and is labelled as such.} A snow course is 1--2\,km; a
+TCO95 box is ${\sim}100$\,km, and sub-grid variance grows with scale, so course-fitted $d_c$ is
+a \emph{lower bound} and $S>1$ is the physically expected direction. At the Siberian box-mean
+May state ($d=0.31$\,m, $\rho=313$) $S=1$ gives $d_c=0.118$\,m, i.e.\ $d/d_c=2.6$ and
+\textbf{no depletion at all} --- P1 is expected to behave much like as-released in spring.
+Rutgers/IMS 24\,km cover aggregated to the model grid is what should set $S$, and
+\textbf{that calibration is not done}; P2 is an exploratory bracket, not a candidate for
+adoption.
+
+\textbf{Pre-registered falsifiers.} (i) P1's DJF soil must return to the N1/K1 reference; if it
+does not, the distribution diagnosis is wrong and this whole section fails. (ii) January
+$f_{\text{full}}$ must return to ${\sim}0.96$ from N2's $0.773$. (iii) If P2 recovers the JJA
+gain \emph{but} reopens the winter soil bias, then spring depletion and winter insulation are
+genuinely coupled at grid scale and the flat frontier found on station data does not survive.
+
+\textbf{One tension, found while making Figure~\ref{fig:depletion} and not resolved.} The
+constrained fit optimises the \emph{monthly climatology}, but the model applies the curve
+\emph{pointwise}. Scored on the pointwise $(d,\rho)$ bin surface instead, the adopted field
+parameters give RMSE $0.0624$ against $0.0384$ for a fit made directly to that surface
+($b\approx0.1$) --- though both beat as-released ($0.0771$). For forest the adopted parameters
+are better on \emph{both} metrics ($0.0420$ vs $0.0483$; as-released $0.0644$). So the field
+curve is a compromise: optimal on the seasonal cycle, second-best on the surface, and an
+improvement on the incumbent either way. Whether the climatology or the surface is the right
+objective is not obvious --- the model integrates the curve over a cell distribution, which is
+closer to the climatology aggregation --- and it should be settled alongside the Rutgers
+calibration of $S$.
+
+\textbf{Residual hysteresis is real but small.} At matched $(d,\rho)$ the ablation season is
+lower in \emph{24 of 24} non-zero bins --- systematic, $p\approx10^{-4}$ --- but the weighted
+mean is only $-0.005$ (field) and $-0.001$ (forest). Capturing it would mean plumbing
+\texttt{PWSNM1M} through the caller chain for ${\sim}0.005$ of cover; not done. The matched
+test can only compare bins populated in both seasons, so spring's extreme states ($\rho>300$)
+are structurally untestable this way.
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias

@@ -123,6 +123,19 @@ RUNS = [
     ('N2 scf current', 'amip_N2_snowdiag_scf'),
     ('O1 scf m4', 'amip_O1_scf_m4'),
     ('O2 scf m3', 'amip_O2_scf_m3'),
+    # Round 20: the depletion curve REBUILT on observations after the tanh was
+    # falsified outright.  tanh(x) has range (0,1) OPEN AT 1, so complete snow cover
+    # is not representable at any (z0, rho_new, m) -- while RIHMI-WDC snow courses
+    # report exactly 10/10 in 99.74% of 14369 Siberian DJF surveys, and the tanh
+    # reaches complete cover on 29% of January field cases against an observed 99.6%.
+    # Cost, measured against 174676 station observations at 0.2 m (-6.1 degC):
+    # N1 (off) -5.3 = +0.8 bias, N2 -26.3 = -20.2, O1 -16.1, O2 -14.7.  ECE_SNOW_SCF=3
+    # replaces it with min(1,(d/d_c)^b), d_c = SCALE*DC*(rho/200)^4.7, split by
+    # vegetation type and fraction, fitted to 36492 snow-course surveys.  P1 takes the
+    # fit literally (SCALE=1); P2 scales d_c x3 for 100 km sub-grid variance, the one
+    # parameter station data cannot constrain.  See notes/RUNS_AND_PARAMETERS.md.
+    ('P1 scf fit', 'amip_P1_scffit'),
+    ('P2 scf fit x3', 'amip_P2_scffit_x3'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
