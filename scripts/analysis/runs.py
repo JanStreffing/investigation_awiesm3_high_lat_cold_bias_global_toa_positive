@@ -134,8 +134,17 @@ RUNS = [
     # vegetation type and fraction, fitted to 36492 snow-course surveys.  P1 takes the
     # fit literally (SCALE=1); P2 scales d_c x3 for 100 km sub-grid variance, the one
     # parameter station data cannot constrain.  See notes/RUNS_AND_PARAMETERS.md.
-    ('P1 scf fit', 'amip_P1_scffit'),
-    ('P2 scf fit x3', 'amip_P2_scffit_x3'),
+    # Round 20b: P1/P2 are WITHDRAWN and replaced by P3/P4.  P1 aborted at 1888-03-22
+    # with ABOR1 'Very snow cold temperature' (srfsn_webal_mod.F90:451, PTSN < 100 K):
+    # Tsn 91.9 K, SWE 0.056 kg/m2, PFRSN 1.000.  The fitted power law was extrapolated
+    # below any depth the snow courses sampled -- at rho=100 d_c = 5.4e-4 m, so a
+    # 0.56 mm dusting got FULL COVER and the snow tile took the whole grid-box flux
+    # into ~zero heat capacity (SCF/SWE 17.9 vs 0.10 as-released).  ECE_SNOW_SCF_SWEMIN
+    # now floors d_c at SWEMIN/rho -- a minimum snow MASS, the right currency for a
+    # heat-capacity failure.  P2 never aborted but carries the same defect, so its
+    # output is tainted too and it was cancelled at leg 5.
+    ('P3 scf fit', 'amip_P3_scffit'),
+    ('P4 scf fit x3', 'amip_P4_scffit_x3'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
@@ -160,4 +169,10 @@ NOT_LEVERS = [
     # of RUNS so it does not appear as a duplicate column; it doubles as a reproducibility
     # check -- N1 must match K1 to within the noise floor.
     'amip_N1_snowdiag',
+    # Round 20 first attempt, WITHDRAWN 2026-08-06 -- unfloored d_c gave full snow
+    # cover to a sub-millimetre pack.  P1 aborted at 1888-03-22; P2 was cancelled at
+    # leg 5 carrying the same defect.  Superseded by P3/P4 with ECE_SNOW_SCF_SWEMIN.
+    # Kept out of RUNS so evaluate.sh cannot score partial, defective output.
+    'amip_P1_scffit',
+    'amip_P2_scffit_x3',
 ]

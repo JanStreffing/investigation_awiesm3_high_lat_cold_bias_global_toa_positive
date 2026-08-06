@@ -4156,11 +4156,53 @@ Rutgers/IMS 24\,km cover aggregated to the model grid is what should set $S$, an
 \textbf{that calibration is not done}; P2 is an exploratory bracket, not a candidate for
 adoption.
 
-\textbf{Pre-registered falsifiers.} (i) P1's DJF soil must return to the N1/K1 reference; if it
+\textbf{Pre-registered falsifiers.} (i) The DJF soil must return to the N1/K1 reference; if it
 does not, the distribution diagnosis is wrong and this whole section fails. (ii) January
-$f_{\text{full}}$ must return to ${\sim}0.96$ from N2's $0.773$. (iii) If P2 recovers the JJA
-gain \emph{but} reopens the winter soil bias, then spring depletion and winter insulation are
-genuinely coupled at grid scale and the flat frontier found on station data does not survive.
+$f_{\text{full}}$ must return to ${\sim}0.96$ from N2's $0.773$. (iii) If the scaled variant
+recovers the JJA gain \emph{but} reopens the winter soil bias, then spring depletion and winter
+insulation are genuinely coupled at grid scale and the flat frontier found on station data does
+not survive.
+
+\subsection{P1 crashed: the fit extrapolated where it had no data (2026--08--06)}\label{sub:r20crash}
+P1 aborted at 1888--03--22 with \texttt{ABOR1: Very snow cold temperature}
+(\texttt{srfsn\_webal\_mod.F90:451}, the $\mathrm{PTSN}<100$\,K sanity guard):
+\begin{center}\footnotesize
+\texttt{Tsn 91.93613 \quad SWE-1 5.6058891E-02 \quad SWE 0.0 \quad Snow frac 1.000000 \quad heat 10.88281}
+\end{center}
+\textbf{A pack of $0.056$\,kg\,m$^{-2}$ --- half a millimetre --- was given \emph{full} snow
+cover.} The snow tile then absorbed the entire grid-box flux into essentially zero heat
+capacity and the snow temperature collapsed. The cause is that the fitted power law was
+extrapolated below any depth the snow courses ever sampled: there is no survey under
+${\sim}5$\,cm, and at $\rho=100$ the formula gives $d_c = 0.014(0.5)^{4.7} = 5.4\times10^{-4}$\,m,
+so a $0.56$\,mm dusting reaches $d/d_c = 1.04$ and saturates. The governing ratio is
+$\mathrm{SCF}/\mathrm{SWE}$: as-released gives $0.100$ at that state, mode 3 unfloored gives
+$17.86$ --- \textbf{180$\times$ worse}. I had written down that the low-depth end was
+unconstrained and then extrapolated into it with no guard.
+
+\textbf{The fix} is \texttt{ECE\_SNOW\_SCF\_SWEMIN}, which floors $d_c$ at
+$\mathrm{SWEMIN}/\rho$: a minimum snow \emph{mass} before cover may saturate, which is the
+right currency because the abort is a heat-capacity failure, not a depth one.
+$\mathrm{SWEMIN}=3$\,kg\,m$^{-2}$ is the \emph{smallest} value that beats the as-released
+margin ($\mathrm{SCF}/\mathrm{SWE}=0.053$ against $0.100$) while barely touching the
+calibration --- October field cover $0.999\to0.996$ against an observed $0.998$, and Dec--May
+unchanged to three decimals. $\mathrm{SWEMIN}=5$, which I had picked by guess first, would have
+cost $0.983$ in October for no extra safety that matters.
+
+\textbf{P2 was cancelled un-crashed and is also withdrawn}: $\mathrm{SCALE}=3$ only makes $d_c$
+$1.6$\,mm instead of $0.5$\,mm, so it carries the same defect and its output is
+\textcolor{red}{TAINTED} wherever thin snow occurs, which includes every autumn onset and
+spring melt-out. \textbf{P3} ($\mathrm{SCALE}=1$) and \textbf{P4} ($\mathrm{SCALE}=3$), both
+with $\mathrm{SWEMIN}=3$, supersede them.
+
+\dead{P1 was stopped by an unexplained \texttt{scancel} from the account UID rather than by a
+model failure.} Wrong, and the reasoning behind it was worse than the conclusion: the model
+aborted normally on \texttt{PROC=48} and esm\_tools tore the job down afterwards, exactly as
+designed. I searched \texttt{NODE.001\_01} (rank 1 only) for \texttt{forrtl}/\texttt{nan}/
+\texttt{abort} and for the esm\_tools trigger strings, none of which match \texttt{ABOR1} or
+\texttt{MPL\_ABORT}, concluded ``no model error'', and then constructed an elaborate
+infrastructure story on top of that gap. \textbf{Method note: an OpenIFS abort is
+\texttt{ABOR1}/\texttt{MPL\_ABORT} and can land on any rank --- grep the whole compute log for
+those tokens before concluding a job died externally.}
 
 \textbf{One tension, found while making Figure~\ref{fig:depletion} and not resolved.} The
 constrained fit optimises the \emph{monthly climatology}, but the model applies the curve

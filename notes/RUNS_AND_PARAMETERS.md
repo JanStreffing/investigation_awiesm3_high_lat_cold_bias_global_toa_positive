@@ -779,10 +779,46 @@ through a state variable.
 
 #### The runs
 
-| run | `SCALE` | what it asks |
-|---|---:|---|
-| **P1** `amip_P1_scffit` | 1.0 | observations taken literally. Does the winter defect go away? |
-| **P2** `amip_P2_scffit_x3` | 3.0 | `d_c` ×3 for 100 km sub-grid variance. Can the summer gain come back too? |
+| run | `SCALE` | `SWEMIN` | what it asks |
+|---|---:|---:|---|
+| ~~P1~~ `amip_P1_scffit` | 1.0 | — | 🛑 **CRASHED 1888-03-22, WITHDRAWN** |
+| ~~P2~~ `amip_P2_scffit_x3` | 3.0 | — | 🛑 **same defect, cancelled at leg 5, TAINTED** |
+| **P3** `amip_P3_scffit` | 1.0 | 3.0 | observations taken literally. Does the winter defect go away? |
+| **P4** `amip_P4_scffit_x3` | 3.0 | 3.0 | `d_c` ×3 for 100 km sub-grid variance. Can the summer gain come back too? |
+
+#### 🛑 Round 20b — P1 crashed: the fit was extrapolated where it had no data (2026-08-06)
+
+P1 aborted with `ABOR1: Very snow cold temperature` (`srfsn_webal_mod.F90:451`, the
+`PTSN < 100 K` guard):
+
+```
+Tsn  91.93613      SWE-1  5.6058891E-02   SWE  0.0
+Snow frac,heat,pg0   1.000000   10.88281   17.17102
+```
+
+**A pack of 0.056 kg/m² — half a millimetre — was given FULL cover.** The snow tile then
+absorbed the entire grid-box flux into ~zero heat capacity. Cause: the snow courses hold no
+survey below ~5 cm, and at ρ=100 the fit gives `d_c = 0.014·(0.5)^4.7 = 5.4e-4 m`, so a
+0.56 mm dusting reaches `d/d_c = 1.04` and saturates. The governing ratio `SCF/SWE`:
+
+| | SCF/SWE at the crash state |
+|---|---:|
+| as-released | 0.100 |
+| mode 3, no floor | **17.86** ← crashed |
+| mode 3, SWEMIN=3 | 0.053 |
+
+**Fix: `ECE_SNOW_SCF_SWEMIN` floors `d_c` at `SWEMIN/ρ`** — a minimum snow *mass* before cover
+may saturate, which is the right currency because the abort is a heat-capacity failure, not a
+depth one. **3.0 kg/m² is the smallest value that beats the as-released margin** while barely
+touching the calibration (October field 0.999→0.996 vs obs 0.998; Dec–May unchanged to three
+decimals). SWEMIN=5, picked first by guess, would have cost 0.983 in October for no useful
+extra safety.
+
+⚠ **Method note, learned expensively.** An OpenIFS abort prints `ABOR1` / `MPL_ABORT` and can
+land on **any rank**. I grepped `NODE.001_01` (rank 1 only) for `forrtl`/`nan`/`abort` and for
+the esm_tools `check_error` trigger strings — none of which match `ABOR1` — concluded "no model
+error", and then built an elaborate story about a phantom `scancel`. **Grep the whole compute
+log for `ABOR1|MPL_ABORT` before ever concluding a job died externally.**
 
 Both on the K1 base, 46 yr, daily `sd/rsn/tsn/asn/stl1/stl2` retained so `f_full` can be
 computed directly.
