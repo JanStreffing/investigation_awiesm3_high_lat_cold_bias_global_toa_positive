@@ -153,9 +153,20 @@ points and is independently fixable; the tuning only moves runs vertically relat
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.84\textwidth]{plots/summary_scatter_official.png}
-\caption{Net TOA imbalance (30-yr mean, \texttt{part2}) vs 2\,m-T RMSD against ERA5 (\texttt{part8}).
-Dotted lines = baseline; lower-left is better. Colour = parameter family.}
+\includegraphics[width=0.99\textwidth]{plots/summary_scatter_with0910_picorr.png}
+\caption{Net TOA imbalance (30-yr mean, \texttt{part2}) against the 2\,m-T bias vs ERA5
+\emph{corrected for the reference period}, now including rounds 09 and 10 (orange diamonds,
+common window 1354--1379). \textbf{ERA5 is present-day and the runs are pre-industrial, about
+$1.1$\,K apart, so that much of the raw cold bias is expected rather than error}; the $y$ axis
+subtracts it, and $0$ is correct for a PI run. Ranking by raw RMSD penalises exactly the runs
+that are correctly cold, which is why the earlier version of this figure was misleading.
+Dashed blue = the corrected piControl goal of $0$ (\S\ref{sec:toagoal}); the star marks the
+ideal, which nothing occupies. \textbf{The runs lie on a line, not in a cloud}: every
+W\,m$^{-2}$ of TOA improvement costs ${\approx}0.6$\,K of global cold, from 080a at
+$(1.73,+0.28)$ to 10A at $(0.57,-0.93)$. And the \emph{pattern} error is not what
+distinguishes them --- centred RMSD, $\sqrt{\mathrm{RMSD}^2-\mathrm{bias}^2}$, which removes
+any uniform offset, is $1.41$--$1.64$\,K across all 29 runs, a $\pm8\,\%$ spread against a
+raw-RMSD spread of $64\,\%$. Colour = parameter family.}
 \end{figure}
 
 \begin{figure}[H]
@@ -165,7 +176,7 @@ Dotted lines = baseline; lower-left is better. Colour = parameter family.}
 None has flattened within 30\,yr, so treat the mean level as a \emph{ranking}, not a final equilibrium value.}
 \end{figure}
 
-\section{Master metric table (coupled \texttt{Tuning\_test\_06*} runs, sorted by TOA imbalance)}
+\section{Master metric table (coupled runs, sorted by TOA imbalance)}
 \begin{center}\small
 \begin{tabular}{l r r r r r}
 \toprule
@@ -193,10 +204,30 @@ Run & TOA imb.\ [W/m$^2$] & vs base & 2m RMSD [K] & 2m bias [K] & CMPI \\
 06B\_albpnd028\_rfrac075              & 1.447 & $-5\%$  & 1.847 & $-1.062$ & 0.741 \\
 06A\_albpnd028                        & 1.457 & $-5\%$  & 1.811 & $-1.004$ & 0.748 \\
 \textbf{06\_Baseline}                 & \textbf{1.531} & -- & \textbf{1.717} & \textbf{$-0.939$} & \textbf{\CMPIBASE} \\
+\midrule
+\multicolumn{6}{l}{\emph{Rounds 09/10 (added 2026--08--07), same window 1354--1379.}}\\
+\multicolumn{6}{l}{\emph{Bias column also given PI-corrected (raw $+1.1$\,K); cRMSD $=$ pattern error.}}\\
+10A (06V $+$ G4)                      & \textbf{0.565} & $-63\%$ & 2.522 & $-2.034$ ($-0.93$) & cR 1.49 \\
+10B (10A $+$ \texttt{tanh} depletion) & 0.708 & $-54\%$ & 2.547 & $-2.067$ ($-0.97$) & cR 1.49 \\
+09C (06V $+$ newSeaIce)               & 0.783 & $-49\%$ & 2.475 & $-1.960$ ($-0.86$) & cR 1.51 \\
+09B (06T $+$ newSeaIce)               & 1.120 & $-27\%$ & 2.238 & $-1.691$ ($-0.59$) & cR 1.47 \\
+09A (baseline $+$ newSeaIce)          & 1.182 & $-23\%$ & 2.042 & $-1.363$ ($-0.26$) & cR 1.52 \\
+080a (CRUNCEP veg init)               & 1.726 & $+13\%$ & \textbf{1.629} & $-0.825$ ($+0.28$) & cR 1.41 \\
 \bottomrule
 \end{tabular}
 \end{center}
-{\footnotesize TOA = 30-yr global-mean net TOA from \texttt{part2\_rad\_balance.py}. RMSD/bias from \texttt{part8}
+{\footnotesize \textbf{The 09/10 block is the campaign's central trade-off in one place}, but
+read the bias column with the reference period in mind: ERA5 is present-day and these runs are
+pre-industrial, ${\approx}1.1$\,K apart, so the PI-corrected value in brackets is the one that
+means anything. On that basis 10A is $0.93$\,K too cold where 06\_Baseline is $0.16$\,K too
+warm --- a real gap, but a third of what the raw numbers suggest. \textbf{And the spatial
+pattern is not what changes}: centred RMSD is $1.41$--$1.64$ across all 29 runs, so the entire
+raw-RMSD spread is the global mean, counted twice. Nothing yet occupies the low-TOA,
+correct-temperature corner.
+Over their own longer window (1370--1399) 10A reads $0.802/2.565$ and 10B $0.916/2.383$, so
+the ranking is window-dependent and only the common window is tabulated. CMPI is left blank
+for these rows rather than guessed --- it needs \texttt{part4\_cmpi.py} and its own reference
+set. TOA = 30-yr global-mean net TOA from \texttt{part2\_rad\_balance.py}. RMSD/bias from \texttt{part8}
 methodology (cos-lat weighted, model$-$ERA5, yrs 1354--1379); cross-checked vs the tool's on-figure values
 (baseline 1.717 vs 1.721; 06V 2.671 vs 2.678). CMPI from \texttt{part4\_cmpi.py}: $<1$ = better than CMIP6
 ensemble-mean error; lower is better.}
@@ -1230,6 +1261,8 @@ regional errors have \emph{opposite} sign at TOA, which is what makes the round-
 The ocean-side tuning has already delivered about two-thirds of what was available to it. Whether the HR
 piControl goal of $-0.16$ is even the right target for this configuration should be revisited, given that
 $\approx0.67$ of any coupled value is an atmosphere matching observations.
+\emph{Revisited and answered on 2026--08--07: it is not the right target, and the goal is now $0$
+(\S\ref{sec:toagoal}).}
 
 \subsection{Result II --- the boreal \emph{summer} cold bias is atmospheric}\label{sub:amipsummer}
 Monthly 2\,m-T bias against CRUNCEP3 (1901--10), land only, cos-lat weighted:
@@ -4378,6 +4411,89 @@ its own.
 aerosol \emph{increased} clear-sky reflection ($+0.126$ global, $t=+11.1$). That is backwards
 for a direct effect and is significant, so it is not noise; most plausibly a surface-albedo
 or water-vapour adjustment to the changed surface SW, but it has not been chased down.
+
+\section{The coupled radiation objective, and why the goal moves to zero
+(2026--08--07)}\label{sec:toagoal}
+The 10 series branches from the same point as round 09 and runs twenty years longer, so it
+extends the campaign's central radiation figure rather than replacing it. 10A is 09C plus
+G4; 10B adds the \texttt{tanh} depletion since falsified (\S\ref{sec:r20res}).
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/campaign_net_toa_by_year_with10.png}
+\caption{Global-mean net TOA by model year, annual (thin) and 5-yr running mean (bold).
+\textbf{G4 is worth ${\approx}0.25$\,W\,m$^{-2}$ at top of atmosphere}: 10A settles at
+$+0.854$ against 09C's ${\approx}1.06$, the best of the previous round, and both 10-series
+runs spend 1362--1380 at or below the $+0.67$ atmosphere-only floor. \textbf{10A and 10B are
+indistinguishable} ($+0.854$ vs $+0.899$, curves interleaving throughout), so the depletion
+scheme that destroyed the winter soil by 20\,K cost essentially nothing at TOA --- consistent
+with its damage being a distributional surface effect invisible to box-mean energy
+diagnostics. The dashed goal is now $0$, not the inherited $-0.16$; the shaded band is the
+part of the gap ocean-side tuning could still close, and everything above the dotted line is
+atmospheric. 11C is absent: it aborted in its first leg on the crash of
+\S\ref{sub:r20crash}.}
+\label{fig:toa10}
+\end{figure}
+
+\subsection{Why the goal is $0$ and not $-0.16$}\label{sub:toazero}
+$-0.16$ was never derived. It is whatever the HR piControl settled at, adopted as a matching
+target. A target displaced from zero is only defensible if the atmosphere fails to conserve
+energy: with a spurious atmospheric source $S$, equilibrium gives
+$\mathrm{SFC}=\mathrm{TOA}+S$, so zero \emph{ocean} drift would require $\mathrm{TOA}=-S$.
+Whether the two conditions differ is measurable, not arguable.
+
+Measured on 10A over 1390--1399, global, cos-latitude weighted, using the release tool's own
+formula ($\mathtt{ssr}+\mathtt{str}+\mathtt{sshf}+\mathtt{slhf}-\mathtt{sf}\cdot3.3355\times10^{8}$,
+each divided by the accumulation period):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r}
+\toprule
+term & W\,m$^{-2}$ \\
+\midrule
+\texttt{ssr} $+$ \texttt{str} $+$ \texttt{sshf} $+$ \texttt{slhf} & $+1.843$ \\
+snow enthalpy ($\mathtt{sf}=1.042\times10^{-5}$\,m/step) & $-0.966$ \\
+\midrule
+net surface & $\mathbf{+0.877}$ \\
+net TOA (\texttt{tsr} $+238.749$, \texttt{ttr} $-237.895$) & $\mathbf{+0.854}$ \\
+\midrule
+residual & $\mathbf{-0.023}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The atmosphere conserves to $0.02$\,W\,m$^{-2}$.} There is no leak for an
+offset target to absorb, so ``the ocean is not drifting'' and ``the system is not drifting''
+are the same condition, and both put the goal at $\mathbf{0}$.
+
+\textbf{Snow enthalpy is doing nearly all of the reconciliation} --- $0.97$\,W\,m$^{-2}$ of a
+$0.99$ discrepancy. Omitted, the surface reads $+1.84$ against a TOA of $+0.85$, and that
+artefact is exactly the kind of apparent imbalance an offset target gets invented to absorb.
+Anyone comparing a raw surface flux against TOA without it will see a spurious
+${\approx}1$\,W\,m$^{-2}$ gap.
+
+Re-framing the campaign arithmetic against the corrected goal:
+
+\begin{center}\small
+\begin{tabular}{l r c r r}
+\toprule
+ & net TOA & $=$ atmosphere $+$ & coupled-state & gap to $0$ \\
+\midrule
+080a (untuned coupled) & $1.38$ & $0.67\ +$ & $\mathbf{0.71}$ & $1.38$ \\
+09C (06V $+$ newSeaIce) & $1.06$ & $0.67\ +$ & $\mathbf{0.39}$ & $1.06$ \\
+\textbf{10A} (${}+$G4) & $\mathbf{0.85}$ & $0.67\ +$ & $\mathbf{0.18}$ & $\mathbf{0.85}$ \\
+10B (${}+$\texttt{tanh}) & $0.90$ & $0.67\ +$ & $0.23$ & $0.90$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The conclusion is unchanged in kind and smaller in size: the ocean-side coupled-state
+term is now only $0.18$\,W\,m$^{-2}$ in 10A, so \textbf{almost the entire remaining imbalance
+is the atmosphere} --- the same $+0.67$ the AMIP testbed measures directly. Chasing $-0.16$
+would have meant over-tuning by that margin against a target with no physical basis in this
+configuration.
+
+\dead{The HR piControl goal of $-0.16$ is the target for the coupled spin-up.} Inherited, not
+derived; the budget closes to $0.02$\,W\,m$^{-2}$, so the goal is $0$.
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
