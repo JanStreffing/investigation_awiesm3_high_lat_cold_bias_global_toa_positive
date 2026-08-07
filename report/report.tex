@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--06})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--07})}
 
 \begin{document}
 \maketitle
@@ -39,17 +39,12 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--08--05).} \textbf{K1} $=$ G4 $+$ the snow-free
-land albedo correction is the carried-forward configuration --- Siberian JJA T2m
-$+1.036$\,K ($t{=}8.29$), global T2m RMSE $1.579\to1.524$ (the campaign's best bar K2),
-Southern Ocean SW RMSE $6.88\to4.80$, every season inside its own threshold and no Arctic
-energy penalty (\S\ref{sub:r17k}). \textbf{I3} reaches further in summer ($+1.322$\,K,
-$t{=}10.61$) but is \textbf{not adopted}: the guardrails price it at $+1.72$\,W\,m$^{-2}$ over
-60--90N, a bill AMIP structurally cannot feel and the coupled spin-up would
-(\S\ref{sub:i3}); its snow scheme is \textbf{rejected} for destroying the winter soil ---
-$-16.2$\,K DJF coupled, $-18.3$\,K in January, against direct station observations
-(\S\ref{sub:rihmi}, \S\ref{sub:scfcoupled}). Round 19 tests whether re-parameterising its
-density dependence keeps the summer gain without the winter cost (\S\ref{sub:r19}).
+\medskip\noindent\textbf{Where we are (2026--08--07).} \textbf{K1} $+$ \textbf{P3} is the
+carried-forward configuration: the sub-grid snow depletion, rebuilt on 36\,492 Russian
+snow-course surveys after the \texttt{tanh} form was falsified outright, now delivers
+Siberian JJA $+1.341$\,K ($+0.305$ over K1 alone) with \emph{no} winter penalty --- DJF
+$-0.584$\,K, inside its own $\pm0.588$ threshold, against the \texttt{tanh}'s $-2.783$ ---
+and beats the scheme-off baseline against 105 RIHMI stations (\S\ref{sec:r20res}).
 
 \medskip\noindent\textbf{What is left.} Three routes are now closed by measurement rather than
 opinion: transpiration$\to$cloud (\S\ref{sub:routea}), snow-melt albedo
@@ -4223,6 +4218,167 @@ mean is only $-0.005$ (field) and $-0.001$ (forest). Capturing it would mean plu
 test can only compare bins populated in both seasons, so spring's extreme states ($\rho>300$)
 are structurally untestable this way.
 
+\section{Round 20 results (2026--08--07): P3 adopted, and the fix costs the
+autumn}\label{sec:r20res}
+Both pre-registered falsifiers passed, and by more than they required.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+ & DJF soil vs N1 & Jan $f_{\text{full}}$ & soil$\to$snow gradient, Jan \\
+\midrule
+N1, scheme off & --- & $0.961$ & $22.4$\,K \\
+N2, \texttt{tanh} & $\mathbf{-22.71}$\,K & $0.755$ & $\mathbf{1.8}$\,K (impossible) \\
+\textbf{P3} & $\mathbf{+0.30}$\,K & $\mathbf{0.965}$ & $\mathbf{22.9}$\,K \\
+P4 & $+0.16$\,K & $0.965$ & $21.8$\,K \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.99\textwidth]{plots/amip_stl2_vs_RIHMI_20cm_seasonal_cycle_N1_N2_P3_P4.png}
+\caption{AMIP soil temperature against 105 RIHMI-WDC stations, built with the same
+methodology as the coupled 09C/10A/10B figure so the two are directly comparable
+(\texttt{stl2} 7--28\,cm vs observed 20\,cm, QC$=$0, 1991--2020, final model decade).
+The \texttt{tanh} run (green) peels away from October and reaches $-15$\,\textdegree C in
+January --- the same catastrophe 10B shows coupled. \textbf{P3 and P4 lie on top of the
+scheme-off baseline all winter, and slightly above it.} P3 beats that baseline on every
+metric: bias $-1.13$ vs $-1.52$, RMSE $3.12$ vs $3.28$, JJA $-1.56$ vs $-2.08$. The
+residual bias is now entirely a growing-season deficit that no snow scheme can touch.
+Absolute offsets are not comparable with the coupled figure (prescribed vs interactive
+SST); the spread between lines is.}
+\label{fig:amipsoil}
+\end{figure}
+
+\noindent Seasonal ANOVA against the control, each season on its own threshold: P3
+$-0.584$ / $+1.341^*$ and P4 $-0.132$ / $+1.092^*$ (DJF / JJA). \textbf{Neither appears on
+\texttt{evaluate.sh}'s ``warms JJA significantly but cools DJF significantly'' list}, which
+contains I1, I3, J1, J2, N2, O1 and O2. The winter penalty that has followed this scheme
+since round 15 is gone.
+
+\textbf{Marginal over the K1 base}, which is the honest accounting: P3 $+0.305$ JJA /
+$-0.088$ DJF; P4 $+0.056$ / $+0.364$. Most of the $+1.3$ is K1's. P3 beats P4 despite
+$\mathrm{SCALE}=1$ being the conservative choice, which \emph{falsifies my own prediction}
+that P3 would show no spring depletion --- cutting cover \emph{slows} box-mean melt,
+because the snow tile receives energy in proportion to its area.
+
+\dead{SCALE is the parameter that controls the spring depletion, and the uncalibrated one
+that matters.} Varying it $1\to4$ moves the offline Sep--May RMSE by $0.002$. P4 was a
+wasted run; \texttt{SWEMIN} is the whole lever.
+
+\subsection{Rutgers: the fix made the autumn 2.4$\times$ worse}\label{sub:r20rutgers}
+Rutgers 24\,km, Siberian box, area-weighted, model minus observed:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+ & Sep & Oct & Jan & Apr & May & Jun \\
+\midrule
+observed (absolute) & $0.067$ & $0.599$ & $0.999$ & $0.956$ & $0.655$ & $0.202$ \\
+N1 as-released & $+0.107$ & $+0.103$ & $-0.035$ & $-0.012$ & $+0.118$ & $-0.011$ \\
+\textbf{P3} & $\mathbf{+0.259}$ & $\mathbf{+0.249}$ & $-0.034$ & $-0.019$ & $+0.074$ & $-0.035$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The fitted $d_c$ for fresh low-density snow is ${\sim}2$\,mm, so a dusting
+saturates. That is \emph{correct} at 1--2\,km, which is what the snow courses measure, and
+wrong at grid scale, where September Siberia is 7\,\% covered rather than 33\,\%. The
+uniform $-0.035$ in midwinter is the model's permanent lake/water bare fraction, present in
+every run including scheme-off --- not the scheme.
+
+An offline \texttt{SWEMIN} sweep scored over the whole Sep--May season gives an
+\emph{interior} optimum at $30$ (RMSE $0.045$ against P3's $0.139$); past it the September
+gain is paid for by November and December going deficient. \textbf{P5}
+($\mathrm{SWEMIN}=15$) and \textbf{P6} ($=30$) bracket the albedo$\to$melt$\to$SWE feedback
+the offline sweep holds fixed, so those numbers are lower bounds on the sensitivity.
+
+\subsection{Round 21: resolution awareness, and a cap that disabled the
+floor}\label{sub:r21}
+Three source changes (\texttt{562df81}), one of them a real bug.
+
+\textbf{\texttt{DCMAX} was capping the mass floor.} The order was
+$d_c=\min(D_{max},\max(\text{fitted},\text{floor}))$, so the $0.30$\,m cap killed the floor
+above $\mathrm{SWEMIN}=D_{max}\rho$ --- 30\,kg\,m$^{-2}$ at $\rho=100$. Every grid coarser
+than TCO95 therefore got no floor beyond the reference value, and it is \emph{also} part of
+why the sweep flattened past 30 and reversed past 40, which I had attributed entirely to
+November. Now $d_c=\max(\min(D_{max},\text{fitted}),\text{floor})$: the cap guards the steep
+$M=4.7$ extrapolation of the \emph{fit}, the floor is a separate physical statement about
+how much box-mean mass fills a box of this size. The two were nested and should not have been.
+
+\textbf{A resolution preset.} \texttt{ECE\_SNOW\_SCF\_DXKM} rescales \texttt{SWEMIN} from
+its TCO95 reference, $\mathrm{SWEMIN}_{\text{eff}}=\mathrm{clamp}(\mathrm{SWEMIN}\cdot
+(\Delta x/100)^{0.624},3,120)$, off by default so every earlier run reproduces. The exponent
+$\ln 10/\ln 40$ comes from the only two \emph{measured} anchors: $3.0$ at $2.5$\,km (the
+snow courses are 1--2\,km transects, i.e.\ the high-resolution limit observed directly) and
+$30$ at $100$\,km (Rutgers). Presets: TL21 94, TL63 48, TL255 26, TCO95 30, TCO399 13,
+TCO1279 6, TCO4000 3.
+
+\textbf{Below 2\,km the scheme disables itself}, falling back to the as-released ramp with a
+loud log line. At that scale the model resolves individual patches, so a subgrid curve
+double-counts them, and 2\,km is the finest scale any calibration exists for.
+
+\dead{The scale dependence can be measured as a power law by coarse-graining Rutgers and
+the model together.} It cannot, and the attempt is kept because the negative result is the
+useful part. The ladder confirms the \emph{sign} --- \texttt{SWEMIN} grows with box size,
+$41.5$ at 66\,km against ${\sim}114$ at $\ge133$\,km --- but the values \textbf{plateau}
+beyond 133\,km rather than following a power law; the per-cell fit implies ${\sim}80$ at
+100\,km where the seasonal fit gives 30, a $3\times$ disagreement that is the same
+climatology-versus-pointwise tension as the $(d,\rho)$ surface fit; its own extrapolation to
+$2.5$\,km gives $9.4$ against the course anchor of $3$; and absolute skill is poor at every
+scale (RMSE $0.20$--$0.25$ on a 0--1 field), which indicts the functional form rather than
+the parameter. \textbf{The preset is an interpolation between two trusted anchors, not a
+measured law, and a new resolution needs validation rather than a \texttt{DXKM} value.}
+
+\section{Round 18 results (2026--08--07): the aerosol term is six times smaller than
+inferred}\label{sec:r18res}
+M1 removes the anthropogenic MACv2-SP plumes entirely; M2 gives the same CAMS mass its 3D
+vertical distribution. Both sit on the present-day base, so the comparison is against
+\texttt{amip\_presentday} over the same years.
+
+\textbf{Units first, because they invalidated the first pass.} IFS TOA fluxes are
+\emph{accumulated} J\,m$^{-2}$ over the 3600\,s step, not W\,m$^{-2}$; the raw numbers come
+out ${\sim}3600\times$ too large. Dividing by the timestep reproduces the campaign's own
+recorded decomposition almost exactly --- global $+2.68$ clear-sky and $-1.18$ cloud against
+the recorded $+2.68$ / $-1.17$ --- which is the check that the pipeline is right.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+band & M1 clear-sky & $t$ & M1 \textbf{cloud} & $t$ \\
+\midrule
+60--90N & $+0.381$ & $+3.8^*$ & $\mathbf{-1.014}$ & $-7.7^*$ \\
+30--60N & $+0.699$ & $+9.4^*$ & $\mathbf{-1.397}$ & $-13.3^*$ \\
+tropics & $-0.037$ & $-2.0$ & $-0.439$ & $-5.9^*$ \\
+\textbf{SO 45--65S} & $\mathbf{-0.116}$ & $\mathbf{-18.9^*}$ & $+0.022$ & $+0.1$ \\
+60--90S & $+0.010$ & $+0.3$ & $+0.079$ & $+1.0$ \\
+GLOBAL & $+0.126$ & $+11.1^*$ & $\mathbf{-0.542}$ & $-8.9^*$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Paired annual differences over 25\,yr; the runs share prescribed SSTs and years,
+so the pairing removes the forcing variability. $^*$ clears two-sided 95\,\% ($|t|>2.06$).
+
+\dead{Aerosol contributes ${\sim}0.7$\,W\,m$^{-2}$, 13\,\% of the Southern Ocean's $+5.10$
+clear-sky excess, inferred from a $+0.033$ AOD excess against MISR.} \textbf{Measured, it is
+$-0.116$\,W\,m$^{-2}$ ($t=-18.9$) --- six times smaller.} Removing \emph{all} anthropogenic
+aerosol moves SO clear-sky reflection by a tenth of a W\,m$^{-2}$. Aerosol is ${\sim}2$\,\%
+of the SO excess, not 13\,\%, and \textbf{the unexplained residual grows from ${\sim}1.3$ to
+${\sim}1.9$\,W\,m$^{-2}$}.
+
+\textbf{The two reflection columns are not separable.} M1's effect is overwhelmingly on
+\emph{cloud} --- $-1.40$ against $+0.70$ at 30--60N, $-0.54$ against $+0.13$ globally ---
+through \texttt{LMACV2SP\_CCNF}. Any future aerosol lever must be scored on both columns; a
+clear-sky-only argument is invalid. M2 moves the tropical clear-sky column by $+0.553$
+($t=+79$) at \emph{fixed column mass}, so where the aerosol sits is a first-order term of
+its own.
+
+\textbf{Open and untraced:} the M1 clear-sky deltas are mostly \emph{positive} --- removing
+aerosol \emph{increased} clear-sky reflection ($+0.126$ global, $t=+11.1$). That is backwards
+for a direct effect and is significant, so it is not noise; most plausibly a surface-albedo
+or water-vapour adjustment to the changed surface SW, but it has not been chased down.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -4450,10 +4606,28 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--05)}\label{sec:state}
+\section{State of the campaign (2026--08--07)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--07.}
+\begin{itemize}\itemsep2pt
+\item \textbf{The \texttt{tanh} depletion is falsified on observations, not on preference.}
+Its range is open at 1, so complete snow cover is unrepresentable at any parameters, while
+Russian snow courses report exactly $10/10$ in $99.74$\,\% of 14\,369 Siberian DJF surveys.
+Cost: $-20.2$\,K against 174\,676 station soil observations where the scheme \emph{off} is
+right to $+0.8$\,K (\S\ref{sub:r20rihmi}).
+\item \textbf{The damage was distributional, not a matter of mean cover.} DJF cover is
+identical to $0.002$ across N1/N2/O1/O2 while the soil differs by 23\,K; the clipping ramp
+leaves $93.5$\,\% of the box perfectly insulated, the \texttt{tanh} smears the same deficit
+into every cell (\S\ref{sub:r20mech}).
+\item \textbf{P3 is adopted} --- both falsifiers passed, and it beats the scheme-off
+baseline on bias, RMSE and JJA against 105 RIHMI stations (\S\ref{sec:r20res}).
+\item \textbf{Aerosol is ${\sim}2$\,\% of the Southern Ocean clear-sky excess, not 13\,\%},
+measured rather than inferred, and the two reflection columns are not separable
+(\S\ref{sec:r18res}).
+\end{itemize}
+
 \begin{itemize}\itemsep2pt
 \item \textbf{K1 is the carried-forward configuration (adopted 2026--08--05)} $=$ G4 $+$ the
   snow-free land albedo correction. Siberian JJA $+1.036$\,K ($t{=}8.29$), global T2m RMSE
@@ -4521,6 +4695,14 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Added 2026--08--07.} (i) \textbf{The autumn cover excess P3 introduced} ---
+$+0.259$ in September against Rutgers, where as-released was $+0.107$. P5/P6 test
+\texttt{SWEMIN} $=15$ and $30$; the offline optimum is 30 (\S\ref{sub:r20rutgers}).
+(ii) \textbf{The Southern Ocean unexplained residual has grown to ${\sim}1.9$\,W\,m$^{-2}$}
+now that the aerosol term is measured (\S\ref{sec:r18res}). (iii) \textbf{Scale awareness
+is a two-anchor interpolation, not a law} --- a new resolution needs validation
+(\S\ref{sub:r21}). (iv) The M1 clear-sky sign anomaly is significant and untraced.
+
 \begin{enumerate}\itemsep2pt
 \item \textbf{The blocker: a $-4.7$\,K Siberian winter bias} accompanying the snow fix
   (\S\ref{sub:r15compensate}). Not a radiation-supply problem (\S\ref{sub:r15lw}) and now
@@ -4565,6 +4747,23 @@ being built on.
 \toprule
 claim & what killed it & where \\
 \midrule
+\dead{Aerosol contributes ${\sim}0.7$\,W\,m$^{-2}$ (13\,\%) of the SO clear-sky excess} &
+Inferred from a $+0.033$ AOD excess vs MISR. Measured by removing all anthropogenic
+aerosol: $-0.116$\,W\,m$^{-2}$, $t=-18.9$ --- six times smaller. The unexplained residual
+grows to ${\sim}1.9$. & \S\ref{sec:r18res} \\
+\dead{\texttt{SCALE} is the parameter that controls spring depletion} &
+Varying it $1\to4$ moves the offline Sep--May RMSE by $0.002$; P3 and P4 came out
+near-identical. \texttt{SWEMIN} is the whole lever and P4 was a wasted run. &
+\S\ref{sec:r20res} \\
+\dead{The scale dependence of \texttt{SWEMIN} can be measured as a power law} &
+The ladder confirms the sign but the values plateau beyond 133\,km, the per-cell fit
+disagrees $3\times$ with the seasonal fit, and its own extrapolation to 2.5\,km gives $9.4$
+against a measured anchor of $3$. Kept as an interpolation, labelled as such. &
+\S\ref{sub:r21} \\
+\dead{P1 was stopped by an unexplained \texttt{scancel}, not a model failure} &
+The model aborted normally on \texttt{PROC=48}; I searched rank 1 only, for tokens that do
+not match \texttt{ABOR1}/\texttt{MPL\_ABORT}, and built an infrastructure story on the gap.
+& \S\ref{sub:r20crash} \\
 \dead{B8 (\texttt{RVLAMSK}$\to$5) is the best boreal lever, $+0.502$\,K} &
 44-year re-evaluation: $-0.038$\,K, pure noise. Two runs had already been built on it. &
 \S\ref{sub:noisefloor} \\

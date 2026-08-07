@@ -729,7 +729,7 @@ but RIHMI codes missing **by field width**, and cover degree is a 2-char field.
 99 cm — those are physical. Also: `snow_cover_degree` appears to use `0` for
 "not reported" (20 % of station-days with >20 cm at ≥65 °N report <0.5), so use `snmar`.
 
-### Round 20 — `ECE_SNOW_SCF = 3`, the OBSERVATIONALLY FITTED curve, IN FLIGHT (2026-08-06)
+### ⭐⭐ Round 20 — `ECE_SNOW_SCF = 3`, the OBSERVATIONALLY FITTED curve — **P3 ADOPTED** (2026-08-07)
 
 **Source change**, `surfbc_ctl_mod.F90` (new branch) + `surfece.F90` (parameters).
 Modes 1/2 retained so N/O stay reproducible.
@@ -839,6 +839,95 @@ calibration is NOT done.** P2 is an exploratory bracket, not a candidate for ado
    depletion and winter insulation really are coupled at grid scale and the flat
    frontier found on station data does not survive.
 
+#### ⭐ RESULTS (2026-08-07) — both falsifiers passed, P3 adopted
+
+| | DJF soil vs N1 | Jan f_full | soil→snow gradient Jan |
+|---|---:|---:|---:|
+| N1 scheme off | — | 0.961 | 22.4 K |
+| N2 tanh | **−22.71 K** | 0.755 | **1.8 K** (impossible) |
+| **P3** | **+0.30 K** | **0.965** | **22.9 K** |
+| P4 | +0.16 K | 0.965 | 21.8 K |
+
+Against **105 RIHMI stations**, on the colleague's own methodology (stl2 vs observed
+20 cm, QC=0, 1991–2020, final model decade), **P3 beats the scheme-off baseline**:
+
+| | bias | RMSE | DJF bias | JJA bias |
+|---|---:|---:|---:|---:|
+| N1 baseline | −1.52 | 3.28 | −0.19 | −2.08 |
+| N2 tanh | −6.72 | 9.40 | **−13.72** | −2.93 |
+| **P3** | **−1.13** | **3.12** | +0.38 | **−1.56** |
+| P4 | −1.31 | 3.18 | +0.33 | −1.86 |
+
+Seasonal ANOVA vs control (own thresholds DJF ±0.588, JJA ±0.242): P3 **−0.584 /
++1.341\***, P4 **−0.132 / +1.092\***. Neither appears on `evaluate.sh`'s "warms JJA
+but cools DJF significantly" list, which contains I1, I3, J1, J2, N2, O1, O2. The
+winter penalty that followed this scheme since round 15 is gone.
+
+⚠ Marginal over the K1 base: **P3 +0.305 JJA / −0.088 DJF**; P4 +0.056 / +0.364. Most
+of the +1.3 is K1's. P3 is the better of the two despite `SCALE=1` being the
+conservative choice — which falsifies my prediction that P3 would show no spring
+depletion. Cutting cover *slows* box-mean melt, because the snow tile receives energy
+in proportion to its area.
+
+🛑 **`SCALE` IS A DEAD KNOB.** Varying it 1→4 moves the offline Sep–May RMSE by 0.002.
+P4 was a wasted run. Do not spend further runs on it.
+
+#### 🛑 Rutgers: P3 made the AUTUMN 2.4× worse (2026-08-07)
+
+Rutgers 24 km, Siberian box, area-weighted, model − observed:
+
+| | Sep | Oct | Jan | Apr | May | Jun |
+|---|---:|---:|---:|---:|---:|---:|
+| observed (abs) | 0.067 | 0.599 | 0.999 | 0.956 | 0.655 | 0.202 |
+| N1 as-released | +0.107 | +0.103 | −0.035 | −0.012 | +0.118 | −0.011 |
+| **P3** | **+0.259** | **+0.249** | −0.034 | −0.019 | +0.074 | −0.035 |
+
+The fitted `d_c` for fresh low-density snow is ~2 mm, so a dusting saturates. Correct
+at 1–2 km (snow courses); wrong at grid scale, where September Siberia is 7 % covered.
+The uniform −0.035 in midwinter is the model's permanent lake/water bare fraction,
+present in every run including scheme-off — not the scheme.
+
+**Offline `SWEMIN` sweep**, scored over the whole Sep–May season:
+
+| SWEMIN | 3 | 6 | 10 | 15 | 20 | 25 | **30** | 40 | 55 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| RMSE | 0.139 | 0.119 | 0.099 | 0.081 | 0.065 | 0.053 | **0.045** | 0.049 | 0.072 |
+
+Interior optimum at 30; past it the September gain is paid for by November/December
+going deficient. **P5 (`SWEMIN=15`) and P6 (`SWEMIN=30`) submitted** to bracket the
+albedo→melt→SWE feedback the offline sweep holds fixed (it is a LOWER bound on the
+autumn sensitivity).
+
+⚠ P6 runs on the **pre-`DCMAX`-fix binary**, so it is not identical to `SWEMIN=30` in
+the current code — quantify before comparing.
+
+#### Round 21 — resolution awareness (`562df81`, 2026-08-07)
+
+Three source changes, one a real bug:
+
+1. 🛑 **`DCMAX` was capping the mass floor.** `MIN(DCMAX, MAX(fitted, floor))` let the
+   0.30 m cap kill the floor above `SWEMIN = DCMAX·ρ` (30 at ρ=100), so the preset was
+   inert on every grid coarser than TCO95. Now `MAX(MIN(DCMAX, fitted), floor)` — the
+   cap guards the steep MD=4.7 *fit*, the floor is a separate physical statement. This
+   is also part of why the sweep flattened past 30 and reversed past 40.
+2. **`ECE_SNOW_SCF_DXKM`** (grid spacing, km) rescales SWEMIN from its TCO95 reference:
+   `SWEMIN_eff = clamp(SWEMIN·(DXKM/100)^0.624, 3, 120)`. `DXKM ≤ 0` = off, so all
+   earlier runs reproduce. Exponent = ln(10)/ln(40) from the only two measured anchors:
+   **3.0 at 2.5 km** (snow courses are 1–2 km transects) and **30 at 100 km** (Rutgers).
+   Presets: TL21 94, **TL63 48**, TL255 26, TCO95 30, TCO399 13, TCO1279 6, TCO4000 3.
+3. **Below 2 km the scheme disables itself** (`ECE_SNOW_SCF → 0`, logged loudly). At
+   that scale the model resolves patches, so a subgrid curve double-counts; 2 km is
+   also the finest scale any calibration exists for.
+
+⚠ **The preset is an INTERPOLATION BETWEEN TWO ANCHORS, NOT A MEASURED LAW.** The
+scale ladder (`rutgers_scale_ladder.py`) confirms the sign — SWEMIN grows with box
+size, 41.5 at 66 km vs ~114 at ≥133 km — but contradicts the curve: values **plateau**
+beyond 133 km, the per-cell fit implies ~80 at 100 km where the seasonal fit gives 30
+(a 3× disagreement, the same climatology-vs-pointwise tension as the (d,ρ) surface
+fit), its own extrapolation to 2.5 km gives 9.4 against the course anchor of 3, and
+absolute skill is poor at every scale (RMSE 0.20–0.25 on a 0–1 field). **A new
+resolution needs validation, not just a `DXKM` value.**
+
 *Assets:* `scripts/analysis/snow_state_diag.py`, `snow_cell_diag.py`,
 `soil_freeze_buffer.py`, `rihmi_snow_soil_val.py`, `fit_depletion_curve.py`,
 `fit_depletion_constrained.py`, `depletion_hysteresis_test.py`.
@@ -858,7 +947,7 @@ plumbing `PWSNM1M` through the caller chain for ~0.005 of cover. Not done. The m
 test can only compare bins populated in *both* seasons, so spring's extreme states
 (ρ > 300) are structurally untestable this way.
 
-### Round 18 — aerosol diagnostics, IN FLIGHT (2026-08-05)
+### Round 18 — aerosol diagnostics, RESULTS (2026-08-07)
 
 ⚠ **On the PRESENT-DAY base (1989-2015), not the PI base.** MACv2-SP anthropogenic
 aerosol is TRANSIENT, so at the usual 1872-1915 the plumes are already near zero and
@@ -907,6 +996,57 @@ while the atmosphere absorbs 0.78 too *much*.
 
 ⚠ **DO NOT ADOPT EITHER.** Removing anthropogenic aerosol from a present-day run is
 physically wrong; these attribute a residual, nothing more.
+
+#### ⭐ RESULTS (2026-08-07) — the aerosol term is 6× smaller than the AOD inference
+
+⚠ **Units first.** IFS TOA fluxes are **accumulated J/m² over the 3600 s step**, not
+W/m². The raw numbers come out ~3600× too large (global clear-sky reflection 203 270
+instead of 56). Dividing by the timestep reproduces the campaign's own recorded
+decomposition almost exactly, which is the check that the pipeline is right:
+
+| band | recorded | measured now |
+|---|---|---|
+| 60–90N | +4.42 / +1.36 | **+4.42 / +1.37** |
+| 30–60N | +4.22 / −4.22 | **+4.23 / −4.23** |
+| tropics | +1.55 / +0.41 | **+1.55 / +0.40** |
+| SO 45–65S | +5.10 / −7.65 | +4.81 / −7.45 |
+| GLOBAL | +2.68 / −1.17 | **+2.68 / −1.18** |
+
+**The experiment**, M − `amip_presentday`, paired annual differences over 25 yr,
+`t` from a paired test (`|t| > 2.06` = 95 %, df 24):
+
+| band | M1 clr | t | M1 **cld** | t | M2 clr | t | M2 cld | t |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 60–90N | +0.381 | +3.8* | **−1.014** | −7.7* | +0.483 | +4.0* | −0.768 | −6.8* |
+| 30–60N | +0.699 | +9.4* | **−1.397** | −13.3* | +1.708 | +26.4* | −1.242 | −12.5* |
+| tropics | −0.037 | −2.0 | −0.439 | −5.9* | +0.553 | +79.2* | −0.186 | −3.1* |
+| **SO 45–65S** | **−0.116** | **−18.9\*** | +0.022 | +0.1 | −0.266 | −32.3* | +0.393 | +2.8* |
+| 60–90S | +0.010 | +0.3 | +0.079 | +1.0 | +0.126 | +4.1* | +0.109 | +1.6 |
+| GLOBAL | +0.126 | +11.1* | **−0.542** | −8.9* | +0.603 | +47.4* | −0.306 | −6.9* |
+
+🛑 **The SO aerosol term is −0.116 W/m² (t = −18.9), not ~0.7.** Removing ALL
+anthropogenic aerosol changes SO clear-sky reflection by a tenth of a W/m². The AOD
+inference (+0.033 vs MISR → ~0.7 W/m²) overstated it **6×**. The attribution table
+in §7 must be corrected: aerosol is **~2 % of the SO +5.10**, not 13 %, and the
+**unexplained residual grows from ~1.3 to ~1.9 W/m²**.
+
+🛑 **The two reflection columns are NOT separable.** M1's effect is overwhelmingly on
+CLOUD, not clear sky — −1.40 vs +0.70 at 30–60N, −0.54 vs +0.13 globally. That is the
+indirect effect via `LMACV2SP_CCNF`, and it means an aerosol change moves the cloud
+column ~4× harder than the clear-sky one. Any future aerosol lever must be scored on
+both columns; a clear-sky-only argument is invalid.
+
+⚠ **Unexplained and left open:** the M1 clear-sky deltas are mostly **positive** —
+removing aerosol *increased* clear-sky reflection (+0.126 global, t = +11.1). That is
+backwards for a direct effect and is significant, so it is not noise. Most likely a
+surface-albedo or water-vapour adjustment responding to the changed surface SW, but it
+has not been traced.
+
+M2 (3D vs 2D CAMS, same column mass to 0.4 %) moves the tropics clear-sky column by
++0.553 (t = +79) — **pure vertical redistribution at fixed mass**, so where the aerosol
+sits is a first-order term in its own right.
+
+*Asset:* `scripts/analysis/aerosol_m_series_eval.py`.
 
 ### Round 16 — in flight (2026-08-04)
 
@@ -1407,8 +1547,8 @@ Attribution of the SO +5.10, as far as it goes:
 |---|---:|---:|---|
 | sea-ice albedo | ~2.2 | 44 % | but see the hemispheric split above |
 | ocean surface albedo | ~0.9 | 18 % | +0.0072 to +0.0109 at 45–65S, and SH-specific |
-| aerosol (+0.033 AOD vs MISR) | ~0.7 | 13 % | MISR 0.107 vs model ~0.140 |
-| **unexplained** | **~1.3** | **25 %** | — |
+| ~~aerosol (+0.033 AOD vs MISR)~~ | ~~0.7~~ **0.12** | ~~13 %~~ **2 %** | 🛑 **CORRECTED 2026-08-07**: the AOD inference was 6× too large. M1 removes ALL anthropogenic aerosol and moves SO clear-sky reflection by only **−0.116 W/m² (t = −18.9)**. See round 18 results. |
+| **unexplained** | ~~1.3~~ **~1.9** | ~~25 %~~ **37 %** | grew by the aerosol correction |
 
 ⚠ The ocean-albedo term is **asymmetric** (+0.0109 at 55–65S vs +0.0027 at 55–65N), so a
 pure zenith-angle formula error is excluded — something SH-specific (whitecaps under

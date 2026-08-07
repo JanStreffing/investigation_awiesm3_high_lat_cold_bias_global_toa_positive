@@ -171,6 +171,51 @@ for name, lo_, hi_ in BANDS:
                 f'{band(M[lab]["cld"],lo_,hi_)-band(M["presentday"]["cld"],lo_,hi_):+13.3f}')
     print(row)
 
+# ============================================================ SIGNIFICANCE ====
+# The runs are PAIRED: same prescribed SSTs, same years, same everything but the
+# aerosol switch.  Differencing year by year removes the interannual variability
+# that both runs share, so the test is a paired t on the 25 annual differences --
+# far more powerful than comparing two 25-yr means with their own spreads.
+print('\n\n4. SIGNIFICANCE -- paired annual differences, 25 yr [W/m2]\n')
+
+
+def peryear(run, var):
+    out = []
+    for y in YEARS:
+        f = f'{RT}/{run}/outdata/oifs/atm_remapped_1m_{var}_1m_{y}-{y}.nc'
+        if not os.path.exists(f):
+            f = f'{RT}/{run}/outdata/oifs/atm_remapped_1m_{var}_{y}-{y}.nc'
+        if not os.path.exists(f):
+            continue
+        with xr.open_dataset(f, decode_times=False) as d:
+            out.append(d[var].values / ACC)
+    return np.array(out)                       # (nyr, 12, nlat, nlon)
+
+
+Y = {}
+for lab, run in RUNS:
+    ti, ts, tc = (peryear(run, v) for v in ('tisr', 'tsr', 'tsrc'))
+    Y[lab] = dict(clr=ti - tc, cld=tc - ts)
+
+def yband(f, lo_, hi_):
+    k = (LAT >= lo_) & (LAT <= hi_)
+    a = f.mean(axis=1)                          # annual mean -> (nyr, nlat, nlon)
+    ww = np.broadcast_to(w2[:, None], a.shape[1:])[k]
+    return np.array([np.average(x[k], weights=ww) for x in a])
+
+print(f'  {"band":11s}' + ''.join(f'{n:>34s}' for n in ('M1 - presentday', 'M2 - presentday')))
+print(f'  {"":11s}' + ''.join(f'{"clr":>9s}{"t":>8s}{"cld":>9s}{"t":>8s}' for _ in range(2)))
+for name, lo_, hi_ in BANDS:
+    row = f'  {name:11s}'
+    for lab in ('M1 no-anth', 'M2 aer3d'):
+        for col in ('clr', 'cld'):
+            d = yband(Y[lab][col], lo_, hi_) - yband(Y['presentday'][col], lo_, hi_)
+            t = d.mean() / (d.std(ddof=1) / np.sqrt(d.size)) if d.std(ddof=1) > 0 else np.nan
+            star = '*' if abs(t) > 2.06 else ' '      # two-sided 95 %, df=24
+            row += f'{d.mean():+9.3f}{t:+7.1f}{star}'
+    print(row)
+print('\n  * clears the two-sided 95 % level (|t| > 2.06, df = 24).')
+
 print("""
 
   READING IT.  In section 3, a NEGATIVE M1 clear-sky delta means removing the
