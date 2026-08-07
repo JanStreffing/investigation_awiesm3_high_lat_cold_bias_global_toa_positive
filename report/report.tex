@@ -39,7 +39,7 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--08--07).} \textbf{K1} $+$ \textbf{P3} is the
+\medskip\noindent\textbf{Where we are (2026--08--07).} \textbf{K1} $+$ \textbf{P5} is the
 carried-forward configuration: the sub-grid snow depletion, rebuilt on 36\,492 Russian
 snow-course surveys after the \texttt{tanh} form was falsified outright, now delivers
 Siberian JJA $+1.341$\,K ($+0.305$ over K1 alone) with \emph{no} winter penalty --- DJF
@@ -4411,6 +4411,67 @@ its own.
 aerosol \emph{increased} clear-sky reflection ($+0.126$ global, $t=+11.1$). That is backwards
 for a direct effect and is significant, so it is not noise; most plausibly a surface-albedo
 or water-vapour adjustment to the changed surface SW, but it has not been chased down.
+
+\section{Round 21 results (2026--08--07): P5 adopted, and the summer ceiling}\label{sec:r21res}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+run & DJF & MAM & JJA & SON \\
+\midrule
+K1 (base) & $-0.496$ & $-0.265$ & $+1.036^*$ & $+0.238$ \\
+N2 \texttt{tanh} & $-2.783^*$ & $-0.599^*$ & $+1.350^*$ & $-0.888^*$ \\
+P3 $\mathrm{SWEMIN}=3$ & $-0.584$ & $-0.333$ & $+1.341^*$ & $+0.217$ \\
+\textbf{P5 $\mathrm{SWEMIN}=15$} & $\mathbf{-0.060}$ & $\mathbf{-0.140}$ & $\mathbf{+1.149^*}$ & $\mathbf{+0.004}$ \\
+P6 $\mathrm{SWEMIN}=30$ & $\mathbf{-0.850^*}$ & $-0.288$ & $+1.096^*$ & $\mathbf{+0.487^*}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{P5 is the cleanest run in the campaign} --- every season inside its own
+threshold bar a significant summer gain. Against Rutgers it cuts the autumn excess P3
+introduced by ${\approx}40\,\%$ (Sep $+0.259\to+0.151$, Oct $+0.249\to+0.148$) while leaving
+Nov--Jan intact, and its DJF soil is $+0.22$\,K against the scheme-off reference.
+
+\dead{Raising SWEMIN cannot reopen the winter, because at midwinter SWE${\approx}93$ the floor
+is $0.15$\,m against a $0.43$\,m pack --- safe by construction.} True in \emph{January}, and I
+never checked \textbf{November}, where the pack is still shallow. P6's November
+$f_{\text{full}}$ falls to $0.752$ against N1's $0.884$ and its DJF soil to $-1.00$\,K. The
+floor binds in early winter; that is the interior optimum the offline sweep predicted,
+arriving by the mechanism I had dismissed.
+
+\subsection{The JJA ceiling: the lever was nearly exhausted before round 15}\label{sub:jjaceiling}
+Marginal over the K1 base, against the $\pm0.242$ threshold: P3 $+0.305$ (marginal), P5
+$+0.113$ (noise), P6 $+0.060$ (noise). Only P3 buys a measurable summer gain, and P3 is the
+version with the worst autumn cover. The reason is structural. May cover against Rutgers'
+$0.655$:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r}
+\toprule
+ & May cover & vs observed \\
+\midrule
+N1 as-released & $0.773$ & $\mathbf{+0.118}$ \quad(the entire available error) \\
+N2 \texttt{tanh} & $0.615$ & $\mathbf{-0.040}$ \quad(overshot \emph{past} observations) \\
+P3 / P5 & $0.729$ / $0.732$ & $+0.074$ / $+0.077$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The whole spring cover error is $0.118$.} P5 removes $0.044$; a perfect
+correction removes $0.118$, worth roughly $+0.2$\,K of JJA over K1 on a crude scaling of N2's
+response. \textbf{And N2's larger gain was never legitimate} --- it took $0.158$ out of a
+$0.118$ error, overshooting into a $-0.040$ deficit, so that extra warmth came from having too
+little May snow. It is the same over-depletion that destroyed the winter soil, and any
+comparison against N2's $+1.350$ is a comparison against an error.
+
+Honest accounting for the whole depletion line: worth ${\approx}0.1$--$0.3$\,K of Siberian
+JJA, not the ${\approx}1$\,K the early rounds implied. What it delivered instead is a scheme
+that is no longer \emph{wrong}. \textbf{The missing summer is elsewhere}: every AMIP run
+including scheme-off tracks RIHMI soil through Dec--Mar and falls $2$--$3.5$\,\textdegree C
+short from April to September (Fig.~\ref{fig:amipsoil}), a deficit common to all of them, and
+that is the global tropospheric cold bias of \S\ref{sub:vprof} --- still untouched after 50
+runs, and now the sharpest remaining target. \textbf{Further \texttt{SWEMIN} optimisation is
+not worth runs}: P3 and P5 differ by $0.19$\,K in JJA, at or below noise.
 
 \section{The coupled radiation objective, and why the goal moves to zero
 (2026--08--07)}\label{sec:toagoal}

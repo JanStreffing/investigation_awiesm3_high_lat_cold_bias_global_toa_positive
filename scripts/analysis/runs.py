@@ -145,6 +145,18 @@ RUNS = [
     # output is tainted too and it was cancelled at leg 5.
     ('P3 scf fit', 'amip_P3_scffit'),
     ('P4 scf fit x3', 'amip_P4_scffit_x3'),
+    # Round 21: SWEMIN calibrated against Rutgers.  P3 cured the winter but took
+    # Siberian September cover to +0.259 against the satellite record, worse than the
+    # as-released ramp's +0.107, because the fitted d_c for fresh low-density snow is
+    # ~2 mm and a dusting saturates.  SWEMIN floors d_c at SWEMIN/rho and binds only at
+    # low density, so it is an almost pure autumn control.  An offline sweep scored over
+    # the whole Sep-May season put the optimum at 30 (RMSE 0.045 vs P3's 0.139) with an
+    # interior maximum -- past 30 the September gain is paid for by Nov/Dec going
+    # deficient.  P5/P6 bracket the albedo->melt->SWE feedback the sweep holds fixed.
+    # NOTE both ran on the pre-DCMAX-fix binary (562df81), where the 0.30 m cap also
+    # clipped the floor; reconstructions must use the old operator order.
+    ('P5 swemin15', 'amip_P5_swemin15'),
+    ('P6 swemin30', 'amip_P6_swemin30'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs

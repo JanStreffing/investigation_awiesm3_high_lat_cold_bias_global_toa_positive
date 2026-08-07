@@ -43,10 +43,17 @@ DOY_MONTH = np.repeat(np.arange(12), DPM)
 # mode 3 parameters, mirroring surfbc_ctl_mod.F90 INCLUDING the SWEMIN mass floor.
 M3 = dict(dcl=0.014, dch=0.026, md=4.70, bl=1.46, bh=0.40,
           dcmax=0.30, rhoref=200.0, swemin=3.0)
+# P5/P6 ran on the PRE-DCMAX-FIX binary, where MIN(DCMAX, MAX(fitted, floor)) let the
+# 0.30 m cap clip the floor.  Reconstructing them with the CURRENT (fixed) formula
+# would not describe what actually ran, so the old order is reproduced here.
 RUNS = [('N1 off',  'amip_N1_snowdiag',     ('linear', None)),
         ('N2 tanh', 'amip_N2_snowdiag_scf', ('tanh',   (0.016, 100.0, 1.6))),
-        ('P3 fit',  'amip_P3_scffit',       ('mode3',  dict(M3, scale=1.0))),
-        ('P4 fitx3','amip_P4_scffit_x3',    ('mode3',  dict(M3, scale=3.0)))]
+        ('P3 sw3',  'amip_P3_scffit',       ('mode3',  dict(M3, scale=1.0, swemin=3.0))),
+        ('P5 sw15', 'amip_P5_swemin15',     ('mode3',  dict(M3, scale=1.0, swemin=15.0))),
+        ('P6 sw30', 'amip_P6_swemin30',     ('mode3',  dict(M3, scale=1.0, swemin=30.0)))]
+# Rutgers 24 km, Siberian box (rutgers_vs_model_cover.py); the round-21 target
+RUTGERS = {8: 0.067, 9: 0.599, 10: 0.969, 11: 0.997, 0: 0.999, 1: 1.000,
+           2: 0.999, 3: 0.956, 4: 0.655, 5: 0.202}
 
 
 def scf(kind, p, depth, rho, cvh):
@@ -59,6 +66,7 @@ def scf(kind, p, depth, rho, cvh):
         return np.where(live, np.clip(np.tanh(depth / np.maximum(s, 1e-6)), 0, 1), 0.0)
     r = np.maximum(rho, 50.0) / p['rhoref']
     floor = p['swemin'] / np.maximum(rho, 1.0)
+    # AS RUN: DCMAX caps the floor too (the bug fixed in 562df81, after these runs).
     dcl = np.minimum(p['dcmax'], np.maximum(p['scale'] * p['dcl'] * r ** p['md'], floor))
     dch = np.minimum(p['dcmax'], np.maximum(p['scale'] * p['dch'] * r ** p['md'], floor))
     sl = np.clip((depth / np.maximum(dcl, 1e-9)) ** p['bl'], 0, 1)
@@ -150,6 +158,13 @@ for v in ('stl1', 'stl2'):
               + f'{mn(S[lab][v],DJF)-mn(ref[v],DJF):+9.2f}')
 
 # ------------------------------------------------------------------ the spring --
+print('\n\n2b. COVER vs RUTGERS 24 km  [round-21 target: cut the Sep/Oct excess]\n')
+print(f'  {"run":9s}' + ''.join(f'{MON[m]:>8s}' for m in (8, 9, 10, 11, 0, 3, 4)))
+print(f'  {"Rutgers":9s}' + ''.join(f'{RUTGERS[m]:8.3f}' for m in (8, 9, 10, 11, 0, 3, 4)))
+for lab in S:
+    print(f'  {lab:9s}' + ''.join(f'{S[lab]["cover"][m]-RUTGERS[m]:+8.3f}' for m in (8, 9, 10, 11, 0, 3, 4)))
+print('  (rows after Rutgers are model MINUS observed)')
+
 print('\n\n3. SPRING DEPLETION -- does the fitted curve buy any?   [what the scheme is FOR]\n')
 print(f'  {"run":9s}{"Apr cov":>9s}{"May cov":>9s}{"Jun cov":>9s}{"May SWE":>9s}{"Jun SWE":>9s}')
 for lab in S:

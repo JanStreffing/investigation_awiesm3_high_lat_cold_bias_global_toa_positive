@@ -928,6 +928,72 @@ fit), its own extrapolation to 2.5 km gives 9.4 against the course anchor of 3, 
 absolute skill is poor at every scale (RMSE 0.20–0.25 on a 0–1 field). **A new
 resolution needs validation, not just a `DXKM` value.**
 
+#### ⭐ Round 21 RESULTS (2026-08-07) — P5 adopted, P6 fails, and the JJA ceiling
+
+| run | DJF | MAM | JJA | SON |
+|---|---:|---:|---:|---:|
+| K1 (base) | −0.496 | −0.265 | +1.036* | +0.238 |
+| N2 tanh | −2.783* | −0.599* | +1.350* | −0.888* |
+| P3 `SWEMIN=3` | −0.584 | −0.333 | +1.341* | +0.217 |
+| **P5 `SWEMIN=15`** | **−0.060** | **−0.140** | **+1.149\*** | **+0.004** |
+| P6 `SWEMIN=30` | **−0.850\*** | −0.288 | +1.096* | **+0.487\*** |
+
+**P5 is the cleanest run in the campaign** — every season inside its own threshold bar a
+significant JJA gain. Cover vs Rutgers, Sep/Oct: N1 +0.107/+0.103, P3 +0.259/+0.249,
+**P5 +0.151/+0.148**, P6 +0.101/+0.040. P5 cuts the autumn excess P3 introduced by ~40 %
+while keeping Nov–Jan intact; DJF soil +0.22 K vs the scheme-off reference, Jan f_full 0.959
+against N1's 0.961.
+
+🛑 **P6 FAILS and my prediction was wrong.** I said the winter was "safe by construction"
+because at midwinter SWE≈93 the floor is 0.15 m against a 0.43 m pack. True in *January* —
+but I never checked **November**, where the pack is still shallow. P6's November f_full drops
+to 0.752 against N1's 0.884 and DJF soil goes to **−1.00 K**. The floor binds in early winter.
+That is the interior optimum the offline sweep predicted, arriving by a mechanism I had
+dismissed.
+
+⚠ Both ran on the **pre-`DCMAX`-fix binary**, where the 0.30 m cap also clipped the floor
+(at ρ=100 that caps the effective floor at SWEMIN=30 exactly, so P6 may be partly
+self-limiting). Reconstructions must use the old operator order; a re-run on `562df81` would
+not be bit-identical.
+
+#### 🛑 THE JJA CEILING — why this lever cannot buy much more
+
+Marginal over the K1 base, against the ±0.242 JJA threshold: **P3 +0.305** (marginal),
+**P5 +0.113** (noise), P6 +0.060 (noise). Only P3 buys a measurable summer gain, and P3 is
+the version with the worst autumn cover.
+
+The reason is structural, not a tuning failure. May cover against Rutgers' 0.655:
+
+| | May cover | vs obs |
+|---|---:|---:|
+| N1 as-released | 0.773 | **+0.118** ← the entire available error |
+| N2 tanh | 0.615 | **−0.040** ← overshot PAST observations |
+| P3 / P5 | 0.729 / 0.732 | +0.074 / +0.077 |
+
+**The whole spring cover error is 0.118.** P5 removes 0.044 of it; a perfect correction
+removes 0.118, worth roughly **+0.2 K** of JJA over K1 on a crude scaling of N2's response.
+The lever was nearly exhausted before round 15 began.
+
+🛑 **And N2's larger gain was never legitimate**: it took 0.158 of cover out of a 0.118
+error, overshooting into a −0.040 deficit. That extra summer warmth came from having too
+little May snow — the same over-depletion that destroyed the winter soil. Any comparison
+against N2's +1.350 is a comparison against an error.
+
+**Honest accounting for the whole snow-depletion line:** worth ~0.1–0.3 K of Siberian JJA,
+not the ~1 K the early rounds implied. What it delivered instead is a scheme that is no
+longer *wrong* — winter soil at the reference, cover distribution matching observations, and
+a −20 K defect removed.
+
+**Where the missing summer actually is.** Every AMIP run including scheme-off tracks RIHMI
+soil through Dec–Mar and falls **2–3.5 °C short from April to September**. That deficit is
+common to all of them, survives every land-surface lever tried, appears identically in the
+coupled runs, and no snow parameter touches it. It is the **global tropospheric cold bias**
+(§3c), still untouched after 50 runs — and now the sharpest remaining target.
+
+**RECOMMENDATION: stop optimising `SWEMIN`.** P3 and P5 differ by 0.19 K in JJA, at or below
+noise; choose between them on autumn cover and winter soil, where the differences are real.
+P5 on that basis.
+
 *Assets:* `scripts/analysis/snow_state_diag.py`, `snow_cell_diag.py`,
 `soil_freeze_buffer.py`, `rihmi_snow_soil_val.py`, `fit_depletion_curve.py`,
 `fit_depletion_constrained.py`, `depletion_hysteresis_test.py`.
