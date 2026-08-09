@@ -5222,6 +5222,107 @@ column error that reported the ocean maximum as $0$, once from reading four \emp
 timesteps, which all fall in the same month, and concluding the field never varied. Both were
 wrong; the sampling was.
 
+\subsection{T2: the sea--air flux, validated in the model}\label{sub:r24t2}
+\S\ref{sub:r24t1} established that \texttt{emdms} is a \emph{concentration}, so a flux has to
+be formed before the field can drive anything --- and the flux is what must be validated
+first. Implemented as a diagnostic in \texttt{surfrad\_layer.F90}, where the DMS field, the
+model's own instantaneous wind and the surface temperature are all already in scope:
+
+\begin{align*}
+\mathrm{Sc} &= 2674.0 - 147.12\,T + 3.726\,T^2 - 0.038\,T^3 &&\text{Saltzman et al.\ (1993)}\\
+k_{600} &= 0.222\,u^2 + 0.333\,u \ \ [\mathrm{cm\,hr^{-1}}] &&\text{Nightingale et al.\ (2000)}\\
+k &= k_{600}\sqrt{600/\mathrm{Sc}}\,/\,360000 \ \ [\mathrm{m\,s^{-1}}] \\
+F &= k\,C_w\times10^{-6} \ \ [\mathrm{mol\,m^{-2}\,s^{-1}}]
+\end{align*}
+
+\noindent with $1$\,nmol\,L$^{-1}=10^{-6}$\,mol\,m$^{-3}$. The wind is the model's
+instantaneous lowest-level speed, \emph{not} a monthly mean --- $k$ is quadratic in $u$, and
+\S\ref{sub:r24nd} showed monthly vector averaging halves the Southern Ocean wind.
+
+\textbf{The pass criterion was set before running.} Hand-evaluating the chain at
+$C_w=2$\,nmol\,L$^{-1}$, $u=7$\,m\,s$^{-1}$, $T=15$\,\textdegree C gives $k_{600}=13.2$,
+$\mathrm{Sc}=1177$, $k=2.6\times10^{-5}$\,m\,s$^{-1}$ and
+$F=5.2\times10^{-11}$\,mol\,m$^{-2}$\,s$^{-1}$; scaled by an ocean area of
+$3.6\times10^{14}$\,m$^2$, $3.156\times10^{7}$\,s and $32.06$\,g\,mol$^{-1}$ that is
+${\approx}19$\,Tg\,S\,yr$^{-1}$, against a published $18$--$34$ (Lana et al.\ 2011 give
+$28.1$). So the model should print a mean flux of order
+$10^{-11}$--$10^{-10}$\,mol\,m$^{-2}$\,s$^{-1}$.
+
+The run completed a full year, $8760$ steps, no abort, $70\,088$ diagnostics
+(8 blocks $\times$ 8760).
+
+\begin{center}\footnotesize
+\begin{tabular}{l r}
+\toprule
+flux, minimum & $3.78\times10^{-13}$ \\
+flux, median & $2.33\times10^{-11}$ \\
+\textbf{flux, mean} & $\mathbf{3.52\times10^{-11}}$ \\
+flux, maximum & $3.31\times10^{-10}$ \\
+\midrule
+\textbf{predicted window} & $\mathbf{10^{-11}}$--$\mathbf{10^{-10}}$ \\
+indicative global budget & $12.8$\,Tg\,S\,yr$^{-1}$ \\
+published & $18$--$34$ (Lana et al.\ 2011: $28.1$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The unit chain is correct.} The mean flux sits inside the predicted window,
+and it varies while $C_w$ is uniform on a block --- so the variation is coming from wind and
+temperature through $k$, which is the intended behaviour.
+
+\emph{Three limits, stated so the number is not over-read.} The diagnostic covers rank~1's
+blocks, a northern high-latitude strip, not the globe. Land points enter as zero because the
+flux clamps $C_w$ at $0$ to reject the $-99$ sentinel, which drags the sampled mean down. And
+the $12.8$ is that non-global mean scaled as though it applied over all ocean. Landing within
+a factor of ${\approx}2$ of $28.1$ on so crude an extrapolation is a \emph{pass} for a unit
+test --- the purpose was to catch an error of orders of magnitude, not to measure the budget.
+A real budget needs a global reduction the diagnostic does not do.
+
+\textbf{The run changes no physics.} The flux is computed and printed, deliberately not wired
+into \texttt{PCCNO}, because the flux$\to$CCN step is a separate scientific choice that needs
+a published relation rather than a fitted constant.
+
+\subsection{Screening at one year: measured, with the threshold that makes it
+safe}\label{sub:r24screen}
+Project issue \#170 found the cy48 high-cloud offset already present in year~1 while the T2m
+bias and the SO low-cloud dip were not, and concluded that one-year runs would suffice to
+test tuning parameters. That claim is about \texttt{hcc}; the campaign's Southern Ocean
+metric is SW CRE, a different quantity with different noise, so the transfer was measured
+rather than assumed.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r l}
+\toprule
+lever & 44-yr $\Delta$ & \textbf{year-1 $\Delta$} & ratio & screens at 1\,yr? \\
+\midrule
+A1a \texttt{ovlliqice 0.10} & $-6.44$ & $\mathbf{-6.56}$ & $1.02$ & \textbf{yes} \\
+D2a \texttt{inpsea 0.2} & $-4.80$ & $\mathbf{-5.23}$ & $1.09$ & \textbf{yes} \\
+D2b \texttt{inp+p700} & $-2.61$ & $\mathbf{-2.01}$ & $0.77$ & \textbf{yes} \\
+A1b \texttt{ovlliqice 0.35} & $-2.17$ & $-1.74$ & $0.80$ & no \\
+B3 \texttt{clddiff 1.5e-5} & $+0.67$ & $-0.17$ & $\mathbf{-0.25}$ & no --- \emph{wrong sign} \\
+B7 \texttt{rvice 0.22} & $+0.66$ & $+1.22$ & $1.85$ & no \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Control interannual scatter in SO SW CRE is $0.712$\,W\,m$^{-2}$, so a \emph{pair}
+of single years resolves $\pm1.97$ against $\pm0.30$ for a 44-year pair. \textbf{The claim
+holds, with a threshold: a lever screens at one year if its effect exceeds
+${\approx}2$\,W\,m$^{-2}$, and is unreliable below it} --- B3 comes out with the
+\emph{opposite sign} at one year.
+
+\textbf{Why this is worth having.} Closing the SO amount deficit requires
+${\approx}4.9$\,W\,m$^{-2}$, so any lever large enough to matter would show at one year. A
+1-year AMIP leg is ${\approx}11$ minutes against $9.5$ hours for the 44-year standard, so
+candidate triage is ${\approx}50\times$ cheaper and only survivors need full length. Round 23
+spent four 48-year submissions on levers that could have been screened in 45 minutes
+together.
+
+\textbf{What it does NOT license.} Temperature. \#170's own lead/lag result is that T2m and
+the SO low-cloud dip lag the cloud change, and the campaign's seasonal thresholds
+(DJF $\pm0.588$\,K on 44 years) are far beyond a 1-year window. \textbf{Screen the radiative
+response at one year; never adopt on one.}
+
 \section{Round 25 (2026--08--09): the tropopause is not displaced, and cold-and-dry
 share one entry point}\label{sec:r25}
 No runs. Round 22 found the cold bias extratropical, peaking at 200\,hPa over both poles and
