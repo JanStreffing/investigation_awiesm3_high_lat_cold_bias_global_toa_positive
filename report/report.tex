@@ -5002,6 +5002,8 @@ works, and the lever may be wanted later with better targeting.
 \item \textbf{The Southern Ocean deficit is confirmed and stays the largest single term}, but
 it needs a \emph{regime-selective} reflection lever. Global low-cloud knobs overshoot the
 tropics; the D2b pressure gate is the template for what selective looks like.
+\emph{Answered in \S\ref{sec:r24}}: marine CCN is that lever, it is selective by
+construction, and it reaches the opacity third only.
 \item \textbf{The tropics need longwave cloud \emph{effectiveness}, not more cloud.} The
 deficit is $-2.16$\,W\,m$^{-2}$ of LW CRE, and no lever in 50 runs has moved the tropics
 through the longwave at all.
@@ -5546,6 +5548,25 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Re-ranked after round 24 (\S\ref{sec:r24}), which answers round 23's question.}
+Round 23 asked for a \emph{regionally selective} Southern Ocean reflection lever. Round 24
+found one and priced it: marine CCN is selective by construction, but it reaches only the
+\textbf{opacity third} --- $2.57$\,W\,m$^{-2}$ in-band, ${\approx}0.25$ global --- and the
+amount two-thirds is unreachable from the CCN path because the lifetime route divides by
+zero at \texttt{NAERCLD}$=0$. The list is therefore:
+\begin{enumerate}\itemsep2pt
+\item \textbf{11E coupled} (11D at $\mathrm{SWEMIN}=15$ plus K1). A namelist edit on a lever
+already validated over 44 AMIP years, and the only route to three questions AMIP cannot
+price. Cheapest decisive run available.
+\item \textbf{The tropical longwave cloud deficit}, $-2.16$\,W\,m$^{-2}$, untouched by any
+lever in 50 runs and the one term that is deficient in the direction the tropics need.
+\item \textbf{The extratropical tropopause}, cold-and-dry as one problem.
+\item \textbf{Marine biogenic CCN via \texttt{emdms}} --- real missing physics with the input
+already on disk, but ${\approx}0.25$\,W\,m$^{-2}$ global and it needs a published
+flux$\to$CCN relation, so it follows the cheaper items.
+\item \textbf{The SO cloud-\emph{amount} two-thirds} stays open with no identified lever.
+\end{enumerate}
+
 \textbf{Re-ranked again after round 23 (\S\ref{sec:r23}).} The Southern Ocean stays first
 but the requirement has sharpened: it needs a \emph{regime-selective} reflection lever, because
 every global low-cloud knob overshoots a tropical band that is only $-0.67$\,W\,m$^{-2}$ from

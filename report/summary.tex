@@ -51,11 +51,14 @@ at net TOA $+0.85$\,W\,m$^{-2}$ against a goal of $0$, of which only $0.18$ is s
 from the ocean side. The Southern Ocean carries $+7.46$\,W\,m$^{-2}$ of band error, two thirds
 of it a $6.4$\,pp cloud-\emph{amount} deficit of which 50 runs have closed one tenth.
 
-\medskip\noindent\textbf{What to do next} is \S\ref{sec:forward}: attack the SO cloud-amount
-deficit with a cloud-fraction lever rather than escalating ocean mixing or ice nucleation; stop
-optimising the snow scheme; and work the \emph{extratropical tropopause}, where the atmosphere is
-both $1.6$\,K too cold and $10\,\%$ too dry --- two large errors that cancel in OLR, and together
-the shared limiter on both remaining objectives.
+\medskip\noindent\textbf{What to do next} is \S\ref{sec:forward}, cheapest-decisive first:
+\textbf{11E}, a namelist edit that finally brings the coupled configuration level with the
+atmosphere-only one; then the SO cloud-\emph{amount} deficit, which needs a cloud-fraction lever
+rather than more ocean mixing or ice nucleation; then the \emph{extratropical tropopause}, where
+the atmosphere is both $1.6$\,K too cold and $10\,\%$ too dry --- two large errors that cancel in
+OLR, and together the shared limiter on both remaining objectives. Marine biogenic CCN is real
+missing physics with its input already on disk, but it reaches only the opacity third and so
+follows the cheaper items. Stop optimising the snow scheme.
 \end{abstract}
 
 \section{Scorecard}\label{sec:score}
@@ -576,7 +579,15 @@ require effort.
 \section{The path forward}\label{sec:forward}
 Ranked by expected value per unit of model time. Each carries its falsifier, stated in advance.
 
-\textbf{1. The Southern Ocean cloud-AMOUNT deficit ($6.43$\,pp).} The largest unexploited term in
+\textbf{1. Bring the coupled configuration level with AMIP: 11E.} 11D at
+$\mathrm{SWEMIN}=15$ with K1 added. A namelist edit on a lever validated over 44 AMIP years,
+and the only route to three questions AMIP structurally cannot price: whether the boreal
+closure suffices for forest survival once the vegetation--albedo runaway is allowed to
+close, whether G4's melt-out delay harms establishment, and the Arctic energy bill.
+\emph{Power note:} ten coupled years resolve only $\pm0.75$\,K of Siberian DJF soil, so a
+1\,K question needs a longer run or the AMIP answer taken on trust --- and it says $15$.
+
+\textbf{2. The Southern Ocean cloud-AMOUNT deficit ($6.43$\,pp).} The largest unexploited term in
 the campaign: $+7.46$\,W\,m$^{-2}$ in-band, $+0.74$ of the global mean on its own, robust to the
 reference period, and with a \emph{larger} unexplained residual than before because aerosol was
 measured out of it. Two thirds of the error is missing area, it is zonally uniform to
@@ -591,7 +602,7 @@ near-zero global temperature cost.
 \emph{Falsifier:} if the response also moves the tropics or NH T2m beyond noise, it is a global
 cloud knob in disguise and must be rejected as A1a was.
 
-\textbf{2. The extratropical tropopause, worked as one cold-and-dry problem.} Now the dominant
+\textbf{3. The extratropical tropopause, worked as one cold-and-dry problem.} Now the dominant
 remaining term for land 2\,m temperature, the residual in the Siberian budget, the whole of the
 RIHMI growing-season deficit, and the source of the residual imbalance. It is located
 (\S\ref{sec:limiter}) but not explained: the model is $-1.6$\,K and $-10\,\%$ dry through the
@@ -601,16 +612,18 @@ parameter sweep. \emph{Constraint that must be respected:} the two errors cancel
 lever that warms without moistening --- or moistens without warming --- makes the energy target
 several W\,m$^{-2}$ worse. A candidate has to be scored on both at once.
 
-\textbf{3. Bring the coupled configuration level with AMIP: 11D at $\mathrm{SWEMIN}=15$ plus
-K1.} The coupled branch now carries G4 and D2b, but its snow scheme runs at $\mathrm{SWEMIN}=30$
---- the setting AMIP rejected --- and K1 is absent entirely. This is also the only route to three
-things AMIP structurally cannot price: whether the boreal closure suffices for forest survival,
-since the coupled model closes a runaway AMIP deliberately severs; whether G4's delay of melt-out
-from 24 to 28 May \emph{harms} establishment through later growing-season onset; and the Arctic
-energy bill, which prescribed SST and ice absorb without responding.
-\emph{Note on power:} ten coupled years resolve $\pm0.75$\,K of Siberian DJF soil and
-$\pm1.25$\,K of DJF T2m, so a 1\,K question needs a longer run or the AMIP answer taken on
-trust --- and the AMIP answer says $15$.
+\textbf{4. Marine biogenic CCN via \texttt{emdms}.} The marine CCN path is now traced end
+to end. Ocean droplet number is \emph{correct in the mean} ($N_d\approx73$\,cm$^{-3}$ on
+6-hourly wind, against an observed $60$--$120$) but its \textbf{seasonal phase is inverted}:
+it is wind-driven, so it minimises in DJF where observations peak from biogenic sulphate ---
+and DJF/SON is exactly when the SO cloud error is worst. Genthon (1992) has no biogenic term
+and MACv2-SP is anthropogenic only, so this physics is absent by construction. A DMS emission
+climatology (\texttt{emdms}, paramId 210043) already ships with OpenIFS \emph{on TCO95's own
+N96 grid} and nothing reads it; \texttt{ICMCL} has headroom for an eighth field.
+\emph{Scoped but not first}: it reaches only the opacity third, ${\approx}0.25$\,W\,m$^{-2}$
+global, and needs a published flux$\to$CCN relation rather than a fitted curve.
+\emph{Recorded trap:} the cloud-\emph{lifetime} CCN route divides by zero at
+\texttt{NAERCLD}$=0$ --- do not enable \texttt{LAERLIQAUTOLSP}.
 
 \textbf{Explicitly not worth further runs:} \texttt{SWEMIN} optimisation (P3 and P5 differ by
 $0.19$\,K in JJA, at or below noise, and the total available May cover error is worth
