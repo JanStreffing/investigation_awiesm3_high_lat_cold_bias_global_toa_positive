@@ -48,13 +48,14 @@ Ocean and Siberia are not in competition; the ocean-mixing stack was the competi
 $+1.15$\,K with every season inside its own noise threshold, on a snow scheme rebuilt from
 36\,492 Russian snow-course surveys after the original was falsified outright. Coupled 10A sits
 at net TOA $+0.85$\,W\,m$^{-2}$ against a goal of $0$, of which only $0.18$ is still reachable
-from the ocean side. The Southern Ocean carries $+5.81$\,W\,m$^{-2}$ of band error from a
-$6.6$\,pp cloud-\emph{area} deficit that no lever has yet moved by more than a fraction.
+from the ocean side. The Southern Ocean carries $+7.46$\,W\,m$^{-2}$ of band error, two thirds
+of it a $6.4$\,pp cloud-\emph{amount} deficit that no lever in the campaign has moved at all.
 
-\medskip\noindent\textbf{What to do next} is \S\ref{sec:forward}: attack the SO cloud-area
-deficit rather than escalating ocean mixing; stop optimising the snow scheme; and diagnose the
-global tropospheric cold bias, which is now the shared limiter on both remaining objectives and
-has never been worked on in 50 runs.
+\medskip\noindent\textbf{What to do next} is \S\ref{sec:forward}: attack the SO cloud-amount
+deficit with a cloud-fraction lever rather than escalating ocean mixing or ice nucleation; stop
+optimising the snow scheme; and work the \emph{extratropical tropopause}, where the atmosphere is
+both $1.6$\,K too cold and $10\,\%$ too dry --- two large errors that cancel in OLR, and together
+the shared limiter on both remaining objectives.
 \end{abstract}
 
 \section{Scorecard}\label{sec:score}
@@ -74,9 +75,9 @@ objective & metric & start & now & target & what moved it \\
  & period-clean vs CERES & $+1.23$ & $+1.23$ & $0$ & \emph{never targeted} \\
 \midrule
 \textbf{Southern Ocean}
- & 65--45S net TOA vs CERES & $+5.81$ & $+5.81$ & $0$ & --- \\
- & SO surface-SW RMSE & $6.88$ & $\mathbf{4.81}$ & --- & D2b (INP) \\
- & SO cloud area [\%] & $83.1$ & $83.6$ & $89.7$ & $6.1$\,pp untouched \\
+ & 65--45S net TOA vs CERES & $+7.46$ & $+7.46$ & $0$ & \emph{never targeted} \\
+ & SO surface-SW RMSE & $6.88$ & $\mathbf{4.81}$ & --- & D2b (opacity only) \\
+ & SO cloud area [\%] & $83.1$ & $83.5$ & $89.5$ & $6.4$\,pp untouched \\
 \midrule
 \textbf{Siberia}
  & JJA T2m bias, period-clean [K] & $-2.04$ & ${\approx}\mathbf{-0.9}$ & $0$ & G4 $+$ K1 $+$ P5 \\
@@ -133,26 +134,25 @@ $0.002$. That conclusion was an artefact of comparing bands to \emph{each other}
 band-by-band \emph{against CERES}:
 
 \begin{center}\small
-\begin{tabular}{l r r r r r}
+\begin{tabular}{l r r r}
 \toprule
-band & model & CERES & diff & area & \textbf{contribution} \\
+band & diff vs CERES & area & \textbf{contribution} \\
 \midrule
-90S--65S & $-97.0$ & $-104.0$ & $+7.03$ & $4.8\,\%$ & $\mathbf{+0.34}$ \\
-\textbf{SO 65S--45S} & $-49.5$ & $-55.3$ & $\mathbf{+5.81}$ & $9.8\,\%$ & $\mathbf{+0.57}$ \\
-45S--30S & $-5.6$ & $-1.4$ & $-4.20$ & $10.4\,\%$ & $-0.44$ \\
-tropics 30S--30N & $+42.6$ & $+45.1$ & $-2.51$ & $50.0\,\%$ & $-1.26$ \\
-30N--45N & $-4.8$ & $-5.7$ & $+0.89$ & $10.4\,\%$ & $+0.09$ \\
-45N--65N & $-50.1$ & $-54.1$ & $+4.02$ & $9.8\,\%$ & $+0.40$ \\
-65N--90N & $-106.3$ & $-106.1$ & $-0.15$ & $4.8\,\%$ & $-0.01$ \\
+90S--65S & $+8.11$ & $4.8\,\%$ & $+0.39$ \\
+\textbf{SO 65S--45S} & $\mathbf{+7.46}$ & $9.8\,\%$ & $\mathbf{+0.74}$ \\
+45S--30S & $-2.49$ & $10.4\,\%$ & $-0.26$ \\
+tropics 30S--30N & $-0.67$ & $50.0\,\%$ & $-0.34$ \\
+30N--45N & $+2.08$ & $10.4\,\%$ & $+0.22$ \\
+45N--65N & $+5.35$ & $9.8\,\%$ & $+0.53$ \\
+65N--90N & $+1.53$ & $4.8\,\%$ & $+0.07$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent \textbf{The global budget is right by cancellation, not by being right.} Two large
-regional errors of opposite sign --- a Southern Ocean absorbing $+5.8$\,W\,m$^{-2}$ too much and
-tropics $-2.5$ too little --- nearly annihilate. This is why no global knob has ever helped, and
-why the two largest regional errors having opposite sign is what makes a regionally targeted
-strategy possible at all.
+\noindent \textbf{The global budget is right by cancellation, not by being right}, and the
+Southern Ocean carries the largest single piece of it --- $+7.46$\,W\,m$^{-2}$ in band,
+$+0.74$ of the global mean on its own. This is why no global knob has ever helped, and why a
+regionally targeted strategy is the only one available.
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.98\textwidth]{plots/campaign_net_toa_by_year_with10.png}
@@ -188,10 +188,10 @@ that nothing in the campaign has touched. Any further imbalance work must be atm
 \section{The Southern Ocean}\label{sec:so}
 
 \subsection{It is a cloud deficit, and it is atmospheric}
-The SO band's $+5.81$\,W\,m$^{-2}$ is not subtle in origin: cloud area $83.1\,\%$ against CERES's
-$89.7\,\%$ ($-6.6$\,pp), SW CRE $-60.3$ against $-68.1$ ($+7.8$\,W\,m$^{-2}$ too little
-reflection). Measured in AMIP, \emph{with SST and sea ice prescribed to observations}, so it
-cannot be an ocean-state error. \textbf{This is precisely the Hyder et al.\ (2018) signature} ---
+The SO band's $+7.46$\,W\,m$^{-2}$ is not subtle in origin: cloud area $83.06\,\%$ against
+CERES's $89.49\,\%$ ($-6.43$\,pp), SW CRE $-60.4$ against $-67.8$ ($+7.45$\,W\,m$^{-2}$ too
+little reflection). Measured in AMIP, \emph{with SST and sea ice prescribed to observations}, so
+it cannot be an ocean-state error. \textbf{This is precisely the Hyder et al.\ (2018) signature} ---
 the leading 40--60\textdegree S warm bias traced to atmospheric net-surface-flux errors dominated
 by shortwave and cloud.
 
@@ -208,7 +208,7 @@ a real-but-rare mode. But three independent lines now say the lever is partly co
 an atmospheric error:
 
 \begin{itemize}\itemsep2pt
-\item \textbf{Our own AMIP measurement.} The SO carries $+5.81$\,W\,m$^{-2}$ with the ocean held
+\item \textbf{Our own AMIP measurement.} The SO carries $+7.46$\,W\,m$^{-2}$ with the ocean held
 at observations. That component cannot be fixed from the ocean side, and an ocean lever that
 removes the resulting surface warmth is cancelling a symptom.
 \item \textbf{The CMPI region map.} 06O/06T improve \texttt{thetao}, \texttt{so} and
@@ -230,15 +230,26 @@ this way, not to the ocean physics.}
 
 \subsection{What has actually moved it, and what has been excluded}
 \begin{itemize}\itemsep2pt
-\item \textbf{D2b (ice nuclei over sea, gated below 700\,hPa) is adopted.} Best SO surface-SW
-RMSE of any run, $6.88\to4.96$ ($-28\,\%$), at \emph{zero} tropical cost ($+0.09$). It beats the
-ungated D2a despite a smaller mean-CRE change, because it improves the spatial \emph{pattern}.
-The pressure gate did exactly what it was designed to do: D2a's tropical cost vanishes while
-$55\,\%$ of the SO gain is retained.
-\item \textbf{Independent support for the mechanism.} SO relative humidity is $+5.8$ to
-$+6.6\,\%$ too high through the mixed-phase layer \emph{while} reflecting too little shortwave
---- humidity present, liquid absent, which is the supercooled-liquid deficit an INP error
-predicts.
+\item \textbf{The error is two-thirds cloud AMOUNT.} Splitting the $+7.45$\,W\,m$^{-2}$ CRE
+error at the \emph{observed} CRE per unit area: missing area accounts for $+4.87$ ($65.5\,\%$)
+and opacity for $+2.57$ ($34.5\,\%$). A cloud-amount lever can reach most of it; an optics lever
+cannot.
+\item \textbf{It is zonally uniform and seasonally where it should be.} Atlantic $-5.40$, Indian
+$-6.82$, Australian $-6.55$, Pacific $-6.81$\,pp --- a $1.42$\,pp spread, which is a microphysics
+signature rather than circulation or the ice edge. It is worst in austral spring and summer
+(SON $-7.03$, DJF $-6.94$\,pp), when there is shortwave to reflect: DJF alone carries
+$+11.67$\,W\,m$^{-2}$ of net TOA error in the band.
+\item \textbf{D2b (ice nuclei over sea, gated below 700\,hPa) is adopted, and it works on
+opacity.} It gives the best SO surface-SW RMSE of any run, $6.88\to4.96$ ($-28\,\%$), at
+\emph{zero} tropical cost ($+0.09$), by improving the spatial \emph{pattern}. But scored on
+area it moves $+0.43$\,pp of the $6.43$\,pp gap, and D2a $+0.63$ --- against $+0.48$ and $+0.45$
+from G4 and K1, which are boreal-\emph{land} levers that cannot physically act on Southern Ocean
+cloud. \textbf{That is the noise floor of the diagnostic, and every lever sits inside it.} The
+amount deficit is untouched by all 50 runs.
+\item \textbf{One pointer for the gate.} CERES puts the SO effective cloud pressure at
+$656$\,hPa --- just \emph{above} the $700$\,hPa ceiling of D2b's gate. The gate protects the
+tropics and does so successfully, but it may also exclude the layer where the observed cloud
+sits.
 \item \textbf{Aerosol is excluded, by measurement.} It had been \emph{inferred} at
 ${\sim}0.7$\,W\,m$^{-2}$ (13\,\% of the SO clear-sky excess) from a $+0.033$ AOD excess against
 MISR. Removing \emph{all} anthropogenic MACv2-SP plumes moves SO clear-sky by
@@ -253,9 +264,9 @@ targeted. The G-series buys about $-2.0$ of the $+8.4$ needed there, all of it f
 by-product.
 \end{itemize}
 
-\noindent \textbf{Net: roughly a quarter of the Southern Ocean gap is closed, all of it
-incidentally, and the ${\sim}6$\,pp cloud-area deficit remains untouched by all 34 evaluated
-levers.} That is the single largest unexploited term in the campaign.
+\noindent \textbf{Net: the opacity third has been partly bought, incidentally; the amount two
+thirds has never been addressed.} That is the single largest unexploited term in the campaign,
+and closing it needs a cloud-fraction knob, not more ice nucleation.
 
 \section{Siberia}\label{sec:sib}
 
@@ -425,56 +436,78 @@ the disjointness in (1)--(2) verifiable rather than asserted.
 $30\,\%$, warms Siberian JJA by ${\approx}1$\,K, leaves the tropics inside $+0.12$, and lowers
 global net TOA. That combination is off the trade-off line.
 
-\section{The shared limiter: the global tropospheric cold bias}\label{sec:limiter}
-Model minus ERA5 on the model's own pressure levels, \texttt{amip\_presentday} vs ERA5 1990--2014
-so the comparison is period-clean:
+\section{The shared limiter: the extratropical tropopause}\label{sec:limiter}
+Model minus ERA5, \texttt{amip\_presentday} vs 1990--2014 on the model's own levels, all of which
+exist exactly in ERA5's set so nothing is interpolated. Period-clean by construction.
 
 \begin{center}\small
-\begin{tabular}{r r r r}
+\begin{tabular}{r r r r r r r}
 \toprule
-hPa & Siberia & Global & \textbf{Siberia-specific} \\
+hPa & 90S--60S & 60S--30S & \textbf{tropics} & 30N--60N & 60N--90N & GLOBAL \\
 \midrule
-1000 & $-1.90$ & $-0.73$ & $\mathbf{-1.17}$ \\
- 925 & $-2.17$ & $-0.65$ & $\mathbf{-1.52}$ \\
- 850 & $-1.99$ & $-0.99$ & $\mathbf{-1.00}$ \\
- 700 & $-1.22$ & $-1.15$ & $-0.07$ \\
- 500 & $-1.67$ & $-1.49$ & $-0.18$ \\
- 300 & $-2.32$ & $-2.22$ & $-0.10$ \\
+ 850 & $+0.02$ & $-1.17$ & $-1.10$ & $-0.90$ & $-0.87$ & $-0.99$ \\
+ 700 & $-0.53$ & $-1.40$ & $-1.23$ & $-1.00$ & $-0.86$ & $-1.15$ \\
+ 500 & $-1.81$ & $-1.75$ & $-1.31$ & $-1.56$ & $-1.57$ & $-1.49$ \\
+ 300 & $\mathbf{-3.65}$ & $-2.48$ & $\mathbf{-1.72}$ & $-2.34$ & $\mathbf{-3.43}$ & $-2.22$ \\
+ 200 & $\mathbf{-4.20}$ & $-3.28$ & $\mathbf{-2.09}$ & $-3.53$ & $\mathbf{-4.45}$ & $-2.87$ \\
+ 100 & $+0.25$ & $-1.52$ & $-2.07$ & $-1.30$ & $+0.26$ & $-1.51$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent This separates two problems that had been conflated for most of the campaign. The
-boreal-specific excess lives entirely in the bottom three levels --- the signature a
-surface-exchange problem should have, which is what validates the F/G framing. \textbf{Above
-700\,hPa Siberia merely shares a global tropospheric cold bias of $0.7$ to $2.2$\,K that no
-boreal lever will ever touch}, and which has never been worked on in 50 runs.
+\noindent Two problems had been conflated for most of the campaign, and the column separates
+them. The Siberia-specific excess lives entirely below 850\,hPa --- the signature a
+surface-exchange problem should have, which is what validates the F/G framing. Above 700\,hPa
+Siberia merely shares a \textbf{global} cold bias that no boreal lever will ever touch, and which
+has never been worked on in 50 runs.
 
-Three separate observations now converge on it, which is why it belongs in a summary rather than
-an appendix:
-\begin{itemize}\itemsep2pt
-\item It is the residual in the Siberian budget --- the ${\sim}0.7$\,K ``universal'' component
-present over prescribed-SST ocean and under every one of the 20 surface types.
-\item It is what the RIHMI station network sees as the $2$--$3.5$\,\textdegree C April--September
-soil deficit, identical in every AMIP run including scheme-off.
-\item It is the natural suspect for the residual radiative error. A cold troposphere under-emits;
-the model's OLR is $-0.74$\,W\,m$^{-2}$ below CERES while its absorbed SW is only $-0.37$ below,
-so relative to observation the model's positive imbalance \emph{is} its OLR deficit.
-\end{itemize}
+\textbf{It is extratropical, and it sits at the tropopause.} The tropics are the \emph{least}
+biased band --- $-1.72$\,K at 300\,hPa against an extratropical mean of $-2.97$. That excludes
+the hypothesis a reader reaches for first: a cold tropical upper troposphere over prescribed,
+correct SST would mean a convective heating-profile error propagating globally through wave
+dynamics. It is not that. The bias peaks at 200\,hPa over \emph{both} poles ($-4.20$ and $-4.45$)
+and \textbf{reverses sign at 100\,hPa}, which is a tropopause-region signature rather than a
+tropospheric one, and it behaves the same way in every season.
 
-\noindent That last point needs a caveat and it is worth stating precisely, because it is the
-next thing to test. A Planck scaling of a ${\approx}1.5$\,K cold emitting layer predicts an OLR
-deficit of order $5$\,W\,m$^{-2}$, not $0.74$. Either the cold bias sits where it does not
-radiate to space, or several W\,m$^{-2}$ of compensating error are present. The comparison as it
-stands cannot distinguish these, because \textbf{the TOA decomposition was measured on a PI run
-against present-day CERES while the tropospheric bias was measured on the present-day run against
-ERA5}. The clean version costs no model time: \texttt{amip\_presentday} already exists and
-already reads net TOA $+2.20$ against CERES's $+0.97$. Running the band decomposition on
-\emph{that} arm re-bases every energy target in the campaign onto a period-clean footing and
-tests the OLR link directly.
+\textbf{And the atmosphere is dry as well as cold}, increasingly so with height:
+
+\begin{center}\small
+\begin{tabular}{r r r r}
+\toprule
+hPa & $\Delta T$ [K] & $q$ model / ERA5 [g\,kg$^{-1}$] & $\Delta q/q$ [\%] \\
+\midrule
+ 850 & $-0.99$ & $5.784$ / $5.989$ & $-3.4$ \\
+ 700 & $-1.15$ & $2.920$ / $3.160$ & $-7.6$ \\
+ 500 & $-1.49$ & $1.008$ / $1.102$ & $-8.5$ \\
+ 300 & $-2.22$ & $0.145$ / $0.170$ & $\mathbf{-14.2}$ \\
+ 200 & $-2.87$ & $0.021$ / $0.026$ & $\mathbf{-20.2}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The two errors cancel in OLR, and that is the most consequential fact in this
+report.} Period-clean the model's OLR is $-2.53$\,W\,m$^{-2}$ below CERES and its absorbed SW
+$-1.30$ below, which is where the $+1.23$ imbalance comes from. But a Planck scaling at the CERES
+effective emitting temperature ($255.1$\,K, slope $3.77$\,W\,m$^{-2}$\,K$^{-1}$) applied to the
+$-1.62$\,K bias through 700--300\,hPa predicts an OLR deficit of $-6.10$. The missing
+$3.6$\,W\,m$^{-2}$ is the dry bias: the cold depresses emission, while $-10\,\%$ less water
+vapour lowers the effective emission level into warmer air and raises it.
+
+\textbf{The consequence is a hard constraint on all future radiation tuning.} Fixing either error
+alone moves net TOA several W\,m$^{-2}$ in the \emph{wrong} direction. The global budget is
+cancelling in the vertical as well as across latitude bands, so any lever scored on a global mean
+is being scored on top of a cancellation. Cold-and-dry has to be worked as one problem.
+
+Three further observations converge on the same term, which is why it belongs in a summary rather
+than an appendix: it is the ${\sim}0.7$\,K ``universal'' residual in the Siberian budget, present
+over prescribed-SST ocean and under every one of the 20 surface types; it is what the RIHMI
+network sees as the $2$--$3.5$\,\textdegree C April--September soil deficit, identical in every
+AMIP run including scheme-off; and it is the source of the residual radiative error above.
+\emph{Caveat:} ERA5's own upper-level humidity is weakly constrained by observation, so the
+$100$\,hPa row is indicative only --- the $300$ and $200$\,hPa rows carry the argument.
 
 \section{Closed by measurement}\label{sec:closed}
-Only the mechanisms whose death still changes a decision. The full list of 29, with the
+Only the mechanisms whose death still changes a decision. The full list of 33, with the
 measurement that killed each, is \S\,``Falsified claims, kept'' in \texttt{report.tex}.
 
 \begin{center}\footnotesize
@@ -482,6 +515,16 @@ measurement that killed each, is \S\,``Falsified claims, kept'' in \texttt{repor
 \toprule
 claim & what killed it \\
 \midrule
+Ice nucleation is the route to the SO cloud deficit &
+Scored on cloud \emph{area} rather than CRE, D2b moves $+0.43$\,pp and D2a $+0.63$\,pp of a
+$6.43$\,pp gap --- against $+0.48$ and $+0.45$\,pp from two boreal-\emph{land} levers that cannot
+act there. The INP family buys opacity, which is a third of the error. \\
+Tropical net TOA is $2.4$\,W\,m$^{-2}$ too low &
+Measured on a PI arm against present-day CERES. Period-clean the band is $-0.67$: mostly
+reference period, not model error. \\
+The upper-tropospheric cold bias is a tropical convective-heating error &
+The tropics are the \emph{least}-biased band ($-1.72$\,K at 300\,hPa against an extratropical
+$-2.97$). The bias is extratropical, peaks at 200\,hPa over both poles and reverses at 100\,hPa. \\
 Aerosol is ${\sim}13\,\%$ of the SO clear-sky excess &
 Inferred from AOD vs MISR. Measured by removing all anthropogenic aerosol: $-0.116$\,W\,m$^{-2}$,
 $t=-18.9$ --- six times smaller. The unexplained SO residual grew to ${\sim}1.9$. \\
@@ -527,52 +570,49 @@ require effort.
 \section{The path forward}\label{sec:forward}
 Ranked by expected value per unit of model time. Each carries its falsifier, stated in advance.
 
-\textbf{1. The Southern Ocean cloud-area deficit (${\sim}6$\,pp).} The largest unexploited term
-in the campaign: $+5.81$\,W\,m$^{-2}$ in-band, $+0.57$ global on its own, untouched by all 34
-evaluated levers, and now with a \emph{larger} unexplained residual than before because aerosol
-was measured out of it. The live mechanism is supercooled liquid: RH is $+5.8$ to $+6.6\,\%$ too
-high through the mixed-phase layer while reflection is too low, and D2b --- the only lever that
-has moved the pattern --- works by ice nucleation. Continue down that branch, and \textbf{score
-on cloud area, not on CRE}, since amount and opacity are roughly half the error each and a CRE
-metric cannot tell them apart.
-\emph{Predicted:} closing the deficit buys ${\approx}0.5$\,W\,m$^{-2}$ of the imbalance at
+\textbf{1. The Southern Ocean cloud-AMOUNT deficit ($6.43$\,pp).} The largest unexploited term in
+the campaign: $+7.46$\,W\,m$^{-2}$ in-band, $+0.74$ of the global mean on its own, robust to the
+reference period, and with a \emph{larger} unexplained residual than before because aerosol was
+measured out of it. Two thirds of the error is missing area, it is zonally uniform to
+$1.42$\,pp, and it peaks in austral spring and summer. \textbf{The lever must be a
+cloud-fraction knob}: the ice-nucleation family moves opacity, and its area response
+($+0.43$ to $+0.63$\,pp) is indistinguishable from that of a boreal-land lever. Two design
+constraints follow --- \textbf{score on area, not CRE}, since a CRE metric cannot separate the
+two; and revisit D2b's $700$\,hPa gate ceiling against the observed $656$\,hPa effective cloud
+pressure, because the gate may be excluding the layer that carries the cloud.
+\emph{Predicted:} closing the amount deficit buys ${\approx}0.5$\,W\,m$^{-2}$ of the imbalance at
 near-zero global temperature cost.
 \emph{Falsifier:} if the response also moves the tropics or NH T2m beyond noise, it is a global
 cloud knob in disguise and must be rejected as A1a was.
 
-\textbf{2. Re-base the energy target period-cleanly.} No model time at all: run the per-band TOA
-decomposition on the existing \texttt{amip\_presentday} arm against CERES 2005--2015. That arm
-reads $+2.20$ against CERES's $+0.97$, so the true radiative fault is ${\approx}+1.23$ --- twice
-what the PI framing reports --- and every band target in this report currently carries an
-unquantified epoch offset. It also supplies the direct test of the OLR/tropospheric-cold link of
-\S\ref{sec:limiter}. \textbf{Do this before designing item 1's runs}, because it may move the
-target.
+\textbf{2. The extratropical tropopause, worked as one cold-and-dry problem.} Now the dominant
+remaining term for land 2\,m temperature, the residual in the Siberian budget, the whole of the
+RIHMI growing-season deficit, and the source of the residual imbalance. It is located
+(\S\ref{sec:limiter}) but not explained: the model is $-1.6$\,K and $-10\,\%$ dry through the
+emitting layer, peaking at 200\,hPa over both poles and reversing at 100\,hPa. Convection is
+already excluded, so this starts as a tropopause-region and UTLS-humidity question, not a
+parameter sweep. \emph{Constraint that must be respected:} the two errors cancel in OLR, so any
+lever that warms without moistening --- or moistens without warming --- makes the energy target
+several W\,m$^{-2}$ worse. A candidate has to be scored on both at once.
 
-\textbf{3. Diagnose the global tropospheric cold bias.} Now the dominant remaining term for land
-2\,m temperature, the residual in the Siberian budget, the whole of the RIHMI growing-season
-deficit, and the natural suspect for the residual imbalance. Fifty runs have not touched it, and
-no lever built so far can. This needs \emph{diagnosis first} --- where the column loses its heat,
-and whether the compensating error implied by the OLR arithmetic is real --- not another
-parameter sweep.
-
-\textbf{4. Verify K1 $+$ P5 $+$ G4 coupled.} Three things AMIP structurally cannot price. Whether
-$48\,\%$ closure of the boreal bias suffices for forest survival, since the coupled model closes
-a runaway that AMIP deliberately severs. Whether G4's delay of melt-out from 24 to 28 May
-\emph{harms} forest establishment through later growing-season onset --- a real risk sitting
-exactly where AMIP is blind. And the Arctic energy bill: prescribed SST and ice absorb
-$1.7$\,W\,m$^{-2}$ without responding, and the coupled spin-up will not.
-
-\textbf{5. The snow-free land albedo residual ($+0.0080$; crops $+0.0204$, semidesert $+0.0169$,
-bare soil $+0.0145$).} The one remaining lever aimed at the ${\sim}0.7$\,K \emph{universal} bias
-rather than the boreal one, untouched by all 50 runs. Worth ${\sim}0.12$\,K --- modest, but
-cheap, and it is namelist-only. \emph{Caveat carried forward:} it must not simply be stacked on
-the snow levers, because the tundra entry competes for the same Arctic energy budget.
+\textbf{3. Bring the coupled configuration level with AMIP: 11D at $\mathrm{SWEMIN}=15$ plus
+K1.} The coupled branch now carries G4 and D2b, but its snow scheme runs at $\mathrm{SWEMIN}=30$
+--- the setting AMIP rejected --- and K1 is absent entirely. This is also the only route to three
+things AMIP structurally cannot price: whether the boreal closure suffices for forest survival,
+since the coupled model closes a runaway AMIP deliberately severs; whether G4's delay of melt-out
+from 24 to 28 May \emph{harms} establishment through later growing-season onset; and the Arctic
+energy bill, which prescribed SST and ice absorb without responding.
+\emph{Note on power:} ten coupled years resolve $\pm0.75$\,K of Siberian DJF soil and
+$\pm1.25$\,K of DJF T2m, so a 1\,K question needs a longer run or the AMIP answer taken on
+trust --- and the AMIP answer says $15$.
 
 \textbf{Explicitly not worth further runs:} \texttt{SWEMIN} optimisation (P3 and P5 differ by
 $0.19$\,K in JJA, at or below noise, and the total available May cover error is worth
 ${\approx}+0.2$\,K); boreal-indexed surface levers beyond G4 (F5 $=$ F4, and the boreal-specific
-budget is ${\sim}95\,\%$ spent); land albedo as an explanation for the universal bias (one sixth
-of the target, measured).
+budget is ${\sim}95\,\%$ spent); land surface albedo, which K1 has already taken $74\,\%$ of for
+$+0.089$\,K, leaving ${\sim}0.03$\,K on the table; more ice nucleation aimed at the Southern
+Ocean cloud \emph{amount}; and the tropical TOA deficit, which is mostly reference period rather
+than model error.
 
 \section{Carried forward}\label{sec:config}
 \textbf{K1 $+$ P5}, namelist-only on top of G4, mergeable with EC-Earth as one added line in an
