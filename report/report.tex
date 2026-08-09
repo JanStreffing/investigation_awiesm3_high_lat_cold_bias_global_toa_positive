@@ -5282,6 +5282,78 @@ A real budget needs a global reduction the diagnostic does not do.
 into \texttt{PCCNO}, because the flux$\to$CCN step is a separate scientific choice that needs
 a published relation rather than a fitted constant.
 
+\subsection{T3: DMS-Rev3 ingested through ocp-tool}\label{sub:r24t3}
+The shipped \texttt{month\_dms} is Lana et al.\ (2011). DMS-Rev3 (Hulswar et al.\ 2022)
+rests on $865\,109$ observations against L11's $47\,313$, and the paper states the largest
+revisions are in the polar oceans --- the only region this campaign is looking at.
+Measured on the model's own grid after regridding, SO 65--45S:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+SO 65--45S & L11 & DMS-Rev3 & change \\
+\midrule
+annual & $1.93$ & $2.24$ & $+16\,\%$ \\
+DJF & $4.23$ & $4.36$ & $+3\,\%$ \\
+\textbf{SON} & $\mathbf{1.34}$ & $\mathbf{2.02}$ & $\mathbf{+51\,\%}$ \\
+\textbf{November} & $\mathbf{2.18}$ & $\mathbf{4.24}$ & $\mathbf{+95\,\%}$ \\
+global maximum & $53.25$ & $26.56$ & $-50\,\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Rev3 does not raise the summer peak, it broadens it} --- the bloom starts
+a month earlier --- and it halves the maximum, which is the paper's ``reduced patchiness''.
+The model's SO shortwave CRE error is worst in SON ($-7.03$\,pp) and DJF ($-6.94$), so the
+upgrade lands in the season the old climatology was weakest.
+
+\textbf{Units derived, not read.} \texttt{DMS\_REV3.nc} carries no attributes at all.
+Integrating the shipped \texttt{DMSflux} globally gives $28.19$\,Tg\,S\,yr$^{-1}$
+(\texttt{DMSfluxSI} $28.36$) against a published $27.1$--$28.1$, which fixes the flux as
+mol\,m$^{-2}$\,d$^{-1}$ and the concentration as nmol\,L$^{-1}$; every other assumption is
+out by orders of magnitude. Only the \emph{concentration} is ingested --- the shipped flux
+uses Rev3's own wind climatology, whereas the model must form the flux online from its own
+wind, which is quadratic in speed. Their flux is retained as a validation target.
+
+\textbf{Built through ocp-tool} (\texttt{dms\_rev3\_to\_grib.py}), which is what makes it
+paleo-safe. Nearest \emph{valid} neighbour in 3-D --- 1\textdegree\ source against
+${\approx}0.9$\textdegree\ target is matched resolution, so nothing is invented, no land
+NaN bleeds into coastal ocean, and the dateline and poles cannot yield a spurious
+neighbour. Values are overwritten into the shipped messages, so grid, \texttt{dataDate},
+\texttt{paramId} and all headers stay byte-identical to what the reader accepts. The land
+sentinel is taken from the template, preserving the model's own mask; a Rev3 hole at a
+template ocean point would read as land, so L11 is retained there and counted --- for TCO95
+that count is \textbf{zero}, with $12\,040$ land points held at $-99$.
+\texttt{icmcl\_dms.py} then interleaves it: $84\to96$ messages, 12 dates $\times$ 8 fields.
+
+\textbf{T3, one year, verified.} \texttt{Found 12 dates}, \texttt{Found 8 fields}, no
+ordering abort, full year, no abort. Against T2 on the identical wind field:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+ & $C_w$ [nmol\,L$^{-1}$] & flux mean & indicative global \\
+\midrule
+L11 & $1.825$ & $3.515\times10^{-11}$ & $12.8$\,Tg\,S\,yr$^{-1}$ \\
+\textbf{DMS-Rev3} & $\mathbf{2.044}$ & $\mathbf{4.218\times10^{-11}}$ & $15.4$ \\
+ratio & $1.120$ & $\mathbf{1.200}$ & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The flux rises by $20\,\%$ where the concentration rises by only
+$12\,\%$.} That is not an inconsistency --- the flux is $\overline{k\,C_w}$, not
+$\bar{k}\,\overline{C_w}$, and $k$ varies spatially, so the ratio of means need only agree
+if the spatial pattern is unchanged. It means \textbf{Rev3 places more DMS where the wind
+is stronger}, a positive $C_w$--$k$ covariance relative to L11, and the flux is what feeds
+CCN.
+
+\emph{Caveat on the $12.8\to15.4$.} That is rank~1's blocks --- a northern high-latitude
+strip with land entering as zero --- not a global budget. Rev3 and L11 have near-identical
+\emph{global} fluxes ($28.19$ against a published $28.1$), so the $+20\,\%$ is regional
+sampling, consistent with the polar oceans being where Rev3 revised most, and is not a
+global statement.
+
 \subsection{Screening at one year: measured, with the threshold that makes it
 safe}\label{sub:r24screen}
 Project issue \#170 found the cy48 high-cloud offset already present in year~1 while the T2m
