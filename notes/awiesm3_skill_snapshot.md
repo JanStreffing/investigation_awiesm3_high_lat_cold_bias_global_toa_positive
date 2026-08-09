@@ -29,6 +29,7 @@ steps.
 | whether an observation is **independent** | what produced it (see §4) |
 | whether a **null** means anything | the detection threshold, computed *first* |
 | whether a **mechanism** works that way | the code path, traced end to end |
+| how to **rebuild** after a source change | `esm_master recomp-` (§4), not the incremental `comp-` script |
 
 ### Source defaults are not runtime values
 
@@ -110,7 +111,66 @@ and a Fortran namelist read dies with *"invalid reference to variable"* on any n
 reading module does not declare. That hard failure is also a useful *positive* test: if
 a run starts and passes initialisation, the namelist accepted every name in it.
 
-## 4. Observational references: which are independent
+## 4. Rebuilding after a source change: use `esm_master recomp-`
+
+```
+cd /work/<proj>/<user>/model_codes
+esm_master recomp-<setup>-<version>        # e.g. recomp-oifsamip-cy48
+```
+
+`esm_master` with no arguments lists every setup and the operations it supports
+(`comp clean get update status log install recomp`).
+
+**`recomp-` is `conf-` + `clean-` + `comp-`** — a *clean* rebuild. The per-setup
+`comp-<model>_script.sh` is the *incremental* build. Use `recomp-` when a module's
+declarations change, or when a failure is not understood; use `comp-` when the cause is
+known and confined.
+
+### `error #6404: This name does not have a type` — check accessibility first
+
+The OpenIFS modules declare `PRIVATE` as the default and then export an explicit list:
+
+```fortran
+    PRIVATE
+    ...
+    PUBLIC ECE_CLIMR
+    PUBLIC ECE_CLIMR_DMS      ! <- a new module variable is INVISIBLE without this
+```
+
+A new module-level variable therefore compiles fine and **still fails at every `USE`
+site** until it is added to the `PUBLIC` list. This looks exactly like a stale-module
+or build-ordering problem and is not one — a full `recomp-` will not fix it.
+
+**Diagnose it with `nm`, not by guessing at the build system.** If the symbol is present
+in the module's object file, the source and the compile are fine and the problem is
+accessibility:
+
+```
+nm build/.../ecearth.F90.o | grep -i my_new_var
+# ecearth_mp_ece_dms_ccn_sens_   <- present, so it is a PUBLIC problem, not a build one
+```
+
+(Real case, 2026-08-09: three rebuilds were spent on a stale-`.mod` theory — including a
+full clean `recomp-` — for a variable that was simply never exported. `nm` would have
+answered it in seconds.)
+
+### Verifying a rebuild actually reached the run
+
+The executable often does **not** change, because the physics lives in
+`libarpifs.SP.so` and is linked dynamically — check the *library* timestamp, not the
+binary. And esm_runscripts **stages a per-run copy** of the library at submit time, so
+a rebuild cannot disturb jobs already queued or running: check
+`<run>/work/lib/oifs/libarpifs.SP.so` to see what a given leg actually loaded. This is
+also why a mid-campaign rebuild is safe, and why a *new* run picks up the change while
+a running multi-leg job does not.
+
+`strings` on the library is **not** a reliable check that a namelist name was exposed:
+names appear there for other reasons (`RAMID` and `RCLCRIT` both show up without being
+in `NAMCLDP`). The dependable test is functional — a Fortran namelist read aborts on an
+undeclared name, so a run that starts and passes initialisation has accepted every name
+in its `fort.4`.
+
+## 5. Observational references: which are independent
 
 The single most repeated error class is treating a non-independent reference as
 independent.
@@ -133,7 +193,7 @@ independent.
   TOA "error" of −2.51 became −0.67 period-clean). Prefer the model's own present-day
   arm.
 
-## 5. Before believing a result
+## 6. Before believing a result
 
 - **State the detection threshold first.** Compute it from interannual scatter, then
   compare. A lever once read `+0.502 K` on a 4-year window and `−0.038 K` over 44 —
@@ -151,7 +211,7 @@ independent.
 - **Snow enthalpy** (`sf × 3.3355e8`) belongs in the surface budget and is worth
   ~1 W/m² — omitting it manufactures a spurious TOA-vs-surface gap.
 
-## 6. Screen at one year before spending 44
+## 7. Screen at one year before spending 44
 
 A 1-year AMIP leg is ~11 minutes; the 44-year campaign standard is ~9.5 hours. Project
 issue #170 found the cy48 high-cloud offset already present in year 1 while T2m and the
@@ -169,7 +229,7 @@ explicitly excluded — the seasonal thresholds (DJF ±0.588 K) are 44-year numb
 threshold for your metric from the control's interannual scatter before trusting a short
 run, exactly as for the long ones.
 
-## 7. Check the prior record before designing a round
+## 8. Check the prior record before designing a round
 
 Beyond this repository: the **AWI-ESM/project_management issues** carry years of tuning
 history that is not in any code comment — why a parameter has a non-default value, which

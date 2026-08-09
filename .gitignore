@@ -12,3 +12,7 @@ __pycache__/
 scripts/analysis/.box_cache/
 scripts/analysis/.eval_cache/
 data/vprof/
+
+# Intermediate DMS grids -- regenerable from ocp_tool/dms_rev3_to_grib.py
+data/dms_conc_modelgrid.nc
+data/vprof/

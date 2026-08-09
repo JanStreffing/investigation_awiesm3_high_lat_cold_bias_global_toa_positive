@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--09})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--10})}
 
 \begin{document}
 \maketitle
@@ -5492,6 +5492,205 @@ microphysics --- and is not yet identified.
 observation, so the $-46.9\,\%$ denominator is the softest number here. The $-2.07$\,K cold
 point and the $-28.5\,\%$ it implies rest only on temperature, which ERA5 constrains well.
 
+\section{Round 26 (2026--08--09$\to$10): marine biogenic CCN wired and priced, and the
+tropical longwave becomes the gate}\label{sec:r26}
+Round 24 traced the marine CCN path end to end and found the DMS field read but
+\emph{unused}. This round wires it into the radiation, brackets the one free coefficient
+across its published range, and reaches a verdict that changes the shape of the remaining
+campaign: the Southern Ocean lever works, and the tropical longwave deficit is what stops
+it being adopted. The two are no longer separate items on the open list.
+
+\subsection{The wiring, and why it is default-off}\label{sub:r26wire}
+In \texttt{radpar.F90}, immediately after \texttt{SURFRAD} fills \texttt{PCCNO} from
+Genthon (1992) sea salt, ocean points gain a DMS term:
+Saltzman et al.\ (1993) for the Schmidt number, Nightingale et al.\ (2000) for the
+transfer velocity $k_{600}=0.222u^2+0.333u$, flux $F=kC_w$, and
+\[
+  \texttt{PCCNO} \;\mathrel{+}=\; S \cdot F_S , \qquad
+  S \equiv \texttt{ECE\_DMS\_CCN\_SENS},\quad F_S \ \text{in mg\,S\,m}^{-2}\text{d}^{-1}.
+\]
+\texttt{PCCNO} then flows to \texttt{radiation\_scheme}, through the Martin et al.\ (1994)
+quadratic to droplet number and effective radius --- the Twomey effect. The input is
+DMS-Rev3 (Hulswar et al.\ 2022), ingested through ocp-tool and verified in T3
+(\S\ref{sub:r24t3}).
+
+$S$ is a \texttt{NAMECECFG} namelist knob defaulting to $0.0$, and the ICMCL field is
+registered only when \texttt{ECE\_CLIMR\_DMS} is set, so \texttt{NUMFLDS} is unchanged and
+\textbf{every existing configuration reproduces bit-for-bit with the switch off}. That is
+what allows one library to serve both arms of every pair below.
+
+\textbf{Two near-misses worth recording.} The first attempt wired CCN into
+\texttt{surfrad\_layer}, which would have been a \textbf{no-op}: the radiation's CCN comes
+from \texttt{radpar}, where \texttt{PCCNO} is \texttt{INTENT(OUT)} and any earlier value is
+overwritten. The second was a build failure, \texttt{error \#6404}, diagnosed twice as a
+stale \texttt{.mod} and once as a CMake dependency-scanner gap --- \emph{all three wrong}. A
+full clean \texttt{esm\_master recomp-} reproduced it. \texttt{nm} showed the symbol present
+in the object file: the OpenIFS modules declare \texttt{PRIVATE} by default and export an
+explicit list, so a new module variable is invisible at every \texttt{USE} site until it is
+added to \texttt{PUBLIC}. \textbf{Check accessibility before blaming the build system, and
+diagnose with \texttt{nm} rather than by theory.}
+
+\subsection{U1, the kill test at the top of the published range}\label{sub:r26u1}
+Woodhouse et al.\ (2010) measure $\mathrm{d}\mathrm{CCN}/\mathrm{d}F_{\mathrm{DMS}}$ anywhere
+from $-43$ to $+166$\,cm$^{-3}$ per mg\,S\,m$^{-2}$d$^{-1}$ depending on season and
+hemisphere. That range is too wide to pick a number from, so the coefficient was made a
+namelist knob and the range \emph{sampled}, starting at the most optimistic end. Control is
+T3: identical DMS-Rev3 input, identical winds, $S=0$.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+$S=166$, 1 yr & DJF & MAM & JJA & SON \\
+\midrule
+SO 65--45S $\Delta$SW CRE & $\mathbf{-7.25}$ & $+0.03$ & $-0.63$ & $-1.14$ \\
+tropics $\Delta$SW CRE & $-1.56$ & $-2.17$ & $-2.44$ & $-2.39$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Annual: SO $-2.25$, tropics $-2.14$, global $-1.72$\,W\,m$^{-2}$. December alone
+is $-8.54$ and January $-7.34$.
+
+\textbf{The lever is real and it is seasonally selective in exactly the right way.} The SO
+DJF deficit is $+10.86$\,W\,m$^{-2}$ and this closes $67\,\%$ of it, in the season the
+deficit is worst, at a DJF tropical cost of only $-1.56$ --- $4.6\!:\!1$ in our favour.
+\textbf{The selectivity is the bloom's, not a tuned parameter}; no hemispheric constant was
+invented to produce it. That also confirms round 24's phase argument quantitatively: the
+model's SO droplet number was right in the mean but inverted in phase, and this is the
+correction.
+
+The annual means look like a wash only because the SO gain is concentrated in one season
+while the tropical cost is flat year-round.
+
+\subsection{U2 and U3: the bracket, and what one year can actually
+resolve}\label{sub:r26bracket}
+Two more arms at $S=43$ (the published floor) and $S=90$ (the midpoint), to read an
+operating point off a curve instead of guessing a fourth value. Detection thresholds were
+computed first, per band, from the control's own interannual scatter as
+$1.96\,\sigma\sqrt{2}$ for a pair of single years --- the construction that gives the
+already-known $\pm1.97$ for SO SW CRE:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r}
+\toprule
+metric & $\sigma$ (interannual) & 1-yr pair, $95\,\%$ \\
+\midrule
+SO SW CRE, annual & $0.712$ & $\pm1.97$ \\
+SO SW CRE, DJF & $1.379$ & $\pm3.82$ \\
+tropics SW CRE, annual & $0.357$ & $\pm0.99$ \\
+tropics SW CRE, DJF & $0.441$ & $\pm1.22$ \\
+global SW CRE, annual & $0.402$ & $\pm1.11$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}\footnotesize
+\begin{tabular}{r r r r l}
+\toprule
+$S$ & SO annual & SO DJF & tropics annual & resolved? \\
+\midrule
+$43$ & $-0.32$ & $-1.78$ & $-0.76$ & nothing \\
+$90$ & $-0.38$ & $-1.22$ & $-1.11$ & tropics only, marginally \\
+$\mathbf{166}$ & $\mathbf{-2.25}$ & $\mathbf{-7.25}$ & $\mathbf{-2.14}$ & \textbf{all three} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The bracket produced exactly one usable point.} SO DJF is not even
+monotonic in $S$ ($-1.78$, $-1.22$, $-7.25$), which is the signature of the two sub-floor
+arms being internal variability rather than signal.
+
+\dead{The tropical response is monotonic and clean at $0.0124$\,W\,m$^{-2}$ per unit $S$,
+fitted through three arms.} \textbf{Withdrawn the same day.} Two of those three points sit
+below the $\pm0.99$ tropical threshold, so the fit was reading a line through noise. The
+analysis script now refuses to interpolate the SO points and guards the tropical
+extrapolation explicitly --- \texttt{np.interp} would have \emph{clamped} to the sampled
+range and returned a confident wrong answer. The same paragraph also treated the
+$\pm0.5$\,W\,m$^{-2}$ tropical guardrail as though it were a detection threshold. It is not:
+it is a \emph{tolerance}, set because the tropics are only $-0.67$\,W\,m$^{-2}$ from CERES
+period-clean.
+
+\subsection{The verdict, and why scaling cannot rescue it}\label{sub:r26verdict}
+From the single resolved arm the tropical cost is $2.14/166 = 0.0129$\,W\,m$^{-2}$ per unit
+$S$, so the $\pm0.5$ tolerance binds at $S\approx39$ --- \textbf{below Woodhouse's published
+floor of 43}. Twomey scales with $\Delta\ln N_d$, so the response is \emph{sub}-linear and
+the per-unit cost at low $S$ is if anything larger; the bound holds a fortiori. Third branch
+of the pre-registered verdict logic: \textbf{no coefficient in the published range works as
+a tuning knob.}
+
+\textbf{Why the tropics respond more per unit $\Delta$CCN, and why that is not a bug.}
+Twomey goes as $\Delta\ln N_d$, and tropical background CCN ($\sim52$\,cm$^{-3}$) is
+\emph{lower} than the Southern Ocean's ($\sim78$), so the same absolute increment is a larger
+fractional change there. Physically the model has \emph{no} marine biogenic CCN anywhere ---
+Genthon is sea salt from wind, MACv2-SP is anthropogenic plumes --- so adding it in the
+tropics is \emph{more} correct, not less. What fails is a tuning tolerance, not the physics.
+And because both ends scale together, no choice of $S$ separates them.
+
+\subsection{The tropical longwave deficit is now the gate}\label{sub:r26gate}
+This reframes the open list. The two remaining regional failures act through
+\emph{different} channels (\S\ref{sub:toadecomp2}): the Southern Ocean through SW cloud
+($+7.45$), the tropics through LW cloud ($-2.16$). The tropical cost of the DMS lever is a
+\emph{shortwave} cost; the tropical bias is a \emph{longwave} one. Those are independent
+terms, so:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{The tropical LW deficit is no longer a parallel item --- it gates the Southern
+Ocean fix.} Close it and the SW cost of DMS CCN becomes affordable, and the best SO lever
+this campaign has found goes in unchanged.
+\item \textbf{The pair is complementary in the global budget.} DMS CCN \emph{removes}
+$1.72$\,W\,m$^{-2}$ globally, which helps the $+0.52$ imbalance; closing the tropical LW
+deficit puts roughly $+1$ back once the tropics are area-weighted. Together they fix both
+regional biases and partly cancel globally --- a better position than either alone, since
+the DMS lever's problem was never its SO effect but its global reach.
+\item \textbf{The requirement on the LW lever is sharper than ``acts through the
+longwave''.} \texttt{RVICE} is the counter-example: an ice fall speed applies wherever there
+is cloud ice, so it \emph{trades} SO high cloud against tropical anvils, and it was raised
+$0.13\to0.16$ precisely to suppress SO \texttt{hcc} (project issues \#169/\#170). A usable
+lever must be keyed on \textbf{deep convection}, which barely exists over the Southern
+Ocean, so that selectivity comes from where convection happens rather than from a latitude
+band --- the same structural trick that made the DMS lever seasonally selective.
+\end{itemize}
+
+\noindent The cheap check comes first: ${\sim}52$ arms have been scored on SO SW and global
+RMSE and \emph{none} on the tropical LW term. \texttt{tropical\_lw\_scan.py} is written to
+answer that from data already on disk before any new run is spent; it has not yet been run.
+
+\textbf{Not Blomquist.} The standing todo to switch the transfer velocity from the
+Nightingale quadratic to Blomquist et al.\ (2017) should be dropped for this purpose: the
+DMS-specific scheme is \emph{less} steep in wind, which shifts flux away from the windy
+Southern Ocean toward the calm tropics. It would make selectivity worse, not better.
+
+\subsection{Two coupled runs, on a campaign-branch coupled build}\label{sub:r26coupled}
+The coupled tree was on \texttt{movcav-landice+co2-concdriven}, which carries neither the
+snow-depletion knobs nor the CCN wiring. The campaign branch is a \emph{strict descendant}
+of that branch's tip (\texttt{f3ccacb} is an ancestor), so it contains every coupled commit,
+and every campaign feature is namelist-gated off by default --- switching the tree in place
+removes nothing and changes no existing configuration's behaviour. One clean OpenIFS rebuild
+then serves both runs. Six files completing the DMS ICMCL chain, plus the
+\texttt{RCLCRIT\_SEA}/\texttt{RCLCRIT\_LAND} exposure, had been left uncommitted in the AMIP
+tree; U1--U3 ran against them, so the library had them and only the commit was missing.
+
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+run & change vs.\ its control & question \\
+\midrule
+\textbf{11E} & 11D $+$ \texttt{SWEMIN} $30\to15$ $+$ K1 & is the coupled configuration level
+with AMIP? \\
+\textbf{11F} & 11E $+$ \texttt{ECE\_DMS\_CCN\_SENS}$=166$ & does coupling change the
+Southern Ocean answer? \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Both are 50 years, both submitted 2026--08--10. \textbf{11F is deliberately not a
+tuning candidate} --- AMIP has already said no published $S$ clears the tolerance. It runs at
+the only setting AMIP could resolve, to answer what AMIP structurally cannot: with SST and
+sea ice free to respond, does brightening Southern Ocean cloud in bloom season move the
+coupled SO state and the TOA imbalance by more than the tropical cost? Fixed SSTs suppress
+exactly the feedback that makes an SO cloud change matter. Fifty years also prices the
+tropical response with feedbacks and proper statistics instead of from one AMIP year.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -5719,10 +5918,30 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--09)}\label{sec:state}
+\section{State of the campaign (2026--08--10)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--10 (round 26, \S\ref{sec:r26}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Marine biogenic CCN is a real Southern Ocean lever, and the best one found.}
+At $S=166$ it moves SO SW CRE $-7.25$\,W\,m$^{-2}$ in DJF against a $\pm3.82$ threshold ---
+$67\,\%$ of the $+10.86$ DJF deficit, in the season the deficit is worst, from the bloom
+rather than from a tuned constant.
+\item \textbf{It cannot be adopted as a tuning knob at any published coefficient.} The
+tropical cost is $0.0129$\,W\,m$^{-2}$ per unit $S$, so the $\pm0.5$ tolerance binds at
+$S\approx39$, below Woodhouse et al.'s floor of 43; and Twomey's $\Delta\ln N_d$ scaling
+makes the bound conservative. Scaling $S$ cannot separate the two bands because tropical
+background CCN is \emph{lower} than the SO's.
+\item \textbf{Detection thresholds for a 1-year pair, per band}: SO SW CRE annual $\pm1.97$,
+SO DJF $\pm3.82$, tropics annual $\pm0.99$, tropics DJF $\pm1.22$, global $\pm1.11$. Two of
+the three bracket arms fall below their own thresholds and carry no information.
+\item \textbf{The tropical longwave deficit gates the Southern Ocean fix.} The tropical cost
+of the DMS lever is shortwave; the tropical bias is longwave. They are independent terms, so
+closing the LW deficit makes the SO lever affordable rather than competing with it --- and
+the two are complementary in the global budget ($-1.72$ against ${\approx}+1$).
+\end{itemize}
+
 \textbf{Added 2026--08--09 (round 25, \S\ref{sec:r25}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The tropopause is not displaced.} Model and ERA5 put the WMO lapse-rate
@@ -5880,6 +6099,30 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Re-ranked 2026--08--10 after round 26 (\S\ref{sec:r26}).} The Southern Ocean lever
+now exists and is priced; what blocks it is the tropics. The list collapses accordingly:
+\begin{enumerate}\itemsep2pt
+\item \textbf{The tropical longwave cloud deficit}, $-2.16$\,W\,m$^{-2}$. Promoted to first
+because it is no longer a parallel item: it \emph{gates} the Southern Ocean fix
+(\S\ref{sub:r26gate}). The lever must be keyed on \textbf{deep convection}, not on cloud ice
+in general --- \texttt{RVICE} is the counter-example. \emph{Do the free check first}: no arm
+of ${\sim}52$ has ever been scored on this term, and \texttt{tropical\_lw\_scan.py} is
+written to answer it from data already on disk.
+\item \textbf{11E and 11F coupled}, both submitted 2026--08--10 and queued. 11E decides
+whether the coupled configuration is level with AMIP and gates the PI spin-up; 11F asks
+whether free SST and sea ice change the Southern Ocean answer, which AMIP structurally
+cannot price.
+\item \textbf{The tropical cold point}, $-2.07$\,K, the shared entry point for the cold bias
+and $61\,\%$ of the stratospheric dry bias (\S\ref{sec:r25}).
+\item \textbf{S4} (\texttt{RCL\_INPPMIN} $70000\to50000$) completed 48 years on
+2026--08--09 and is \textbf{unevaluated}.
+\item \textbf{The SO cloud-\emph{amount} two-thirds} stays open with no identified lever; the
+CCN path reaches the opacity third only.
+\item \textbf{Dropped:} the Blomquist et al.\ (2017) transfer velocity. It is less steep in
+wind than the Nightingale quadratic, so it moves flux away from the windy Southern Ocean
+toward the calm tropics --- worse selectivity, not better (\S\ref{sub:r26gate}).
+\end{enumerate}
+
 \textbf{Re-ranked after round 24 (\S\ref{sec:r24}), which answers round 23's question.}
 Round 23 asked for a \emph{regionally selective} Southern Ocean reflection lever. Round 24
 found one and priced it: marine CCN is selective by construction, but it reaches only the
