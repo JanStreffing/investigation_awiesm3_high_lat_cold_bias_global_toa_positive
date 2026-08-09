@@ -5173,6 +5173,55 @@ is in a component this configuration does not run (\texttt{whichevp}$=1$, FESOM'
 EVP). And there is no coupling field or atmospheric sulphur chemistry to receive it. The
 prescribed \texttt{emdms} route needs none of that.
 
+\subsection{T1 read test: passed, and the \texttt{emdms} data characterised}\label{sub:r24t1}
+The 1-year read test completed with no abort and the reader's own diagnostics confirm every
+pass criterion: \texttt{Found 12 dates}, \texttt{Found 8 fields}, \texttt{emdms} discovered as
+the eighth GRIB message matching \texttt{NCLIGC(8)}, and \texttt{CLIMR} slot 8 filled. Slot 8
+takes \textbf{twelve distinct values through the model year}, following a clean seasonal
+march on rank 1's northern high-latitude strip: $1.13$ in January, peaking at $3.04$ in June,
+minimum $0.30$ in October, returning to $1.13$. \textbf{The DMS ingest works.}
+
+\textbf{The data, characterised at full precision} (source file and built \texttt{ICMCL} are
+identical, so the ocp-tool step is also verified):
+
+\begin{center}\footnotesize
+\begin{tabular}{l r}
+\toprule
+land sentinel ($-99$) & $29.9\,\%$ of points \\
+ocean values & min $0.043$, median $2.05$, max $53.25$ \\
+exact zeros & $240$ of $339\,360$ ($0.1\,\%$) \\
+\midrule
+SO 65--45S, September & $0.52$ \\
+SO 65--45S, December & $\mathbf{5.06}$ \\
+\textbf{austral seasonal ratio} & $\mathbf{9.8\times}$ \\
+tropics, all months & $2.0$--$3.1$ (flat) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The phase is exactly the missing term.} Model marine CCN is wind-driven and
+so minimises in DJF ($N_d=68.5$) and peaks in JJA ($76.1$), anti-phased with observation.
+\texttt{emdms} peaks in DJF at $9.8\times$ its September value --- largest precisely when and
+where the SO cloud error is worst (DJF $-6.94$, SON $-7.03$\,pp).
+
+\dead{\texttt{emdms} is a DMS surface \emph{emission flux} in kg\,m$^{-2}$\,s$^{-1}$, which is
+exactly what a REcoM DMS module would produce, so a prescribed climatology now and a
+prognostic source later are a drop-in swap.} The GRIB carries that unit label, but values of
+${\sim}2$\,kg\,m$^{-2}$\,s$^{-1}$ of DMS are physically absurd. A global mean of $2.36$ with
+maxima of $53$ matches \textbf{DMS seawater \emph{concentration} in nmol\,L$^{-1}$} --- Lana
+et al.\ (2011) put the global surface mean at ${\approx}2.3$. \textbf{The unit label is
+wrong.} That inserts a step the round-24 design did not price: a sea--air flux
+parameterisation (wind-dependent piston velocity, Nightingale or Wanninkhof) is needed
+\emph{before} any flux$\to$CCN relation. The interface argument survives --- REcoM would also
+produce a concentration --- but the flux calculation belongs on the atmosphere side.
+
+\emph{Two diagnostic traps recorded, both mine.} The reader printed paramIds with an
+\texttt{i5} format, so the 6-digit $210043$ came out as \texttt{*****}; widened to \texttt{i8}.
+And the field was twice declared broken from too small a sample --- once from an \texttt{awk}
+column error that reported the ocean maximum as $0$, once from reading four \emph{consecutive}
+timesteps, which all fall in the same month, and concluding the field never varied. Both were
+wrong; the sampling was.
+
 \section{Round 25 (2026--08--09): the tropopause is not displaced, and cold-and-dry
 share one entry point}\label{sec:r25}
 No runs. Round 22 found the cold bias extratropical, peaking at 200\,hPa over both poles and
