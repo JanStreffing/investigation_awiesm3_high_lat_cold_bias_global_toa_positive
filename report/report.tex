@@ -5011,6 +5011,166 @@ reference for this model; CERES cloud area is valid over dark ocean and not over
 A1b duplicate and the \texttt{RVICE} proposal --- were already answered in \#169/\#170.
 \end{itemize}
 
+\section{Round 24 (2026--08--09): the marine CCN path, traced end to end}\label{sec:r24}
+No runs. The question was whether cloud condensation nuclei offer the \emph{regionally
+selective} Southern Ocean lever round 23 concluded was needed. The answer is a qualified
+yes, by a route nobody had looked at, and the trace corrected one of my own claims on the
+way.
+
+\subsection{The path, and where it is decided}\label{sub:r24path}
+Marine CCN reaches cloud albedo through four hops, each gated by a switch whose
+\emph{runtime} value had to be read from \texttt{fort.4} rather than a source default:
+
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+where & what & runtime state \\
+\midrule
+\texttt{surfrad\_ctl\_mod.F90}:772 & Genthon (1992) sea salt from wind & \texttt{LCCNO}$=$\textbf{.TRUE.} \\
+\texttt{liquid\_effective\_radius.F90}:153 & $\mathrm{CCN}\to N_d\to r_{\text{eff}}$ & \texttt{NRADLP}$=$\textbf{2} \\
+\texttt{cloudsc.F90}:1023 & MACv2-SP CDNC factor & \texttt{LMACV2SP\_CCNF}$=$\textbf{.true.} \\
+\texttt{cloudsc.F90}:2050 & CCN $\to$ autoconversion (lifetime) & \texttt{LAERLIQAUTOLSP}$=$\textbf{.FALSE.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent With \texttt{LCCNO} true the code takes the \texttt{PCCN\_SEA} branch, so
+\textbf{\texttt{RCCNSEA} is inert} --- its own source comment (``now irrelevant'') is
+correct, but only because of a switch three files away. The live formula is
+\[
+Q=e^{0.16u+1.44},\quad \mathrm{CCN}=10^{\,1.2+0.5\log_{10}Q},\quad
+N_d=-1.15{\times}10^{-3}\mathrm{CCN}^2+0.963\,\mathrm{CCN}+5.30 .
+\]
+
+\dead{Marine CCN is pinned at a uniform $125$\,cm$^{-3}$ because \texttt{NAERCLD}$=0$
+switches the aerosol--cloud path off.} Read from a \emph{default assignment} in
+\texttt{sucldp.F90} and reported as the runtime state, while \texttt{fort.4} carries
+\texttt{LMACV2SP\_CCNF}$=$\texttt{.true.}, \texttt{PCCN} had already been printed as a
+2-D field, and \S\ref{sec:r18res} of this report already documented that CCN path. Three
+independent disproofs, two of them on screen at the time.
+
+\subsection{The correction that matters: $N_d$ is right}\label{sub:r24nd}
+Evaluating Genthon on \emph{monthly-mean} winds gives a Southern Ocean wind of
+$6.54$\,m\,s$^{-1}$ and $N_d=55$, which against an observed $60$--$120$\,cm$^{-3}$ looks
+like a clear deficit. \textbf{That was wrong.} Monthly \emph{vector} averaging cancels the
+transient eddies that are the entire Southern Ocean wind field, and the parameterisation
+acts on instantaneous speed. On 6-hourly output:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+SO 65--45S & wind [m\,s$^{-1}$] & CCN & $N_d$ \\
+\midrule
+monthly-mean wind (wrong) & $6.54$ & $55.6$ & $55.3$ \\
+\textbf{6-hourly wind} & $\mathbf{10.28}$ & $\mathbf{77.6}$ & $\mathbf{73.5}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\dead{Southern Ocean droplet number is too low, so the cloud is too dark, and raising
+marine CCN is the opacity lever.} $N_d\approx73$\,cm$^{-3}$ sits squarely inside the
+observed $60$--$120$. \textbf{The mean is correct.} This is the same error class as
+$\mathrm{SCF}(\bar d)\neq\overline{\mathrm{SCF}(d)}$ from round 19 --- a nonlinear
+operator applied to a mean --- committed hours after writing it into a skill as a rule.
+
+\textbf{What survives is the phase.} The model's seasonal cycle is inverted:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+SO 65--45S & DJF & MAM & JJA & SON \\
+\midrule
+$N_d$ [cm$^{-3}$] & $\mathbf{68.5}$ & $74.9$ & $\mathbf{76.1}$ & $74.5$ \\
+SW CRE error [W\,m$^{-2}$] & $\mathbf{+10.86}$ & $+3.71$ & $+2.09$ & $\mathbf{+13.11}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Model $N_d$ is \emph{lowest} in DJF because it is wind-driven and Southern Ocean
+winds peak in winter. Observations put the maximum in DJF, driven by biogenic sulphate. So
+the model has its fewest droplets exactly when the sun is up and the measured error is
+largest. Crudely --- $\tau\propto N_d^{1/3}$, two-stream albedo $A\approx\tau/(\tau+7.7)$
+on CERES's $\tau=7.41$ --- lifting DJF $N_d$ from $68.5$ to an observed ${\sim}95$ is worth
+about $-6$\,W\,m$^{-2}$ of DJF SO CRE, roughly half that month's error.
+
+\subsection{The amount two-thirds is unreachable from here}\label{sub:r24amount}
+$N_d$ acts through $r_{\text{eff}}$, i.e.\ \textbf{opacity}, which round 23 measured as
+$34.5\,\%$ of the SO error. The cloud-\emph{lifetime} route that would reach the amount
+two-thirds runs through \texttt{LAERLIQAUTOLSP}/\texttt{LAERLIQCOLL}, and both are
+\texttt{.FALSE.}
+
+\textbf{Enabling them would divide by zero.} Traced: \texttt{callpar.F90}:1165 sets
+\texttt{AUXL\%ZCCN}$=0$ when \texttt{NAERCLD}$\le0$; \texttt{cloud\_layer.F90}:191 passes
+that array to \texttt{CLOUDSC} as \texttt{PCCN}; \texttt{cloudsc.F90}:2050 then evaluates
+$(\texttt{RCCN}/\texttt{PCCN})^{0.333}$. Using the lifetime effect requires
+\texttt{NAERCLD}$>0$ and prognostic aerosol, which also changes the direct effect --- so it
+stops being one lever. \textbf{Recorded so nobody enables the switch.}
+
+\subsection{The missing term, and that the data already exists}\label{sub:r24emdms}
+Genthon is sea-salt-from-wind with \emph{no biogenic term}, and MACv2-SP --- the only other
+live CCN path --- is anthropogenic plumes only. Natural marine biogenic sulphate is absent
+from this model by construction, which is exactly why the seasonal phase is wrong.
+
+\textbf{The input already ships with OpenIFS and nothing reads it:}
+
+\begin{center}\footnotesize
+\begin{tabular}{l l}
+\toprule
+\texttt{climate.v020/95\_4/month\_dms} & \texttt{emdms}, paramId \textbf{210043} \\
+units & kg\,m$^{-2}$\,s$^{-1}$ (DMS surface \emph{emission}) \\
+grid & N96 reduced Gaussian, 40\,320 points --- \textbf{TCO95's own grid} \\
+time & 12 monthly fields \\
+land & \textbf{$-99$ sentinel} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent It exists at every resolution from TL21 to TCO1279. It is not ingested:
+\texttt{ICMCL} carries only \texttt{al}, \texttt{aluvp/d}, \texttt{alnip/d},
+\texttt{lai\_lv/hv}, and OpenIFS references DMS only in the TM5/M7 chemistry paths, which
+need \texttt{NACTAERO}$\neq0$.
+
+\textbf{Route, via ocp-tool rather than \texttt{mkclimr.sh}.} ocp-tool already owns
+\texttt{ICMCL} (\texttt{config.py}:180--186, \texttt{paleo\_input.py}:278--320,
+\texttt{run\_ocp\_tool.py}:189 step 14b) and, decisively, already applies a changed
+land--sea mask to it. \texttt{emdms} is an \emph{ocean} field with the opposite land
+convention to albedo and LAI, so under a moved coastline new ocean points need infill and
+new land points need $-99$. \texttt{mkclimr.sh} cannot do that; ocp-tool can, which is what
+makes the field paleo-safe.
+
+\begin{enumerate}\itemsep2pt
+\item ocp-tool: append \texttt{emdms} to \texttt{ICMCL} in deterministic order ---
+\texttt{ece\_updclie\_climr.F90}:233 aborts on ``Inconsistent order of fields''.
+\item ocp-tool: extend step 14b for the inverted land convention.
+\item Reader: one new \texttt{paramId} case (210043) beside the existing 174 / 15--18 /
+66--67 branches. \textbf{\texttt{max\_fields}$=10$ against 7 in use}, so there is headroom
+for an eighth field without touching the limit.
+\item Physics: an additive biogenic term on \texttt{PCCNO} in the \texttt{LCCNO} branch.
+\end{enumerate}
+
+\textbf{The interface is a DMS surface flux in kg\,m$^{-2}$\,s$^{-1}$}, which is exactly
+what a REcoM DMS module would produce. So a prescribed climatology now and a prognostic
+source later are a drop-in swap at the ocp-tool boundary, with no change to items 3--4.
+That is a better seam than a chlorophyll relation, which would need its own empirical fit
+on both sides.
+
+\emph{Unpriced, all cheap:} the provenance of ECMWF's \texttt{emdms} (Kettle \& Andreae
+2000 or Lana et al.\ 2011 --- matters for citation); the flux$\to$CCN relation, which is the
+one genuinely scientific choice and needs a published basis, not a fitted curve; and
+whether $-99$ is the sentinel everywhere or only where it was sampled.
+
+\emph{Why this is not scheduled first:} the SO band is $9.8\,\%$ of the globe, so closing
+the opacity third perfectly is $2.57$\,W\,m$^{-2}$ in-band but only
+${\approx}0.25$\,W\,m$^{-2}$ global, against a $+1.23$ error. 11E is a namelist edit on a
+lever already validated over 44 AMIP years. Do the cheap decisive run first.
+
+\dead{Prognostic marine biogenic CCN needs the \texttt{-cc} setup with REcoM ocean
+biogeochemistry.} REcoM carries no DMS tracer; the only DMS in the tree is Icepack's
+sea-ice biogeochemistry (\texttt{dmspp, dmspd, dms}), which is DMS \emph{within} sea ice and
+is in a component this configuration does not run (\texttt{whichevp}$=1$, FESOM's native
+EVP). And there is no coupling field or atmospheric sulphur chemistry to receive it. The
+prescribed \texttt{emdms} route needs none of that.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -5242,6 +5402,21 @@ effective is to make skipping it require effort.
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--09 (round 24, \S\ref{sec:r24}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Southern Ocean droplet number is correct in the mean} --- $N_d\approx73$\,cm$^{-3}$
+against an observed $60$--$120$, evaluated on 6-hourly wind. The marine CCN path is
+mapped end to end and \texttt{RCCNSEA} is inert because \texttt{LCCNO}$=$\texttt{.TRUE.}
+\item \textbf{But the seasonal phase is inverted}: model $N_d$ is lowest in DJF ($68.5$)
+and highest in JJA ($76.1$), because it is wind-driven, where observations peak in DJF from
+biogenic sulphate. The measured SO CRE error is worst in exactly those months.
+\item \textbf{The cloud-lifetime CCN route would divide by zero} at \texttt{NAERCLD}$=0$,
+so the amount two-thirds is unreachable from the CCN path (\S\ref{sub:r24amount}).
+\item \textbf{A DMS emission climatology already ships at TCO95 and nothing reads it} ---
+\texttt{emdms}, paramId 210043, on the model's own N96 grid, with \texttt{ICMCL} having
+headroom for an eighth field (\S\ref{sub:r24emdms}).
+\end{itemize}
+
 \textbf{Added 2026--08--09 (round 23, \S\ref{sec:r23}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The Southern Ocean amount deficit is confirmed against the right reference.}
@@ -5464,6 +5639,18 @@ propagating globally} &
 The tropics are the \emph{least}-biased band at $-1.72$\,K against an extratropical mean of
 $-2.97$. The bias is extratropical, peaks at 200\,hPa over both poles and reverses at
 100\,hPa. & \S\ref{sub:utls} \\
+\dead{Marine CCN is a uniform $125$\,cm$^{-3}$; the aerosol--cloud path is off} &
+Read from a default in \texttt{sucldp.F90}. \texttt{fort.4} carries
+\texttt{LMACV2SP\_CCNF}$=$\texttt{.true.}, \texttt{PCCN} is a field, and \S\ref{sec:r18res}
+already documented that path. & \S\ref{sub:r24path} \\
+\dead{Southern Ocean $N_d$ is too low, so raising marine CCN is the opacity lever} &
+$N_d=55$ came from applying Genthon to \emph{monthly-mean} wind, which cancels the
+transient eddies. On 6-hourly wind it is $73.5$, inside the observed $60$--$120$. A
+nonlinear operator applied to a mean --- the round-19 error again. & \S\ref{sub:r24nd} \\
+\dead{Prognostic marine biogenic CCN needs \texttt{-cc} with REcoM} &
+REcoM has no DMS tracer; the only DMS is Icepack's sea-ice biogeochemistry, in a component
+this setup does not run. The prescribed \texttt{emdms} climatology needs none of it.
+& \S\ref{sub:r24emdms} \\
 \dead{\texttt{RCL\_OVERLAPLIQICE} $0.65\to0.35$ is an untested mixed-phase lever} &
 It is A1b, already run for 44 years; A1a is the same knob at $0.1$. The A-series ``ovl'' label
 means the liquid/ice \emph{deposition} overlap, not radiative cloud overlap. Run cancelled.
