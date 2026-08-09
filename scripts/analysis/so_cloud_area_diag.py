@@ -54,10 +54,25 @@ CERESF = '/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.n
 SO = (-65.0, -45.0)
 PD, PDY = 'amip_presentday', (1990, 2014)
 # lever arms: all PI-epoch, all 44 yr, deltas against the shared control
-LEVERS = [('control', 'amip_pi_base'), ('D2a inpsea.2', 'amip_D2a_inpsea02'),
-          ('D2b inp+p700', 'amip_D2b_inpsea02_p700'), ('A1a ovl=0.10', 'amip_A1_overlap01'),
-          ('B7 rvice.22', 'amip_B7_rvice022'), ('G4 tundra225', 'amip_G4_tundra'),
-          ('K1 landalb', 'amip_K1_landalb')]
+# EVERY run that set a NAMCLDP parameter, so the "has this been tried" question is
+# answered by the table instead of from memory.  Getting that wrong cost a duplicate
+# run on 2026-08-09: RCL_OVERLAPLIQICE=0.35 was proposed as new when it is A1b, and
+# "ovl" in the A-series labels means the liquid/ice DEPOSITION overlap, not the
+# radiative cloud overlap.  The two land/sea levers at the bottom are the control:
+# they cannot physically act on Southern Ocean cloud, so whatever they register is
+# the noise floor of this diagnostic.
+LEVERS = [('control', 'amip_pi_base'),
+          ('A1a ovlliqice=0.10', 'amip_A1_overlap01'),
+          ('A1b ovlliqice=0.35', 'amip_A1_overlap035'),
+          ('A1c depliqdep1500', 'amip_A1c_depliqdepth1500'),
+          ('B2 clddiff_convi25', 'amip_B2_clddiffconvi25'),
+          ('B3 clddiff 1.5e-5', 'amip_B3_clddiff15e6'),
+          ('B6 lcritsnow 1e-5', 'amip_B6_lcritsnow1e5'),
+          ('B7 rvice 0.22', 'amip_B7_rvice022'),
+          ('D2a inpsea 0.2', 'amip_D2a_inpsea02'),
+          ('D2b inp+p700', 'amip_D2b_inpsea02_p700'),
+          ('G4 tundra225 [land]', 'amip_G4_tundra'),
+          ('K1 landalb [land]', 'amip_K1_landalb')]
 LEVY = (1872, 1915)
 SEAS = {'DJF': [12, 1, 2], 'MAM': [3, 4, 5], 'JJA': [6, 7, 8], 'SON': [9, 10, 11]}
 

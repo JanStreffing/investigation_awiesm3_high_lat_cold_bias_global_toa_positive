@@ -11,3 +11,4 @@ __pycache__/
 *.pyc
 scripts/analysis/.box_cache/
 scripts/analysis/.eval_cache/
+data/vprof/

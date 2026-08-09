@@ -4720,19 +4720,47 @@ B7 \texttt{rvice.22} & $-0.60$ & $+0.66$ & wrong sign \\
 \end{tabular}
 \end{center}
 
-\noindent G4 and K1 are boreal-land levers that \emph{cannot physically} change Southern
-Ocean cloud area, and they move it by $+0.48$ and $+0.45$\,pp. \textbf{That is the noise
-level of this diagnostic, and every INP run sits inside it.} D2a and D2b bought their CRE
-by making existing cloud brighter, not by making more of it --- which is consistent, since
-$+0.63$\,pp at the observed CRE per unit area is worth only $-0.48$\,W\,m$^{-2}$ of D2a's
-$-4.80$. \textbf{The amount deficit, two thirds of the error, is untouched by every lever
-in the campaign.}
+\dead{G4 and K1 are boreal-land levers that cannot physically change Southern Ocean cloud
+area, and they move it by $+0.48$ and $+0.45$\,pp, so ${\approx}0.5$\,pp is the noise level
+of this diagnostic and every INP run sits inside it.} \textbf{Wrong, and corrected the same
+day.} G4 and K1 are not independent of D2b --- they \emph{contain} it (G4 $=$ F4 $+$ D2b $+$
+tundra, K1 $=$ G4 $+$ land albedo), so their $+0.48$/$+0.45$ is D2b's $+0.43$ inherited, not
+a null. Differenced against D2b the pure land contribution is $+0.050$ and $+0.022$\,pp,
+which is the clean control and is genuinely negligible.
+
+\textbf{The real threshold, measured.} Interannual scatter of SO cloud area in the 44-year
+control is $0.232$\,pp, giving a 95\,\% detection threshold of $\pm0.098$\,pp on a paired
+difference --- five times smaller than the figure asserted above. \textbf{Every lever in the
+table is therefore statistically significant.} The conclusion survives, but it rests on
+MAGNITUDE rather than on significance:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r l}
+\toprule
+lever & $\Delta$area & \% of the $6.43$ gap & $\Delta$CRE & of which opacity \\
+\midrule
+D2a \texttt{inpsea 0.2} & $+0.626$ & $10\,\%$ & $-4.80$ & $90\,\%$ \\
+A1a \texttt{ovlliqice 0.10} & $+0.623$ & $10\,\%$ & $-6.44$ & $93\,\%$ \\
+D2b \texttt{inp+p700} & $+0.432$ & $7\,\%$ & $-2.61$ & $87\,\%$ \\
+A1b \texttt{ovlliqice 0.35} & $+0.331$ & $5\,\%$ & $-2.17$ & $88\,\%$ \\
+\midrule
+\emph{G4 minus D2b} & $+0.050$ & --- & $-0.12$ & \emph{the land control} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The best lever in the campaign closes one tenth of the area gap and takes
+${\approx}90\,\%$ of its CRE from opacity.} Two independent mixed-phase routes agree ---
+ice nuclei (D2a/D2b) and the liquid/ice deposition overlap (A1a/A1b, the latter pushed to
+EC-Earth4's $0.1$) --- so this is a property of the mixed-phase branch, not of one
+parameter. \textbf{The amount deficit, two thirds of the error, is $90\,\%$ intact.}
 
 \dead{The Southern Ocean cloud-area deficit should be attacked by pushing the INP branch
 harder, since D2b is the only lever that has moved the SO.} Written into the plan on
 2026--08--09 and falsified the same day. The INP branch acts on opacity, which is $34.5\,\%$
-of the error; its area response is indistinguishable from that of a land-albedo lever. A
-cloud-\emph{amount} knob is required, and it is a different knob.
+of the error; its area response closes only one tenth of the gap, and the same is true of
+the deposition-overlap route even at EC-Earth4's setting. A cloud-\emph{amount} knob is
+required, and it is a different knob.
 
 \emph{One more pointer.} CERES puts the SO effective cloud pressure at $656$\,hPa, i.e.\
 just \emph{above} the $700$\,hPa ceiling of D2b's pressure gate, with optical depth
@@ -5247,6 +5275,12 @@ propagating globally} &
 The tropics are the \emph{least}-biased band at $-1.72$\,K against an extratropical mean of
 $-2.97$. The bias is extratropical, peaks at 200\,hPa over both poles and reverses at
 100\,hPa. & \S\ref{sub:utls} \\
+\dead{${\approx}0.5$\,pp is the noise floor of the SO cloud-area diagnostic, set by land
+levers that cannot act there} &
+G4 and K1 \emph{contain} D2b (G4 $=$ F4$+$D2b$+$tundra), so their $+0.48$/$+0.45$\,pp was
+D2b's own signal read back as a null. The measured threshold is $\pm0.098$\,pp and every
+lever clears it; the conclusion rests on magnitude --- $10\,\%$ of the gap --- not on
+significance. & \S\ref{sub:socloudarea} \\
 \dead{Aerosol contributes ${\sim}0.7$\,W\,m$^{-2}$ (13\,\%) of the SO clear-sky excess} &
 Inferred from a $+0.033$ AOD excess vs MISR. Measured by removing all anthropogenic
 aerosol: $-0.116$\,W\,m$^{-2}$, $t=-18.9$ --- six times smaller. The unexplained residual

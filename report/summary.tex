@@ -49,7 +49,7 @@ $+1.15$\,K with every season inside its own noise threshold, on a snow scheme re
 36\,492 Russian snow-course surveys after the original was falsified outright. Coupled 10A sits
 at net TOA $+0.85$\,W\,m$^{-2}$ against a goal of $0$, of which only $0.18$ is still reachable
 from the ocean side. The Southern Ocean carries $+7.46$\,W\,m$^{-2}$ of band error, two thirds
-of it a $6.4$\,pp cloud-\emph{amount} deficit that no lever in the campaign has moved at all.
+of it a $6.4$\,pp cloud-\emph{amount} deficit of which 50 runs have closed one tenth.
 
 \medskip\noindent\textbf{What to do next} is \S\ref{sec:forward}: attack the SO cloud-amount
 deficit with a cloud-fraction lever rather than escalating ocean mixing or ice nucleation; stop
@@ -76,8 +76,8 @@ objective & metric & start & now & target & what moved it \\
 \midrule
 \textbf{Southern Ocean}
  & 65--45S net TOA vs CERES & $+7.46$ & $+7.46$ & $0$ & \emph{never targeted} \\
- & SO surface-SW RMSE & $6.88$ & $\mathbf{4.81}$ & --- & D2b (opacity only) \\
- & SO cloud area [\%] & $83.1$ & $83.5$ & $89.5$ & $6.4$\,pp untouched \\
+ & SO surface-SW RMSE & $6.88$ & $\mathbf{4.81}$ & --- & D2b (opacity) \\
+ & SO cloud area [\%] & $83.1$ & $83.5$ & $89.5$ & $10\,\%$ of the gap \\
 \midrule
 \textbf{Siberia}
  & JJA T2m bias, period-clean [K] & $-2.04$ & ${\approx}\mathbf{-0.9}$ & $0$ & G4 $+$ K1 $+$ P5 \\
@@ -239,13 +239,15 @@ $-6.82$, Australian $-6.55$, Pacific $-6.81$\,pp --- a $1.42$\,pp spread, which 
 signature rather than circulation or the ice edge. It is worst in austral spring and summer
 (SON $-7.03$, DJF $-6.94$\,pp), when there is shortwave to reflect: DJF alone carries
 $+11.67$\,W\,m$^{-2}$ of net TOA error in the band.
-\item \textbf{D2b (ice nuclei over sea, gated below 700\,hPa) is adopted, and it works on
-opacity.} It gives the best SO surface-SW RMSE of any run, $6.88\to4.96$ ($-28\,\%$), at
-\emph{zero} tropical cost ($+0.09$), by improving the spatial \emph{pattern}. But scored on
-area it moves $+0.43$\,pp of the $6.43$\,pp gap, and D2a $+0.63$ --- against $+0.48$ and $+0.45$
-from G4 and K1, which are boreal-\emph{land} levers that cannot physically act on Southern Ocean
-cloud. \textbf{That is the noise floor of the diagnostic, and every lever sits inside it.} The
-amount deficit is untouched by all 50 runs.
+\item \textbf{The whole mixed-phase branch works on opacity, not amount.} D2b gives the best
+SO surface-SW RMSE of any run, $6.88\to4.96$ ($-28\,\%$), at \emph{zero} tropical cost
+($+0.09$), by improving the spatial \emph{pattern}. But scored on area against the $6.43$\,pp
+gap the best levers in the campaign are D2a at $+0.626$\,pp and A1a at $+0.623$ --- one tenth
+of it --- and they take $90$ and $93\,\%$ of their CRE gain from opacity. These are all
+significant (the 44-year threshold is $\pm0.098$\,pp), so the point is magnitude, not
+detectability. \textbf{Two independent routes agree} --- ice nuclei, and the liquid/ice
+deposition overlap pushed as far as EC-Earth4's $0.1$ --- so it is a property of the branch,
+not of one parameter, and the amount deficit is $90\,\%$ intact after 50 runs.
 \item \textbf{One pointer for the gate.} CERES puts the SO effective cloud pressure at
 $656$\,hPa --- just \emph{above} the $700$\,hPa ceiling of D2b's gate. The gate protects the
 tropics and does so successfully, but it may also exclude the layer where the observed cloud
@@ -264,8 +266,8 @@ targeted. The G-series buys about $-2.0$ of the $+8.11$ needed there, all of it 
 by-product.
 \end{itemize}
 
-\noindent \textbf{Net: the opacity third has been partly bought, incidentally; the amount two
-thirds has never been addressed.} That is the single largest unexploited term in the campaign,
+\noindent \textbf{Net: the opacity third has been partly bought; the amount two thirds is
+$90\,\%$ intact.} That is the single largest unexploited term in the campaign,
 and closing it needs a cloud-fraction knob, not more ice nucleation.
 
 \section{Siberia}\label{sec:sib}
@@ -575,8 +577,8 @@ the campaign: $+7.46$\,W\,m$^{-2}$ in-band, $+0.74$ of the global mean on its ow
 reference period, and with a \emph{larger} unexplained residual than before because aerosol was
 measured out of it. Two thirds of the error is missing area, it is zonally uniform to
 $1.42$\,pp, and it peaks in austral spring and summer. \textbf{The lever must be a
-cloud-fraction knob}: the ice-nucleation family moves opacity, and its area response
-($+0.43$ to $+0.63$\,pp) is indistinguishable from that of a boreal-land lever. Two design
+cloud-fraction knob}: the whole mixed-phase branch, ice nuclei and deposition overlap alike,
+takes ${\approx}90\,\%$ of its gain from opacity and closes at most one tenth of the area gap. Two design
 constraints follow --- \textbf{score on area, not CRE}, since a CRE metric cannot separate the
 two; and revisit D2b's $700$\,hPa gate ceiling against the observed $656$\,hPa effective cloud
 pressure, because the gate may be excluding the layer that carries the cloud.

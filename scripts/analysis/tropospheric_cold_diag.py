@@ -45,7 +45,7 @@ for _v in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS',
 import numpy as np, xarray as xr, warnings
 warnings.filterwarnings('ignore')
 
-W = '/tmp/vprof'
+W = os.environ.get('VPROF_DIR', '/work/ab0246/a270092/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/data/vprof')
 LEVELS = [1000, 925, 850, 700, 500, 300, 200, 100]
 BANDS = [('90S-60S', -90, -60), ('60S-30S', -60, -30), ('tropics 30S-30N', -30, 30),
          ('30N-60N', 30, 60), ('60N-90N', 60, 90)]

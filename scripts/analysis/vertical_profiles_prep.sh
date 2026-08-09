@@ -27,7 +27,9 @@
 # Output: /tmp/vprof/{era5,model}_<tag>_<var>_<season>.nc  on the model grid, 19 levels.
 set -u
 module load cdo 2>/dev/null
-W=/tmp/vprof; mkdir -p $W
+# NOT /tmp: it is cleaned periodically and this cache was lost twice mid-analysis,
+# once taking an hour of ERA5 pool reads with it.  /work persists.
+W=${VPROF_DIR:-/work/ab0246/a270092/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/data/vprof}; mkdir -p $W
 RT=/work/bb1469/a270092/runtime/oifsamip-cy48
 E5=/pool/data/ERA5/E5/pl/an/1M
 LEV=100000,92500,85000,70000,60000,50000,40000,30000,25000,20000,15000,10000,7000,5000,3000,2000,1000,500,100
