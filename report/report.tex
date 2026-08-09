@@ -5173,6 +5173,103 @@ is in a component this configuration does not run (\texttt{whichevp}$=1$, FESOM'
 EVP). And there is no coupling field or atmospheric sulphur chemistry to receive it. The
 prescribed \texttt{emdms} route needs none of that.
 
+\section{Round 25 (2026--08--09): the tropopause is not displaced, and cold-and-dry
+share one entry point}\label{sec:r25}
+No runs. Round 22 found the cold bias extratropical, peaking at 200\,hPa over both poles and
+reversing sign at 100\,hPa, and read that shape as a displaced tropopause. It is not, and
+what is there instead is better news.
+
+\subsection{The tropopause height is right}\label{sub:r25height}
+WMO lapse-rate tropopause, model and ERA5 on identical levels, annual, period-clean:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+band & model [hPa] & ERA5 [hPa] & diff \\
+\midrule
+90S--60S & $250$ & $250$ & $0$ \\
+60S--30S & $200$ & $200$ & $0$ \\
+tropics & $100$ & $100$ & $0$ \\
+30N--60N & $200$ & $200$ & $0$ \\
+60N--90N & $250$ & $250$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\dead{The sign reversal at 100\,hPa is a displaced tropopause: the model is still on a
+tropospheric lapse rate at 200\,hPa where the real atmosphere has turned isothermal.}
+\textbf{Falsified.} The tropopause sits on the same level in every band. The vertical
+resolution here is one level, so a displacement smaller than ${\sim}50$\,hPa would not be
+seen --- but a displacement large enough to produce a $4$\,K bias would be.
+
+What the lapse rates show instead is a \emph{sharper} transition, not a moved one: the model
+cools faster than ERA5 through 300--250\,hPa ($+1.76$ and $+1.78$\,K\,km$^{-1}$ at the two
+poles, against $+0.21$ in the tropics) and then slower than ERA5 above 200\,hPa
+($-1.49$, $-1.85$). Same tropopause, too much curvature at it.
+
+\subsection{The cold point, and one caveat on reading it}\label{sub:r25coldpoint}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+band & $T$ model & $T$ ERA5 & $\Delta T$ & $p$ model & $p$ ERA5 \\
+\midrule
+90S--60S & $208.77$ & $212.03$ & $-3.26$ & $250$ & $70$ \\
+60S--30S & $211.80$ & $213.32$ & $-1.52$ & $100$ & $100$ \\
+\textbf{tropics} & $\mathbf{193.44}$ & $\mathbf{195.51}$ & $\mathbf{-2.07}$ & $100$ & $100$ \\
+30N--60N & $211.54$ & $212.84$ & $-1.30$ & $100$ & $100$ \\
+60N--90N & $213.21$ & $217.55$ & $-4.33$ & $250$ & $30$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The two polar rows are not like-for-like and must not be quoted as
+$4$\,K cold points.} Model and ERA5 locate their profile minimum at different levels there
+($250$ against $70$ and $30$\,hPa), because at high latitudes the upper stratosphere is
+near-isothermal and the minimum is ambiguous. What those rows actually say is a structural
+difference: the model's polar stratosphere is too \emph{cold} at 250\,hPa and too
+\emph{warm} above 100 (\S\ref{sub:utls} gives $+0.25$ and $+0.26$ there). The three rows
+where both datasets pick the same level are clean, and the tropical one carries the next
+result.
+
+\subsection{Cold and dry are one problem with one entry point}\label{sub:r25onecause}
+Stratospheric water vapour is set by the temperature of the tropical cold point, which
+freeze-dries air entering the stratosphere; the Brewer--Dobson circulation then carries that
+air poleward. So a cold-biased tropical cold point dries the stratosphere \emph{everywhere},
+including over the poles. Testing it quantitatively with Clausius--Clapeyron over ice
+(Murphy \& Koop 2005) on the saturation mixing ratio at each dataset's own cold point:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r}
+\toprule
+tropical cold point, model & $193.44$\,K at $100$\,hPa \\
+tropical cold point, ERA5 & $195.51$\,K at $100$\,hPa \\
+saturation mixing ratio & $3.575$ vs $4.998$ (ppmv-mass) \\
+\midrule
+\textbf{predicted entry-air drying} & $\mathbf{-28.5\,\%}$ \\
+\textbf{measured drying at 100\,hPa} & $\mathbf{-46.9\,\%}$ \\
+\midrule
+share explained & $\mathbf{61\,\%}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{A $2$\,K cold bias at the tropical cold point accounts for three fifths of
+a $47\,\%$ stratospheric dry bias.} That reframes \S\ref{sub:utls}, which recorded cold and
+dry as a compensating \emph{pair} --- two independent errors whose opposing OLR effects
+happen to cancel. They are not independent. They share an entry point, and the polar UTLS
+dryness is the tropical cold point seen downstream.
+
+\textbf{Why that is much better news.} Two independent cancelling errors would have to be
+fixed together or not at all, and fixing either alone moves net TOA several W\,m$^{-2}$ the
+wrong way (\S\ref{sub:utls}). One error with one entry point means \textbf{a lever that warms
+the tropical cold point should move both}, in the right direction, at once. The remaining
+$39\,\%$ of the drying is a second source --- transport, or the model's own UTLS
+microphysics --- and is not yet identified.
+
+\emph{Caveat carried forward:} ERA5's upper-level humidity is weakly constrained by
+observation, so the $-46.9\,\%$ denominator is the softest number here. The $-2.07$\,K cold
+point and the $-28.5\,\%$ it implies rest only on temperature, which ERA5 constrains well.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -5404,6 +5501,19 @@ effective is to make skipping it require effort.
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--09 (round 25, \S\ref{sec:r25}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{The tropopause is not displaced.} Model and ERA5 put the WMO lapse-rate
+tropopause on the same level in all five bands. The 200/100\,hPa sign reversal is a
+\emph{sharper} transition, not a moved one --- the model cools $+1.8$\,K\,km$^{-1}$ faster
+than ERA5 through 300--250 at the poles and $-1.5$ to $-1.9$ slower above 200.
+\item \textbf{Cold and dry share one entry point.} A $-2.07$\,K tropical cold point predicts
+$-28.5\,\%$ of entry-air drying by Clausius--Clapeyron against a measured $-46.9\,\%$ at
+100\,hPa, i.e.\ \textbf{61\,\%}. They are not the independent compensating pair
+\S\ref{sub:utls} recorded, so a lever that warms the tropical cold point should move both
+the right way (\S\ref{sub:r25onecause}).
+\end{itemize}
+
 \textbf{Added 2026--08--09 (round 24, \S\ref{sec:r24}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{Southern Ocean droplet number is correct in the mean} --- $N_d\approx73$\,cm$^{-3}$
@@ -5560,7 +5670,10 @@ already validated over 44 AMIP years, and the only route to three questions AMIP
 price. Cheapest decisive run available.
 \item \textbf{The tropical longwave cloud deficit}, $-2.16$\,W\,m$^{-2}$, untouched by any
 lever in 50 runs and the one term that is deficient in the direction the tropics need.
-\item \textbf{The extratropical tropopause}, cold-and-dry as one problem.
+\item \textbf{The tropical cold point}, $-2.07$\,K, which \S\ref{sec:r25} shows is the
+shared entry point for the cold bias and $61\,\%$ of the stratospheric dry bias. The
+tropopause \emph{height} is correct, so this is a cold-point temperature problem, not a
+displacement one, and one lever should move both errors.
 \item \textbf{Marine biogenic CCN via \texttt{emdms}} --- real missing physics with the input
 already on disk, but ${\approx}0.25$\,W\,m$^{-2}$ global and it needs a published
 flux$\to$CCN relation, so it follows the cheaper items.
@@ -5686,6 +5799,12 @@ shares the model's bias rather than measuring a different quantity. & \S\ref{sub
 \dead{The Arctic carries $+11.49$\,pp too much cloud} &
 A passive cloud mask over sea ice, where CERES and MODIS disagree by $7.7$\,pp at 90S--65S.
 Not supportable. & \S\ref{sub:r23ref} \\
+\dead{The 200/100\,hPa sign reversal is a displaced tropopause} &
+The WMO lapse-rate tropopause is on the same level as ERA5 in all five bands. It is a
+sharper transition, not a moved one. & \S\ref{sub:r25height} \\
+\dead{Cold and dry are independent errors that happen to cancel in OLR} &
+A $-2.07$\,K tropical cold point explains $61\,\%$ of the $100$\,hPa drying by
+Clausius--Clapeyron. One entry point, not two. & \S\ref{sub:r25onecause} \\
 \dead{${\approx}0.5$\,pp is the noise floor of the SO cloud-area diagnostic, set by land
 levers that cannot act there} &
 G4 and K1 \emph{contain} D2b (G4 $=$ F4$+$D2b$+$tundra), so their $+0.48$/$+0.45$\,pp was
