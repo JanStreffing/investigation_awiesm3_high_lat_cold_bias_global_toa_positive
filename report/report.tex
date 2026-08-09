@@ -4844,6 +4844,173 @@ coupled at all, it needs either a longer run or the AMIP answer taken on trust -
 the AMIP answer says $15$.
 \end{itemize}
 
+\section{Round 23 (2026--08--09): the reference check, and a round withdrawn}\label{sec:r23}
+Round 23 was designed to close the Southern Ocean cloud-\emph{amount} deficit. Three of its
+four runs were withdrawn before completion --- one as a duplicate, two on a design error ---
+and the round's lasting product is a reference check that decides which observation the
+campaign is allowed to tune against.
+
+\subsection{Prior work this campaign had not incorporated}\label{sub:r23prior}
+Two AWI-ESM project issues (\#169, \#170, 2025--03 to 2026--04) cover the same Southern Ocean
+warm bias from the coupled side and contain results this report was working without.
+
+\begin{itemize}\itemsep2pt
+\item \textbf{The origin is cy48's moist-physics upgrade.} Cycle 48r1 raised high cloud cover
+everywhere relative to 43r3, strongest in the SH high latitudes, and lowered SO low cloud
+(\#170). The exact diff is the ECMWF Newsletter 164 moist-physics patch, which was evaluated
+mainly at ${\sim}5$\,km and mainly in low latitudes.
+\item \textbf{The lead/lag test, which orders the causal chain.} Scored on \emph{year one}
+rather than the 50-year mean, the hcc offset is already present while the T2m bias and the SO
+lcc dip are \emph{not}. So hcc leads and lcc lags: \texttt{fix hcc} $\to$ \texttt{reduces t2m}
+$\to$ \texttt{fixes lcc}. In the coupled model the SO low-cloud deficit is partly a
+\emph{consequence} of the warm bias.
+\item \textbf{\texttt{RVICE} is already the hcc lever.} The v3.4 tuning raised it from the
+$0.13$ source default to $0.16$--$0.19$ (TUNE1--TUNE5, with \texttt{NDECOLAD} $2\to0$ and
+\texttt{RALBSEAD} $0.06\to0.05$) precisely to suppress SO high cloud. Every run in this
+campaign carries \texttt{RVICE}$=0.16$ for that reason.
+\item \textbf{The compensating-bias trap is documented.} ``All further tests regarding
+reducing HCC resulted in Arctic and Tropics becoming too cold'', and \texttt{RALBSEAD} was
+found ``not a strong enough counter tuning method for the combined \texttt{RVICE} $+$
+\texttt{ENTSTPC3}''.
+\end{itemize}
+
+\dead{Lowering \texttt{RVICE} below $0.16$ would add tropical cirrus and warm the tropics,
+providing the counter-lever the Southern Ocean levers need.} Mechanically correct --- B7 at
+$0.22$ gives $\Delta$high $-2.31$\,pp and $\Delta$LW\,CRE $-1.35$ --- but it would undo the
+v3.4 SO tuning, which raised \texttt{RVICE} for exactly this reason. \texttt{RVICE} is global
+and the two regions need opposite signs, so it cannot serve both.
+
+\subsection{Four-way attribution: what kind of error each band has}\label{sub:r23attr}
+Net TOA cannot distinguish a surface-albedo error from a cloud-reflection one. Splitting each
+band against CERES into clear/cloud $\times$ SW/LW, period-clean, positive $=$ the model gains
+energy:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+band & net & SW clr & \textbf{SW cld} & LW clr & \textbf{LW cld} & contribution \\
+\midrule
+90S--65S & $+8.11$ & $+1.53$ & $+3.98$ & $+4.35$ & $-1.75$ & $+0.390$ \\
+\textbf{SO 65S--45S} & $+7.46$ & $-3.79$ & $\mathbf{+7.45}$ & $+4.21$ & $-0.40$ & $\mathbf{+0.735}$ \\
+45S--30S & $-2.49$ & $-2.54$ & $-2.82$ & $+4.66$ & $-1.79$ & $-0.257$ \\
+\textbf{tropics} & $-0.67$ & $-1.39$ & $-0.40$ & $+3.28$ & $\mathbf{-2.16}$ & $-0.336$ \\
+30N--45N & $+2.08$ & $-4.90$ & $+4.67$ & $+4.36$ & $-2.05$ & $+0.215$ \\
+45N--65N & $+5.35$ & $-2.67$ & $+2.45$ & $+5.11$ & $+0.45$ & $+0.527$ \\
+65N--90N & $+1.53$ & $-3.79$ & $-1.45$ & $+6.30$ & $+0.46$ & $+0.073$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The two problems are different cloud types.} The Southern Ocean loses its
+energy through \textbf{SW cloud} ($+7.45$): the low cloud does not reflect enough. The tropics
+lose theirs through \textbf{LW cloud} ($-2.16$): the high cloud does not trap enough. With SST
+prescribed and correct, a tropical LW-cloud deficit is an anvil/cirrus problem --- too low, too
+thin, or radiatively too weak --- not a surface or a convective-heating one.
+
+That is why no single microphysics knob has ever satisfied both, and it is also the shape of a
+solution: a lever that makes ice cloud \emph{fewer but optically stronger} would move the
+Southern Ocean and the tropics in opposite, both-correct directions. \texttt{RVICE} changes
+amount alone, which is why it trades one for the other.
+
+\textbf{Scanning all 15 NAMCLDP-family levers for tropical response}, only three warm the
+tropics at all: B3 \texttt{clddiff}$=1.5$e-5 ($+2.02$, via SW not LW), B2
+\texttt{clddiff\_convi} ($+0.65$) and K1 ($+0.37$, clear-sky, its subtropical
+crop/semidesert albedo). \textbf{Nothing in 50 runs warms the tropics through the longwave},
+which is the term that is actually deficient.
+
+\subsection{Which reference is right about Southern Ocean cloud?}\label{sub:r23ref}
+The round-22 amount deficit rests on one source. Bringing ERA5 in appeared to contradict it
+outright, so before spending runs the references were tested against each other.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+SO 65--45S & model & ERA5 & CERES & MODIS \\
+\midrule
+cloud area [\%] & $83.1$ & $81.6$ & $\mathbf{89.5}$ & $\mathbf{89.3}$ \\
+SW CRE [W\,m$^{-2}$] & $-60.39$ & $-61.52$ & $\mathbf{-67.84}$ & --- \\
+vs CERES & $\mathbf{+7.45}$ & $\mathbf{+6.31}$ & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The test is what the cloud DOES, not how much is counted.} Cloud area is not
+one quantity: CERES \texttt{cldarea} is a MODIS \emph{mask} fraction that flags optically thin
+cloud in full, while ERA5 and model \texttt{tcc} are radiative covers built by overlapping
+layer fractions. Comparing them directly is a category error. Shortwave CRE is a difference of
+two broadband fluxes and \emph{is} identically defined across all three.
+
+If ERA5's lower area were a definition artefact, ERA5 would reflect like CERES. \textbf{It does
+not: ERA5 has low area \emph{and} low reflection, in proportion} --- $6.31$\,W\,m$^{-2}$ short
+where the model is $7.45$ short. ERA5 is reproducing the model's bias because ERA5 \emph{is}
+IFS. \textbf{So CERES is the arbiter and the Southern Ocean amount deficit is real.}
+
+\dead{The Southern Ocean cloud-area deficit may be an artefact of comparing a satellite mask
+against a model \texttt{tcc}, since ERA5 puts SO cloud \emph{below} the model's.} Raised as a
+concern and refuted the same day by the CRE test above. \textbf{ERA5 cannot be used as a cloud
+reference for an IFS-derived model at all} --- its global cloud area is $62.8$ against CERES's
+$67.4$, and in the tropics it reads $55.3$ where the model's $61.6$ matches CERES's $61.7$
+almost exactly. On cloud, ERA5 is the outlier, not the model.
+
+\textbf{A limit on CERES, in the other direction.} At 90S--65S CERES reads $67.5$ and MODIS
+$59.8$ --- a $7.7$\,pp disagreement between two products of the same instrument. Passive cloud
+masking over bright ice is unreliable. \dead{The Arctic has $+11.49$\,pp too much cloud
+(\S\ref{sub:periodclean} band table).} Not supportable: that number is a cloud mask over sea
+ice and snow, exactly where the two retrievals disagree most. \textbf{CERES cloud area is
+trustworthy over dark ocean and should not be used over ice.}
+
+\subsection{The runs, and why three were withdrawn}\label{sub:r23runs}
+Four levers were designed on the P5 base (which already carries G4, K1 and D2b):
+
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+run & lever & outcome \\
+\midrule
+S1 & \texttt{RCLDIFF} $6$e-6 $\to3$e-6 & \textbf{cancelled} --- would cool the tropics \\
+S2 & \texttt{RCL\_OVERLAPLIQICE} $0.65\to0.35$ & \textbf{withdrawn} --- this is A1b, already run \\
+S3 & \texttt{RCLCRIT\_SEA} $2.5$e-4 $\to6$e-4 & \textbf{cancelled} --- same reason as S1 \\
+\textbf{S4} & \texttt{RCL\_INPPMIN} $70000\to50000$ & \textbf{running} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\dead{\texttt{RCL\_OVERLAPLIQICE} $0.65\to0.35$ is an untested mixed-phase lever.} It is
+\textbf{A1b}, run for 44 years in round 3; A1a is the same knob at EC-Earth4's $0.1$. The
+A-series label ``ovl'' denotes the liquid/ice \emph{deposition} overlap, not the radiative
+cloud overlap, and it was read as the latter. The duplicate is not a total loss: A1a/A1b give
+a \emph{second, independent} mixed-phase route, and it behaves exactly like the INP route
+($+0.62$\,pp of area for $-6.44$ of CRE, i.e.\ $93\,\%$ opacity), which is far stronger
+evidence that opacity-not-amount is a property of the whole mixed-phase branch than one
+parameter could be.
+
+\textbf{S1 and S3 were cancelled for the tropics, not for the Southern Ocean.} Both add low
+cloud, and B3 --- the same parameter as S1 moved the other way --- \emph{warms} the tropics by
+$+2.02$\,W\,m$^{-2}$. S1 would therefore cool a band that is period-cleanly only $-0.67$ from
+CERES, overshooting it roughly threefold. The deficit they were built to close is real; a
+\emph{global} low-cloud knob is the wrong instrument for it. Their runscripts are kept under
+\texttt{runscripts/oifsamip/withdrawn/}.
+
+\texttt{RCLCRIT\_SEA} and \texttt{RCLCRIT\_LAND} were exposed to \texttt{NAMCLDP} for S3
+(\texttt{sucldp.F90}: moved from the \texttt{ASSOCIATE} block onto the \texttt{POINTER}
+mechanism every other \texttt{NAMCLDP} variable uses, with the association placed before the
+defaults are assigned so a silent namelist still reproduces). The exposure is kept --- it
+works, and the lever may be wanted later with better targeting.
+
+\subsection{What round 23 changes about the plan}\label{sub:r23plan}
+\begin{itemize}\itemsep2pt
+\item \textbf{The Southern Ocean deficit is confirmed and stays the largest single term}, but
+it needs a \emph{regime-selective} reflection lever. Global low-cloud knobs overshoot the
+tropics; the D2b pressure gate is the template for what selective looks like.
+\item \textbf{The tropics need longwave cloud \emph{effectiveness}, not more cloud.} The
+deficit is $-2.16$\,W\,m$^{-2}$ of LW CRE, and no lever in 50 runs has moved the tropics
+through the longwave at all.
+\item \textbf{Reference hygiene is now a stated rule.} ERA5 is not an independent cloud
+reference for this model; CERES cloud area is valid over dark ocean and not over ice.
+\item \textbf{Check the prior issues before designing a round.} Both errors this round --- the
+A1b duplicate and the \texttt{RVICE} proposal --- were already answered in \#169/\#170.
+\end{itemize}
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -5075,6 +5242,22 @@ effective is to make skipping it require effort.
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--09 (round 23, \S\ref{sec:r23}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{The Southern Ocean amount deficit is confirmed against the right reference.}
+CERES and MODIS put SO cloud area at $89.5$ and $89.3\,\%$ against the model's $83.1$; ERA5
+reads $81.6$ but reflects $6.31$\,W\,m$^{-2}$ less than CERES against the model's $7.45$, i.e.\
+it has low area \emph{and} low reflection in proportion. \textbf{ERA5 reproduces the model's
+bias because ERA5 is IFS}, so it is not an independent cloud reference (\S\ref{sub:r23ref}).
+\item \textbf{The Southern Ocean and the tropics fail through different cloud types.} SO loses
+energy via SW cloud ($+7.45$); the tropics via LW cloud ($-2.16$). No global microphysics knob
+can serve both, which is why \texttt{RVICE} trades one for the other (\S\ref{sub:r23attr}).
+\item \textbf{Nothing in 50 runs warms the tropics through the longwave}, the term that is
+actually deficient there. The only tropics-warming levers on record act in the shortwave.
+\item \textbf{CERES cloud area is valid over dark ocean, not over ice} --- CERES and MODIS
+disagree by $7.7$\,pp at 90S--65S.
+\end{itemize}
+
 \textbf{Added 2026--08--09 (round 22, \S\ref{sec:r22}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The period-clean radiative error is $+1.23$\,W\,m$^{-2}$, about twice what
@@ -5188,6 +5371,12 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Re-ranked again after round 23 (\S\ref{sec:r23}).} The Southern Ocean stays first
+but the requirement has sharpened: it needs a \emph{regime-selective} reflection lever, because
+every global low-cloud knob overshoots a tropical band that is only $-0.67$\,W\,m$^{-2}$ from
+CERES. Second is the tropical \emph{longwave} cloud deficit, untouched by any lever. Third is
+the extratropical tropopause. Fourth is 11E coupled.
+
 \textbf{Re-ranked 2026--08--09 after round 22 (\S\ref{sec:r22}).} The top of this list is
 now: (i) \textbf{the Southern Ocean cloud-\emph{amount} deficit}, $65.5\,\%$ of a
 $+7.46$\,W\,m$^{-2}$ band error, untouched by every lever and \emph{not} reachable by the
@@ -5275,6 +5464,20 @@ propagating globally} &
 The tropics are the \emph{least}-biased band at $-1.72$\,K against an extratropical mean of
 $-2.97$. The bias is extratropical, peaks at 200\,hPa over both poles and reverses at
 100\,hPa. & \S\ref{sub:utls} \\
+\dead{\texttt{RCL\_OVERLAPLIQICE} $0.65\to0.35$ is an untested mixed-phase lever} &
+It is A1b, already run for 44 years; A1a is the same knob at $0.1$. The A-series ``ovl'' label
+means the liquid/ice \emph{deposition} overlap, not radiative cloud overlap. Run cancelled.
+& \S\ref{sub:r23runs} \\
+\dead{Lowering \texttt{RVICE} would warm the tropics and pay for the SO levers} &
+Mechanically true, but \texttt{RVICE} was \emph{raised} from $0.13$ to $0.16$ in the v3.4
+tuning precisely to suppress SO high cloud (\#169/\#170). It is global; the two regions need
+opposite signs. & \S\ref{sub:r23prior} \\
+\dead{The SO cloud-area deficit may be a CERES-vs-\texttt{tcc} definition artefact} &
+Refuted by the CRE test: ERA5 has low area \emph{and} low reflection in proportion, so it
+shares the model's bias rather than measuring a different quantity. & \S\ref{sub:r23ref} \\
+\dead{The Arctic carries $+11.49$\,pp too much cloud} &
+A passive cloud mask over sea ice, where CERES and MODIS disagree by $7.7$\,pp at 90S--65S.
+Not supportable. & \S\ref{sub:r23ref} \\
 \dead{${\approx}0.5$\,pp is the noise floor of the SO cloud-area diagnostic, set by land
 levers that cannot act there} &
 G4 and K1 \emph{contain} D2b (G4 $=$ F4$+$D2b$+$tundra), so their $+0.48$/$+0.45$\,pp was
