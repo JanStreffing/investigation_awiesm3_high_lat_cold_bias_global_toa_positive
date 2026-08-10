@@ -167,6 +167,29 @@ RUNS = [
     # ADDED 2026-08-10: the run completed 48 years on 2026-08-09 and had never been
     # entered here, so evaluate.sh had never scored it.
     ('S4 inppmin50k', 'amip_S4_inppmin50000'),
+    # Round 27 (2026-08-10), the L-series: the first full-length runs to carry RSNOWLIN2.
+    #
+    # RSNOWLIN2 0.030 -> 0.04 is the temperature exponent of ice->snow autoconversion
+    # (ZZCO=PTSPHY*RSNOWLIN1*EXP(RSNOWLIN2*(T-RTT)), cloudsc.F90:2858).  Raising it slows
+    # the conversion 31 % in 200 K cirrus but only 11 % at 250 K, so it builds cold thin
+    # cirrus rather than thickening anvils -- and thin cirrus is LONGWAVE-dominant.  At one
+    # year it gave +2.74 W/m2 of tropical LW CRE, 124 % of the -2.16 deficit and five times
+    # the largest response among the other 50 arms, with tropical and global net TOA both
+    # below their thresholds.  The value 0.04 is the awiesm3 v3.4.2 TCO95L91-DARS2 setting.
+    #
+    # THE CONTROL FOR ALL FOUR IS P5, not amip_pi_base.  Verified 2026-08-10 that T3, the
+    # base these were built on, is BIT-FOR-BIT identical to P5 at year 1870 (SO SW CRE,
+    # tropical LW CRE, global net TOA all to 4 dp); the only namelist difference is
+    # ECE_CLIMR_DMS=.true., which reads the DMS field but does nothing at S=0.
+    #
+    # WHAT THE ONE-YEAR SCREENS COULD NOT ANSWER, and why these exist: Siberia.  The JJA
+    # threshold is +-0.242 K and DJF +-0.588 K, both 44-year numbers.  Every arm here
+    # changes cloud, and LY2 uses RCL_OVERLAPLIQICE=0.1 -- A1a's value, rejected in round 3
+    # for boreal damage.  These runs are here to price that.
+    ('LX1 rsnow', 'amip_LX1_long'),           # RSNOWLIN2 alone; the gating run
+    ('LX4 rsnow+inp50k', 'amip_LX4_long'),    # + RCL_INPPMIN 50000, no DMS
+    ('LX3 rsnow+dms+inp', 'amip_LX3_long'),   # + DMS S=166 + RCL_INPPMIN 50000
+    ('LY2 rsnow+ovl0.1', 'amip_LY2_long'),    # + RCL_OVERLAPLIQICE 0.10
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
@@ -212,4 +235,19 @@ NOT_LEVERS = [
     'amip_U1_dmsccn166',    # U1: ECE_DMS_CCN_SENS = 166, top of Woodhouse's range
     'amip_U2_dmsccn43',     # U2: 43, the published floor
     'amip_U3_dmsccn90',     # U3: 90, the midpoint
+    # Rounds 26-27 one-year screens.  Same reason as the T/U series: ONE year, and their
+    # controls are T3 or X1, not amip_pi_base, so evaluate.sh would difference a single
+    # year against a 44-year PI control.  Scored by their own scripts instead --
+    # w_series_screen.py and x_series_ladder.py, which carry 1-year thresholds.
+    'amip_V1_entrorg125', 'amip_V2_detrpen111',
+    'amip_W1_rprcon148', 'amip_W2_entrorg207', 'amip_W3_rmfdeps048', 'amip_W4_detrpen132',
+    'amip_W5_entrdd108', 'amip_W6_rvice018', 'amip_W7_lcritsnow146', 'amip_W8_rsnowlin204',
+    'amip_W9_dars2stack',
+    'amip_X1_stack_rsnow', 'amip_X2_stack_rsnow_dms166',
+    'amip_X3_stack_rsnow_dms166_inp50k', 'amip_X4_stack_rsnow_inp50k',
+    'amip_Y1_ovl035', 'amip_Y2_ovl01',
+    # Z1 is a FORCING mechanism test, not a lever: it checks whether NCMIPFIXYR=1850 can be
+    # pinned from the live NAMECECMIP block.  If it works it changes the absolute energy
+    # baseline by ~0.15 W/m2 and is therefore NOT comparable to this archive at all.
+    'amip_Z1_fixyr1850',
 ]
