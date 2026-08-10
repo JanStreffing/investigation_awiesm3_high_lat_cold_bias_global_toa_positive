@@ -187,7 +187,6 @@ RUNS = [
     # changes cloud, and LY2 uses RCL_OVERLAPLIQICE=0.1 -- A1a's value, rejected in round 3
     # for boreal damage.  These runs are here to price that.
     ('LX1 rsnow', 'amip_LX1_long'),           # RSNOWLIN2 alone; the gating run
-    ('LX4 rsnow+inp50k', 'amip_LX4_long'),    # + RCL_INPPMIN 50000, no DMS
     ('LX3 rsnow+dms+inp', 'amip_LX3_long'),   # + DMS S=166 + RCL_INPPMIN 50000
     ('LY2 rsnow+ovl0.1', 'amip_LY2_long'),    # + RCL_OVERLAPLIQICE 0.10
 ]
@@ -250,4 +249,9 @@ NOT_LEVERS = [
     # pinned from the live NAMECECMIP block.  If it works it changes the absolute energy
     # baseline by ~0.15 W/m2 and is therefore NOT comparable to this archive at all.
     'amip_Z1_fixyr1850',
+    # LX4 CANCELLED 2026-08-10 after ~12 min, before any output.  Dominated: it warms the
+    # Southern Ocean in net (+0.377) and does nothing for the energy target (+0.067), and
+    # its unique content -- RCL_INPPMIN 50000 at full length on the stack -- already exists
+    # as S4 minus P5.  It was LX3 without the only lever that cools the SO.
+    'amip_LX4_long',
 ]
