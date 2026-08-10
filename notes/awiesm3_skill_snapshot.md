@@ -170,6 +170,27 @@ in `NAMCLDP`). The dependable test is functional — a Fortran namelist read abo
 undeclared name, so a run that starts and passes initialisation has accepted every name
 in its `fort.4`.
 
+### Submitting: an existing experiment directory makes `esm_runscripts` prompt
+
+If the experiment directory already exists, `esm_runscripts` asks an interactive
+question. Run non-interactively — `nohup`, `setsid`, a background shell, anything with
+stdin not a tty — and it dies with a `prompt_toolkit` **`EOFError`** deep in a traceback,
+having created the directory and staged several GB but **queued nothing**. `squeue` is
+empty and the run looks simply not submitted.
+
+Cost 2026-08-10: three failed submissions of the same arm before the traceback was read.
+
+* Always check the submit output, or `squeue`, rather than assuming submission worked.
+* Before resubmitting an experiment name that already exists, **verify it holds no
+  results** (`outdata` empty, `ifs.stat` empty) and remove the directory. A staged-but-
+  never-run directory is several GB of input and nothing else.
+* The staged `fort.4` of a cancelled attempt **survives** and is not what the new
+  runscript says. After any resubmission, confirm the value you changed actually reached
+  `<run>/work/fort.4` before trusting the result.
+
+And do not clean up with `pkill -f <pattern>` when the pattern also matches your own
+shell's command line — that kills the calling shell mid-script. Match on PID.
+
 ## 5. Observational references: which are independent
 
 The single most repeated error class is treating a non-independent reference as
