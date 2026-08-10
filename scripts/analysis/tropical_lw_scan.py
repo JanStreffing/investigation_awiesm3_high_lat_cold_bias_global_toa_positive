@@ -38,6 +38,14 @@ epoch-clean by construction.  Detection thresholds are computed FIRST, from the 
 own interannual scatter, as 1.96 * sd * sqrt(2/44) for a 44-year pair -- the same
 construction that gives the known +-1.97 for a 1-year Southern Ocean SW pair.
 
+THE RUN LIST COMES FROM runs.py, NOT FROM THE FILESYSTEM.  An earlier draft of this
+script globbed the runtime directory, which would have swept in everything runs.py's
+NOT_LEVERS list exists to keep out: M1/M2 sit on the PRESENT-DAY base (1989-2015) and
+would be differenced against a PI control over the wrong years; P1/P2 carry the unfloored
+d_c defect; the DMS T/U series are one-year screens whose control is T3, not
+amip_pi_base; and eleven LPJG forcing generators emit no evaluation fields at all.
+Every evaluator imports RUNS from one place for exactly this reason.
+
 Signs: LW CRE = ttr - ttrc is POSITIVE (cloud reduces outgoing longwave).  We want the
 tropical value to go UP.  SW CRE = tsr - tsrc is NEGATIVE; we want the Southern Ocean
 value to go DOWN (more negative = more reflection).  Net TOA = tsr + ttr.
@@ -46,17 +54,16 @@ import os
 for _v in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS',
            'NUMEXPR_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS'):
     os.environ[_v] = '1'
+import sys
 import numpy as np, xarray as xr, warnings
 warnings.filterwarnings('ignore')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from runs import RUNS, RT, Y0, Y1          # the single source of truth for the run list
 
 ACC = 3600.0
-RT = '/work/bb1469/a270092/runtime/oifsamip-cy48'
 CTRL = 'amip_pi_base'
-Y0, Y1 = 1872, 1915                      # campaign standard, 44 years, PI epoch
 TROP, SO = (-30.0, 30.0), (-65.0, -45.0)
 TARGET_TROP_LW = +2.16                   # what closing the tropical deficit requires
-# Withdrawn in round 23 -- kept in the table but marked, never silently dropped.
-WITHDRAWN = {'amip_S1_clddiff3e6', 'amip_S2_ovlliqice035', 'amip_S3_clcritsea6e4'}
 
 print(__doc__)
 print('=' * 108)
@@ -120,22 +127,21 @@ for i, nm in enumerate(NAMES):
 print(f'\n  the tropical LW deficit to be closed is {TARGET_TROP_LW:+.2f} W/m2, i.e. '
       f'{TARGET_TROP_LW / thr[0]:.0f}x the detection threshold')
 
-runs = sorted(r for r in os.listdir(RT)
-              if r.startswith('amip_') and r != CTRL and
-              os.path.isdir(f'{RT}/{r}/outdata/oifs'))
 rows, skipped = [], []
-for r in runs:
+for label, r in RUNS:
+    if r == CTRL:
+        continue
     ry, rlat = load(r)
     if ry is None:
-        skipped.append(r)
+        skipped.append(label)
         continue
     d = metrics(ry, rlat).mean(axis=0) - cm.mean(axis=0)
-    rows.append((r, d))
+    rows.append((label, d))
 
 print(f'\n1. EVERY 44-YEAR ARM, RANKED BY TROPICAL LW CRE RESPONSE   '
       f'({len(rows)} scored, {len(skipped)} lack {Y0}-{Y1})')
 print('-' * 108)
-print(f'  {"run":32s} ' + ' '.join(f'{nm:>15s}' for nm in NAMES) + '  flags')
+print(f'  {"run":18s} ' + ' '.join(f'{nm:>15s}' for nm in NAMES) + '  flags')
 rows.sort(key=lambda t: -t[1][0])
 hits = []
 for r, d in rows:
@@ -146,9 +152,7 @@ for r, d in rows:
             hits.append((r, d))
     if abs(d[2]) > thr[2]:
         f.append('SO SW side-effect')
-    if r in WITHDRAWN:
-        f.append('WITHDRAWN r23')
-    print(f'  {r:32s} ' + ' '.join(f'{v:15.3f}' for v in d) + '  ' + '; '.join(f))
+    print(f'  {r:18s} ' + ' '.join(f'{v:15.3f}' for v in d) + '  ' + '; '.join(f))
 if skipped:
     print(f'\n  not scored (no {Y0}-{Y1}): ' + ', '.join(skipped))
 
@@ -166,4 +170,4 @@ else:
         frac = 100 * d[0] / TARGET_TROP_LW
         clean = ('SO untouched' if abs(d[2]) <= thr[2]
                  else f'but SO SW moves {d[2]:+.2f} (threshold {thr[2]:.2f})')
-        print(f'    {r:32s} trop LW {d[0]:+.3f} ({frac:.0f} % of the deficit), {clean}')
+        print(f'    {r:18s} trop LW {d[0]:+.3f} ({frac:.0f} % of the deficit), {clean}')

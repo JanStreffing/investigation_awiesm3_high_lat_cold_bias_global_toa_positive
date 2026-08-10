@@ -1727,6 +1727,47 @@ nemo:  tuning: oce: namzdf_tke: {nn_etau: 0, rn_lc: 0.2}
 `tuning-example.yml` additionally documents RPRCON, ENTRORG, DETRPEN, ENTRDD, RMFDEPS,
 RVICE (0.13), RLCRITSNOW (0.3E-4), RSNOWLIN2 (0.3E-01), RCLDIFF (0.3E-05), RCLDIFF_CONVI (7.0).
 
+### RPRCON: the prior AWI history (recovered 2026-08-10, project_management #87 / #95)
+
+Written down here so `preflight.py RPRCON` surfaces it — the parameter reads as "never
+set in any run", which is true of **this** campaign and false of AWI-CM3 as a whole.
+
+| where | cycle | value | outcome |
+|---|---|---|---|
+| TCO319 DART, #87 (Semmler 2022) | 43r3 | 1.4E-3 → **0.7E-3** | adopted, carried through DARTC/D/E/F/J/K |
+| TCO319 DART, #87 from DARTL on | 43r3 | **1.0E-3** | relaxed from 0.7E-3 |
+| TCO95L91-CORE2, #95 (Streffing 2022) | 43r3 | **1.0E-3** | launched, **result never posted**, not in the AWI-CM3.1 final config |
+| TCO95L91 AMIP, this campaign | **48r1** | 1.4E-3 (default) | **never set** |
+
+What #87 measured at TCO319, quoting Semmler directly:
+
+* *"Positive impact of BV smoothing and reduction of RPRCON visible in the tropics"* (precip vs GPCP)
+* *"Slightly more clouds through reduction of RPRCON, **also over Southern Ocean**. However, no
+  positive impact on the subtropical stratocumulus decks."*
+* *"RPRCON reduction helps in large areas to reduce the low **liquid water path** bias"*
+* *"...larger areas with positive net longwave radiation biases ... consistent with the changes
+  in liquid water path"*
+* Energy, DARTZ → DARTC: TOA **−0.29 → −0.71**. *"Less efficient conversion of liquid water into
+  rain leads to less energy absorption of the ocean, probably because more cloud water in the
+  atmosphere."*
+
+**Two things this kills and one it opens.**
+
+1. It is **not** a deep-convection-selective lever. RPRCON acts on the whole mass-flux scheme,
+   shallow and mid-level included, and #87 measured it changing Southern Ocean cloud. The
+   "keyed on deep convection so it cannot reach the SO" argument applies to `DETRPEN`, not to
+   this. Do not propose RPRCON as the tropical-LW lever on that reasoning.
+2. It works through **liquid** water and **removes** energy globally (SW reflection beats the
+   LW gain), so it is not a tropical *warming* lever either.
+3. But it demonstrably **adds Southern Ocean cloud**, and the SO cloud-*amount* deficit
+   (~6 pp, two thirds of the band error) is the one term in this campaign with no identified
+   lever at all. That is the hypothesis worth testing here.
+
+**Cycle caveat, and it is decisive.** All of the above is 43r3. Project issue #170 is precisely
+the finding that 48r1 has substantially different cloud cover from 43r3, so none of these
+numbers transfer — they establish direction and a defensible value range (0.7–1.0E-3), not an
+expected magnitude.
+
 ---
 
 ## 10. Tuning runs

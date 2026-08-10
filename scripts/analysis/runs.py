@@ -157,6 +157,16 @@ RUNS = [
     # clipped the floor; reconstructions must use the old operator order.
     ('P5 swemin15', 'amip_P5_swemin15'),
     ('P6 swemin30', 'amip_P6_swemin30'),
+    # Round 23 (S): the Southern Ocean cloud-AMOUNT deficit, after round 22 showed it is
+    # 65.5% of a +7.46 W/m2 band error and unreachable through the CRE/opacity route.
+    # S1/S2/S3 were WITHDRAWN before completion (see NOT_LEVERS); S4 is the survivor.
+    # RCL_INPPMIN 70000 -> 50000 extends D2b's marine ice-nuclei floor from below ~700 hPa
+    # up to ~500 hPa, i.e. more of the mixed-phase column, while still sparing tropical
+    # anvils -- which is the whole point, because every global low-cloud knob overshoots a
+    # tropical band that is only -0.67 W/m2 from CERES period-clean.
+    # ADDED 2026-08-10: the run completed 48 years on 2026-08-09 and had never been
+    # entered here, so evaluate.sh had never scored it.
+    ('S4 inppmin50k', 'amip_S4_inppmin50000'),
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
@@ -187,4 +197,19 @@ NOT_LEVERS = [
     # Kept out of RUNS so evaluate.sh cannot score partial, defective output.
     'amip_P1_scffit',
     'amip_P2_scffit_x3',
+    # Round 23 (S), WITHDRAWN 2026-08-09 before completion.  S2 is a DUPLICATE of A1b
+    # (RCL_OVERLAPLIQICE=0.35, already run 44 years); S1 and S3 were cancelled with it
+    # when the round was re-scoped.  Only S4 survived and is in RUNS above.
+    'amip_S1_clddiff3e6', 'amip_S2_ovlliqice035', 'amip_S3_clcritsea6e4',
+    # Rounds 24-26, the DMS/CCN series.  ONE-YEAR screening runs, and their control is
+    # T3 (S=0, same DMS input, same winds), NOT amip_pi_base.  Putting them in RUNS would
+    # make evaluate.sh difference a single year against a 44-year PI control -- the exact
+    # window mismatch NOT_LEVERS exists to prevent.  Scored instead by
+    # dms_ccn_bracket.py, which computes its own per-band 1-year thresholds.
+    'amip_T1_dmsread',      # T1: does the eighth ICMCL field read at all
+    'amip_T2_dmsflux',      # T2: sea-air flux diagnostic, shipped DMS climatology
+    'amip_T3_dmsrev3',      # T3: DMS-Rev3 ingested; the CONTROL for the U series
+    'amip_U1_dmsccn166',    # U1: ECE_DMS_CCN_SENS = 166, top of Woodhouse's range
+    'amip_U2_dmsccn43',     # U2: 43, the published floor
+    'amip_U3_dmsccn90',     # U3: 90, the midpoint
 ]
