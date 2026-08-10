@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--10})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--10b})}
 
 \begin{document}
 \maketitle
@@ -5710,6 +5710,321 @@ any run length --- prescribed SST absorbs the perturbation without responding. I
 kept for that reason alone. If compute becomes tight, \textbf{11F is the run to cut and
 11E is not}.
 
+\section{Round 27 (2026--08--10): the tuned stack nobody ran, and a lever that fixes the
+tropics by breaking the Southern Ocean}\label{sec:r27}
+The largest single-day gain of the campaign, and the largest single-day correction. A
+jointly-tuned eight-parameter cloud stack for \emph{this resolution} was found sitting
+unused in the runscript directory; one of its parameters closes the tropical longwave
+deficit outright; and scoring it properly showed the same parameter warms the Southern
+Ocean, putting the campaign's two remaining regional targets in direct conflict.
+
+\subsection{The archive has no tropical longwave lever}\label{sub:r27scan}
+Round 26 made the tropical LW deficit the gate on the Southern Ocean fix, so the free
+check came first: score all 50 arms on a term none had ever been scored on.
+
+The term is extraordinarily stiff --- interannual sd $0.101$\,W\,m$^{-2}$, so the 44-year
+pair threshold is $\pm0.042$ and the $-2.16$ deficit is \textbf{51 times} the detection
+limit. Yet the largest positive response in the whole archive is \textbf{A1a at $+0.373$},
+$17\,\%$ of the deficit, and it costs SO SW $-6.44$ and global $-1.90$. Everything else is
+$\leq 6\,\%$. \textbf{No clean tropical-longwave lever exists in anything tried.}
+
+The useful result was B1. It \emph{lowered} \texttt{DETRPEN} $0.75\to0.45$E-4 and tropical
+LW fell $0.510$ --- second-largest in the archive --- while the Southern Ocean did not
+move at all ($-0.067$ against its own $\pm0.298$). Against \texttt{RVICE}, which moves
+tropical and SO longwave $\approx$1:1, that is \textbf{57:1 selectivity}. B1's recorded
+verdict was ``failed --- more SW yet colder; \emph{worst tropics}''; the tropical half of
+that failure \emph{is} this term, so its reverse is a lever.
+
+\subsection{Two levers screened, one of them the wrong way round}\label{sub:r27v}
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+1 yr vs control & trop LW & trop SW & trop net & SO LW & global net \\
+& \tiny$\pm0.279$ & \tiny$\pm0.990$ & \tiny$\pm1.656$ & \tiny$\pm0.584$ & \tiny$\pm1.333$ \\
+\midrule
+V1 \texttt{ENTRORG} $1.25$E-3 & $+0.288$ & $\mathbf{+3.583}$ & $\mathbf{+4.536}$ & $\mathbf{-0.830}$ & $\mathbf{+2.734}$ \\
+V2 \texttt{DETRPEN} $1.11$E-4 & $\mathbf{+0.583}$ & $\mathbf{-1.295}$ & $-0.398$ & $+0.171$ & $-0.428$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent V2 landed on prediction: B1's slope forecast $+0.61$, measured $+0.583$, with the
+Southern Ocean untouched. \textbf{V1 failed, and it should not have been run in that
+direction.} Project issue \#170, comment 7, already says ``there seems some potential for
+\emph{increasing} \texttt{ENTRORG}''. V1 lowered it on Semmler's 43r3 value and cost
+$+2.73$\,W\,m$^{-2}$ globally. Eleven minutes, not 9.5 hours --- but the desk check
+existed and was not done.
+
+\subsection{A tuned stack for TCO95L91, written and never run}\label{sub:r27dars2}
+\texttt{awiesm3-v3.4.2-levante-TCO95L91-DARS2\_\{1d,2y\}.yaml} carry eight jointly-tuned
+cloud parameters at \emph{our exact resolution}:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r l r r}
+\toprule
+\multicolumn{3}{c}{\texttt{NAMCUMF}} & \multicolumn{3}{c}{\texttt{NAMCLDP}} \\
+& default & DARS2 & & default & DARS2 \\
+\midrule
+\texttt{RPRCON} & $1.4$E-3 & $1.48$E-3 & \texttt{RVICE} & $0.16$ & $0.18$ \\
+\texttt{ENTRORG} & $1.75$E-3 & $2.07$E-3 & \texttt{RLCRITSNOW} & $2.0$E-5 & $1.46$E-5 \\
+\texttt{RMFDEPS} & $0.30$ & $0.48$ & \texttt{RSNOWLIN2} & $0.030$ & $\mathbf{0.04}$ \\
+\texttt{DETRPEN} & $0.75$E-4 & $\mathbf{1.32}$E-4 & & & \\
+\texttt{ENTRDD} & $3.0$E-4 & $1.08$E-4 & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three-figure precision --- an optimiser's output, consistent with the EPPES
+table in the logbook. \textbf{No \texttt{fort.4} on disk sets any of them.}
+
+Two of this campaign's own proposals were superseded on the spot: V2 ran \texttt{DETRPEN}
+at $1.11$E-4 as ``the largest defensible value'' from the EPPES $1\sigma$ bound, and DARS2
+uses $1.32$E-4, $19\,\%$ beyond; and V1's \texttt{ENTRORG} direction is the opposite of
+DARS2's.
+
+\subsection{Why it was invisible: \texttt{preflight} looked in one place}\label{sub:r27preflight}
+\dead{\texttt{RPRCON}: never set in any run --- genuinely untested.}
+\dead{\texttt{RSNOWLIN2}: never set in any run --- genuinely untested.}
+\textbf{Both false, on the same day.} \texttt{preflight.py} scanned one runtime tree and
+one runscript directory, so it could only ever see \emph{this} campaign.
+
+\texttt{RPRCON} was tuned at TCO319/43r3 in the DART line (\#87): $1.4$E-3 $\to$
+$0.7$E-3, adopted through DARTC/D/E/F/J/K, relaxed to $1.0$E-3 from DARTL; and launched
+once at TCO95L91-CORE2 in \#95, where \textbf{the result was never posted} and it did not
+reach the AWI-CM3.1 final configuration. \texttt{RSNOWLIN2} was set to $0.04$ in DARS2 and
+to $0.025$ in \texttt{awicm3/MELDPOND}.
+
+\texttt{preflight} now globs every runtime tree and every runscript directory, separates
+``tried here'' from ``tried elsewhere at AWI'', and reports the \emph{value} --- because
+``mentions it'' and ``sets it'' are different facts and only the second is prior art. Its
+remaining blind spot is recorded in its own docstring: \textbf{the GitHub issues}, where
+the \emph{why} lives, and which issue search does not index because it ignores comment
+bodies.
+
+\dead{The logbook's EC-Earth3 \texttt{ENTRORG} row ($1.80$E-4) is a transcription error;
+48r1 defaults to $1.75$E-3.} \textbf{Also wrong.} The EC-Earth3 files genuinely say
+$1.80$E-4 with their own reference column in E-4 as well. It is a real formulation
+difference between EC-Earth3's IFS cycle and OpenIFS 43r3/48r1 --- which matters far more
+than a typo would, because ``correcting'' the logbook would invite someone to set
+$1.8$E-4 in 48r1 and cut entrainment tenfold. \textbf{EC-Earth3's \texttt{ENTRORG} is not
+transferable; its \texttt{DETRPEN} and \texttt{RPRCON} are.}
+
+\subsection{W: the stack taken apart, and the lever that works}\label{sub:r27w}
+Eight one-variable arms plus the combination, one year, against \texttt{amip\_pi\_base}.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+& trop LW & trop SW & trop net & SO SW & SO LW & global net \\
+\midrule
+W4 \texttt{DETRPEN} $1.32$E-4 & $+1.025$ & $-2.355$ & $-0.959$ & $-0.087$ & $-0.429$ & $-0.804$ \\
+\textbf{W8 \texttt{RSNOWLIN2} $0.04$} & $\mathbf{+2.581}$ & $-2.204$ & $+0.671$ & $-0.884$ & $+1.223$ & $+0.321$ \\
+W9 whole stack & $+1.939$ & $-6.494$ & $\mathbf{-4.518}$ & $-0.983$ & $+0.854$ & $\mathbf{-2.659}$ \\
+\midrule
+interaction $\mathrm{W9}-\sum$ & $-0.458$ & $-0.449$ & $-1.194$ & $-1.763$ & $\mathbf{+2.415}$ & $-0.270$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{\texttt{RSNOWLIN2} $=0.04$ gives $+2.581$\,W\,m$^{-2}$ of tropical LW
+CRE --- $120\,\%$ of the deficit, nine times its threshold, and five times the largest
+response among the other fifty arms} --- with tropical and global net TOA both
+\emph{below} their thresholds.
+
+It works for a reason that was predicted before it was run. It is the \emph{temperature
+exponent} of ice$\to$snow autoconversion,
+$\mathrm{ZZCO}=\mathrm{PTSPHY}\cdot\mathtt{RSNOWLIN1}\cdot e^{\mathtt{RSNOWLIN2}(T-T_0)}$
+(\texttt{cloudsc.F90:2858}). Raising it slows conversion $31\,\%$ at a 200\,K cirrus
+temperature but only $11\,\%$ at 250\,K, so it builds \textbf{cold thin cirrus rather than
+thickening anvils} --- and thin cirrus is longwave-dominant while a thick anvil is bright
+in both. The contrast is measured: \texttt{DETRPEN} gives LW:SW of $0.44$, \texttt{RSNOWLIN2}
+$1.17$.
+
+\dead{You cannot buy tropical longwave without paying tropical shortwave; every lever that
+raises tropical LW does it by adding condensate, which also raises SW reflection.}
+\textbf{Withdrawn the same day.} It was generalised from two SW-dominant arms. The archive
+already contained LW-dominant responses --- D1 at 4.0:1, B6 at 1.4:1, B7 at 1.3:1 --- and
+W8 settles it.
+
+\textbf{The full stack overshoots} and is significantly non-additive: SO longwave
+interaction $+2.415$, with the sum of parts predicting $-1.561$ and the combination
+measuring $+0.854$. The arms are not a menu.
+
+\textbf{A near-miss worth recording.} \texttt{RKOOPTAU}, the Koop homogeneous-freezing
+timescale, was the first candidate for a temperature-selective cirrus lever: it is in
+\texttt{NAMCLDP}, never set, and physically exactly right. Its only use in
+\texttt{cloudsc.F90} is \textbf{commented out}. Setting it is a no-op --- caught by
+tracing the code path rather than by running it.
+
+\subsection{X and Y: on the real base, and the seasonal reason DMS survives}\label{sub:r27x}
+Ladder from T3 (adopted stack, DMS field read at $S=0$), one variable per rung.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r}
+\toprule
+cumulative vs T3 & trop LW & trop SW & trop net & SO SW & SO LW & global net \\
+\midrule
+X1 $+$\texttt{RSNOWLIN2} & $+2.740$ & $-2.631$ & $+0.311$ & $-0.507$ & $+2.626$ & $+0.419$ \\
+X2 $+$DMS $S{=}166$ & $+2.547$ & $-4.062$ & $-1.438$ & $-2.765$ & $+2.240$ & $-1.259$ \\
+X3 $+$\texttt{INPPMIN} $50$k & $+2.687$ & $-4.299$ & $-1.274$ & $\mathbf{-5.051}$ & $+2.841$ & $-1.434$ \\
+X4 $+$\texttt{INPPMIN}, no DMS & $+2.563$ & $-2.450$ & $+0.225$ & $-2.595$ & $+2.718$ & $+0.067$ \\
+Y1 $+$\texttt{ovl}$\,0.35$ & $+2.677$ & $-2.729$ & $+0.088$ & $-1.963$ & $+2.827$ & $-0.005$ \\
+Y2 $+$\texttt{ovl}$\,0.10$ & $+2.852$ & $-3.742$ & $-0.718$ & $-5.029$ & $+3.563$ & $-1.184$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \texttt{RSNOWLIN2} reproduces on the real base ($+2.740$ vs $+2.581$ alone) and
+DMS reproduces its Southern Ocean effect exactly ($-2.258$ vs $-2.250$).
+
+\dead{\texttt{RCL\_INPPMIN} buys the same Southern Ocean shortwave as DMS for free
+($+0.164$ tropical cost against DMS's $-1.750$), so the DMS rung is redundant and the
+marine CCN line can be retired.} \textbf{Withdrawn.} Their \emph{annual} means agree by
+coincidence; their seasons do not:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+SO 45--65S SW CRE & DJF & MAM & JJA & SON & ANN \\
+\midrule
+\texttt{INPPMIN} $50$k (S4$-$P5, 44 yr) & $-3.72$ & $-1.30$ & $-0.51$ & $-2.35$ & $-1.97$ \\
+DMS $S{=}166$ (U1$-$T3, 1 yr) & $\mathbf{-7.25}$ & $+0.03$ & $-0.63$ & $-1.14$ & $-2.25$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent DJF is austral \emph{summer} and carries the shortwave: incoming solar is
+$460$\,W\,m$^{-2}$ against $87$ in JJA, and the control's SO SW CRE is $-115.5$ against
+$-18.7$. The deficit is $+10.86$ there. DMS reaches $67\,\%$ of it, \texttt{INPPMIN}
+$34\,\%$. \textbf{DMS is the only lever that reaches the season the error lives in.}
+
+\subsection{Scoring the Southern Ocean on NET --- and the correction that
+follows}\label{sub:r27net}
+\dead{Southern Ocean levers scored on SW CRE.} Used throughout rounds 22--27 and
+\textbf{wrong}: the coupled complaint is a warm SST bias, which responds to
+$\Delta\mathrm{SW\,CRE}+\Delta\mathrm{LW\,CRE}$.
+
+Re-ranked on net, the 44-year archive is clear and consistent --- longwave cancels
+$25$--$29\,\%$ in \emph{every} arm, so $\mathrm{SO\,SW}\times0.72$ is a good rule:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r}
+\toprule
+44 yr & SO SW & SO LW & \textbf{SO net} \\
+\midrule
+A1a \texttt{ovl}$=0.10$ & $-6.438$ & $+1.871$ & $\mathbf{-4.567}$ \\
+D2a \texttt{inpsea}$\,0.2$ & $-4.802$ & $+1.200$ & $-3.602$ \\
+S4 \texttt{inppmin}$50$k & $-4.669$ & $+1.195$ & $-3.474$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The new levers break the rule.} True net TOA at one year:
+X3 $-2.024$; \textbf{DMS alone $-1.976$} with only $17\,\%$ longwave cancellation;
+Y2 $-1.300$; X4 $\mathbf{+0.377}$; Y1 $\mathbf{+0.764}$; and
+\textbf{X1 $\mathbf{+2.294}$, resolved}.
+
+\textbf{\texttt{RSNOWLIN2} warms the Southern Ocean.} Its $+2.6$ of SO longwave swamps its
+shortwave. On the bare base it was neutral ($-0.100$); on the adopted stack it flips hard
+positive --- a sign reversal produced by the base, not a small non-additivity. Every
+configuration built on it inherits the penalty.
+
+\textbf{So the campaign's two remaining regional targets are in direct tension through one
+parameter:} \texttt{RSNOWLIN2} closes the tropical longwave deficit partly by putting
+cirrus over the Southern Ocean, where the model already traps too much. And DMS ---
+dismissed as redundant that morning --- is on net forcing the cleanest new lever there is,
+and the only reason X3 points the right way.
+
+\subsection{S4, evaluated at last}\label{sub:r27s4}
+S4 completed 48 years on 2026--08--09 and had \emph{never been added to
+\texttt{runs.py}}, so \texttt{evaluate.sh} had never scored it. Its exact one-variable
+partner is P5 --- the two \texttt{fort.4}s differ in one line.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r}
+\toprule
+S4 $-$ P5, 44 yr & value & threshold \\
+\midrule
+SO TOA SW CRE & $-1.98$ & $\pm0.298$ \\
+global net TOA & $-0.41$ & $\pm0.201$ \\
+tropics net TOA & $-0.10$ & $\pm0.250$ \\
+Siberia JJA T2m & $-0.120$ & $\pm0.242$ \\
+\textbf{SO SW RMSE} & $\mathbf{+0.255}$ & $\pm0.019$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Best mean, worse pattern: it deepens opacity where cloud already exists rather
+than adding cloud (area $+0.105$\,pp). Siberia is untouched, and the code says it cannot
+be otherwise --- \texttt{cloudsc.F90:2520} scales ice nuclei by
+$\mathtt{RCL\_INPSEA}+(1-\mathtt{RCL\_INPSEA})\cdot\mathrm{PLSM}$, which is exactly $1$
+over land.
+
+\subsection{The AMIP runs are not at 1850 forcing}\label{sub:r27forcing}
+\dead{All AMIP runs use 1850 GHG (\texttt{NCMIPFIXYR}=1850).} \textbf{False for every AMIP
+run in the campaign, including the control.} \texttt{NCMIPFIXYR=1850} sits in
+\texttt{\&NAMECECMIP6}, the block 48r1 renamed and no longer reads. The runtime value is
+$-1$ and the model reads \emph{yearly} GHG, ozone and aerosol: the log shows 1869 in the
+first leg and 1911 in the last.
+
+The base runscript already documents the trap and removed the dead block on 2026--07--30,
+but its replacement (\texttt{oifs.mip} $+$ \texttt{oifs.scenario}) was never added, because
+that path aborts with \texttt{GRID\_IN MISSING FIELD} on the awi3 INIT. \textbf{The coupled
+runs are correctly pinned} --- 11E logs \texttt{Set JYEAR=...= 1850} --- so this is
+AMIP-only.
+
+\textbf{Z1 verified the one-line fix}: \texttt{NCMIPFIXYR: 1850} in the \emph{live}
+\texttt{\&NAMECECMIP} block reaches the model, the run completes \texttt{CNT0} with zero
+aborts, and it does \emph{not} trip the missing-field abort.
+
+Consequences: \textbf{every lever delta stands}, because both arms of every pair share the
+forcing. The \emph{absolute} energy baseline does not --- mean CO$_2$ over the evaluation
+window is ${\approx}294$\,ppm against a PI $284.3$, worth ${\approx}+0.15$\,W\,m$^{-2}$, or
+about a quarter of the control's $+0.64$. The fix is therefore deliberately \emph{not}
+applied to the runs in flight: it would break comparability with P5 and all 50 prior arms
+to buy an offset that one dedicated control run can measure later.
+
+The irony worth remembering: \texttt{amip\_pi\_base}'s \texttt{fort.4} \emph{contains}
+``\texttt{NCMIPFIXYR = 1850}''. Anyone grepping it sees the right number. Only
+\texttt{NODE.001\_01} disagrees.
+
+\subsection{Coupled: 11F retired, 11E resumed}\label{sub:r27coupled}
+11F was cancelled at 20 of 50 years. Its lever had been superseded within hours of
+starting (\S\ref{sub:r26coupled}), and the generic question it was kept for --- what
+${\approx}2$\,W\,m$^{-2}$ of SO brightening does with free SST --- did not justify the
+remaining 30 years once S4 and the net-forcing re-ranking landed.
+
+11E was cancelled by accident in the same operation and \textbf{resumed cleanly} from year
+1370 (\texttt{run\_number=3}), with 20 years banked and restart state intact at the end of
+1369. Nothing was lost but the killed leg.
+
+\subsection{Three runs in flight, and what would disqualify them}\label{sub:r27long}
+\begin{center}\footnotesize
+\begin{tabular}{l l l}
+\toprule
+run & configuration & why \\
+\midrule
+LX1 & stack $+$ \texttt{RSNOWLIN2} & the gating run; isolates the SO penalty and the Siberian cost \\
+LX3 & $+$ DMS $S{=}166$ $+$ \texttt{INPPMIN} & only arm with resolved net SO cooling \\
+LY2 & $+$ \texttt{ovl}$\,0.10$ & best radiative package; A1a's value, rejected in round 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Control is P5}, verified \textbf{bit-for-bit identical to T3} at year
+1870 on all three radiative metrics --- \texttt{ECE\_CLIMR\_DMS} reads the DMS field but
+does nothing at $S=0$. That check saved a 9.5-hour run.
+
+LX4 was cancelled after 12 minutes as dominated: it warms the SO ($+0.377$), leaves energy
+untouched ($+0.067$), and its unique content already exists as S4 $-$ P5.
+
+\textbf{What would disqualify them, and what one year could never see.} Siberia. The JJA
+threshold is $\pm0.242$\,K and DJF $\pm0.588$, both 44-year numbers; every arm changes
+cloud, which is the boreal energy supply; and LY2 carries the value round 3 rejected
+\emph{for boreal damage}. The land stack currently recovers $1.15$\,K of a ${\approx}2$\,K
+period-clean bias, leaving Siberia \textbf{still ${\approx}0.9$\,K cold} --- so there is no
+headroom to spend.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -5937,10 +6252,41 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--10)}\label{sec:state}
+\section{State of the campaign (2026--08--10, evening)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--10 (round 27, \S\ref{sec:r27}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{\texttt{RSNOWLIN2} $0.030\to0.04$ closes the tropical longwave deficit.}
+$+2.581$\,W\,m$^{-2}$ alone and $+2.740$ on the adopted stack, against a $\pm0.279$
+threshold --- $120$--$127\,\%$ of the $-2.16$ deficit and five times the largest response
+among the other fifty arms. It is the temperature exponent of ice$\to$snow autoconversion,
+so it builds cold thin cirrus rather than thickening anvils, and thin cirrus is
+longwave-dominant.
+\item \textbf{It also warms the Southern Ocean.} On the adopted stack its SO longwave
+$+2.626$ swamps its shortwave $-0.507$, giving net $+2.294$, resolved. On the bare base it
+was neutral: the sign reversal is produced by the base. \textbf{The campaign's two
+remaining regional targets are in tension through this one parameter.}
+\item \textbf{Southern Ocean levers must be scored on NET, not SW CRE.} Longwave cancels a
+very consistent $25$--$29\,\%$ across the whole 44-year archive, so
+$\mathrm{SO\,SW}\times0.72$ is the rule for ordinary cloud levers --- and the new levers
+break it. Best net lever in the archive is A1a at $-4.567$, ahead of D2a's $-3.602$.
+\item \textbf{DMS is the cleanest of the new Southern Ocean levers on net forcing}
+($-1.976$, only $17\,\%$ longwave cancellation) and the only one that reaches DJF, where
+the deficit is $+10.86$ and austral-summer insolation is $460$\,W\,m$^{-2}$ against $87$
+in JJA. Its annual mean coincides with \texttt{RCL\_INPPMIN}'s; its seasons do not.
+\item \textbf{A jointly-tuned eight-parameter cloud stack for TCO95L91 existed unused} in
+the v3.4.2 DARS2 runscripts, with no \texttt{fort.4} on disk setting any of it.
+\item \textbf{The AMIP runs are not at 1850 forcing} --- \texttt{NCMIPFIXYR} sits in the
+dead \texttt{\&NAMECECMIP6} block, runtime is $-1$, GHG runs 1869$\to$1911. Deltas are
+unaffected; the absolute energy baseline is offset ${\approx}0.15$\,W\,m$^{-2}$. The
+coupled runs \emph{are} correctly pinned. Z1 verified a one-line fix.
+\item \textbf{S4 $-$ P5}: SO SW CRE $-1.98$, global net TOA $-0.41$, tropics $-0.10$,
+Siberia within noise --- but SO SW RMSE $+0.255$ against $\pm0.019$. Best mean, worse
+pattern.
+\end{itemize}
+
 \textbf{Added 2026--08--10 (round 26, \S\ref{sec:r26}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{Marine biogenic CCN is a real Southern Ocean lever, and the best one found.}
@@ -6118,6 +6464,29 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Re-ranked 2026--08--10 after round 27 (\S\ref{sec:r27}).} The tropical longwave
+deficit now has a lever that closes it, and the lever costs the Southern Ocean. Everything
+below follows from that.
+\begin{enumerate}\itemsep2pt
+\item \textbf{Price \texttt{RSNOWLIN2} at 44 years.} LX1/LX3/LY2 are in flight against P5.
+The tropical gain and the Southern Ocean penalty are both established at one year; what is
+completely unmeasured is \textbf{Siberia}, and there is no headroom --- the land stack
+recovers $1.15$\,K of a ${\approx}2$\,K period-clean bias, leaving ${\approx}0.9$\,K cold.
+LY2 carries A1a's value, rejected in round 3 \emph{for boreal damage}.
+\item \textbf{Resolve the tropical-LW / Southern-Ocean tension.} They are coupled through
+one parameter. If \texttt{RSNOWLIN2} survives Siberia, the question becomes whether DMS or
+A1a can pay back the SO longwave it adds.
+\item \textbf{Decide A1b.} \texttt{RCL\_OVERLAPLIQICE} $0.65\to0.35$ is credited in this
+report with solving the energy target and appears in \emph{no} run of the adopted stack.
+Y1 shows it is essentially energy-neutral on the new base (global $-0.005$) and reaches
+only $-1.96$ of SO SW. The inconsistency should be closed explicitly.
+\item \textbf{Re-baseline the energy target} with one fixed-forcing control run
+(\S\ref{sub:r27forcing}). Do \emph{not} mix fixed and transient arms in one comparison.
+\item \textbf{11E coupled}, resumed at year 1370 with 20 of 50 banked; still the gate on
+the PI spin-up.
+\item \textbf{The tropical cold point}, $-2.07$\,K (\S\ref{sec:r25}), untouched.
+\end{enumerate}
+
 \textbf{Re-ranked 2026--08--10 after round 26 (\S\ref{sec:r26}).} The Southern Ocean lever
 now exists and is priced; what blocks it is the tropics. The list collapses accordingly:
 \begin{enumerate}\itemsep2pt
