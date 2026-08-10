@@ -5691,6 +5691,25 @@ coupled SO state and the TOA imbalance by more than the tropical cost? Fixed SST
 exactly the feedback that makes an SO cloud change matter. Fifty years also prices the
 tropical response with feedbacks and proper statistics instead of from one AMIP year.
 
+\textbf{Status update, 2026--08--10.} Both started the same day (11E job 26837423, 11F
+26837527) and are through their first ten-year legs.
+
+\textbf{11F is reclassified as a MECHANISM PROBE, not a production candidate, and should
+not later be read as one.} Two things changed within hours of submitting it. First, the
+bracket verdict (\S\ref{sub:r26verdict}) means $S=166$ is a configuration we will not
+adopt under any circumstances. Second, S4 (\texttt{RCL\_INPPMIN} $70000\to50000$) turned
+out to deliver $-1.98$\,W\,m$^{-2}$ of Southern Ocean SW CRE --- nearly the same forcing as
+11F's $-2.25$ --- at a tropical cost of $0.10$ against DMS's $2.14$, i.e.\ \textbf{twenty
+times the selectivity, namelist-only, and already run}. So the specific lever inside 11F
+has been superseded before its first leg finished.
+
+What 11F still buys is the \emph{generic} question, and it is worth 50 years for it: what
+does ${\approx}2$\,W\,m$^{-2}$ of Southern Ocean SW brightening do once SST and sea ice can
+respond? That answer transfers to the whole S4/DMS family, and AMIP cannot produce it at
+any run length --- prescribed SST absorbs the perturbation without responding. It is being
+kept for that reason alone. If compute becomes tight, \textbf{11F is the run to cut and
+11E is not}.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -6108,10 +6127,14 @@ because it is no longer a parallel item: it \emph{gates} the Southern Ocean fix
 in general --- \texttt{RVICE} is the counter-example. \emph{Do the free check first}: no arm
 of ${\sim}52$ has ever been scored on this term, and \texttt{tropical\_lw\_scan.py} is
 written to answer it from data already on disk.
-\item \textbf{11E and 11F coupled}, both submitted 2026--08--10 and queued. 11E decides
-whether the coupled configuration is level with AMIP and gates the PI spin-up; 11F asks
-whether free SST and sea ice change the Southern Ocean answer, which AMIP structurally
-cannot price.
+\item \textbf{11E coupled}, running since 2026--08--10. Decides whether the coupled
+configuration is level with AMIP, and gates the PI spin-up. \textbf{11F} is running
+alongside it but has been \textbf{reclassified as a mechanism probe rather than a tuning
+arm} (\S\ref{sub:r26coupled}): its $S=166$ is not adoptable, and S4 delivers the same
+Southern Ocean forcing at twenty times the tropical selectivity. It is kept only for the
+generic question --- what ${\approx}2$\,W\,m$^{-2}$ of SO brightening does with free SST
+and sea ice --- which transfers to S4 and which AMIP cannot answer at any length. First to
+cut if compute tightens.
 \item \textbf{The tropical cold point}, $-2.07$\,K, the shared entry point for the cold bias
 and $61\,\%$ of the stratospheric dry bias (\S\ref{sec:r25}).
 \item \textbf{S4} (\texttt{RCL\_INPPMIN} $70000\to50000$) completed 48 years on
