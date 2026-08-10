@@ -20,6 +20,22 @@ them.  The three failure modes this tool removes, with the run each one cost:
     source default to 0.16 specifically to suppress Southern Ocean high cloud.  That is
     in the project issues, not in the code.
 
+  * LOOKING ONLY AT THIS CAMPAIGN.  Fixed 2026-08-10, after the tool said "never set in
+    any run" TWICE IN ONE DAY about parameters with real AWI history.  RPRCON had been
+    tuned to 0.7E-3 at TCO319 (project_management #87) and launched once at TCO95 (#95);
+    RSNOWLIN2 had been set to 0.04 in the awiesm3 v3.4.2 TCO95L91-DARS2 runscripts and to
+    0.025 in awicm3 MELDPOND -- along with a whole jointly-tuned cloud stack (DETRPEN
+    1.32E-4, ENTRORG 2.07E-3, RMFDEPS 0.48, ENTRDD 1.08E-4, RVICE 0.18, RLCRITSNOW
+    1.46E-5).  The tool was scanning ONE runtime tree and ONE runscript directory.  It now
+    scans every runtime tree and every runscript directory on disk, and reports the VALUE,
+    because "mentioned in a runscript" and "set to something in a runscript" are different
+    facts and only the second one is prior art.
+
+  WHAT IT STILL CANNOT SEE: the GitHub issues.  Sections 3-5 cover disk only.  For any
+  parameter that matters, also search AWI-ESM/project_management and
+  tsemmler05/AWI-CM3-HighResMIP -- that is where the WHY lives, and issue search does not
+  index comment bodies, so fetch the comments and grep them.
+
 WHAT IT REPORTS, per parameter:
   1. the source default, and the file/line that sets it
   2. whether it is reachable from a namelist at all (and which one)
@@ -39,10 +55,15 @@ import os, re, subprocess, sys, glob
 BASE = ('/work/ab0246/a270092/postprocessing/'
         'investigation_awiesm3_high_lat_cold_bias_global_toa_positive')
 SRC = '/work/ab0246/a270092/model_codes/oifsamip-cy48/oifs-48r1/ifs-source'
-RUNTIMES = ['/work/bb1469/a270092/runtime/oifsamip-cy48',
-            '/work/bb1469/a270270/runtime/awiesm3-v3.4',
-            '/work/bb1469/a270092/runtime/awiesm3-v3.4']
-SCRIPTS = '/home/a/a270092/esm_tools/runscripts/oifsamip'
+
+# EVERY runtime tree and EVERY runscript directory, not just this campaign's.  These are
+# globs on purpose: a hard-coded list is what let RPRCON and RSNOWLIN2 read as "never
+# set" on 2026-08-10 when both had AWI history one directory over.
+RUNTIME_ROOTS = ['/work/bb1469/a270092/runtime', '/work/bb1469/a270270/runtime',
+                 '/work/ab0246/a270092/runtime', '/work/bb1469/a270092/runtime_old']
+SCRIPT_ROOTS = ['/home/a/a270092/esm_tools/runscripts']
+# The campaign's own setup, so output can separate "tried here" from "tried at AWI".
+HOME_SETUP = 'oifsamip'
 
 
 def sh(cmd):
@@ -73,22 +94,53 @@ def namelists_with(p):
 
 
 def runs_setting(p):
-    """Every run whose fort.4 sets this parameter -- the authoritative record."""
+    """Every run on disk whose fort.4 sets this, across ALL setups.
+
+    Returns (setup, experiment, value).  fort.4 is the authority on what a run actually
+    used -- runscripts can be edited after the fact, fort.4 cannot.
+    """
     found = []
-    for rt in RUNTIMES:
-        if not os.path.isdir(rt):
+    for root in RUNTIME_ROOTS:
+        if not os.path.isdir(root):
             continue
-        for d in sorted(os.listdir(rt)):
-            fs = sorted(glob.glob(f'{rt}/{d}/run_*/work/fort.4'), reverse=True)
-            if not fs:
+        for setup in sorted(os.listdir(root)):
+            sd = f'{root}/{setup}'
+            if not os.path.isdir(sd):
                 continue
+            for d in sorted(os.listdir(sd)):
+                fs = sorted(glob.glob(f'{sd}/{d}/run_*/work/fort.4'), reverse=True)
+                if not fs:
+                    continue
+                try:
+                    txt = open(fs[0]).read()
+                except OSError:
+                    continue
+                m = re.search(rf'^\s*{p}\s*=\s*(\S+)', txt, re.M | re.I)
+                if m:
+                    found.append((setup, d, m.group(1).rstrip(',')))
+    return found
+
+
+def scripts_setting(p):
+    """Every runscript on disk that ASSIGNS this parameter, with its value and setup.
+
+    Distinguishes assignment (`RSNOWLIN2: 0.04`) from mere mention (a comment), because
+    only the first is prior art.  This is the check that was missing.
+    """
+    found = []
+    for root in SCRIPT_ROOTS:
+        for f in glob.glob(f'{root}/**/*.y*ml', recursive=True):
             try:
-                txt = open(fs[0]).read()
+                txt = open(f).read()
             except OSError:
                 continue
-            m = re.search(rf'^\s*{p}\s*=\s*(\S+)', txt, re.M | re.I)
+            m = re.search(rf'^\s*["\']?{p}["\']?\s*:\s*([^\s#]+)', txt, re.M | re.I)
+            rel = os.path.relpath(f, root)
+            setup = rel.split(os.sep)[0]
             if m:
-                found.append((d, m.group(1).rstrip(',')))
+                found.append((setup, rel, m.group(1).rstrip(',')))
+            elif re.search(rf'\b{p}\b', txt, re.I):
+                found.append((setup, rel, None))          # mentioned only
     return found
 
 
@@ -111,27 +163,41 @@ def main(params):
             print('   NOT in any namelist. Setting it needs a source change '
                   '(declaration + association + namelist entry).')
 
-        print('\n3. RUNS THAT SET IT  <- the authoritative "has this been tried"')
+        print('\n3. RUNS THAT SET IT, ALL SETUPS  <- what the model actually ran with')
         rs = runs_setting(P)
         if rs:
             vals = {}
-            for name, v in rs:
-                vals.setdefault(v, []).append(name)
-            for v, names in sorted(vals.items()):
-                short = [n.replace('Tuning_test_', '').replace('amip_', '') for n in names]
-                print(f'   = {v:<12s} {len(names):3d} run(s): '
-                      f'{", ".join(short[:8])}{" ..." if len(short) > 8 else ""}')
+            for setup, name, v in rs:
+                vals.setdefault(v, []).append((setup, name))
+            for v, items in sorted(vals.items()):
+                here = sum(1 for s, _ in items if s.startswith(HOME_SETUP))
+                short = [n.replace('Tuning_test_', '').replace('amip_', '')
+                         for _, n in items]
+                where = f'{here} here, {len(items)-here} elsewhere' if here != len(items) \
+                        else 'this campaign'
+                print(f'   = {v:<12s} {len(items):3d} run(s) [{where}]: '
+                      f'{", ".join(short[:6])}{" ..." if len(short) > 6 else ""}')
             print(f'   *** ALREADY EXERCISED at {len(vals)} distinct value(s). '
                   f'Check these before proposing a new one.')
         else:
-            print('   never set in any run -- genuinely untested')
+            print('   no fort.4 on disk sets it')
 
-        print('\n4. RUNSCRIPTS MENTIONING IT (including withdrawn)')
-        o = sh(f"grep -rl '{P}' {SCRIPTS} 2>/dev/null | head -12")
-        for l in o.splitlines():
-            tag = ' [WITHDRAWN]' if '/withdrawn/' in l else ''
-            print(f'   {os.path.basename(l)}{tag}')
-        if not o.strip():
+        print('\n4. RUNSCRIPTS THAT SET IT, ALL SETUPS  <- prior art even if never run')
+        ss = scripts_setting(P)
+        assigned = [x for x in ss if x[2] is not None]
+        mentioned = [x for x in ss if x[2] is None]
+        if assigned:
+            for setup, rel, v in sorted(assigned, key=lambda t: (t[0], t[1])):
+                tag = ' [WITHDRAWN]' if '/withdrawn/' in rel else ''
+                mark = '' if setup.startswith(HOME_SETUP) else '  <- OTHER SETUP'
+                print(f'   = {v:<12s} {setup}/{os.path.basename(rel)}{tag}{mark}')
+            if any(not s.startswith(HOME_SETUP) for s, _, _ in assigned):
+                print('   *** SET OUTSIDE THIS CAMPAIGN. That is prior art: find out what '
+                      'it was for\n       before proposing a value.')
+        if mentioned:
+            print(f'   mentioned only (no assignment) in {len(mentioned)} file(s): '
+                  f'{", ".join(os.path.basename(r) for _, r, _ in mentioned[:5])}')
+        if not ss:
             print('   none')
 
         print('\n5. PROVENANCE (git log in the model tree)')
