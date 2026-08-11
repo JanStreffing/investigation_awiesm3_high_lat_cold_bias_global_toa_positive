@@ -39,6 +39,15 @@ import numpy as np, xarray as xr, warnings
 warnings.filterwarnings('ignore')
 
 R270 = '/work/bb1469/a270270/runtime/awiesm3-v3.4'
+R092 = '/work/bb1469/a270092/runtime/awiesm3-v3.4'      # our own coupled tree
+
+
+def root_of(name):
+    """11E/11F live in our tree, the rest in the colleague's.  Try both."""
+    for r in (R270, R092):
+        if os.path.isdir(f'{r}/{name}'):
+            return f'{r}/{name}'
+    return f'{R270}/{name}'
 ACC = 3600.0
 CERESF = '/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.nc'
 
@@ -49,8 +58,27 @@ RUNS = [
     ('11D  +fitted sw30', 'Tuning_test_11D_G4_fitted_snow_depletion_useIFSsoiltemp_CRUNCEP_plus_CERES_init_newSeaIce'),
     ('10A  G4 only (ref)', 'Tuning_test_10A_06V_G4_CRUNCEP_plus_CERES_init_newSeaIce'),
     ('10B  +tanh (ref)', 'Tuning_test_10B_06V_G4_snowDepletion_CRUNCEP_plus_CERES_init_newSeaIce'),
+    # Added 2026-08-10.  11E is 11D with the two changes that bring the coupled
+    # configuration level with the AMIP one: SWEMIN 30 -> 15 (P6 -> P5, because P6 was
+    # FALSIFIED in AMIP at DJF -0.850 K) and K1, the snow-free land albedo correction,
+    # which was absent from the coupled branch entirely.  Complete 2026-08-10: 50 years,
+    # 1350-1399, all five legs CNT0.  THE PRE-REGISTERED TEST is whether 11D's Siberian
+    # DJF cold signal against 110Baseline shrinks -- if SWEMIN=15 is right, it should.
+    ('11E  +sw15 +K1', 'Tuning_test_11E_swemin15_K1'),
+    # 11F is 11E + DMS S=166, CANCELLED at 20 of 50 years on 2026-08-10.  It is included
+    # for the Southern Ocean columns ONLY, and its window is 1360-1369, not 1390-1399 --
+    # a different decade of a drifting spin-up, so its Siberian numbers are NOT
+    # comparable with the rest of this table and must not be read as such.
+    ('11F  +DMS (20 yr)', 'Tuning_test_11F_dmsccn166'),
 ]
-NLAST = 10
+NLAST = 30
+# WIDENED 2026-08-10 from 10 to 30.  11A/11D/11E all have 50 years now, so the last 30
+# give 11D and 11E an IDENTICAL 1370-1399 window -- and the threshold scales as
+# 1/sqrt(n), taking DJF T2m from +-1.25 K to about +-0.7 and soil from +-0.75 to +-0.43.
+# That is the difference between a test that cannot see the AMIP falsifier (-0.850 K DJF
+# T2m, -1.00 K soil) and one that can.  110Baseline has only 40 years so it uses
+# 1360-1389, and 11F only 20, so the decade offset against the baseline REMAINS -- it is
+# the 11E-vs-11D comparison this buys, not the baseline deltas.
 SIB = (55.0, 75.0, 60.0, 180.0)      # lat0 lat1 lon0 lon1
 SO = (-65.0, -45.0)
 DJF, JJA = [12, 1, 2], [6, 7, 8]
@@ -132,7 +160,7 @@ cds.close()
 
 rows = []
 for tag, name in RUNS:
-    root = f'{R270}/{name}'
+    root = root_of(name)
     ys = years_avail(root, '2t')
     if not ys:
         print(f'{tag:24s} no output'); continue
@@ -229,12 +257,12 @@ if base:
             print(f'  discarding SWEMIN=30.')
         else:
             print(f'  Soil moves {ds:+.2f} K -- small.  But "small" is only meaningful against a')
-            print(f'  detection threshold, and 10 coupled years is a much weaker test than the')
+            print(f'  detection threshold, and {NLAST} coupled years is a weaker test than the')
             print(f'  44 AMIP years the falsification was established on.  Measured below.')
 
-    # -------- can a 10-year coupled window even resolve the AMIP-sized signal? -------
+    # ------ can an NLAST-year coupled window resolve the AMIP-sized signal? ------
     print('\n' + '-' * 104)
-    print('DETECTION THRESHOLD: what signal could a 10-year coupled window actually see?')
+    print(f'DETECTION THRESHOLD: what can a {NLAST}-year coupled window actually see?')
     print('-' * 104)
 
     def peryear(root, var, yrs, months, box):
@@ -259,17 +287,18 @@ if base:
     for lbl, var in (('Siberian DJF soil (stl2)', 'stl2'), ('Siberian DJF T2m', '2t')):
         sds = []
         for t, nm in (('11A', RUNS[1][1]), ('11D', RUNS[3][1])):
-            v = peryear(f'{R270}/{nm}', var, list(range(1390, 1400)), DJF, SIB)
+            v = peryear(root_of(nm), var, list(range(1400 - NLAST, 1400)), DJF, SIB)
             if v.size > 2:
                 sds.append(v.std(ddof=1))
         if not sds:
             continue
         sd = float(np.mean(sds))
-        # SE of the difference of two independent 10-year means, 95 % two-sided
-        se = sd * np.sqrt(2.0 / 10.0)
-        thr = 2.101 * se                      # t(0.975, df=18)
+        # SE of the difference of two independent NLAST-year means, 95 % two-sided
+        from scipy.stats import t as _t
+        se = sd * np.sqrt(2.0 / NLAST)
+        thr = float(_t.ppf(0.975, 2 * NLAST - 2)) * se
         print(f'  {lbl:26s} interannual sd {sd:5.2f} K -> 95 % detection threshold '
-              f'+-{thr:4.2f} K on a 10-yr pair')
+              f'+-{thr:4.2f} K on a {NLAST}-yr pair')
     print()
     print('  The AMIP falsification of SWEMIN=30 rests on DJF T2m -0.850 K and soil -1.00 K,')
     print('  established over 44 years.  If those thresholds above exceed those numbers, then')

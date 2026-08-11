@@ -6025,6 +6025,94 @@ cloud, which is the boreal energy supply; and LY2 carries the value round 3 reje
 period-clean bias, leaving Siberia \textbf{still ${\approx}0.9$\,K cold} --- so there is no
 headroom to spend.
 
+\subsection{The boreal forest: the coupled model destroys it, and warming brings it
+back}\label{sub:r27forest}
+11E's Siberian result prompted the question the campaign actually exists to answer --- not
+whether T2m improved, but whether the forest is there. It is not, and chasing that
+properly produced one retraction, two analysis bugs of my own, and a calibration the
+campaign has never had.
+
+\textbf{The claim, and the retraction.}
+\dead{The forest failure is not a growing-season problem: 11E clears the larch GDD gate on
+$91\,\%$ of cells and the trees still do not come, so no amount of additional summer
+warming will bring the forest back.}
+\textbf{Refuted by experiments already on disk.} Three 2000-year offline LPJ-GUESS
+spin-ups exist at TCO95 --- AMIP forcing, and the same forcing warmed by $+1$ and $+2$\,K:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+offline 2000-yr equilibrium, Siberian box & BNS & TREE & GRASS & tree$>$0.5 & BNS$>$0.1 \\
+\midrule
+CRUNCEP+CERES (observed forcing) & $0.227$ & $\mathbf{0.415}$ & $0.281$ & $50.3\,\%$ & $36.2\,\%$ \\
+AMIP forcing & $0.034$ & $0.202$ & $0.313$ & $18.2\,\%$ & $7.4\,\%$ \\
+AMIP $+1$\,K & $0.058$ & $0.261$ & $0.332$ & $24.5\,\%$ & $12.5\,\%$ \\
+AMIP $+2$\,K & $\mathbf{0.099}$ & $\mathbf{0.327}$ & $0.344$ & $31.7\,\%$ & $19.7\,\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Warming restores the forest, monotonically and without saturating.} BNS
+roughly triples from AMIP to AMIP$+2$\,K and tree cover recovers $59\,\%$ of the gap to the
+observed-forcing equilibrium.
+
+\textbf{This is the campaign's founding premise, calibrated for the first time.} The AMIP
+Siberian cold bias is ${\approx}2$\,K period-clean (\S\ref{sub:periodclean}), and $+2$\,K
+of offline warming buys back three fifths of the forest. Closing the cold bias should
+therefore recover most of it --- previously an assumption, now a measured transfer
+function.
+
+\textbf{Why 11E looked like a counter-example, and was not.} The coupled runs are
+\textbf{50-year transients}; these are \textbf{2000-year equilibria}. 11E is not showing an
+endpoint but the \emph{decline} from its CRUNCEP restart toward whatever equilibrium its
+own climate supports, and forest composition takes centuries:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+Siberian box, 473 cells & year & BNS & TREE & tree$>$0.5 & grass$>$tree \\
+\midrule
+offline CRUNCEP (the restart state) & 3900 & $0.227$ & $0.415$ & $50.3\,\%$ & $29.2\,\%$ \\
+11E at start & 1350 & $0.213$ & $0.394$ & $47.8\,\%$ & $28.3\,\%$ \\
+\textbf{11E after 50 coupled years} & 1399 & $\mathbf{0.017}$ & $\mathbf{0.083}$ & $2.1\,\%$ & $\mathbf{69.6\,\%}$ \\
+11D after 50 coupled years & 1399 & $0.019$ & $0.074$ & $0.6\,\%$ & $68.1\,\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Year 1350 reproduces the offline restart almost exactly, as it must. By 1399
+larch has fallen $\mathbf{92\,\%}$ and grass goes from beating trees on $28\,\%$ of cells to
+$70\,\%$. \textbf{The coupled model inherits a real boreal forest and dismantles it in
+fifty years}, from a healthy state, while clearing the GDD gate on $91\,\%$ of cells ---
+which is exactly what a transient toward a much poorer equilibrium looks like.
+
+\textbf{Consistent with the established mechanism, not a new one.} \S\ref{sub:compreconcile}
+already separates the two claims: competition as an LPJG \emph{parameter} error is dead
+(the forcing-transfer test reproduced the loss with byte-identical parameters), while
+competition as the \emph{pathway} by which climate removes larch is supported --- larch is
+climatically permitted on $84\,\%$ of cells and loses to grass $5.8\!:\!1$. The offline
+warming series is the driver half of that statement, measured: \texttt{grass$>$tree} stays
+at $43$--$45\,\%$ across AMIP, $+1$ and $+2$\,K against CRUNCEP's $29\,\%$, so warming
+raises tree cover \emph{without} dissolving the competition. Forcing is the driver;
+grass-versus-larch remains the mechanism.
+
+\textbf{Two of my own analysis errors, recorded because both produced plausible numbers.}
+\dead{11E Siberian FPC over 2365 cells: TREE $0.109$, GRASS $0.203$.} The glob matched all
+five decade directories and took each one's own final year, so it averaged 1359--1399, not
+1399. The true final-year values are \emph{worse}: TREE $0.083$.
+\dead{Offline CRUNCEP TREE $0.617$, BNS $0.617$, forest on $100\,\%$ of cells.} That came
+from \texttt{tail}-ing a 13\,GB \texttt{fpc.out} --- but LPJ-GUESS writes \emph{all 2000
+years per gridcell} before moving to the next, so the tail sampled the last ${\sim}30$
+gridcells, of which three fell in the box. Both were caught only by checking cell counts
+against each other; neither looked wrong on its face. \textbf{For these files, stream with
+\texttt{awk} filtered on year and box --- 13\,GB in 20 seconds --- and never trust a
+\texttt{tail}.}
+
+\textbf{Unread, and deliberately not speculated about.} Three offline experiments target
+the competition directly: \texttt{LPJG\_COMP\_EXP1\_BNS\_GREFF0035},
+\texttt{EXP2\_IBS\_GREFF012}, \texttt{EXP3\_C3G\_PSTEMPLOW12}. They belong to the final
+land round.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -6256,6 +6344,27 @@ effective is to make skipping it require effort.
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--10 (round 27, vegetation, \S\ref{sub:r27forest}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Warming restores the boreal forest, and the transfer function is now
+measured.} Offline 2000-year LPJ-GUESS equilibria at TCO95: AMIP forcing gives TREE
+$0.202$ and BNS $0.034$; $+1$\,K gives $0.261/0.058$; $+2$\,K gives $0.327/0.099$ against
+the observed-forcing $0.415/0.227$. Monotonic, not saturating, and $+2$\,K recovers
+$59\,\%$ of the gap. \textbf{With the AMIP cold bias at ${\approx}2$\,K period-clean,
+closing it should recover most of the forest} --- the campaign's founding premise,
+previously assumed and now calibrated.
+\item \textbf{The coupled model dismantles an inherited forest in 50 years.} 11E starts at
+BNS $0.213$ / TREE $0.394$ (the CRUNCEP restart) and ends at $0.017/0.083$ --- a $92\,\%$
+loss of larch --- with grass beating trees on $70\,\%$ of cells against $28\,\%$ at the
+start. It is a transient toward a much poorer equilibrium, not an endpoint.
+\item \textbf{Warming does not dissolve the competition.} \texttt{grass$>$tree} sits at
+$43$--$45\,\%$ across AMIP, $+1$\,K and $+2$\,K against CRUNCEP's $29\,\%$. Forcing is the
+driver; grass-versus-larch remains the mechanism (\S\ref{sub:compreconcile}).
+\item \textbf{Siberia is NOT solved.} 11E fixes the \emph{atmospheric} half --- summer
+warmth and the winter penalty every previous snow lever carried --- and leaves the
+vegetation untouched.
+\end{itemize}
+
 \textbf{Added 2026--08--10 (round 27, \S\ref{sec:r27}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{\texttt{RSNOWLIN2} $0.030\to0.04$ closes the tropical longwave deficit.}
@@ -6464,6 +6573,28 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Campaign plan, set 2026--08--10 (evening): finish the Southern Ocean and the
+tropics, then one final land round.} The vegetation result (\S\ref{sub:r27forest}) shows
+Siberian tuning is not finished, but it also shows what finishing it requires --- closing
+the ${\approx}2$\,K cold bias, for which the offline $+1/+2$\,K series is now the
+calibration. That is a separate campaign from the radiative one, and mixing them is what
+made round 27 sprawl.
+\begin{enumerate}\itemsep2pt
+\item \textbf{Finish SO and tropics.} LX1/LX3/LY2 completed 48 years on 2026--08--10 and
+await \texttt{evaluate.sh}. The decisions waiting on them: whether \texttt{RSNOWLIN2}'s
+tropical longwave gain survives its Southern Ocean penalty; whether A1a's value is
+tolerable on the new base; and A1b, which this report credits with solving the energy
+target while it appears in no run of the adopted stack.
+\item \textbf{Then the final land round}, with three things it did not have before: the
+$+1/+2$\,K transfer function, the three unread \texttt{LPJG\_COMP\_EXP*} competition
+experiments, and the knowledge that 50 coupled years shows a transient, not an
+equilibrium, so vegetation must be judged offline or over centuries.
+\item \textbf{Re-baseline the energy target} with one fixed-forcing control
+(\S\ref{sub:r27forcing}); Z1 proved the one-line fix works.
+\item \textbf{11E} is complete at 50 coupled years and is the best coupled configuration
+on Siberian T2m, but net TOA is still $+0.765$ and SO CRE $5.65$ short of CERES.
+\end{enumerate}
+
 \textbf{Re-ranked 2026--08--10 after round 27 (\S\ref{sec:r27}).} The tropical longwave
 deficit now has a lever that closes it, and the lever costs the Southern Ocean. Everything
 below follows from that.
