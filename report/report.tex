@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--10b})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--11})}
 
 \begin{document}
 \maketitle
@@ -6113,6 +6113,171 @@ the competition directly: \texttt{LPJG\_COMP\_EXP1\_BNS\_GREFF0035},
 \texttt{EXP2\_IBS\_GREFF012}, \texttt{EXP3\_C3G\_PSTEMPLOW12}. They belong to the final
 land round.
 
+\section{Round 28 (2026--08--10$\to$11): the L-series at full length, and the arm that was
+already on disk}\label{sec:r28}
+The three 46-year runs landed, and with them the first honest scoring of the round-27
+levers. Two of the three fail. The configuration that wins is S4 --- one namelist number,
+finished on 2026--08--09, and unevaluated until now.
+
+\subsection{The three candidates, attributed}\label{sub:r28attrib}
+Each effect is the difference from the arm above it, 44 years, against \texttt{amip\_pi\_base}:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+effect & SO SW & \textbf{SO net} & Siberia JJA & global net & global LW CRE \\
+\midrule
+\texttt{RSNOWLIN2} (LX1$-$P5) & $-1.13$ & $\mathbf{+0.61}$ & $+0.14$ & $\mathbf{+0.42}$ & $\mathbf{+2.06}$ \\
+DMS $+$ \texttt{INPPMIN} (LX3$-$LX1) & $-4.53$ & $-3.87$ & $+0.04$ & $-1.96$ & $+0.21$ \\
+\texttt{ovl}$\,0.10$ (LY2$-$LX1) & $-4.73$ & $-3.34$ & $\mathbf{-0.67}$ & $-1.66$ & $+0.85$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three things settle. \textbf{\texttt{RSNOWLIN2}'s Southern Ocean penalty is real
+at 44 years} --- it delivers the tropical longwave gain exactly as the one-year screen
+predicted ($+2.06$ global LW CRE) and makes SO net forcing and global energy worse.
+\textbf{A1a's boreal damage reproduces on the new base}: LY2 costs $-0.67$\,K of Siberian
+JJA, nearly $3\times$ the $\pm0.246$ threshold, and A1a alone on the bare base gives
+$-0.749$ --- the same number. Round 3 was right. And \textbf{DMS$+$\texttt{INPPMIN}
+dominates \texttt{ovl}$\,0.10$}: more SO cooling, no Siberian cost.
+
+\textbf{LX3 is the best boreal arm in the campaign} on the seasonal table --- JJA $+1.331$,
+the highest of all 54 arms, with every season neutral or positive, and it is not on the
+report's standing ``warms JJA but cools DJF'' list of eleven levers.
+
+\subsection{Two fields, not one: what the maps resolved}\label{sub:r28maps}
+LX3's band mean improved while its ``SW RMSE'' worsened, which looked like a pattern
+degradation. It is not. \textbf{The two numbers are different fields}: the band mean
+quoted throughout this campaign is TOA SW CRE, while the RMSE is \emph{surface} net SW over
+ocean (\texttt{eval\_round10\_A.py:190}).
+
+\dead{LX3 overshoots reflection in some places and not others, so the pattern becomes
+patchy.} \textbf{Wrong.} On TOA CRE the pattern improves monotonically (RMSE
+$11.45\to8.78\to7.74$). On the surface field LX3 overshoots into a \emph{uniform} negative
+bias of $-4.75$, and since $\mathrm{RMSE}^2=\mathrm{mean}^2+\mathrm{variance}$ that mean is
+most of the degradation. The field did not become noisier; it sailed past zero --- a much
+better problem, because it is fixable by scaling rather than by finding a different shape.
+
+\textbf{The global frame then undercut the whole framing.} Extending the maps from the
+Southern Ocean strip to $80$S--$30$N:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r}
+\toprule
+& \multicolumn{3}{c}{TOA SW CRE} & \multicolumn{2}{c}{surface net SW} \\
+& global & 45--65S & tropics & global & tropics \\
+\midrule
+P5 & $+0.60$ & $+4.98$ & $-0.71$ & $-0.60$ & $-0.15$ \\
+LX3 & $\mathbf{-3.17}$ & $-0.63$ & $\mathbf{-4.76}$ & $-4.40$ & $-4.30$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{The tropics move $-4.05$ while the Southern Ocean moves $-5.61$.} The
+change is near-uniform blue in every basin. \textbf{LX3 is a global dimming knob, not a
+Southern Ocean lever}, and it survives on \emph{net} only because \texttt{RSNOWLIN2} adds
+$+2.46$ of global LW CRE in compensation. The seasonal selectivity DMS showed at one year
+does not become spatial selectivity at 44.
+
+Two further things only the global frame shows. Global RMSE barely moves (TOA
+$11.48\to12.40$, surface $14.44\to15.18$) because the error field is dominated by the
+tropical Pacific dipole, the stratocumulus decks and the land signals --- none of which any
+lever touches, and against which \textbf{the Southern Ocean box is comparatively
+well-behaved}. And the surface field carries a \emph{larger} error than TOA everywhere
+($14.4$ against $11.5$), which is an atmospheric shortwave-absorption signature and is
+global rather than a Southern Ocean artefact.
+
+\subsection{Scoring every arm on all three constraints at once}\label{sub:r28decision}
+Southern Ocean \emph{surface} bias against CERES, ocean points only, with the tropics and
+both Siberian seasons as constraints and global net TOA carried alongside:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r r r r}
+\toprule
+& SO sfc & SO rmse & SO CRE & $\Delta$trop & $\Delta$JJA & $\Delta$DJF & global TOA \\
+\midrule
+control & $+3.66$ & $7.04$ & $+7.69$ & --- & --- & --- & $+0.64$ \\
+\textbf{S4} \texttt{inppmin50k} & $\mathbf{-0.96}$ & $5.31$ & $+3.02$ & $+0.26$ & $+1.03$ & $+0.05$ & $\mathbf{+0.25}$ \\
+LX1 & $-0.52$ & $5.15$ & $+3.86$ & $+0.75$ & $+1.29$ & $+0.54$ & $+1.08$ \\
+P5 & $+0.74$ & $5.12$ & $+4.98$ & $+0.35$ & $+1.15$ & $-0.06$ & $+0.66$ \\
+LX3 & $-4.75$ & $7.31$ & $-0.63$ & $-0.97$ & $+1.33$ & $+0.26$ & $-0.88$ \\
+LY2 & $-4.75$ & $6.81$ & $-0.87$ & $-0.32$ & $+0.61$ & $+2.14$ & $-0.58$ \\
+A1a & $-2.32$ & $5.70$ & $+1.25$ & $-1.06$ & $-0.75$ & $+0.83$ & $-1.25$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{S4 wins.} LX1 is nominally closer to zero on the SO surface ($-0.52$
+against $-0.96$) and pays $0.83$\,W\,m$^{-2}$ of global imbalance for that last
+$0.4$ --- a bad trade. LX3 and LY2 reach the Southern Ocean by dimming the planet. A1a is
+the only arm that damages the tropics \emph{and} Siberian summer, confirming its round-3
+rejection on both counts. \textbf{S4 is the only arm that improves the Southern Ocean
+surface while landing global net TOA near the piControl target, at no cost in either
+Siberian season or the tropics --- and it is one namelist number.}
+
+\dead{LX1 fails the tropical guardrail at $+0.75$.} \textbf{My own sign error.} The test
+compared $|\Delta\mathrm{trop}|$ against $\pm0.5$ regardless of sign, but the tropics sit
+\emph{below} CERES ($42.61$ against $45.11$) and need \emph{more} absorbed energy, so
+$+0.75$ is an improvement. The test is now one-sided. LX1 reads CLEAN; it is still
+disqualified, on global energy.
+
+\subsection{S4 coupled: 11G}\label{sub:r28g}
+Every coupled arm that sets \texttt{RCL\_INPPMIN} --- 10A, 10B, 11A, 11B, 11C, 11D, 11E,
+11F --- uses $70000$. \textbf{The $50000$ value has only ever run in AMIP.} So 11G is 11E
+with that one line changed: a strict one-variable pair against a run already complete at
+50 years, needing no new control. Submitted 2026--08--11 as job 26868368.
+
+The AMIP number should be a \emph{lower} bound. The coupled amplification measured in
+round 27 is $1.40\times$ and it comes from \textbf{sea-ice albedo, not cloud} --- the
+coupled cloud response was smaller than AMIP's while SST fell $0.598$\,K and ice grew
+$3.2$\,pp. A lever that cools the SO \emph{surface} is exactly the kind that should
+amplify, and 11E's remaining gap is precisely SO CRE $5.65$ short of CERES with net TOA
+$+0.79$.
+
+\subsection{Krakatoa in a pre-industrial run}\label{sub:r28krakatoa}
+The net-TOA history was regenerated with the 11 series and given the AMIP companion it had
+always implied (Fig.~\ref{fig:nettoa}). The AMIP panel shows a deep \emph{synchronised} dip
+in 1883--86 in every arm. That is \textbf{Krakatoa} --- and a run at fixed 1850 forcing
+cannot contain a volcano. It is independent visual confirmation of
+\S\ref{sub:r27forcing}, and stronger than the CO$_2$ argument: not a slow drift, but real
+volcanic events inside runs the logbook describes as pre-industrial.
+
+The AMIP arms also no longer cluster near the ``atmosphere-only floor'' the coupled figure
+draws at $+0.67$. They straddle it: LX1 $+1.08$, P5 $+0.66$, control $+0.64$, S4 $+0.25$,
+LY2 $-0.58$, LX3 $-0.88$. The line is relabelled as what it is --- the AMIP \emph{control},
+one arm among many.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/campaign_net_toa_by_year_amip.png}
+\caption{\textbf{The AMIP radiation objective, round-27 candidates.} The synchronised
+1883--86 dip is Krakatoa: these ``pre-industrial'' runs read transient forcing, because
+\texttt{NCMIPFIXYR} sits in the dead \texttt{\&NAMECECMIP6} block and the runtime value is
+$-1$ (\S\ref{sub:r27forcing}). S4 lands nearest the piControl goal; LX3 and LY2 overshoot
+past it; \texttt{RSNOWLIN2} alone (LX1) moves it the wrong way.}\label{fig:nettoa}
+\end{figure}
+
+\subsection{Where the SO/tropics phase ends}\label{sub:r28end}
+\textbf{Adopt S4} --- \texttt{RCL\_INPPMIN} $70000\to50000$ --- pending 11G. It is the only
+arm that improves the Southern Ocean without spending the tropics, Siberia or the global
+budget.
+
+\textbf{Retire the round-26/27 lever line for tuning purposes.} \texttt{RSNOWLIN2} closes
+the tropical longwave deficit and is the largest such response ever measured here, but it
+warms the Southern Ocean and worsens global energy; DMS and \texttt{ovl}$\,0.10$ reach the
+Southern Ocean only by dimming the planet. None is adoptable. \texttt{RSNOWLIN2} remains
+interesting as \emph{physics} --- it is the one lever that moves the tropical longwave at
+all --- and should be revisited if the atmospheric-absorption question below is resolved.
+
+\textbf{The open structural question.} The surface shortwave error exceeds the TOA error
+everywhere ($14.4$ against $11.5$ globally), and the TOA and surface constraints disagree
+about which arm is best: P5 has the surface nearly right and TOA $5$\,W\,m$^{-2}$ short,
+LX3 the reverse. Closing a TOA gap of ${\approx}5$ costs the surface ${\approx}5$, and it
+did, almost exactly. That is an \emph{atmospheric absorption} signature, not a cloud-amount
+one, and if it is the underlying error then no cloud-reflectivity lever can satisfy both
+--- the campaign has been optimising against whichever metric happened to be quoted.
+Measuring it is one pass over data already on disk.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -6340,10 +6505,34 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--10, evening)}\label{sec:state}
+\section{State of the campaign (2026--08--11)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--11 (round 28, \S\ref{sec:r28}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{S4 (\texttt{RCL\_INPPMIN} $70000\to50000$) is the best configuration the
+campaign has.} Southern Ocean surface bias $+3.66\to-0.96$, global net TOA $+0.64\to
+\mathbf{+0.25}$ --- nearest the piControl target of anything run --- Siberia JJA $+1.03$
+and DJF $+0.05$, tropics $+0.26$. One namelist number, and it had sat unevaluated since
+2026--08--09.
+\item \textbf{The round-26/27 levers are global dimming knobs, not Southern Ocean
+levers.} LX3 moves the tropics $-4.05$ against the Southern Ocean's $-5.61$, near-uniformly
+across every basin. DMS's one-year seasonal selectivity does not become spatial
+selectivity at 44 years.
+\item \textbf{\texttt{RSNOWLIN2} is confirmed at full length on both counts}: it
+delivers the tropical longwave gain ($+2.06$ global LW CRE) and warms the Southern Ocean
+($+0.61$ net) while worsening global energy ($+0.42$). Not adoptable; still the only lever
+that moves the tropical longwave at all.
+\item \textbf{A1a's boreal damage reproduces exactly} --- $-0.67$\,K Siberian JJA on the
+new base against $-0.749$ on the bare base, both ${\approx}3\times$ threshold.
+\item \textbf{The campaign's SO ``band mean'' and ``SW RMSE'' are different fields}: TOA
+cloud forcing and surface net shortwave. They disagree about which arm is best, and the
+surface error exceeds the TOA error everywhere --- an atmospheric-absorption signature.
+\item \textbf{Krakatoa is visible in the AMIP runs} (1883--86, all arms), independently
+confirming that these ``pre-industrial'' runs read transient forcing.
+\end{itemize}
+
 \textbf{Added 2026--08--10 (round 27, vegetation, \S\ref{sub:r27forest}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{Warming restores the boreal forest, and the transfer function is now
