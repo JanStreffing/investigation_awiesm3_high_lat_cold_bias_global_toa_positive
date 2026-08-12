@@ -6228,12 +6228,117 @@ Every coupled arm that sets \texttt{RCL\_INPPMIN} --- 10A, 10B, 11A, 11B, 11C, 1
 with that one line changed: a strict one-variable pair against a run already complete at
 50 years, needing no new control. Submitted 2026--08--11 as job 26868368.
 
-The AMIP number should be a \emph{lower} bound. The coupled amplification measured in
-round 27 is $1.40\times$ and it comes from \textbf{sea-ice albedo, not cloud} --- the
-coupled cloud response was smaller than AMIP's while SST fell $0.598$\,K and ice grew
-$3.2$\,pp. A lever that cools the SO \emph{surface} is exactly the kind that should
-amplify, and 11E's remaining gap is precisely SO CRE $5.65$ short of CERES with net TOA
-$+0.79$.
+\dead{The AMIP number should be a \emph{lower} bound. The coupled amplification measured
+in round 27 is $1.40\times$ \dots{} A lever that cools the SO \emph{surface} is exactly the
+kind that should amplify.} \textbf{Falsified by 11G itself} (\S\ref{sub:r28gscore}):
+the amplification is a property of the \emph{lever}, not of coupling, and S4 does not
+have it. The $1.40\times$ came from sea-ice albedo --- clear-sky, not CRE --- with SST
+falling $0.598$\,K and ice growing $3.2$\,pp, and S4 moves neither enough to engage it.
+11E's remaining gap is SO CRE $5.65$ short of CERES with net TOA $+0.79$.
+
+\paragraph{11G's leg history, and the decade that is not a clean pair
+(2026--08--11$\to$12).} 11G reached 40 years on 2026--08--12 and leg~5 (1390--99) is
+running. Getting there was not clean, and one decade of it cannot be used.
+
+Legs 3--5 were killed by a defect of mine in an unrelated branch: \texttt{couple\_put}
+called \texttt{put\_2d(GUE\_Z0HV)} unconditionally, so any binary carrying the Raupach
+roughness code aborts with \emph{``oasis\_put is called for a variable not in
+namcouple''} unless the namcouple declares the field. 11G was rewound to 1370 and
+restarted on the production binary. Every one of the five legs is confirmed to have
+loaded the same LPJ-GUESS executable, md5 \texttt{8c5ab467}, so there is no binary
+discontinuity.
+
+The soil map is a different matter. Staged \texttt{slt\_TCO95.nc} per leg, counted by
+organic (type~6) cells:
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r l}
+\toprule
+years & 11E type 6 & 11G type 6 & \\
+\midrule
+1350--59 & 547 & 547 & matched \\
+1360--69 & 547 & 547 & matched \\
+\textbf{1370--79} & \textbf{547} & \textbf{233} & \textcolor{red}{\textbf{NOT a one-variable pair}} \\
+1380--89 & 547 & 547 & matched \\
+1390--99 & 547 & 547 & matched (in flight) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The repaired CORE3 soil map slipped into 11G's third leg alone and was reverted
+after. So for 1370--79 the arm differs from 11E in \emph{two} things, not one:
+\texttt{RCL\_INPPMIN} and 314 cells moved off soil code~6 --- a code \texttt{soil.cpp}
+treats on its own branch. \textbf{Score 11G against 11E on 1350--69 plus 1380--99, 40
+years, and exclude 1370--79.} The campaign minimum is 30 years, so this costs nothing
+except the temptation to use the most recent 30, which is exactly the window that
+contains the contaminated decade.
+
+\paragraph{A stale log file can eat a completed leg.} Leg~4 ran to completion --- job
+\texttt{COMPLETED} in 4:27:46, all ten years present \emph{and already remapped} in the
+run directory --- and delivered nothing, because the file-movement step hit
+\begin{quote}\footnotesize
+\texttt{ERROR: File movement conflict}\\
+\texttt{log/oasis3mct/nout.000000\_13800101-13891231 already exists. Skipping movement}
+\end{quote}
+left behind by one of the killed attempts at the same leg. esm\_tools aborts the
+\emph{whole} movement on the first conflict, so 10 years of model output stayed in
+\texttt{work/} while \texttt{outdata} showed 30 years and the date file still read 1380.
+The run looked like it had failed and was one resubmission away from recomputing 4.5
+hours that were already on disk. Moving the dead attempts' leftovers aside and re-running
+\texttt{esm\_runscripts -t tidy} recovered all ten years and advanced the chain. \emph{A
+leg that looks unfinished should be checked in} \texttt{work/} \emph{before it is
+rerun}: \texttt{ifs.stat} and the presence of \texttt{atm\_remapped\_*} files settle it in
+seconds.
+
+\subsection{S4 coupled, scored: real, resolved, and three times smaller than AMIP
+(2026--08--12)}\label{sub:r28gscore}
+11G against 11E over the \textbf{30 matched years} $1350$--$69$ plus $1380$--$89$;
+$1370$--$79$ excluded because 11G alone carries the repaired soil map there. Thresholds
+are $1.96\,\mathrm{sd}\sqrt{2/n}$ from 11E's own interannual scatter over the same years.
+
+\begin{center}\footnotesize
+\begin{tabular}{l r r r r}
+\toprule
+& 11E & 11G & $\Delta$ & threshold \\
+\midrule
+net TOA [W\,m$^{-2}$] & $+0.387$ & $+0.205$ & $-0.182$ & $\pm0.362$ \\
+SO SW CRE [W\,m$^{-2}$] & $-62.472$ & $-63.946$ & $\mathbf{-1.474}$ & $\pm0.479$ \\
+SO net TOA [W\,m$^{-2}$] & $-51.417$ & $-52.499$ & $\mathbf{-1.082}$ & $\pm0.778$ \\
+SO clear-sky SW [W\,m$^{-2}$] & $217.847$ & $217.294$ & $-0.553$ & $\pm0.902$ \\
+SO SST [$^\circ$C] & $3.561$ & $3.297$ & $\mathbf{-0.264}$ & $\pm0.098$ \\
+SO sea ice [\%] & $9.162$ & $9.758$ & $+0.595$ & $\pm0.806$ \\
+global T2m [$^\circ$C] & $12.604$ & $12.388$ & $\mathbf{-0.216}$ & $\pm0.123$ \\
+Siberia JJA T2m [$^\circ$C] & $9.670$ & $9.777$ & $+0.107$ & $\pm0.397$ \\
+Siberia DJF T2m [$^\circ$C] & $-32.957$ & $-33.322$ & $-0.365$ & $\pm0.736$ \\
+Siberia DJF soil [$^\circ$C] & $-12.606$ & $-13.015$ & $-0.409$ & $\pm0.469$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{S4 transfers, and costs nothing.} SO SW CRE, SO net TOA, SO SST and
+global T2m all resolve, all in the intended direction, and \emph{no} Siberian term does
+--- the AMIP promise of a free Southern Ocean gain holds coupled. The CERES gap narrows
+from $+5.36$ to $+3.89$, i.e.\ $27\,\%$ of what 11E had left.
+
+\textbf{But it is three times smaller than AMIP, not $1.40\times$ larger.} Against S4's
+own AMIP deltas ($-4.704$ SO CRE, $-3.813$ SO net TOA) the coupled ratios are
+$\mathbf{0.31\times}$ and $\mathbf{0.28\times}$. The prediction from round 27's DMS pair
+was ${\approx}-6.5$; the measurement is $-1.474$.
+
+\textbf{The discriminator is sea ice, and it is a property of the lever.} The
+amplification mechanism is sea-ice albedo, which is clear-sky and invisible to CRE. DMS
+at $S=166$ cooled the SO surface $0.598$\,K and grew $3.2$\,pp of ice; S4 manages
+$0.264$\,K and $0.595$\,pp, the latter not resolved, and its clear-sky SW response is not
+resolved either. The amplifier never engages. So \emph{``treat the AMIP magnitude as a
+lower bound''} is not a rule about coupling --- it is a rule about levers large enough to
+move ice, and S4 is not one.
+
+\textbf{What this does to the decision.} S4 remains the best available arm: it is one
+namelist number, it improves the Southern Ocean, and it is free everywhere else. It is
+simply much smaller than advertised, and on its own it does not close the SO gap. The
+global energy target is untouched --- $-0.182$ against a $\pm0.362$ threshold is not a
+result. Leg~5 will take this to 50 years and $1390$--$99$ is matched, so the clean window
+becomes 40 years and every threshold above tightens by ${\sim}15\,\%$.
 
 \subsection{Krakatoa in a pre-industrial run}\label{sub:r28krakatoa}
 The net-TOA history was regenerated with the 11 series and given the AMIP companion it had
@@ -6769,11 +6874,14 @@ the ${\approx}2$\,K cold bias, for which the offline $+1/+2$\,K series is now th
 calibration. That is a separate campaign from the radiative one, and mixing them is what
 made round 27 sprawl.
 \begin{enumerate}\itemsep2pt
-\item \textbf{Finish SO and tropics.} LX1/LX3/LY2 completed 48 years on 2026--08--10 and
-await \texttt{evaluate.sh}. The decisions waiting on them: whether \texttt{RSNOWLIN2}'s
-tropical longwave gain survives its Southern Ocean penalty; whether A1a's value is
-tolerable on the new base; and A1b, which this report credits with solving the energy
-target while it appears in no run of the adopted stack.
+\item \dead{\textbf{Finish SO and tropics.} LX1/LX3/LY2 completed 48 years on 2026--08--10
+and await \texttt{evaluate.sh}.} \textbf{Done 2026--08--11}
+(\texttt{data/evaluate\_L.out}); scored in \S\ref{sub:r28decision}. \texttt{RSNOWLIN2}'s
+tropical gain does \emph{not} survive: LX3 and LY2 reach the Southern Ocean by dimming
+the planet ($-0.88$ and $-0.58$ global TOA), and LX1 pays $0.83$\,W\,m$^{-2}$ of
+imbalance for $0.4$ of SO surface. \textbf{S4 wins on all three constraints at once.}
+The one decision still genuinely open from this item is \textbf{A1b}, credited here with
+solving the energy target while appearing in no run of the adopted stack.
 \item \textbf{Then the final land round}, with three things it did not have before: the
 $+1/+2$\,K transfer function, the three unread \texttt{LPJG\_COMP\_EXP*} competition
 experiments, and the knowledge that 50 coupled years shows a transient, not an
