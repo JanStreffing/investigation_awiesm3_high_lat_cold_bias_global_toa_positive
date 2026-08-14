@@ -53,7 +53,7 @@ PAIR = [('11E base', f'{R092}/Tuning_test_11E_swemin15_K1'),
         ('11G +S4', f'{R092}/Tuning_test_11G_inppmin50k')]
 
 # The matched decades. 1370-79 is deliberately absent; see the docstring.
-CLEAN = list(range(1350, 1370)) + list(range(1380, 1390))
+CLEAN = list(range(1350, 1370)) + list(range(1380, 1400))
 DIRTY = list(range(1370, 1380))
 
 SIB = (55.0, 75.0, 60.0, 180.0)

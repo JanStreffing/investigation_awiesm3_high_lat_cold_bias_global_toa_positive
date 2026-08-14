@@ -88,9 +88,16 @@ W = np.broadcast_to(np.cos(np.deg2rad(lat))[:, None], lsm.shape)
 
 def load(root, var, year):
     """Monthly field for one year, or None.  Accumulated fields are de-accumulated."""
+    # Both 1-year arms completed but were cancelled by the watcher during the
+    # file-movement step, so their output never left work/. Fall back to it
+    # rather than rerunning 23 minutes of model to move files that exist.
     f = f'{root}/outdata/oifs/atm_remapped_1m_{var}_{year}-{year}.nc'
     if not os.path.exists(f):
-        return None
+        import glob as _g
+        c = _g.glob(f'{root}/run_*/work/atm_remapped_1m_{var}_{year}-{year}.nc')
+        if not c:
+            return None
+        f = c[0]
     with xr.open_dataset(f, decode_times=False) as d:
         a = np.squeeze(d[var].values)
     if a.shape[0] != 12:
