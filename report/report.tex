@@ -6589,6 +6589,37 @@ $2$\,cm stems, $\lambda$ is an order of magnitude below the peak of the Raupach 
 curve, on the rising branch where $z_0\to0$. The offline calculation that predicted DJF
 $0.058\to0.140$\,m assumed a forest; the coupled model grows scrub.
 
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/raupach_z0_curve.png}
+\caption{\textbf{Why the winter lever cannot engage: the model has no canopy for it to act
+on.} $z_0(\lambda)$ from the implementation's own constants
+($C_S{=}0.003$, $C_R{=}0.3$, $C_{D1}{=}7.5$, $\kappa{=}0.41$), for the $2.89$\,m scrub the
+coupled model grows in Siberia (orange) and an $18$\,m boreal larch stand (blue). Measured
+in 11J's Siberian box ($728$ cells, $1370$--$79$): density $0.161$\,indiv\,m$^{-2}$, stem
+diameter $0.0198$\,m, so $\lambda_{\text{stem}}=0.0092$ once the leaves are gone
+(Jan/Jul LAI $=0.131$). That lands an order of magnitude below the peak, on the rising
+branch, at $z_0=0.0132$\,m --- the bare-soil value --- against the $0.058$\,m IFS lookup it
+replaces. \textbf{Switching Raupach on makes the winter surface $4.4\times$ smoother, not
+$2.4\times$ rougher.} A real stand at leaf-off sits at $1.51$\,m: ``a leafless canopy is the
+roughest state'' is true, for a canopy.}
+\label{fig:raupachz0}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/raupach_momentum_response.png}
+\caption{\textbf{The momentum budget confirms it, where soil temperature could not.}
+11J${-}$11I over $30$ paired years, Siberian land, in native units (small multiples rather
+than a shared axis). Summer responds as a \emph{smoothing}: $|\tau|$ $-6.3\,\%$
+($p=0.016$), 10\,m wind $+6.4\,\%$ ($p=0.037$), and skin-to-air decoupling $+0.104$\,K
+($p=3\times10^{-5}$, the only result surviving Bonferroni over all $14$ tests). Winter
+shows the \emph{same} signs, where the pre-registered mechanism required the opposite (grey
+arrows), and skin$-$air is flat at $-0.004$\,K. The sign test was built as a falsification
+check --- noise cannot know to reverse between seasons --- and it fails. This is why
+Siberian DJF soil is $+0.054$\,K ($p=0.670$): not a signal buried in noise, but no winter
+roughness change to propagate.}
+\label{fig:raupachmom}
+\end{figure}
+
 \textbf{The structural finding.} Raupach was proposed to fix a cold bias severe enough to
 lose the boreal forest, and its winter mechanism \emph{requires} that forest. The lever
 cannot bootstrap the canopy it needs in order to work. This is stronger than the
