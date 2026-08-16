@@ -6383,6 +6383,239 @@ one, and if it is the underlying error then no cloud-reflectivity lever can sati
 --- the campaign has been optimising against whichever metric happened to be quoted.
 Measuring it is one pass over data already on disk.
 
+\section{Round 29 (2026--08--13$\to$16): the land-surface repair priced, and roughness
+falsified structurally}\label{sec:r29}
+Three arms differing by one thing each --- \textbf{11G} (adopted stack, S4), \textbf{11I}
+(${+}$ land-surface repair), \textbf{11J} (${+}$ Raupach canopy roughness) --- run at 50
+years to price the two remaining land changes. 11I completed. 11J reached 30 years, lost
+its fourth leg to a filesystem error, and was restarted. The roughness lever is dead, and
+not for a statistical reason.
+
+\subsection{Getting the arms to start: a fork, and two coupling defects
+(2026--08--13$\to$14)}\label{sub:r29start}
+Both arms build from \texttt{run/50yr-arms} $=$ \texttt{168a98b} (LPJ-GUESS gridlist from
+\texttt{TCO95-land} rather than \texttt{L096}) plus a cherry-picked \texttt{0218bbb}
+(cold-start a gridcell that carries no spin-up state). They \emph{exclude}
+\texttt{46e7a84}; see \S\ref{sub:r29laszlo}.
+
+Two defects had to be cleared first, both in the roughness coupling and both fatal at
+about $80$\,s:
+\begin{itemize}\itemsep2pt
+\item \textbf{\texttt{put\_2d(GUE\_Z0HV)} was ungated.} \texttt{ifraupachz0} gated the
+\emph{computation} but not the OASIS put, so 11I --- which does not request the field ---
+sent it anyway: \texttt{oasis\_put is called for a variable not in namcouple},
+\texttt{mod\_oasis\_getput\_interface.F90:685}. This is the same defect that cost 11G three
+legs on 2026--08--11; it had been fixed once and lost. Gating the put is what allows both
+arms to run from \emph{one} binary (md5 \texttt{ff9b5507}), so 11J${-}$11I carries no build
+difference at all.
+\item \textbf{11J's coupling fields were declared in the wrong section.} A new field needs
+\texttt{lpj\_guess.add\_veg\_atm\_fields} on the sending side and
+\texttt{oifs.add\_atm\_veg\_fields} on the receiving side; 11J had the latter under
+\texttt{oasis3mct} and lacked the former. \texttt{esm\_runscripts} then exits with
+\texttt{Coupling var not found} \emph{without creating the experiment directory}, so there
+is no run to inspect --- only the driver log.
+\end{itemize}
+
+\subsection{\texttt{46e7a84}: 107 new \texttt{fail()} calls, classified
+(2026--08--14$\to$15)}\label{sub:r29laszlo}
+Laszlo's \texttt{46e7a84} (``Fix historical run crashes during land-use restart years'',
+2026--08--11, $2065$ changed lines in \texttt{landcover.cpp} alone) adds \textbf{107} hard
+\texttt{fail()} calls and took \texttt{landcover.cpp} from $9$ to $74$. Three fired on our
+restart. Rather than patch them one at a time, the twelve failing cells --- \emph{all}
+between $61$ and $71^\circ$N, this campaign's own region --- were classified:
+\begin{itemize}\itemsep2pt
+\item \textbf{Nine are floating-point roundoff}, $3.3\times10^{-9}$ to
+$4.2\times10^{-7}$, against \texttt{lc\_bookkeeping\_tol()} $=$
+\texttt{INPUT\_RESOLUTION}$\times10^{-3} = 10^{-9}$. That tolerance is scaled off the
+precision of the land-use \emph{input}, but is applied to a sum of restart-state floats
+whose error floor is float epsilon; $4.2\times10^{-7}$ is ${\approx}3.5\times$ float32
+eps. \textbf{No restart can pass it.} A later run with the check relaxed measured
+$14909$ metadata repairs and $1099$ renormalisations across a ${\approx}10\,200$-cell
+gridlist --- essentially the whole domain fails it, not twelve cells.
+\item \textbf{Three are real}: stand metadata against physical stand fraction, differing
+by $8.0\times10^{-4}$, $6.1\times10^{-3}$ and $3.3\times10^{-2}$. These are ours, not his;
+the check found something wrong in our own spin-up state.
+\item \textbf{One is the peat conflict} (\S\ref{sub:r29peat}).
+\end{itemize}
+The function carrying the first two is named
+\texttt{synchronize\_carried\_landcover\_state} and its next statement is
+\texttt{gcst.frac = st\_sum[s]} --- \textbf{it is already a repair routine that refuses to
+repair}. Both CMIP6 predecessors of this configuration repair rather than assert:
+EC-Earth3 \texttt{lpjg\_v4p1} rescales land-cover fractions by their sum with a warning and
+pushes the residual into \texttt{NATURAL} (it tests closure at $10^{-14}$, \emph{tighter},
+but fixes); JSBACH3 \texttt{scale\_cover\_fract} iterates \texttt{ntiles} times toward
+sum${=}1$ and calls \texttt{finish()} only if a fraction is still out of range afterwards.
+
+\subsection{Peat versus LUH3: two prescribed inputs pinned to different epochs
+(2026--08--16)}\label{sub:r29peat}
+At $67.7917^\circ$N $19.2857^\circ$E the peat map prescribes $0.2264$ and the spin-up
+carries a $0.1917$ physical stand, while LUH3 leaves only $\mathbf{0.088604}$ NATURAL.
+Reproducing that number exactly required two details: our configuration is
+\texttt{run\_barren 0}, so NATURAL also absorbs the LUH3 closure gap rather than being the
+raw \texttt{primf+primn+secdf+secdn} ($0.043008$); and cells with no usable LUH3 state fall
+back to NATURAL${=}1$ instead of taking the ${\approx}2\times10^{20}$ fill value into the
+arithmetic.
+
+The conflict is \textbf{not} static-peat-versus-dynamic-land-use. Both are prescribed and
+both are static here: \texttt{externalinput.cpp:779} pins the LUH3 year to
+\texttt{fixedLUafter} unconditionally, ignoring the model calendar. Read at the run's own
+year the same cell gives NATURAL $=0.617646$ (1350), $0.796720$ (1399) --- \textbf{no
+conflict at all}. The entire problem is an artefact of the 1850 pin, which is not
+negotiable because 1850 forcing \emph{is} the piControl convention.
+
+Neither CMIP6 predecessor could hit this. EC-Earth3 reads \texttt{PEATLAND} from the
+land-use file itself (\texttt{externalinput.cpp:670}), so there is no second dataset to
+disagree with --- its \texttt{file\_peat} is a dead declaration, referenced nowhere ---
+and its coupled configuration runs \texttt{run\_landcover 0} regardless. JSBACH3 has no
+peatland type at all.
+
+\textbf{Two policies were coded} behind \texttt{peat\_lu\_conflict\_policy}, default $0$ so
+an unmodified \texttt{.ins} is CMIP7-compliant:
+\begin{itemize}\itemsep2pt
+\item \textbf{0, LUH3 authoritative} --- required for CMIP7, where the land-use dataset is
+a common forcing. Peat is capped and the surplus \emph{area and its pools} are moved by
+\texttt{landcover\_dynamics}. Under \texttt{fixed\_LU} that machinery never runs
+(\texttt{landcover\_init} returns straight after
+\texttt{landcover\_reconcile\_restart\_state}, \texttt{landcover.cpp:156--163}, and
+\texttt{lc\_changed()} is false), so this policy \emph{refuses with an explanatory error}
+rather than truncating. A first attempt that capped anyway rewrote the bookkeeping while
+the stand kept its area and was caught one call later by the very next check
+(\texttt{st=2 metadata=0.0886 physical=0.1917}) --- Laszlo's comment that capping
+``would discard state without a transfer'' is not a preference but structurally true here.
+\item \textbf{1, physical peat authoritative} --- the stand keeps its area and the non-peat
+categories are scaled into the remainder. Nothing is discarded, so no transfer is needed.
+Defensible only for fixed-forcing control runs: north of $60^\circ$N mean LUH3 rangeland at
+1850 is $0.0040$, while northern peat holds order $500$--$1000$\,PgC and sets the soil
+thermal regime this campaign's bias lives in.
+\end{itemize}
+Only $73$ of $10\,211$ cells have a peat-map value above the available NATURAL, and only
+one aborted, because elsewhere the spin-up had already capped the physical stand lower.
+
+\subsection{11I: the repair is not free (2026--08--16)}\label{sub:r29repair}
+\textbf{11I${-}$11G is not a one-variable pair}, despite its runscript header saying ``ONE
+input file''. Three things differ: the \texttt{\_v2} soil map, the
+\texttt{L096}$\to$\texttt{TCO95-land} gridlist, and the cold-start binary path; the last
+two are inseparable, because the new gridlist is what adds the $307$ cells the cold-start
+path lets run. Read it as \emph{the land-surface repair bundle}.
+
+Scored over the $40$ matched years ($1350$--$69$ ${+}$ $1380$--$99$; $1370$--$79$ excluded
+because the repaired soil map slipped into 11G's leg~3 alone, $233$ organic cells against
+$547$):
+
+\begin{center}\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+metric & 11G & 11I & diff & paired $t$ \\
+\midrule
+net TOA [W\,m$^{-2}$]        & $0.321$   & $0.301$   & $-0.020$ & $-0.33$ \\
+Siberia DJF soil [$^\circ$C] & $-13.079$ & $-12.771$ & $\mathbf{+0.308}$ & $\mathbf{2.49}$ \\
+Siberia JJA soil [$^\circ$C] & $8.160$   & $7.939$   & $-0.221$ & $-1.08$ \\
+Siberia JJA T2m [$^\circ$C]  & $9.664$   & $9.434$   & $-0.230$ & $-1.19$ \\
+SO SW CRE [W\,m$^{-2}$]      & $-63.964$ & $-63.779$ & $+0.185$ & $1.71$ \\
+global T2m [$^\circ$C]       & $12.365$  & $12.335$  & $-0.030$ & $-1.25$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The statistic mattered.} Every arm branches from the same 1350 state, so the
+difference series is \emph{paired} and starts near zero. Scored against the control's
+absolute interannual scatter ($1.96\,\mathrm{sd}\sqrt{2/n}$, threshold $0.345$) the DJF
+soil warming reads as null; paired, it is $t=2.49$ and \textbf{resolved}, and it is still
+growing (first half $+0.212$, second $+0.404$).
+
+\textbf{But against the target it is a trade, not a freebie.} Siberian JJA T2m bias against
+ERA5:
+\[
+\text{11E } -1.013 \;\to\; \text{11G } -0.673 \;\to\; \text{\textbf{11I} } \mathbf{-1.123}
+\;\to\; \text{11J } -0.844
+\]
+11I hands back S4's entire Siberian summer gain and lands \emph{worse than the 11E
+baseline}. The increment ($-0.230$, $t=-1.19$) is not resolved, but the ranking is
+unambiguous and JJA Siberia is the bias the campaign exists for. Vegetation moves the other
+way: on matched decade and matched cells, TREEFPC $+0.0094$ and C3G $+0.0276$, recovering
+most of what S4 cost ($0.0787\to0.0649\to0.0743$).
+
+\subsection{Raupach: the lever cannot bootstrap the canopy it needs
+(2026--08--16)}\label{sub:r29raupach}
+11J${-}$11I \emph{is} a clean one-variable pair: same binary, one namelist flag. Over all
+$30$ years, paired, nothing Siberian resolves --- DJF soil, the \emph{pre-registered}
+target, is $+0.054$ ($p=0.670$); JJA soil $+0.312$ ($p=0.167$); JJA T2m $+0.161$
+($p=0.432$). Resolving the JJA soil point estimate at $95\,\%$ would need
+$(1.96\,\mathrm{sd}/\mathrm{effect})^2 = \mathbf{57}$ years, so \textbf{even a completed
+50-year 11J is underpowered for its own point estimate}: with a $1.2$\,K interannual noise
+floor this design cannot detect anything below ${\approx}0.35$\,K at 50 coupled years.
+
+That is a statement about the diagnostic. The \emph{mechanism} was then tested at the top
+of the causal chain, where a roughness change acts first and the noise is far lower:
+
+\begin{center}\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+Siberian land, 30 yr paired & 11I & 11J & diff & $p$ \\
+\midrule
+DJF $|\tau|$ [N\,m$^{-2}$]  & $0.0955$ & $0.0916$ & $-0.0039$ & $0.113$ \\
+DJF 10\,m wind [m\,s$^{-1}$]& $2.1282$ & $2.1911$ & $+0.0629$ & $0.253$ \\
+DJF skt${-}$2t [K]          & $-2.2719$& $-2.2761$& $-0.0042$ & $0.787$ \\
+JJA $|\tau|$ [N\,m$^{-2}$]  & $0.0753$ & $0.0706$ & $-0.0047$ & $0.016$ \\
+JJA 10\,m wind [m\,s$^{-1}$]& $1.2821$ & $1.3637$ & $+0.0816$ & $0.037$ \\
+JJA skt${-}$2t [K]          & $0.8456$ & $0.9497$ & $\mathbf{+0.1041}$ & $\mathbf{0.00003}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{JJA skt}${-}$\texttt{2t} survives Bonferroni over all $14$ tests. But the
+pre-registered sign test --- \emph{noise cannot know to reverse between seasons} --- fails:
+winter was predicted rougher (stress up, wind down) and instead has the \emph{same} signs
+as summer. The winter lever does not act at all.
+
+\textbf{Why.} Measured in 11J's Siberian box ($728$ cells, $1370$--$79$): tree height in
+January $\mathbf{2.89}$\,m, density $0.161$\,indiv\,m$^{-2}$ (of which BNS $0.112$),
+implied stem diameter $0.0198$\,m, and total LAI collapsing Jan/Jul $=0.131$.
+\texttt{add\_woody} is called only for \texttt{lifeform == TREE}, so grass contributes
+nothing to $\lambda$ by construction, and in winter everything rests on the stem term:
+\[
+\lambda_{\text{stem}} = \text{dens}\cdot\text{diam}\cdot h
+ = 0.161\times0.0198\times2.89 = \mathbf{0.0092}
+\]
+Fed to the code's own constants ($C_S{=}0.003$, $C_R{=}0.3$, $C_{D1}{=}7.5$,
+$\kappa{=}0.41$), that gives $z_0 = \mathbf{0.0132}$\,m --- the bare-soil value --- against
+the IFS lookup's $0.058$\,m for the same box in DJF. \textbf{Raupach makes the winter
+surface $4.4\times$ smoother, not $2.4\times$ rougher}, which is exactly the sign the
+momentum budget measures.
+
+``A leafless canopy is the roughest state'' is true --- for a canopy. A real boreal larch
+stand ($h=18$\,m, $\lambda_{\text{stem}}=0.12$) gives $z_0 = 1.51$\,m. At $2.9$\,m and
+$2$\,cm stems, $\lambda$ is an order of magnitude below the peak of the Raupach $z_0/h$
+curve, on the rising branch where $z_0\to0$. The offline calculation that predicted DJF
+$0.058\to0.140$\,m assumed a forest; the coupled model grows scrub.
+
+\textbf{The structural finding.} Raupach was proposed to fix a cold bias severe enough to
+lose the boreal forest, and its winter mechanism \emph{requires} that forest. The lever
+cannot bootstrap the canopy it needs in order to work. This is stronger than the
+statistical null: with $57$ years we would merely be measuring the response to a roughness
+\emph{decrease}. It is the same trap as \S\ref{sub:r27forest} --- BNS is outcompeted by C3
+grass rather than climate-gate limited --- seen from the other side.
+
+\emph{Not explained:} summer also got smoother, whereas a rough summer $\lambda$ suggests
+Raupach should exceed IFS's $0.190$\,m. That estimate used box-total LAI, which includes
+grass contributing nothing, so it is untrustworthy; tree-only LAI would settle it. It does
+not affect the winter conclusion, which is the hypothesis under test.
+
+\subsection{A leg destroyed at finalisation, again (2026--08--15)}\label{sub:r29hdf}
+11J's leg~4 ran to \textbf{step $87648$ --- the full ten years} --- and then died in
+finalisation: \texttt{error in line 261 io\_netcdf\_file\_module.F90 NetCDF: HDF error} on
+FESOM rank $129$. The XIOS buffer flush is destroyed by the abort, so ten completed years
+became nothing, the date file walked to $1390$, and the run stopped. Ruled out: not our
+code (no \texttt{oasis\_abort}, no LPJ-GUESS \texttt{fail()}), not Raupach (the failure is
+in FESOM's writer), not quota ($2.81$\,P of $4.22$\,P), not systematic (11I never saw it in
+five legs). A transient Lustre/HDF fault. Recovered by resetting the date file to
+$1380$--$01$--$01$ run~$4$; all three restart sets were intact, and the leg-4
+\texttt{oifs} restart directory was \emph{empty}, confirming nothing was written.
+
+\emph{LPJ-GUESS output survived}: it writes \texttt{.out} files per rank continuously,
+outside XIOS, so the vegetation diagnostics for the lost decade are on disk even though
+every netCDF field is gone. That is worth knowing for any future leg loss.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -6610,10 +6843,31 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--11)}\label{sec:state}
+\section{State of the campaign (2026--08--16)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--16 (round 29, \S\ref{sec:r29}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Raupach canopy roughness is dead, structurally rather than statistically.}
+Its winter mechanism needs a canopy; the model's Siberian trees are $2.89$\,m tall with
+$2$\,cm stems, giving $\lambda_{\text{stem}}=0.0092$ and $z_0=0.0132$\,m against IFS's
+$0.058$\,m. It makes the winter surface $4.4\times$ smoother. The lever cannot bootstrap
+the forest it requires in order to work.
+\item \textbf{The land-surface repair is a trade.} Paired, it warms Siberian DJF soil
+$+0.308$\,K ($t=2.49$, still growing) and recovers TREEFPC $+0.0094$ of what S4 cost ---
+but it moves the Siberian JJA bias against ERA5 from $-0.673$ to $-1.123$, worse than the
+11E baseline.
+\item \textbf{This design cannot resolve anything below ${\approx}0.35$\,K of Siberian
+JJA soil at 50 coupled years.} The interannual noise floor on the paired difference is
+$1.2$\,K; the measured $+0.312$\,K would need $57$ years. Future land levers must be
+screened on a lower-noise diagnostic --- the surface momentum budget resolved
+\texttt{skt}${-}$\texttt{2t} at $p=3\times10^{-5}$ where soil temperature saw nothing.
+\item \textbf{Branched coupled arms must be scored paired.} All arms share the 1350
+state, so the difference series starts at zero and grows; the unpaired
+$1.96\,\mathrm{sd}\sqrt{2/n}$ threshold discards the pairing and hid a resolved result.
+\end{itemize}
+
 \textbf{Added 2026--08--11 (round 28, \S\ref{sec:r28}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{S4 (\texttt{RCL\_INPPMIN} $70000\to50000$) is the best configuration the
@@ -7038,6 +7292,21 @@ being built on.
 \toprule
 claim & what killed it & where \\
 \midrule
+\dead{Raupach (1994) canopy roughness is a WINTER lever: a leafless boreal canopy is the
+roughest state, so DJF grid-box $z_0$ rises $0.058\to0.140$\,m and warms Siberian winter
+soil} &
+The winter mechanism requires a canopy the model does not have. Measured in 11J:
+$h=2.89$\,m, stem diameter $0.0198$\,m, so $\lambda_{\text{stem}}=0.0092$ --- an order of
+magnitude below the peak of the Raupach $z_0/h$ curve. Its own constants then give
+$z_0=0.0132$\,m, the bare-soil value, against IFS's $0.058$\,m: $4.4\times$
+\emph{smoother}, which is the sign the momentum budget measures (DJF $|\tau|$ $-4.1\,\%$,
+10\,m wind $+3.0\,\%$). DJF soil $+0.054$\,K, $p=0.670$. & \S\ref{sub:r29raupach} \\
+\dead{The land-surface repair is free --- nothing resolves against its threshold, so adopt
+and move on} &
+Scored with the wrong statistic and against no target. Paired (the arms branch from one
+1350 state) Siberian DJF soil is $+0.308$\,K, $t=2.49$, \emph{resolved}; and against ERA5
+the Siberian JJA bias goes $-0.673\to-1.123$, handing back S4's entire summer gain and
+landing worse than the 11E baseline. It is a trade, not a freebie. & \S\ref{sub:r29repair} \\
 \dead{The SO cloud deficit should be attacked by pushing the INP branch harder, since D2b
 is the only lever that has ever moved the Southern Ocean} &
 Scored on cloud \emph{area} rather than CRE: D2a $+0.63$\,pp and D2b $+0.43$\,pp of a
