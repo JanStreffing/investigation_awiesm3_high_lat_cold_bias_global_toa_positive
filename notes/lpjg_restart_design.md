@@ -171,11 +171,19 @@ target is identical year to year, so `frac_old ← last year's target` gives
 disappears because the comparison becomes target-to-target instead of
 target-to-resummed-physical. Requirements:
 
-- **Latch at deserialise.** By `getlandcover` #2 the deserialised value has been
-  overwritten twice (by #1 and by `synchronize`). Capture it on read, consume it once,
-  mark it spent. An implementation that reads `lc.frac` wherever it happens to run is a
-  **silent no-op on the load-bearing call** — it compiles, runs, logs nothing, and does
-  not fix the wobble.
+- **Latch per YEAR, not per restart.** *(Corrected during implementation — the first
+  draft said "latch at deserialise, consume once", which is wrong.)* `getlandcover` runs
+  twice a year and `synchronize` rewrites `lc.frac` from the stands in between, so a
+  latch consumed on call #1 leaves call #2 — the load-bearing one — with nothing. It
+  would compile, run, log nothing and not fix the wobble. And a per-restart latch does
+  nothing at all in years 2–10 of a leg.
+
+  Capture instead at the **first `getlandcover` of each simulation year**, stamped with
+  the year. At that moment `lc.frac` is the previous year's target — or, on the first
+  call of a leg, exactly what the archive carried, because nothing touches `lc.frac`
+  between deserialisation and that call. **The restart case therefore needs no special
+  handling at all, and no serialise-side hook**, which is why the archive layout stays
+  byte-for-byte identical.
 - **Structural guard, not float epsilon.** Target and physical differ beyond epsilon on
   every cell of every restart (§4), so an epsilon guard fires everywhere and A degenerates
   into D with extra logging. Use a `LC_METADATA_REPAIR_LIMIT`-scale bound — the band
@@ -205,15 +213,24 @@ target-to-resummed-physical. Requirements:
   sub-resolution area meant to be retried forever, or written off? The code currently
   does the former by accident.
 
-**E — Stop calling `landcover_init` every year.**
+**E — Stop calling `landcover_init` every year. Hygiene, NOT a fix.**
 Drop the `fixedLUafter` disjunct from `needs_landcover_init` (`framework.cpp:4481`). The
 comment directly above it insists a loaded transient state *"must be left physically
 untouched here"*, and the disjunct then routes every `fixed_LU` restart into
 `landcover_init` → `synchronize` → the stand rescale at `landcover.cpp:3561`. The code
-contradicts its own comment. Removes re-derivation #1 and the read-path stand rescale
-outright, leaving the `landcover_dynamics` path — where the `-is` team's
-`fix/luh3-first-run` already expects the work to happen. Plausibly smaller than A, and it
-removes a cause rather than reinterpreting one. **Price this against A first.**
+contradicts its own comment, and E resolves that.
+
+**But E does not fix the wobble, and an earlier draft of this note wrongly said it might
+be the smallest true fix.** E removes pass 1. The roundoff-into-threshold path lives
+entirely in pass 2: `getlandcover` #2 takes the same `!is_cold_start` branch and executes
+the same `lc.frac_old[i] = physical_lc[i]` re-summation, and #2 is the load-bearing call
+— it feeds `lc_changed` and decides `no_changes`. Pass 2 is unconditional, because
+`all_fracs_const = false` for LUH3 ("LUH3 data is yearly", `externalinput.cpp:348`;
+confirmed in run logs as `DEBUG: all_fracs_const = 0`), so the guard at
+`landcover.cpp:3839` always admits `lc_changed`.
+
+Worth doing for its own sake — it halves the read-path work and removes a stand rescale
+that the adjacent comment forbids — but it must not be counted as addressing the cause.
 
 **B′ — Sidecar file.**
 Write `frac_old`/`frac_change` to a small companion file beside the archive. Additive and
@@ -240,13 +257,14 @@ area inherits the same noise floor.
 
 ## 8. Recommendation
 
-1. **Price E against A.** E may be the smallest true fix, and unlike A it does not depend
-   on what the archive happens to contain or on getting a latch right. It is a one-line
-   change to a disjunct whose own adjacent comment argues against it.
-2. If E is rejected, do **A** with the latch and the structural guard, and settle the
-   transient-run question first.
-3. Run the §6 instrumentation regardless — it sets the guard threshold for A and gives
-   the before/after evidence for E.
+1. **Implement A**, with the latch and a `LC_METADATA_REPAIR_LIMIT`-scale guard. It is the
+   only option that changes what `frac_old` receives in `getlandcover` #2, which is where
+   the defect is. The guard threshold does not need measuring first — §7A settles it on
+   structural grounds.
+2. **Then run the §6 instrumentation** as the before/after proof: cropland wobble to zero,
+   `force_small_change` activations to zero, peat-cell count stable across leg boundaries.
+   This validates the change; it is not needed to decide what to build.
+3. **E alongside, as separate hygiene.** Not a substitute for A — see §7E.
 4. **B′ over C** if the deltas are ever wanted. Keep either well away from A.
 
 Nothing found here argues for D.
@@ -287,4 +305,7 @@ Kept for honesty; rev 1 is in git history at `8322a84`.
   rather than movement, so the conclusion stood, but the omission was not stated.
 - **`frac_old_orig` was tabled and never examined.** Now resolved: CROPLAND-scoped
   scratch, not a previous-target checkpoint, so A is not free.
-- **Options E and B′ were missing**, and E is a candidate for the smallest true fix.
+- **Options E and B′ were missing.** Rev 2 first added E as "possibly the smallest true
+  fix" and recommended pricing it against A. **That was wrong too, and is corrected in
+  §7E:** E removes pass 1, but the defect is entirely in pass 2, which is unconditional
+  because `all_fracs_const = false` for LUH3. E is hygiene. A is the fix.
