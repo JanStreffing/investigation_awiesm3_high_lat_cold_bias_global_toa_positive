@@ -101,6 +101,21 @@ Three commits: `8c068f3`, `ab45fdd`, `29ae612`.
    zero from the control arm says nothing and must not be counted toward this condition.
    Note also that the needle was wrong until 2026-08-18 (`land-cover` vs `stand-type`),
    so every guard count recorded before then was 0 for a second, independent reason.
+
+   **MEASURED 2026-08-18, and it is NOT met -- it is untested.** LCDRIFT over 6795
+   gridcell-years in the fix arm: median 4.95e-9, p99 5.30e-6, max 9.35e-6, against a
+   limit of 0.1. The guard has ~10700x headroom over the worst case it has ever seen,
+   so zero fallbacks does not mean the carried value was validated -- the guard has
+   never been within four orders of magnitude of firing.
+
+   Two readings of that, and this test cannot separate them: either 0.1 is far too
+   loose, or the restart parent is simply not foreign. The second looks right here --
+   max drift 9.35e-6 matches the max stand-sum roundoff 9.28e-6 almost exactly, so the
+   2000-year offline spin-up agrees with our re-summation to within float roundoff and
+   the parent-configuration case the bound exists for never arose.
+
+   To actually test it, restart from a state with a different set of land covers
+   enabled. Until then this condition should not be counted toward the merge.
 6. **Agreement with -is on the peat conflict.** See below. *UNMET.*
 
 Conditions 1, 2 and 5 are all satisfied by one 3-leg fixed_LU run per arm. Condition 3 is
