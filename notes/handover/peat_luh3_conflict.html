@@ -1,0 +1,418 @@
+<title>The Peat–LUH3 Conflict</title>
+<style>
+  :root {
+    --ground:      #f2f4ef;
+    --surface:     #ffffff;
+    --surface-alt: #e9ece4;
+    --ink:         #1e2318;
+    --ink-2:       #444b3c;
+    --muted:       #68705f;
+    --rule:        #d3d8ca;
+    --sphagnum:    #4a6f42;
+    --tannin:      #8f5b16;
+    --iron:        #7a3b3b;
+    --code-bg:     #e9ece4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #14170f;
+      --surface:     #1b1f16;
+      --surface-alt: #232819;
+      --ink:         #e7eade;
+      --ink-2:       #c0c6b4;
+      --muted:       #8d9682;
+      --rule:        #333a28;
+      --sphagnum:    #8fb383;
+      --tannin:      #d0a15c;
+      --iron:        #d08a8a;
+      --code-bg:     #232819;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #14170f;
+    --surface:     #1b1f16;
+    --surface-alt: #232819;
+    --ink:         #e7eade;
+    --ink-2:       #c0c6b4;
+    --muted:       #8d9682;
+    --rule:        #333a28;
+    --sphagnum:    #8fb383;
+    --tannin:      #d0a15c;
+    --iron:        #d08a8a;
+    --code-bg:     #232819;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 3.2rem 1.5rem 5rem;
+  }
+  .wrap { max-width: 44rem; margin: 0 auto; display: flex; flex-direction: column; gap: 2.4rem; }
+
+  h1, h2, h3 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; text-wrap: balance; margin: 0; font-weight: 600; }
+  h1 { font-size: 2.05rem; line-height: 1.18; letter-spacing: -0.012em; }
+  h2 { font-size: 1.32rem; line-height: 1.25; margin-bottom: 0.15rem; }
+  h3 { font-size: 1.02rem; line-height: 1.3; }
+  p  { margin: 0; }
+  a  { color: var(--sphagnum); }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--sphagnum); outline-offset: 3px; }
+
+  .eyebrow {
+    font-size: 0.71rem; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--muted); font-weight: 600;
+  }
+  header { display: flex; flex-direction: column; gap: 0.55rem; }
+  .standfirst { font-size: 1.06rem; color: var(--ink-2); max-width: 40rem; }
+  .byline { font-size: 0.82rem; color: var(--muted); }
+
+  section { display: flex; flex-direction: column; gap: 0.85rem; }
+  section > p, section > ul, section > ol { max-width: 40rem; }
+  ul, ol { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; }
+
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.855em; }
+  code { background: var(--code-bg); padding: 0.1em 0.34em; border-radius: 3px; }
+
+  .findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .finding { background: var(--surface); padding: 0.95rem 1.05rem; display: flex; flex-direction: column; gap: 0.22rem; }
+  .finding .n { font-family: Georgia, serif; font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .finding .k { font-size: 0.76rem; color: var(--muted); line-height: 1.35; }
+  .n.warn { color: var(--tannin); }
+  .n.ok   { color: var(--sphagnum); }
+  .n.bad  { color: var(--iron); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); }
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; background: var(--surface); }
+  th, td { text-align: left; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 0.9rem; }
+  thead th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; }
+
+  pre { background: var(--code-bg); border: 1px solid var(--rule); padding: 0.9rem 1rem; overflow-x: auto; margin: 0; font-size: 0.83rem; line-height: 1.55; }
+
+  .note { border-left: 3px solid var(--tannin); padding: 0.15rem 0 0.15rem 0.95rem; color: var(--ink-2); }
+  .note.good { border-left-color: var(--sphagnum); }
+  .note.dead { border-left-color: var(--muted); }
+
+  .revbox { background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--tannin); padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .revbox h2 { font-size: 1.12rem; }
+  .revbox ul { gap: 0.55rem; }
+  .revbox li::marker { color: var(--muted); }
+
+  .chip { display: inline-block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; padding: 0.1rem 0.42rem; border: 1px solid currentColor; border-radius: 2px; vertical-align: 0.09em; white-space: nowrap; }
+  .chip.met     { color: var(--sphagnum); }
+  .chip.unmet   { color: var(--iron); }
+  .chip.pending { color: var(--tannin); }
+
+  hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
+  .where dt { font-weight: 600; margin-top: 0.9rem; }
+  .where dd { margin: 0.2rem 0 0; color: var(--ink-2); }
+  .where dl { margin: 0; }
+  s { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">AWI-ESM3 · LPJ-GUESS · land surface</span>
+  <h1>The Peat–LUH3 Conflict</h1>
+  <p class="standfirst">Where the prescribed peat map and the LUH3 land-use dataset disagree, why no choice of reference year fixes it, what we changed, and the restart defect underneath it all that turns a 10<sup>-9</sup> rounding difference into whole stand types switching on and off.</p>
+  <p class="byline">Jan Streffing · rev 2, 18 August 2026 · <strong>handover to Laszlo Hajdu</strong></p>
+</header>
+
+<hr>
+
+<div class="revbox">
+  <h2>What changed since rev 1 (17 August)</h2>
+  <p>Four things, two of which correct rev 1 rather than extend it. If you read the first version, read this list and then sections 3, 5 and 6.</p>
+  <ul>
+    <li><strong>The restart fix is implemented, not just proposed.</strong> Rev 1 ended by asking whether the restored <code>frac</code> should be trusted. It now is, behind <code>restart_target_continuity</code> (default on), in three commits. The question stands as a review request, but there is code to review.</li>
+    <li><strong>The conflict population is mostly mid-latitude cropland, not Arctic rangeland.</strong> A live run reported seven distinct refusing cells; six are between 37 °N and 56 °N. Rev 1's reindeer-grazing explanation describes the one cell we had looked at, and does not generalise. See section 2.</li>
+    <li><strong><code>peat_lu_conflict_policy 1</code> had never once executed.</strong> A Jinja trailing-newline bug silently ate the last line of the instruction template. Found and fixed 17 August. Rev 1 implied the switch was exercised; it was not.</li>
+    <li><strong>The A/B measurement still has no number.</strong> Two arms are queued. The pass criterion is written down in advance, including what counts as a failed test — section 6.</li>
+  </ul>
+</div>
+
+<section>
+  <h2>1. The short version</h2>
+  <p>Two prescribed inputs disagree about how much of a grid cell can be peatland, at about 0.7 % of cells. It is not an epoch mismatch and not a reference-year mistake — the disagreement survives every LUH3 year tested, and 1850 is the most favourable of them. Which dataset wins is now a run-time switch rather than a hard-coded constant, defaulting to LUH3 so an unmodified instruction file stays CMIP7-compliant.</p>
+  <p>Chasing a peat-area oscillation in a piControl where peat should be frozen led somewhere more general: <strong>the restart is not a state snapshot.</strong> The land-cover fractions are serialised correctly and then discarded on read, re-derived by summing stand areas, and fed to threshold tests that flip whole categories on a 10<sup>-9</sup> difference. That is the root cause, it now has a fix, and it is the one thing here we would most like a second opinion on.</p>
+  <p>No carbon is lost — the oscillation is bookkeeping, not a leak. But it means restart-continuation is not bit-identical to straight-through simulation.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Scale of the conflict</span>
+  <div class="findings">
+    <div class="finding"><span class="n">73</span><span class="k">of 10 211 cells where the peat map exceeds LUH3 NATURAL at 1850 &mdash; the best of any epoch</span></div>
+    <div class="finding"><span class="n bad">7</span><span class="k">distinct cells where the <em>physical</em> stand exceeds it too, and so refuse under policy 0 &mdash; observed live, was reported as 1</span></div>
+    <div class="finding"><span class="n warn">9.9 %</span><span class="k">peat-cell swing in HR runs, driven by a 0.33 % land-use wobble</span></div>
+    <div class="finding"><span class="n ok">0.000000</span><span class="k">peat change across 50 years at TCO95, where few cells sit near the boundary</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>2. What the conflict actually is</h2>
+  <p>Take the cell that first stopped a run, at 67.7917 °N 19.2857 °E in Arctic Sweden:</p>
+  <pre>peat map prescribes          0.226400
+physical stand in restart    0.191726
+LUH3 NATURAL available       0.088604   &lt;- pinned to 1850</pre>
+  <p>The peat stand does not fit in the natural area LUH3 leaves for it. Two details were needed to reproduce that <span class="mono">0.088604</span> exactly: our configuration runs <code>run_barren 0</code>, so NATURAL also absorbs the LUH3 closure gap rather than being the raw <code>primf+primn+secdf+secdn</code> (which is 0.043008); and cells with no usable LUH3 state fall back to NATURAL = 1 rather than taking the ~2×10<sup>20</sup> fill value into the arithmetic.</p>
+
+  <h3>The seven cells that actually refuse</h3>
+  <p>Rev 1 had exactly one of these, because the run aborted at the first. Now that policy 0 refuses per rank, a whole population is visible. Across both S1 arms:</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Cell</th><th class="num">physical peat</th><th class="num">LUH3 NATURAL</th><th>roughly</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">67.79 N&nbsp;&nbsp;19.29 E</td><td class="num">0.191726</td><td class="num">0.088604</td><td>Lapland, Sweden</td></tr>
+        <tr><td class="mono">55.64 N&nbsp;&nbsp;48.29 E</td><td class="num">0.062500</td><td class="num"><strong>0</strong></td><td>Tatarstan, mid-Volga</td></tr>
+        <tr><td class="mono">45.35 N&nbsp;122.88 E</td><td class="num">0.153539</td><td class="num">0.058243</td><td rowspan="3" style="vertical-align:middle">Songnen plain, NE China</td></tr>
+        <tr><td class="mono">44.42 N&nbsp;122.26 E</td><td class="num">0.352285</td><td class="num">0.281115</td></tr>
+        <tr><td class="mono">44.42 N&nbsp;123.96 E</td><td class="num">0.205824</td><td class="num">0.162431</td></tr>
+        <tr><td class="mono">44.42 N&nbsp;&nbsp;83.21 E</td><td class="num">0.156711</td><td class="num">0.072444</td><td>Dzungaria, Xinjiang</td></tr>
+        <tr><td class="mono">37.87 N&nbsp;127.50 E</td><td class="num">0.008538</td><td class="num"><strong>8.4×10<sup>-9</sup></strong></td><td>central Korean peninsula</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Two things follow that rev 1 got wrong or could not see.</p>
+  <p><strong>The population is agricultural, not Arctic.</strong> Six of seven sit in the mid-latitude cropland belt. Whatever the general mechanism is, it is not reindeer — that explanation fits the one cell we happened to open. The honest generalisation is weaker and more useful: LUH3 assigns these cells almost entirely to crop and pasture, and our peat map says a substantial fraction of them is peat, and both can be true of the real world (drained peat farmland is ordinary) while being mutually exclusive in a land-cover accounting where peat is carved only from NATURAL.</p>
+  <p><strong>At two cells, policy 0 does not cap peat — it annihilates it.</strong> NATURAL is exactly 0 in Tatarstan and 8.4×10<sup>-9</sup> in Korea. There is no fraction to cap into. A cap-and-transfer would move the entire peat stand and its pools out, permanently, on the first land-use year. That is a substantive argument for the refusal being right rather than merely conservative, and it was not available when rev 1 was written.</p>
+
+  <h3>Why the epoch explanation is wrong</h3>
+  <p>LUH3 does vary with epoch: at the Lapland cell it reconstructs a rangeland maximum that climbs from 850 onwards, peaks in 1910, and then vanishes abruptly in the 1950s.</p>
+  <pre> 850   range 0.2115   NATURAL 0.7885
+1300   range 0.5651   NATURAL 0.4349
+1850   range 0.9114   NATURAL 0.0886   &lt;- piControl reference year
+1910   range 0.9433   NATURAL 0.0567   &lt;- true maximum
+1950   range 0.8958   NATURAL 0.1042
+1955   range 0.4925   NATURAL 0.5075   &lt;- collapses in one decade
+1960   range 0.0892   NATURAL 0.9108
+2000   range 0.0240   NATURAL 0.9760</pre>
+  <p>Two things in that series are worth a second look. NATURAL first rises back above the 0.1917 physical peat stand in <strong>1952</strong> &mdash; so on this cell the conflict exists for the entire pre-1952 period and disappears afterwards. And the collapse is a <strong>step, not a decline</strong>: rangeland falls by a factor of ten between 1950 and 1960. Land-use history does not move like that, so this looks like a change of source inventory inside the LUH3 reconstruction rather than anything that happened in Lapland.</p>
+  <p>So it is tempting to blame the 1850 pin. That is wrong on both counts. <strong>1850 is correct and required</strong> &mdash; 1850 forcing <em>is</em> the piControl convention, and our model years 1350&ndash;1399 are arbitrary spin-up labels, not real dates. Reading LUH3 at the calendar year would be a bug, not a fix.</p>
+  <p>And <strong>1850 is also the best year available.</strong> Counting cells where the peat map exceeds the LUH3 natural area:</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>LUH3 year</th><th class="num">conflicting cells</th><th class="num">of 10 211</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1850</strong></td><td class="num"><strong>73</strong></td><td class="num">0.71 %</td></tr>
+        <tr><td>1900</td><td class="num">84</td><td class="num">0.82 %</td></tr>
+        <tr><td>1950</td><td class="num">208</td><td class="num">2.04 %</td></tr>
+        <tr><td>2000</td><td class="num">493</td><td class="num">4.83 %</td></tr>
+        <tr><td>2020</td><td class="num">454</td><td class="num">4.45 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Conflicts grow toward the present because cropland and pasture expanded globally, squeezing NATURAL everywhere. 1850 leaves the most room of any epoch tested, and <strong>62 of the 73 cells that conflict at 1850 also conflict at 2000</strong>.</p>
+  <p>The conclusion is therefore the plainer one: <strong>the peat map and LUH3 are two independent datasets that disagree at about 0.7 % of cells, and no choice of epoch makes that go away.</strong> That is why a policy switch is the right response rather than a reference-year fix.</p>
+
+  <p class="note dead">Struck from rev 1: <s>"LUH3 <code>range</code> at 68 °N is extensive reindeer grazing, which in reality happens on peatland."</s> True of the Lapland cell, and it may still bear on whether <code>range</code> should map to PASTURE at high latitude — but six of the seven observed cells are mid-latitude cropland, so it is not the root cause of the conflict as a whole.</p>
+
+  <p class="note">Worth knowing: neither CMIP6 predecessor of this configuration could hit this. EC-Earth3's LPJ-GUESS reads <code>PEATLAND</code> from the land-use file itself, so there is no second dataset to disagree with — its <code>file_peat</code> is a dead declaration, referenced nowhere — and its coupled setup runs <code>run_landcover 0</code> regardless. JSBACH3 has no peatland type at all.</p>
+</section>
+
+<section>
+  <h2>3. The decision</h2>
+  <p>A new instruction-file switch, <code>peat_lu_conflict_policy</code>, default <strong>0</strong>.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:8rem">Policy</th><th>Behaviour</th><th style="width:11rem">Use for</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>0</strong><br><span class="mono" style="color:var(--muted)">default</span></td>
+          <td><strong>LUH3 authoritative.</strong> Peat is capped to the available NATURAL and the surplus area <em>and its pools</em> are moved by <code>landcover_dynamics</code>. Under <code>fixed_LU</code> that machinery never runs, so the policy refuses with an explanatory error rather than truncating silently.</td>
+          <td>CMIP7, historical, scenario — anywhere land use is an applied common forcing that must be reproduced exactly.</td>
+        </tr>
+        <tr>
+          <td><strong>1</strong></td>
+          <td><strong>Physical peat authoritative.</strong> The stand keeps its area and the non-peat categories are scaled into the remainder. Nothing is discarded, so no transfer is needed and it is safe in every code path.</td>
+          <td>Fixed-forcing control runs only.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The case for allowing policy 1 at all: north of 60 °N, mean LUH3 rangeland at 1850 is <span class="mono">0.0040</span>, while northern peat holds on the order of 500–1000 PgC and sets the soil thermal regime. In a pre-industrial control, boreal land use is noise and peat is signal. In a historical run that reasoning inverts, which is exactly why 0 is the default.</p>
+  <p class="note">Why policy 0 refuses instead of capping: an earlier attempt capped anyway. It rewrote the bookkeeping while the physical stand kept its area, and was caught one call later by the very next check — <span class="mono">st=2 metadata=0.0886 physical=0.1917</span>. Laszlo's comment that capping "would discard state without a transfer" is structurally true in the <code>fixed_LU</code> path, not a stylistic preference. The two zero-NATURAL cells in section 2 sharpen this: there, capping is not lossy, it is total.</p>
+  <p class="note"><strong>Correction to rev 1.</strong> The switch is real but had <strong>never executed</strong> when rev 1 was published. Jinja strips the trailing newline on render, so a parameter placed on the last line of a <code>.ins</code> template is silently dropped — and <code>peat_lu_conflict_policy</code> was the last line. Every run that was supposed to test policy 1 ran policy 0 instead and died on the refusal. Fixed 17 August by keeping <code>! end</code> as the final line. If you write instruction templates, this will bite you too.</p>
+</section>
+
+<section>
+  <h2>4. Peat that moved when it should not have</h2>
+  <p>Checking <code>AWI-ESM3-VEG-HR-CMIP7-piControl</code> (a270089), which runs <code>fixed_LU: 1850</code> and so should hold peat perfectly still across all 97 legs:</p>
+  <pre>  yr    cells   peat&gt;0   mean PEAT_STANDFRAC     SoilC
+1851   107132    47296   0.042686               8.386
+1887   107132    44281   0.040026               8.454
+1959   107132    48049   0.043379               8.514
+2007   107132    43467   0.039192               8.551
+2043   107132    44361   0.039904               8.572</pre>
+  <p>The peat-bearing cell count swings between 43 467 and 48 049 — about ten percent — with no trend and full recovery. Total cell count is constant, so it is not a grid artefact. Crop area is flat at 0.6062 across all 194 years, so <code>fixed_LU</code> is working and LUH3 is not evolving.</p>
+  <p>The diagnostic signature is the tell: the value is <strong>identical across both years within a leg and steps at leg boundaries</strong>. A physical process would vary year to year. This is peat being re-derived at each restart and landing somewhere slightly different.</p>
+  <p class="note good"><strong>The carbon does not follow it.</strong> Soil carbon varies only 2.2 % and rises monotonically — ordinary spin-up accumulation. If 4 600 peat stands were being destroyed and recreated, soil carbon would dip and recover by several percent. It does not. So the stands are being re-counted, not destroyed.</p>
+  <p><strong>Caveat:</strong> <code>cpool.out</code> is a gridcell total, so a peat→natural transfer <em>within</em> a cell conserves gridcell carbon and would be invisible in this check. Carbon leaving the land is ruled out; redistribution between stands inside a cell is not.</p>
+  <p>For contrast, the same diagnostic on our own arm — also <code>fixed_LU: 1850</code>, five legs, 50 years:</p>
+  <pre>1359   10610 cells   4449 peat   0.041567
+1369   10610         4449        0.041567
+1379   10610         4449        0.041567
+1389   10610         4449        0.041567
+1399   10610         4449        0.041567</pre>
+  <p>Identical to six decimal places. The discriminator between the two runs is still open — the obvious candidates are resolution (107 132 cells against 10 610, so many more marginal cells near whatever threshold creates or kills a peat stand) and the v3.4.2 binary lineage. That binary carries none of the newer land-cover checks.</p>
+</section>
+
+<section>
+  <h2>5. What drives the oscillation: marginal cells amplify tiny land-use noise</h2>
+  <p>Land use is not quite constant in these runs even though <code>fixed_LU: 1850</code> pins it. Comparing the land-use tile fractions leg by leg, in <em>both</em> the HR piControl and <code>Spinup_cont3</code>:</p>
+  <pre>       crp          peat cells
+  4.161630              48049   &lt;- identical baseline in BOTH runs
+  4.163668              47296
+  4.165642              46513
+  4.172533              44281
+  4.175385              43467</pre>
+  <p>The relationship is monotonic and steep: a <strong>0.33 % wobble in cropland area drives a 9.5 % swing in peat-bearing cells</strong> &mdash; roughly thirty-fold amplification. Both runs return repeatedly to exactly the same clean state (<span class="mono">crp 4.161630</span>, 48 049 peat cells) and make excursions from it.</p>
+  <p>That amplification <em>is</em> the peat&ndash;LUH3 conflict, seen at scale. Thousands of HR cells sit right at the boundary where peat only just fits inside the available NATURAL, so any small land-use perturbation tips them out &mdash; and back again when it reverses. Our TCO95 arm shows none of it because only a handful of cells are anywhere near that boundary.</p>
+  <p class="note"><strong>A separate bug, found while chasing this, that is <em>not</em> the cause.</strong> The <code>fixed_LU</code> freeze at <code>framework.cpp:4450</code> reads <code>thisyear &gt;= fixedLUafter</code>, so gross land transfers are only switched off once the model calendar reaches the pinned year. Spin-ups numbered below it never trigger it: <code>Spinup_cont3</code> runs 1650&ndash;1679 against <code>fixed_LU 1850</code> and 0 of its 64 ranks report the freeze, so gross transitions stay on for the whole run. Our own 11I (1350&ndash;1399) has the same gap. It is worth fixing on its own merits &mdash; but the HR piControl runs 1850+, <em>does</em> fire the freeze, and still shows the same wobble and the same peat oscillation, so this is not what causes it.</p>
+</section>
+
+<section>
+  <h2>6. The root cause: the restart discards what it just restored</h2>
+  <p>The obvious question is why a restart perturbs land use at all &mdash; LPJ-GUESS writes a binary dump and reads it back, so continuation ought to be exact. It nearly is. <code>Stand::serialize</code> writes the pools, and both <code>Gridcellst::serialize</code> and <code>Landcover::serialize</code> write <code>frac</code> into the archive. The round trip is faithful; <code>Stand::clone</code> even uses it as a copy mechanism.</p>
+  <p>Then, on every restart, <code>getlandcover</code> throws the restored bookkeeping away and recomputes it:</p>
+  <pre>physical_st[stand.stid]      += area;   // re-sum the restored stands
+physical_lc[stand.landcover] += area;
+physical_total               += area;
+...
+lc.frac[i] = physical_lc[i];            // overwrite what the dump restored
+gcst.frac  = physical_st[i];</pre>
+  <p>The code's own comment names the consequence: <em>"physical_total is a sum over every stand in the cell, so it carries whatever double [roundoff]"</em>. Mid-leg, <code>gcst.frac</code> is the value carried in memory from the previous year; after a restart it is a fresh summation over stands. The two differ by 3.3&times;10<sup>-9</sup> to 4.2&times;10<sup>-7</sup> &mdash; precisely the drift the 1e-9 check was flagging.</p>
+  <p>That difference then meets <strong>threshold tests</strong>:</p>
+  <pre>if (!is_cold_start &amp;&amp; gcst.frac_old == 0.0 &amp;&amp; new_frac &gt; 0.0
+        &amp;&amp; new_frac &lt; NEW_ST_THRESHOLD) {
+    filtered_amount[st.landcover] += new_frac;
+    gcst.frac = 0.0;                    // category dropped entirely
+}
+...
+if (raw_luh3_crop_sum &gt; lc.frac[CROPLAND])
+    crop_fraction_scale = lc.frac[CROPLAND] / raw_luh3_crop_sum;</pre>
+  <p>An equality test against zero and a comparison against a threshold, both evaluated on a quantity whose last digits depend on whether you arrived by restart or by simulation. Land the wrong side of one and a whole stand type switches on or off &mdash; a discrete jump produced by a 10<sup>-9</sup> input.</p>
+  <p>That accounts for every property we measured: constant within a leg, stepping at leg boundaries, flipping between a small set of discrete states rather than drifting, and returning repeatedly to exactly the same baseline.</p>
+
+  <h3>The fix, as built</h3>
+  <p>Rev 1 stopped here and asked the question. It is now implemented, in three commits, behind <code>restart_target_continuity</code> (bool, <strong>default true</strong>):</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:6.5rem">commit</th><th>what it does</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">8c068f3</td><td>Repair-first land-cover checks, and the <code>peat_lu_conflict_policy</code> switch.</td></tr>
+        <tr><td class="mono">ab45fdd</td><td>Difference the land-cover <em>target</em> against the carried value rather than a fresh re-sum of the stands. This is the actual fix: the threshold tests stop seeing a summation artefact as a land-use change.</td></tr>
+        <tr><td class="mono">29ae612</td><td>Latch the carried fractions per stand type, and match the check's summation order.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The latch is <code>Gridcellst::frac_prev</code> / <code>frac_prev_year</code> — per year, at stand-type granularity, and deliberately <strong>not serialised</strong>. It is a within-run continuity device, not new restart state, so it adds nothing to the archive layout. That matters because <code>ArchiveStream</code> is a raw byte stream — <code>transfer(char*, streamsize)</code>, no magic number, no version, no field names — and any layout change reads old dumps as garbage.</p>
+  <p><strong>Two implementation bugs, both worth knowing about because both were silent-ish:</strong></p>
+  <ol>
+    <li>A half-applied version of the patch produced <code>LUH3 previous LC/ST mismatch</code> at 2.5×10<sup>-11</sup> — small enough to look like noise, actually a missing half.</li>
+    <li>The latch initially aggregated in a different order from the check that consumes it. Floating-point addition is not associative, so the two disagreed by ~3×10<sup>-9</sup> against a 10<sup>-12</sup> tolerance and killed both arms. The fix is that the latch now walks <code>stlist</code> in exactly the order the check does. If you touch this code, preserve that: the correctness of the comparison depends on the summation order matching, not merely on the values being mathematically equal.</li>
+  </ol>
+
+  <h3>Corrections to rev 1's analysis</h3>
+  <p>A review caught two claims in the first design note that were wrong. Both are load-bearing for anyone re-deriving this:</p>
+  <ul>
+    <li><strong><code>landcover_reconcile_restart_state</code> is not unreachable.</strong> Rev 1 claimed the end-of-year reconciliation is never hit in no-change years, so the invariant is never re-established. False — it forwards to <code>synchronize_carried_landcover_state</code> at <code>landcover.cpp:129</code> and runs every year at <code>:161</code>.</li>
+    <li><strong>Removing the first <code>getlandcover</code> pass is hygiene, not a fix.</strong> <code>getlandcover</code> runs twice per year under <code>fixed_LU</code> — via <code>landcover_init</code> and again via <code>lc_changed</code>. It is tempting to delete pass 1. But the defect is entirely in pass 2, which is <em>unconditional</em>, because <code>all_fracs_const = false</code> for LUH3 and the guard therefore always admits. We briefly recommended this as "the smallest true fix" and were wrong.</li>
+  </ul>
+
+  <h3 id="ab">The measurement, and what would falsify it <span class="chip pending">no number yet</span></h3>
+  <p>Two runs, one binary, one namelist line apart — <code>restart_target_continuity</code> 1 against 0, under <code>fixed_LU</code>, with <code>print_lc_change_diag 1</code> emitting an <code>LCDIAG</code> line whenever a land-cover change is registered.</p>
+  <pre>required:   LCDIAG count == 0  with the switch on
+            LCDIAG count  &gt; 0  with the switch off</pre>
+  <p><strong>If both arms come out zero the test proved nothing and must be redesigned.</strong> That is a failure, not a pass — recorded here in advance so it cannot be reinterpreted later. As of this writing both arms are queued behind an association job limit and neither has produced a number. Nothing downstream of this should be merged until it does.</p>
+</section>
+
+<section>
+  <h2>7. Restart-precision repairs, in the same change</h2>
+  <p>Three bookkeeping checks were converted from assert-first to repair-first, following what both CMIP6 predecessors did — EC-Earth3 rescales fractions with a warning; JSBACH3 iterates toward closure and only aborts if repair fails.</p>
+  <ul>
+    <li><strong>Stand-sum roundoff.</strong> <code>lc_bookkeeping_tol()</code> is <code>INPUT_RESOLUTION × 1e-3 = 1e-9</code>, scaled off the precision of the land-use <em>input</em> but applied to a sum of restart-state floats whose error floor is float epsilon. Measured worst case 4.2×10<sup>-7</sup>, about 3.5× float32 eps — <strong>no restart can pass it</strong>. Now renormalised below <code>LC_PHYSICAL_SUM_REPAIR_LIMIT = 1e-5</code>, fatal above.</li>
+    <li><strong>Metadata against physical stands.</strong> Repaired at any magnitude with a logged warning; only non-finite or out-of-range is fatal. This direction cannot change a stock — the physical stands own the pools and the repair is literally <code>gcst.frac = st_sum[s]</code>.</li>
+  </ul>
+  <p>Measured on a one-day TCO95 restart once relaxed: <strong>1099 renormalisations and 14 909 metadata repairs</strong> across a ~10 200-cell gridlist. Essentially the whole domain fails the 1e-9 check, not the twelve cells that happened to abort first.</p>
+</section>
+
+<section>
+  <h2>8. Coordinating with the -is branch before anyone merges</h2>
+  <p>This is new since rev 1 and it needs your input, because both branches rewrite the same block of <code>framework/externalinput.cpp</code>.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:7rem">branch</th><th>peat behaviour</th></tr></thead>
+      <tbody>
+        <tr><td><strong>-is</strong><br><span class="mono" style="color:var(--muted)">fix/luh3-first-run</span></td><td>Cap peat to available NATURAL, always, and let <code>landcover_dynamics</code> move the surplus with its C/N/water.</td></tr>
+        <tr><td><strong>ours</strong><br><span class="mono" style="color:var(--muted)">run/46e7a84-repair-first</span></td><td>A run-time switch. LUH3-authoritative by default; <strong>refuse</strong> under <code>fixed_LU</code>, where the transfer machinery does not run; physical-peat-authoritative as an opt-in for controls.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Git will merge these cleanly. The semantics will not — ours refuses exactly where theirs caps. Their reasoning is right for the transient path and ours is right for the fixed one, so the likely landing point is <strong>theirs plus our <code>fixed_LU</code> guard, as one commit rather than two merges</strong>. Neither side should merge over the other.</p>
+  <p>Two conditions nobody can discharge alone:</p>
+  <ul>
+    <li><strong>Policy 0's cap-and-transfer path has still never run.</strong> Impossible for us to exercise — under <code>fixed_LU</code> it refuses by design. It needs one short transient-LU run from the -is side. <span class="chip unmet">unmet</span></li>
+    <li><strong>Nobody outside our group has built the branch.</strong> Also delegated. <span class="chip unmet">unmet</span></li>
+  </ul>
+  <p>Full ordering and the rest of the blocking conditions are in <code>notes/lpjg_merge_plan.md</code>; the -is side's half is <code>notes/is_team_lpjg_merge_test.md</code>.</p>
+</section>
+
+<section>
+  <h2>9. Two environment traps that each cost a day</h2>
+  <p>Not science, but they will cost you the same day they cost us.</p>
+  <ul>
+    <li><strong><code>/work</code> drops 1–2.5 % of small-file writes.</strong> Measured 2/200 on <code>ab0246</code>, 5/200 on <code>bb1469</code>, <strong>0/2000 on <code>/scratch</code></strong>. Coarse I/O never notices, but a ~5000-file <code>esm_runscripts</code> staging copy essentially always loses something. When what it loses is the staged <code>guess.ins</code>, LPJ-GUESS reports <strong>"Bad instruction file!"</strong> and every rank exits 99 — which sends you hunting for a syntax error that is not there. We were wrong about the cause twice before measuring. <strong>Run on <code>/scratch</code>.</strong></li>
+    <li><strong>CMake fails on <code>/work</code></strong> with missing <code>link.txt</code> / <code>compiler_depend.ts</code> — the same dropped-write fault, and a build hammers exactly that access pattern. Build with the object tree on <code>/tmp</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>10. Where to find the changes</h2>
+  <dl class="where">
+    <dt>LPJ-GUESS — the policy switch, the repairs, and the restart fix</dt>
+    <dd><code>git.smhi.se/e8891/lpjg-4.1</code>, branch <code>run/46e7a84-repair-first</code>, head <code>29ae612</code> (rev 1 pointed at <code>8c068f3</code>, which is now the first of three).<br>Touches <code>framework/externalinput.cpp</code>, <code>framework/guess.{h,cpp}</code>, <code>framework/parameters.{cpp,h}</code>, <code>modules/landcover.cpp</code>.</dd>
+
+    <dt>LPJ-GUESS — what the 50-year arms actually run</dt>
+    <dd>Branches <code>run/50yr-arms</code> and <code>run/50yr-arms-raupach</code>. These are <code>168a98b</code> plus a cold-start fix and <em>exclude</em> <code>46e7a84</code> entirely, so they carry the old peat semantics: peat map wins, NATURAL absorbs the remainder, no conflict check at all.</dd>
+
+    <dt>Built binaries</dt>
+    <dd><code>/work/ab0246/a270092/model_codes/awiesm3-develop/bin/</code><br>
+      <code>guess.restart_ab</code> — md5 <code>e96466a2</code>, head <code>29ae612</code>, the A/B binary<br>
+      <code>guess.peatlu_policies</code> — md5 <code>cefee0c3</code>, the policy switch alone<br>
+      <code>guess.no46e_soilfix_raupachgated</code> — md5 <code>47d58b81</code>, the 50-year arms <span style="color:var(--muted)">(rev 1 printed <code>ff9b5507</code> here; the file has not been rebuilt since 14 August, so that was a transcription error)</span></dd>
+
+    <dt>esm_tools — runscripts and the instruction templates</dt>
+    <dd><code>esm-tools/esm_tools</code>, branch <code>awiesm3-is-orography-and-smb-coupling</code>, commit <code>fe2c3f86f</code>.<br>Adds <code>guess.ins.useifssoiltemp1.peatauth.j2</code> plus the two A/B templates <code>…ab_fix.j2</code> / <code>…ab_ctl.j2</code>, and runscripts under <code>runscripts/awiesm3/develop/</code>. Only <strong>three</strong> commits on this branch are AWI-ESM3-relevant, not the 69 it is ahead by — the rest is ice-sheet coupling.</dd>
+
+    <dt>The audit script</dt>
+    <dd><code>scripts/analysis/peat_vs_luh3_natural_audit.py</code> in the campaign repo, commit <code>9c344ea</code>. It reproduces the model's closed NATURAL exactly at the failing cell, which is the self-check that it is reading what the model read.</dd>
+
+    <dt>Design note and merge plan</dt>
+    <dd><code>notes/lpjg_restart_design.md</code> (rev 2, with a corrections section), <code>notes/lpjg_restart_design_review.md</code>, <code>notes/lpjg_merge_plan.md</code>, <code>notes/is_team_lpjg_merge_test.md</code>.</dd>
+
+    <dt>Full write-up</dt>
+    <dd>Campaign report §Round 29, <code>report/report.tex</code>, in <code>JanStreffing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive</code>.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>11. Over to you — open items, in the order we would rank them</h2>
+  <ul>
+    <li><strong>Review the restart fix</strong> (section 6). Still the one worth a decision rather than a patch, but now there is code: is trusting the restored <code>frac</code> and validating it against the stands the right call, or is there a reason to keep re-deriving that we have missed? Everything else is downstream. <span class="chip pending">awaiting review</span></li>
+    <li><strong>The A/B has no number.</strong> Both arms queued. Nothing merges until it reports, and a double-zero result means the test was wrong, not that the fix works. <span class="chip pending">queued</span></li>
+    <li><strong>Policy 0's transfer path has never been exercised</strong>, and policy 1 executed for the first time only on 17 August. Both need a real run before anyone trusts them. <span class="chip unmet">unmet</span></li>
+    <li><strong>Agree the peat behaviour with the -is branch</strong> before either side merges (section 8). <span class="chip unmet">unmet</span></li>
+    <li><strong>Peat loss is irreversible.</strong> <code>lc.frac[PEATLAND]</code> comes from the physical stand, so it can be capped down but never grows back toward the map value if LUH3 NATURAL later recovers through abandonment. Right for drainage, wrong for re-wetting — and at the two zero-NATURAL cells, capping is permanent removal.</li>
+    <li><strong>The HR oscillation is undiagnosed.</strong> Sampled 8 of 97 legs; the pattern holds across a 16-year spot check. Someone should find the discriminator against our clean arm.</li>
+    <li><strong>Three genuine restart inconsistencies remain</strong> in our own spin-up state — stand metadata against physical fraction, differing by 8.0×10<sup>-4</sup>, 6.1×10<sup>-3</sup> and 3.3×10<sup>-2</sup>. The checks found something real; we have not chased it.</li>
+    <li><strong>Does LUH3 <code>range</code> belong in PASTURE at high latitude?</strong> Demoted from a root cause to an open question by the seven-cell table, but the 1950s step in the Lapland series still looks like an inventory change rather than history.</li>
+  </ul>
+</section>
+
+</div>
