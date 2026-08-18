@@ -115,6 +115,14 @@ unset SLURM_NTASKS
 unset SLURM_NPROCS
 unset SLURM_ARBITRARY_NODELIST
 
-pushd "${WORKTREE:?set WORKTREE to the worktree dir name}"
-mkdir -p build; cd build; cmake .. -DOASIS=ON -DCMAKE_BUILD_TYPE=Release; make -j8; cd ..
-popd
+# BUILDDIR lets the object tree live on a different filesystem from the source.
+# The source must stay put -- CMake derives the OASIS include/lib paths from
+# ${PROJECT_SOURCE_DIR}/../oasis -- but the build tree is where the space goes, and
+# /work/ab0246 hit 99 % full on 2026-08-17, which fails as
+# "CMake Error: Unable to open check cache file for write".
+SRC="$(pwd)/${WORKTREE:?set WORKTREE to the worktree dir name}"
+BUILDDIR="${BUILDDIR:-$SRC/build}"
+mkdir -p "$BUILDDIR"
+cmake -S "$SRC" -B "$BUILDDIR" -DOASIS=ON -DCMAKE_BUILD_TYPE=Release
+make -C "$BUILDDIR" -j8
+echo "binary: $BUILDDIR/guess"

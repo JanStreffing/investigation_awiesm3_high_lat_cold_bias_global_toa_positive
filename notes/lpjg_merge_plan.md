@@ -116,13 +116,28 @@ awiesm3-is-orography-and-smb-coupling  vs  feat/awiesm3-v3.4-co2
 AWI-ESM3 runscript and namelist work. A single merge drags the ice-sheet coupling into the
 CO2 line.
 
-**Instead, cherry-pick the shared subset:**
+**The set is far smaller than 69.** Classified 2026-08-18 by the paths each commit
+touches, then checked by hand — most of the branch is iceberg / PISM / ice2fesom work.
+The AWI-ESM3-relevant commits are **three**:
 
-- `namelists/lpj_guess/guess.ins.useifssoiltemp1.*.j2` — the instruction templates
-- the coupling-field placement fix: `add_veg_atm_fields` belongs in `lpj_guess`,
-  `add_atm_veg_fields` in `oifs`, **not** in `oasis3mct`. Misplaced, `esm_runscripts`
-  exits without creating the experiment directory at all.
-- the AWI-ESM3 runscripts under `runscripts/awiesm3/develop/`
+| commit | touches | note |
+|---|---|---|
+| `fe2c3f86f` | the `peatauth` template + 4 AWI-ESM3 runscripts | carries the coupling-field placement fix: `add_veg_atm_fields` in `lpj_guess`, `add_atm_veg_fields` in `oifs`, **not** `oasis3mct` — misplaced, `esm_runscripts` exits without creating the experiment directory |
+| `c0755b6ea` | `configs/components/lpj_guess/lpj_guess.cmip.yaml` | fixed 1850 defaults |
+| `8141777ac` | `namelists/lpj_guess/ecearth.ins.j2` | `state_remap` to the nearest gridcell when the land moves |
+
+**Skip `1c3d60767`** (fesom xios instantaneous stress / daily m_ice): verified
+byte-identical to upstream `540dc3518`, which landed independently. Cherry-picking it
+would duplicate or conflict.
+
+**Also note two of the five upstream commits we are behind interact with our campaign
+directly:** `1bcb76563` "Split the ICMGG and LPJ-GUESS suffixes, and hold LPJ-GUESS on
+the old map" and `ae28c3d5f` "Take the repaired ICMGG and slt on every version but the
+released tags". The target branch pins LPJ-GUESS to the old soil map; 11I overrides that
+with `lpjg_slt_suffix: "_v2"`. Whoever merges must decide whether the pin stays, given
+11I measured the repair as a trade rather than free — Siberian DJF soil +0.308 K but the
+ERA5 JJA bias worsening from -0.673 to -1.123. That is a science decision, not a merge
+mechanic.
 
 **Conditions**
 
