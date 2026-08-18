@@ -52,7 +52,18 @@ Three commits: `8c068f3`, `ab45fdd`, `29ae612`.
 1. **The A/B measurement exists.** Two runs, one binary, one namelist line apart:
    `restart_target_continuity` 1 vs 0, under `fixed_LU`, with `print_lc_change_diag 1`.
    Required result: **LCDIAG == 0 with the switch on, > 0 with it off.**
-   *Status: running as S2_fix / S2_ctl on /scratch. UNMET until it reports.*
+   *Status: UNMET. Attempt 1 (S2_fix/S2_ctl, 2026-08-18) produced no measurement at all --
+   both arms reported LCDIAG 0, but every fpc.out and cpool.out was zero bytes, so neither
+   arm simulated a year and the counter never reached the code that increments it. Cause was
+   two more roundoff tolerances in externalinput.cpp that the landcover.cpp relaxation left
+   behind: LUH3_RESTART_AREA_MAX_DRIFT at 1e-6 against an observed 9.28e-6, and Laszlo's
+   close_luh3_base_fractions at 1e-12 against an observed 4.37e-8. Both now 1e-4 in c226bbf.
+   Attempt 2 running as S3_fix / S3_ctl, three legs, binary guess.restart_ab_roundoff
+   md5 441c3f04. Failed arms preserved as S2_*.failed_roundoff_20260818.*
+
+   *Do not score this from Slurm job state. esm_tools reports COMPLETED on a crashed leg and
+   advances the date file -- S2_ctl walked forward two legs on restarts that were never
+   written. Score on non-zero annual output.*
    If both arms come out 0 the test proved nothing and must be redesigned — that is a
    failure, not a pass.
 2. **`peat_lu_conflict_policy 1` runs to completion at least once.** It has never
