@@ -49,6 +49,7 @@ N_FATAL    = ('does not sum to one', 'too large to be input roundoff',
 
 RE_LCDIAG = re.compile(
     r'LCDIAG year=(\d+) changeLC=(\S+) change_st=(\S+) (?:gross=(\S+) )?fsc=(\d)')
+RE_LCDRIFT = re.compile(r'LCDRIFT year=(\d+) maxdrift=(\S+) st=(\d+) limit=(\S+)')
 
 
 def legs(arm):
@@ -57,7 +58,7 @@ def legs(arm):
 
 def scan(leg):
     o = dict(lcdiag=0, guard=0, mismatch=0, fatal=[], legacy=False,
-             max_lc=0.0, max_st=0.0, fsc=0)
+             max_lc=0.0, max_st=0.0, fsc=0, drift=[], limit=None)
     for fn in glob.glob(os.path.join(leg, 'work', '**', 'guess*.log'), recursive=True):
         try:
             with open(fn, errors='ignore') as fh:
@@ -71,6 +72,11 @@ def scan(leg):
                             o['max_lc'] = max(o['max_lc'], abs(float(m.group(2))))
                             o['max_st'] = max(o['max_st'], abs(float(m.group(3))))
                             o['fsc'] += int(m.group(5))
+                    if 'LCDRIFT ' in ln:
+                        m = RE_LCDRIFT.search(ln)
+                        if m:
+                            o['drift'].append(float(m.group(2)))
+                            o['limit'] = float(m.group(4))
                     if N_GUARD in ln:
                         o['guard'] += 1
                     if N_MISMATCH in ln:
@@ -96,9 +102,10 @@ def report(arm):
         print('   no legs yet')
         return None
     t = dict(lcdiag=0, guard=0, mismatch=0, fatal=0, years=0, legacy=False,
-             nlegs=len(L), guard_after_leg1=0)
-    print('   %24s %4s %8s %6s %6s %11s %5s'
-          % ('leg', 'yrs', 'LCDIAG', 'guard', 'LC/ST', 'max|dst|', 'fsc'))
+             nlegs=len(L), guard_after_leg1=0, limit=None)
+    alldrift = []
+    print('   %24s %4s %8s %8s %6s %6s %11s'
+          % ('leg', 'yrs', 'LCDIAG', 'LCDRIFT', 'guard', 'LC/ST', 'maxdrift'))
     for i, leg in enumerate(L):
         s = scan(leg)
         y = years(leg)
@@ -109,14 +116,36 @@ def report(arm):
         t['legacy'] = t['legacy'] or s['legacy']
         if i > 0:
             t['guard_after_leg1'] += s['guard']
-        print('   %24s %4d %8d %6d %6d %11.3e %5d'
-              % (os.path.basename(leg), y, s['lcdiag'], s['guard'], s['mismatch'],
-                 s['max_st'], s['fsc']))
+        md = max(s['drift']) if s['drift'] else 0.0
+        alldrift.extend(s['drift'])
+        if s['limit'] is not None:
+            t['limit'] = s['limit']
+        print('   %24s %4d %8d %8d %6d %6d %11.3e'
+              % (os.path.basename(leg), y, s['lcdiag'], len(s['drift']), s['guard'],
+                 s['mismatch'], md))
         for f in s['fatal'][:2]:
             print('        FATAL: %s' % f)
     if t['legacy']:
         print('   !! binary predates lpjg 4d91c3b: change_st was read before it was')
         print('      computed, so these counts are NOT scorable.')
+    # Is LC_PREV_FRAC_MAX_DRIFT anywhere near the data it guards?  Zero fallbacks only
+    # means something if the bound is comparable to the observed spread; if the drift is
+    # ~1e-7 against a 0.1 limit, the guard is decorative and "no fallbacks" is not
+    # evidence that the carried value was validated.
+    if alldrift:
+        alldrift.sort()
+        n = len(alldrift)
+        lim = t['limit']
+        print('   carried-vs-physical drift: n=%d  median=%.3e  p99=%.3e  max=%.3e'
+              % (n, alldrift[n // 2], alldrift[min(n - 1, int(0.99 * n))], alldrift[-1]))
+        if lim:
+            print('   limit=%.3g  -> max observed is %.3g x the limit'
+                  % (lim, alldrift[-1] / lim))
+            if alldrift[-1] < lim / 1000.0:
+                print('   NOTE: every observed drift is >1000x below the limit. Zero')
+                print('         fallbacks is therefore not evidence the guard works --')
+                print('         it has never been near firing. Condition 5 is untested.')
+    t['drift_max'] = alldrift[-1] if alldrift else None
     return t
 
 
