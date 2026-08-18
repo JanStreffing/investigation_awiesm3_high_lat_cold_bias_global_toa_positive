@@ -109,7 +109,7 @@ def guard_fallbacks(run):
     for fn in glob.glob(f'{B}/Restart_{run}/run_*/work/run*/guess*.log'):
         try:
             with open(fn, errors='ignore') as fh:
-                n += sum(1 for ln in fh if 'Carried land-cover metadata disagrees' in ln)
+                n += sum(1 for ln in fh if 'Carried stand-type metadata disagrees' in ln)
         except OSError:
             pass
     return n
