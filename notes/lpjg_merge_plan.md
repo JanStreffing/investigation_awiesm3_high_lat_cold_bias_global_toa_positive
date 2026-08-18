@@ -164,14 +164,27 @@ mechanic.
 Both cost a day on 2026-08-17/18 and will cost the next person the same.
 
 - **`/work` drops 1-2.5 % of small-file writes.** Measured 2/200 (`ab0246`), 5/200
-  (`bb1469`), **0/2000 (`/scratch`)`**. Coarse I/O never notices; a ~5000-file
+  (`bb1469`), 0/2000 small files on `/scratch`. Coarse I/O never notices; a ~5000-file
   `esm_runscripts` staging copy essentially always fails. It also corrupts staged
   `guess.ins`, which surfaces as a misleading **"Bad instruction file!"** with every
   LPJ-GUESS rank exiting 99. **Run on `/scratch`.**
 - **CMake fails on `/work`** (`link.txt` / `compiler_depend.ts` missing). **Build with the
   object tree on `/tmp`** — `BUILDDIR=/tmp/... comp_lpjg_worktree.sh`.
 
-Worth a DKRZ ticket: 200-file write-then-stat reproducer, 0 % on local disk and scratch.
+- **`/scratch` is ~100x cleaner but NOT clean.** Measured 2026-08-18 across every run
+  staged there: **1 zero-byte `.state` in 9472 files, 0.011 %**. The one failure was a
+  54 MB LPJ-GUESS restart file whose two source copies were byte-identical at
+  54,518,971 bytes -- so it is a dropped write on the staging copy, not a truncated
+  source, and it is not confined to small files. At ~64 state files per leg boundary
+  that is ~0.7 % per boundary: rare, but a long multi-leg run will hit it. It killed
+  S3_fix at leg 2 with "failed to read index for state file".
+
+  **Defensive measure for any multi-leg run: verify the staged `.state` files are
+  non-empty before the leg starts.** The failure otherwise surfaces one leg later as a
+  model abort, and esm_tools crash-forwards past it.
+
+Worth a DKRZ ticket: 200-file write-then-stat reproducer on /work, plus the /scratch
+large-file case above (1/9472, with both source copies intact and md5-identical).
 
 ---
 
