@@ -63,6 +63,11 @@ RUNS = [
     ('AMIP LX3 (DMS+INPPMIN)', f'{AMIP}/amip_LX3_long', 'amip'),
     ('CPL  11E (base)', f'{CPL}/Tuning_test_11E_swemin15_K1', 'cpl'),
     ('CPL  11G (+S4)', f'{CPL}/Tuning_test_11G_inppmin50k', 'cpl'),
+    # The overlap lever coupled, submitted 2026-08-18.  Each is 11G plus one namelist
+    # number, so 11G is the control and no new control run is needed.  They print
+    # "no tsr/tsrc output" until their first leg lands, which is not an error.
+    ('CPL  11L (+ovl 0.35)', f'{CPL}/11L', 'cpl'),
+    ('CPL  11M (+ovl 0.10)', f'{CPL}/11M', 'cpl'),
 ]
 
 
