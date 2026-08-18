@@ -58,8 +58,25 @@ Three commits: `8c068f3`, `ab45fdd`, `29ae612`.
    two more roundoff tolerances in externalinput.cpp that the landcover.cpp relaxation left
    behind: LUH3_RESTART_AREA_MAX_DRIFT at 1e-6 against an observed 9.28e-6, and Laszlo's
    close_luh3_base_fractions at 1e-12 against an observed 4.37e-8. Both now 1e-4 in c226bbf.
-   Attempt 2 running as S3_fix / S3_ctl, three legs, binary guess.restart_ab_roundoff
-   md5 441c3f04. Failed arms preserved as S2_*.failed_roundoff_20260818.*
+   Attempt 2 (S3_ctl / S4_fix, binary guess.restart_ab_roundoff md5 441c3f04) reached
+   three legs but ALSO cannot produce the measurement: the LCDIAG instrument itself was
+   blind. It sat ~40 lines above where change_st is accumulated and before
+   change_gross_lcc exists, so it reported change_st as 0.0 unconditionally and could
+   never fire on it -- and change_st is the stand-type term, which is exactly the
+   granularity the defect lives at. Fixed in lpjg 4d91c3b by moving it to immediately
+   before the no-change decision and reporting all four terms that decision tests.
+   Binary guess.restart_ab_lcdiagfix md5 6022479c. Attempt 3 must use it.
+
+   Attempt 2 is still worth finishing for conditions 4 and 5 (no LC/ST mismatch, guard
+   fallbacks confined to leg 1) -- those do not depend on LCDIAG.
+
+   Failed arms preserved: S2_*.failed_roundoff_20260818, and S3_fix (0-byte 44.state).*
+
+   *THREE instrument failures preceded any data on this measurement: Slurm job state
+   (esm_tools reports COMPLETED on a crashed leg), the log path (dprintf lands in
+   work/**/guess*.log, not log/*.log), and variable ordering (above). Each produced a
+   plausible zero. Before scoring attempt 3, verify the control arm produces LCDIAG > 0
+   -- if it does not, suspect the instrument before concluding the arms agree.*
 
    *Do not score this from Slurm job state. esm_tools reports COMPLETED on a crashed leg and
    advances the date file -- S2_ctl walked forward two legs on restarts that were never
