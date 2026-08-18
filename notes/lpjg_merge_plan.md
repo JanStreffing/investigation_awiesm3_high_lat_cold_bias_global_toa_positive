@@ -96,6 +96,11 @@ Three commits: `8c068f3`, `ab45fdd`, `29ae612`.
    is expected when restarting from a foreign parent configuration and nowhere else.
    A fallback on a self-restart means `LC_PREV_FRAC_MAX_DRIFT = 0.1` is mis-tuned.
    *UNMET — needs a >=2-leg run.*
+   **Testable in the FIX arm only.** The guard sits behind `if(use_prev)` and
+   `use_prev = restart_target_continuity`, so it never executes with the switch off. A
+   zero from the control arm says nothing and must not be counted toward this condition.
+   Note also that the needle was wrong until 2026-08-18 (`land-cover` vs `stand-type`),
+   so every guard count recorded before then was 0 for a second, independent reason.
 6. **Agreement with -is on the peat conflict.** See below. *UNMET.*
 
 Conditions 1, 2 and 5 are all satisfied by one 3-leg fixed_LU run per arm. Condition 3 is

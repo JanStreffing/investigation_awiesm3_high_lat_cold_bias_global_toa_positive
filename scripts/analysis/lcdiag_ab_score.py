@@ -145,8 +145,13 @@ def main():
 
     print('   control arm LCDIAG total : %d' % ctl['lcdiag'])
     print('   fix arm     LCDIAG total : %d' % fix['lcdiag'])
-    print('   guard fallbacks after leg 1 : fix %d, ctl %d   (expected 0; leg 1 is a '
-          'foreign parent)' % (fix['guard_after_leg1'], ctl['guard_after_leg1']))
+    # The guard sits behind `if(use_prev)` and use_prev = restart_target_continuity, so
+    # it NEVER runs in the control arm.  A ctl guard count of 0 is uninformative by
+    # construction; merge condition 5 is testable in the fix arm only.
+    print('   guard fallbacks after leg 1 : fix %d   (expected 0; leg 1 is a foreign '
+          'parent)' % fix['guard_after_leg1'])
+    print('                                 ctl n/a -- guard is gated off when '
+          'restart_target_continuity 0')
     print('   LUH3 previous LC/ST mismatch : fix %d, ctl %d   (expected 0)'
           % (fix['mismatch'], ctl['mismatch']))
     print()
@@ -164,7 +169,7 @@ def main():
         return
     print('VERDICT: PASS. Control fired (%d), fix is exactly zero across every leg.'
           % ctl['lcdiag'])
-    if fix['guard_after_leg1'] or ctl['guard_after_leg1']:
+    if fix['guard_after_leg1']:
         print('   caveat: guard fallbacks after leg 1 -- LC_PREV_FRAC_MAX_DRIFT mis-tuned')
     if fix['mismatch'] or ctl['mismatch']:
         print('   caveat: LUH3 previous LC/ST mismatch present')
