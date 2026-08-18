@@ -59,13 +59,22 @@ R092 = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
 CERESF = '/work/ab0246/a270092/obs/CERES/CERES_EBAF_Ed4.1_Subset_CLIM01-CLIM12.nc'
 ACC = 3600.0
 
-PAIR = [('11E base', f'{R092}/Tuning_test_11E_swemin15_K1'),
-        ('11F +DMS', f'{R092}/Tuning_test_11F_dmsccn166')]
+import sys as _sys
+# Optional CLI override so the same pre-registered scoring applies to any coupled pair:
+#   coupled_dms_pair.py <base_tag> <base_dir> <arm_tag> <arm_dir> [first_year last_year]
+if len(_sys.argv) >= 5:
+    PAIR = [(_sys.argv[1], _sys.argv[2]), (_sys.argv[3], _sys.argv[4])]
+else:
+    PAIR = [('11E base', f'{R092}/Tuning_test_11E_swemin15_K1'),
+            ('11F +DMS', f'{R092}/Tuning_test_11F_dmsccn166')]
 
 # 11F was cancelled at 20 years; this is everything it has.  Below the campaign's
 # 30-year coupled minimum, which the threshold arithmetic handles honestly -- a
 # shorter window simply raises the bar a difference has to clear.
-CLEAN = list(range(1350, 1370))
+if len(_sys.argv) >= 7:
+    CLEAN = list(range(int(_sys.argv[5]), int(_sys.argv[6]) + 1))
+else:
+    CLEAN = list(range(1350, 1370))
 DIRTY = []
 TROPICS = (-20.0, 20.0)
 
@@ -232,8 +241,8 @@ for k in keys:
     print(f'  {k:24s} sd {v.std(ddof=1):8.4f}   threshold +-{thr[k]:.4f}')
 
 print('\n' + '=' * 100)
-print(f'\n11F minus 11E, {len(usable)} matched years.  * = resolved\n')
-print(f'  {"metric":24s} {"11E":>10s} {"11F":>10s} {"diff":>11s} {"thr":>9s}')
+print(f'\narm minus base, {len(usable)} matched years.  * = resolved\n')
+print(f'  {"metric":24s} {PAIR[0][0]:>10s} {PAIR[1][0]:>10s} {"diff":>11s} {"thr":>9s}')
 verdict = {}
 for k in keys:
     a = np.mean([r[k] for r in series[PAIR[0][0]]])
@@ -252,8 +261,8 @@ try:
         so_obs = float(np.average(
             cds['toa_cre_sw_clim'].values.mean(axis=0)[csel, :].mean(axis=1), weights=cw))
     a, b, _, _ = verdict['SO SW CRE [W/m2]']
-    print(f'\n  CERES SO SW CRE {so_obs:.2f}:  11E is {a - so_obs:+.2f} from it, '
-          f'11F {b - so_obs:+.2f}')
+    print(f'\n  CERES SO SW CRE {so_obs:.2f}:  {PAIR[0][0]} is {a - so_obs:+.2f} from '
+          f'it, {PAIR[1][0]} {b - so_obs:+.2f}')
 except Exception as exc:
     print(f'\n  (CERES anchor unavailable: {exc})')
 
