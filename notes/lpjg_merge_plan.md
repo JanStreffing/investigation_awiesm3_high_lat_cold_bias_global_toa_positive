@@ -49,7 +49,34 @@ Three commits: `8c068f3`, `ab45fdd`, `29ae612`.
 
 **Conditions**
 
-1. **The A/B measurement exists.** Two runs, one binary, one namelist line apart:
+1. **The A/B measurement exists.** **REWRITTEN 2026-08-18 -- the original form of this**
+   **condition is UNACHIEVABLE, not merely unmet.**
+
+   The original test was: two fixed_LU runs, `restart_target_continuity` 1 vs 0, count
+   LCDIAG. That can never produce a number. LCDIAG sits in `lc_changed()`, which returns
+   at `landcover.cpp:3336` whenever `ECEARTH && fixedLUafter >= 0` -- `ECEARTH` is a
+   compile-time `true` and every arm sets `fixed_LU 1850` -- so the diagnostic is dead
+   code and both arms return 0 whatever the switch is. Three attempts, three double
+   zeros, none of them evidence.
+
+   The runs demonstrate it directly: one arm reports LCDRIFT 12208 and LCDIAG 0, because
+   LCDRIFT is in `getlandcover` and LCDIAG is below the early return.
+
+   **Replacement, two parts:**
+   a. `GLCDIAG` (lpjg `afa9032`, binary `guess.restart_ab_glcdiag` md5 `c3b31769`)
+      measures at the end of the single `getlandcover` call that does execute under
+      coupled fixed_LU. Same criterion: 0 with the switch on, >0 with it off.
+   b. **The merge should be gated on the TRANSIENT-LU A/B, not the fixed_LU one.** The
+      early return does not fire there, the whole path runs, and it is the configuration
+      CMIP7 actually needs. This is the -is team's test (condition 3), so conditions 1
+      and 3 collapse into one run rather than two.
+
+   Consequence worth flagging to whoever merges: a coupled fixed_LU run currently does
+   **no land-cover recalculation at all**. The early return is a pre-existing workaround
+   for this very defect -- its comment cites float discrepancies between serialised state
+   and recalculated LUH3 fractions causing "Transferred landcover fractions not
+   balanced" crashes. If the restart fix holds, that workaround may be removable, which
+   is a question for Laszlo and a change in behaviour for every fixed_LU run.
    `restart_target_continuity` 1 vs 0, under `fixed_LU`, with `print_lc_change_diag 1`.
    Required result: **LCDIAG == 0 with the switch on, > 0 with it off.**
    *Status: UNMET. Attempt 1 (S2_fix/S2_ctl, 2026-08-18) produced no measurement at all --
