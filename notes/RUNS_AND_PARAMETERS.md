@@ -1626,3 +1626,184 @@ cannot be surface albedo and is unexplained.
 *Assets:* MISR/MODIS AOD are on `/pool/data/ICDC/atmosphere/{misr,modis_*}_aerosol` — no
 download needed. CAMS aerosol climatology is `ifsdata/aerosol_cams_climatology_43R3*.nc`;
 the 2D and 3D versions carry the same mass to 0.4 %.
+
+---
+
+## 8. ⭐ THE SOUTHERN OCEAN CLOUD ROUND, COUPLED (2026-08-18→19)
+
+Six weeks of Southern Ocean work reduced to one question — **is there a lever that
+brightens SO cloud without touching Siberia?** — and it now has an answer, with the
+levers named and two of them measured coupled.
+
+### 8a. The reframing: 84 % of the coupled SO error is inherited from AMIP
+
+Same diagnostic on AMIP and coupled, 30 yr each, SO 45–65 S TOA SW CRE vs CERES
+(`scripts/analysis/amip_vs_coupled_so.py`):
+
+| run | SW CRE | vs CERES | tcc |
+|---|---|---|---|
+| AMIP P5 control | −63.097 | **+4.739** | 0.8356 |
+| AMIP LY2 `ovl 0.10` | −68.983 | −1.147 | 0.8474 |
+| AMIP LX3 DMS+INPPMIN | −68.737 | −0.901 | 0.8435 |
+| CPL 11E | −62.186 | **+5.651** | 0.8365 |
+| CPL 11G +S4 | −63.673 | **+4.163** | 0.8359 |
+
+Cloud cover 0.8356 AMIP vs 0.8365 coupled and CRE differing by 0.91 W m⁻²: **the cloud
+field transfers.** 84 % of the coupled error is already there in AMIP with a prescribed,
+correct ocean, and 11G coupled (+4.163) is *closer* to CERES than the AMIP control
+(+4.739). The SO bias is mostly an unclosed AMIP problem, not a coupling problem.
+
+### 8b. New coupled runs — the overlap lever, and why both are rejected
+
+Both are 11G + one namelist number, 40 yr, scored paired over the **30 clean matched
+years** 1350–69 + 1380–89 (11G's 1370–79 carries the repaired soil map and must be
+excluded — `coupled_dms_pair.py` now takes an exclusion argument for exactly this).
+
+| | **11L** `ovl 0.35` | **11M** `ovl 0.10` | threshold |
+|---|---|---|---|
+| SO SW CRE | −1.565 * | −5.938 * | 0.517 |
+| SO SW CRE DJF | −3.399 * | −11.433 * | 1.167 |
+| vs CERES | +3.89 → **+2.33** | +3.89 → **−2.05** | |
+| net TOA | −0.281 | **−0.698 \*** | 0.403 |
+| tropics SW CRE | −0.297 * | −1.370 * | 0.209 |
+| global T2m | −0.242 * | −0.604 * | 0.162 |
+| **Siberia JJA T2m** | **−1.000 \*** | **−2.321 \*** | 0.406 |
+| Siberia JJA soil | −1.014 * | −2.377 * | 0.402 |
+
+**It transfers — the first SO lever that does.** AMIP predicted 11L at +1.992 vs CERES;
+coupled lands at +2.33. Ratios 0.57× and 1.01× on annual SO CRE, against DMS's 0.19–0.44×
+and S4's 0.28–0.31×.
+
+**Both rejected.** 11M fails net TOA outright. 11L passes net TOA but costs 1.000 K of
+Siberian summer — the offline transfer function needs **+1 to +2 K** there to recover the
+boreal forest, so 11L spends the whole budget of target 2 to buy 40 % of target 1.
+
+Vegetation confirms it, matched decade 1380–89 (`siberian_veg_matched.py` — the deep
+script's "last decade on disk" compares 1380–89 against 11G's 1390–99 and charges a
+decade of forest decline to the lever):
+
+| vs 11G | BNS | IBS | TREEFPC | C3G | Total |
+|---|---|---|---|---|---|
+| 11L | −39.5 % | −31.6 % | −19.7 % | −16.9 % | −20.8 % |
+| 11M | **−89.2 %** | −75.6 % | −49.8 % | −47.7 % | −45.3 % |
+
+11M all but eliminates larch. Every type falls including C3 grass, so this is a
+productivity collapse from the cooling, not a competition shift. **A global dimming knob,
+not a Southern Ocean lever** — round 28's verdict on LX3/LY2, now confirmed coupled.
+
+⚠ **`RCL_OVERLAPLIQICE` was never set in any TCO95 coupled arm.** 11E and 11G run at the
+model default **0.65** (`sucldp.F90:307`) while the older TL255-CORE2 coupled config set
+**0.1**. The value was lost in the TL255 → TCO95 transition, silently.
+
+### 8c. Which levers are SPATIALLY SELECTIVE, and why
+
+The signature is the land–sea mask appearing in the code. Grep `PLSM` in `cloudsc.F90`:
+
+| parameter | sea | land | acts on | selective? |
+|---|---|---|---|---|
+| `RCL_INPSEA` | **0.2** | (×1) | ice nuclei | **yes** — `RCL_INPSEA+(1−RCL_INPSEA)·PLSM`, exactly 1 over land, coastlines blend |
+| `RCLCRIT_SEA` | 2.5e-4 | 5.5e-4 | cloud **water** (autoconv. threshold) | **yes** — branched on `PLSM > 0.5` |
+| `RCL_KK_CLOUD_NUM_SEA` | 50 cm⁻³ | 300 cm⁻³ | droplet **number** (KK warm rain) | **yes** — branched on `PLSM > 0.5` |
+| `RCL_OVERLAPLIQICE` | — | — | mixed-phase deposition | **no** — global |
+
+Live-path checks: `IWARMRAIN = 3` hardcoded (`cloudsc.F90:754`) so the KK branch runs,
+and `NCLOUDACT = 0` (`suecrad.F90:553`) so `RCL_KK_CLOUD_NUM_SEA` is used rather than
+prognostic CCN. DMS is a **different pathway** — it feeds `PCCNO` in `radpar.F90`
+(radiation, droplet effective radius), not `PCCN` in the microphysics.
+
+**Land/sea selectivity protects Siberia, not the tropics.** The tropics are ocean. That is
+the wall DMS hit and why round 23 cancelled S1 and S3 "for the tropics, not for the
+Southern Ocean".
+
+### 8d. `RCL_INPSEA` is spent — measured against cloud phase, not assumed
+
+It has sat at **0.2 in all 46 runscripts** that set it and was never scanned. 0.2 was
+never measured either: it is justified as the *"marine biogenic floor"*, an argument about
+INP **concentration**. The quantity that actually constrains it is cloud **phase**
+(`so_cloud_phase_vs_goccp.py`, CALIPSO-GOCCP v3.1.4 2008–10, staged in
+`/work/ab0246/a270092/obs/CALIPSO_GOCCP/`):
+
+| | model 11G | GOCCP |
+|---|---|---|
+| SO 45–65 S | **0.875** | **0.858** |
+| Siberia 55–75 N | 0.820 | 0.818 |
+
+**The model is not too icy — it is already slightly more liquid than observed.** Lowering
+`RCL_INPSEA` further would push phase past the observation, so the biogenic floor stands.
+Caveat kept: model is mass-based, GOCCP is cloud-fraction based; a rigorous comparison
+needs COSP. The Siberian anchor (0.820 vs 0.818) is why the sign is trusted.
+
+This independently re-derives **round 23's** conclusion — *"the INP branch buys OPACITY"*,
+D2a +0.63 pp and D2b +0.43 pp of a 6.43 pp area deficit, inside the noise floor. Round 22
+split the error **AMOUNT +4.87 (65.5 %) / OPACITY +2.57 (34.5 %)**. Two thirds has never
+had a lever.
+
+### 8e. New AMIP runs — in flight 2026-08-19
+
+All three are **S4 base + one namelist number**, 46 yr, control already run.
+
+| run | change | question | status |
+|---|---|---|---|
+| **N1** | `RCL_INPSEA` 0.2 → 0.1 | has the INP lever any headroom, or has it saturated? | in flight |
+| **N2** | `RCL_INPSEA` 0.2 → 0.05 | as N1, further | in flight |
+| **W1** | `RCLCRIT_SEA` 2.5e-4 → **6.0e-4** | **is the tropical cost real?** | in flight |
+
+**W1 is round 23's S3, which was cancelled and never run.** Its cancellation was an
+*inference* by analogy with B3/`RCLDIFF` — a **global** cloud-erosion term. `RCLCRIT_SEA`
+acts on **stratiform warm-rain autoconversion over sea**, the SO's regime, whereas
+tropical precipitation is largely convective and handled by a different scheme. So the
+tropical response may be much weaker than the analogy implied — or not, and the family
+closes honestly. **Score on cloud AREA, not CRE** (round 23's instruction: CRE conflates
+the two thirds). Disqualifier: tropical SW CRE or tropical net beyond ±0.5.
+
+N1/N2 expectation after 8d: they will likely still move SO CRE and should be **rejected
+anyway**, because they buy it by making phase worse than observed.
+
+### 8f. Source change staged, NOT built
+
+`RCL_KK_CLOUD_NUM_SEA` / `_LAND` were reachable only through the `ASSOCIATE` block in
+`sucldp.F90` — the same trap `RCLCRIT_SEA` was in before round 23 moved it. Now on the
+POINTER mechanism and in `namcldp.nam.h` (oifs source `fb04b2d`). Defaults still assigned
+after the association, so a silent namelist reproduces bit-for-bit.
+
+**Not built on purpose**: N1/N2/W1 are live on `bin/OpenIFS` and the build overwrites it
+in place. Rebuild after they finish, then verify against a control. Prior art: A2 changed
+this parameter by editing the default and rebuilding — one binary per value, which the
+namelist route removes.
+
+⚠ `RCL_KK_CLOUD_NUM_SEA` is the **only untried lever that targets AMOUNT**: raising N
+slows KK autoconversion (rate ∝ N^`RCL_KKBAUN`, negative exponent), lengthening cloud
+lifetime. That is round 22's missing 65.5 %.
+
+### 8g. Ocean drift — and a correction
+
+Whole-ocean potential temperature (`thetaoga`), steady rate after the first decade:
+
+| arm | K/century | per millennium |
+|---|---|---|
+| 11E | +0.22 | +2.2 K |
+| **11G** | **+0.19** | **+1.9 K** |
+| 11L | +0.12 | +1.2 K |
+| 11M | −0.02 | ~0 |
+
+Not decelerating — a multi-millennial spin-up on 11G is untenable.
+
+🛑 **Corrected same day.** An earlier reading reported a *"−1.0 W m⁻² structural leak,
+invariant across arms"* between TOA and surface and concluded the drift could not be fixed
+radiatively. **That −1.0 IS snow enthalpy**: `sf·Lf` measures 0.962 / 0.976 / 1.018 /
+1.073 against residuals of −1.006 / −0.996 / −1.022 / −1.088. The convention was already
+recorded — `surface = ssr+str+sshf+slhf − sf·ρ·Lf`, report §snowenth and
+`AMIP_BASELINE_AND_ROUND09_2026-07-28.md`. With it included the column conserves to
+0.02–0.04 W m⁻² and the ocean warming matches what TOA implies. **Tuning net TOA to zero
+DOES stop the drift** — 11M, TOA −0.016, drifts −0.02 K/century.
+
+Second half of that error: a window mismatch. 11G's net TOA is **+0.205** over
+1350–69+1380–89 but **+0.732** over 1380–99. Net TOA is itself drifting upward through
+these runs — worth knowing separately for spin-up planning.
+
+### 8h. Not tuning levers — the LPJ-GUESS restart arms
+
+`S2_fix/ctl`, `S3_fix/ctl`, `S4_fix`, `S5_fix/ctl` on `/scratch` are **infrastructure
+tests** of `restart_target_continuity`, not tuning arms. Never add them to `runs.py`.
+See `notes/lpjg_merge_plan.md`. Standing result: the self-restart round trip is exact to
+machine precision (median drift 2.22e-16, legs 2 and 3 identical to every digit).
