@@ -71,11 +71,17 @@ else:
 # 11F was cancelled at 20 years; this is everything it has.  Below the campaign's
 # 30-year coupled minimum, which the threshold arithmetic handles honestly -- a
 # shorter window simply raises the bar a difference has to clear.
+# argv[7] optionally excludes a decade, e.g. "1370-1379".  Needed for any pair against
+# 11G, whose 1370-79 leg alone carries the repaired soil map -- using a naive contiguous
+# window silently makes that decade a TWO-variable comparison.
+DIRTY = []
+if len(_sys.argv) >= 8:
+    _a, _b = _sys.argv[7].split('-')
+    DIRTY = list(range(int(_a), int(_b) + 1))
 if len(_sys.argv) >= 7:
-    CLEAN = list(range(int(_sys.argv[5]), int(_sys.argv[6]) + 1))
+    CLEAN = [y for y in range(int(_sys.argv[5]), int(_sys.argv[6]) + 1) if y not in DIRTY]
 else:
     CLEAN = list(range(1350, 1370))
-DIRTY = []
 TROPICS = (-20.0, 20.0)
 
 SIB = (55.0, 75.0, 60.0, 180.0)
