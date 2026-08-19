@@ -189,6 +189,29 @@ RUNS = [
     ('LX1 rsnow', 'amip_LX1_long'),           # RSNOWLIN2 alone; the gating run
     ('LX3 rsnow+dms+inp', 'amip_LX3_long'),   # + DMS S=166 + RCL_INPPMIN 50000
     ('LY2 rsnow+ovl0.1', 'amip_LY2_long'),    # + RCL_OVERLAPLIQICE 0.10
+
+    # Round 30 (2026-08-19).  All three are S4 + ONE namelist number, 46 yr, so S4 is
+    # the control and no new control was needed.  They exist to answer two questions the
+    # campaign had assumed rather than measured.
+    #
+    # N1/N2 -- has RCL_INPSEA any headroom?  It has sat at 0.2 in all 46 runscripts that
+    # set it and was NEVER scanned; 0.2 is justified as the "marine biogenic floor", an
+    # argument about INP concentration.  Measured against cloud phase instead
+    # (so_cloud_phase_vs_goccp.py): the model's low-level SO liquid fraction is 0.875
+    # against CALIPSO-GOCCP's 0.858, i.e. already MORE liquid than observed.  So these
+    # are expected to move SO CRE and to be REJECTED anyway, for pushing phase past the
+    # observation.  Scored to confirm that rather than assert it.
+    #
+    # W1 -- is round 23's tropical cost real?  This IS S3, designed then CANCELLED on an
+    # inference by analogy with B3/RCLDIFF, a GLOBAL cloud-erosion term.  RCLCRIT_SEA acts
+    # on stratiform warm-rain autoconversion over sea (PLSM > 0.5), which is the Southern
+    # Ocean's regime while tropical precipitation is largely convective.  SCORE ON CLOUD
+    # AREA, not CRE -- round 23's instruction, because CRE conflates the amount and
+    # opacity thirds and the INP branch already looked good on CRE while doing nothing
+    # for area.  Disqualifier: tropics beyond +-0.5.
+    ('N1 inpsea0.1', 'N1'),                   # RCL_INPSEA 0.2 -> 0.10
+    ('N2 inpsea0.05', 'N2'),                  # RCL_INPSEA 0.2 -> 0.05
+    ('W1 clcritsea6e4', 'W1'),                # RCLCRIT_SEA 2.5e-4 -> 6.0e-4
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs
