@@ -1,54 +1,55 @@
-"""Close the coupled energy budget: TOA -> surface -> ocean, and find where it leaks.
+"""Close the coupled energy budget: TOA -> surface -> ocean.  It closes.
 
-WHY.  11G drifts +0.19 K/century in whole-ocean potential temperature -- about +1.9 K per
-millennium, which makes a multi-millennial piControl spin-up untenable.  Its net TOA is
-only +0.205 W/m2 over the clean window, which can supply roughly +0.06 K/century.  The
-ocean was warming about three times faster than the top of the atmosphere was delivering,
-so something between the two was unaccounted for.
+WHY.  11G warms the whole ocean +0.197 K/century, about +1.9 K per millennium, which
+makes a multi-millennial piControl spin-up untenable.  The question was whether that is
+driven by the radiative imbalance or by something unaccounted for between the top of the
+atmosphere and the sea surface.
 
-WHAT IT CHECKS, in the order the energy flows:
+THE ANSWER: nothing is unaccounted for, once snow enthalpy is in the surface budget.
 
-  1. IFS column:  TOA net (tsr+ttr) against surface net (ssr+str+sshf+slhf, downward +).
-     A conserving atmosphere gives ~0.  Its heat capacity is ~1e7 J/m2/K, so a sustained
-     1 W/m2 would be tens of K of atmospheric cooling in twenty years -- it is not
-     storage, it is a leak.
-  2. FESOM ocean:  surface heat flux (fh) against the OHC tendency implied by thetaoga
-     and volo.  This is the ocean's internal consistency.
+    surface = ssr + str + sshf + slhf - sf*rho*Lf
 
-RESULT, 2026-08-19, four arms:
+Snowfall enthalpy is an INTERNAL atmosphere<->surface transfer, so it belongs in the
+surface budget and not at TOA.  This is the campaign's established convention -- report
+sub:snowenth, and notes/AMIP_BASELINE_AND_ROUND09_2026-07-28.md, which measured it at
+0.82-0.94 W/m2 in AMIP.  Coupled, 2026-08-19:
 
-    arm   window        TOA      SFC    resid
-    11E   1380-1399   +0.758   +1.764   -1.006
-    11G   1380-1399   +0.732   +1.728   -0.996
-    11L   1380-1389   +0.484   +1.506   -1.022
-    11M   1380-1389   -0.016   +1.071   -1.088
+  arm   window          TOA   SFCraw   snowE     SFC   resid   OHC W/m2  K/cent  TOA implies
+  11E   1380-1399  +0.758   +1.764   0.962  +0.802  -0.044     +0.714  +0.214       +0.227
+  11G   1380-1399  +0.732   +1.728   0.976  +0.752  -0.020     +0.657  +0.197       +0.219
+  11L   1380-1389  +0.484   +1.506   1.018  +0.488  -0.004     +0.419  +0.126       +0.145
+  11M   1380-1389  -0.016   +1.071   1.073  -0.002  -0.014     -0.069  -0.021       -0.005
 
-The residual is -1.0 W/m2 in every arm while TOA moves 0.77 W/m2 across them, so it is
-STRUCTURAL, not a property of any lever.  This is the familiar IFS atmospheric energy
-non-conservation -- kinetic dissipation not returned as heat, and the enthalpy of
-precipitation -- which is order 1-2 W/m2 in this model family.
+The column conserves to 0.02-0.04 W/m2, and the measured ocean warming matches what the
+TOA imbalance alone implies, to within about 10 %.  The whole chain closes.
 
-THE CONSEQUENCE, which is what matters for the spin-up: THE SURFACE SEES ROUGHLY
-TOA + 1 W/m2.  Tuning net TOA to zero therefore does NOT give a non-drifting ocean.  11M
-is the demonstration: its TOA is -0.016, as balanced as anything the campaign has
-produced, and its surface still takes +1.071.  Closing the ocean drift by radiative
-tuning alone would require driving TOA to about -1 W/m2, which would put the model
-badly wrong against CERES.  The drift is an energy-conservation problem, not a cloud
-tuning problem.
+A CORRECTION THIS FILE REPLACES.  An earlier version of this script omitted the snow term
+and reported a "-1.0 W/m2 structural leak, invariant across arms", concluding that the
+drift was an energy-conservation problem and that tuning TOA to zero could not fix it.
+That was wrong on both counts.  The -1.0 W/m2 IS the snow enthalpy: sf*Lf measures 0.962,
+0.976, 1.018 and 1.073 in the four arms against residuals of -1.006, -0.996, -1.022 and
+-1.088 -- agreement to 0.02 W/m2.  Its apparent invariance across arms, which is what made
+it look structural, is simply that global snowfall barely changes between them.
 
-WHAT IS NOT RESOLVED.  IFS says the surface takes +1.728 W/m2 (11G, per m2 of Earth);
-FESOM says the ocean takes +0.765 and warms at +0.657.  The ocean side is self-consistent
-to about 0.11 W/m2, but there is a further ~1 W/m2 between the atmosphere's surface flux
-and the ocean's uptake that this script does not account for.  Candidates: heat into land
-and sea ice, and the coastal masking in the regridded fh integration below, which is the
-weakest step here -- it drops non-finite and exactly-zero cells and weights the ocean
-integral by total area.  Do not read that second gap as a second leak until fh has been
-integrated on the native mesh with proper cell areas.
+The other half of that error was a window mismatch: 11G's TOA is +0.205 over 1350-69 plus
+1380-89 but +0.732 over 1380-99, and the "factor of three" came from comparing the early
+number against the late drift.  Net TOA is itself drifting upward through these runs,
+which is worth knowing on its own.
+
+SO THE PRACTICAL CONCLUSION INVERTS: tuning net TOA to zero DOES stop the ocean drift.
+11M is the demonstration -- TOA -0.016 gives -0.021 K/century, i.e. a flat ocean.  The
+difficulty with 11M is not energetics, it is that it gets there by dimming the planet and
+destroying the Siberian forest.
+
+WHAT REMAINS OPEN.  The ocean takes in slightly more than it stores -- about 0.1 W/m2 in
+every arm.  Candidates are sea-ice melt and the coastal masking in the regridded fh
+integration below, which drops non-finite and exactly-zero cells and weights the ocean
+integral by total area.  Integrate fh on the native mesh with proper cell areas before
+treating that as physical.
 
 SIGN CONVENTIONS, established from the data rather than assumed: IFS surface fluxes are
-downward-positive, so ssr+str+sshf+slhf is heat INTO the surface.  FESOM fh is the
-opposite -- its global mean is negative while the ocean warms -- so negative fh is heat
-into the ocean.
+downward-positive; FESOM fh is the opposite, since its global mean is negative while the
+ocean warms.
 """
 import glob
 import sys
@@ -59,6 +60,7 @@ warnings.filterwarnings('ignore')
 
 R = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
 ACC = 3600.0
+LF = 3.337e5      # J/kg, latent heat of fusion
 EARTH = 5.10072e14
 RHO, CP = 1027.0, 3990.0
 
@@ -131,9 +133,13 @@ def main():
         Y = list(Y)
         t = {v: gm(root, v, Y) for v in ('tsr', 'ttr', 'ssr', 'str', 'sshf', 'slhf')}
         toa = t['tsr'] + t['ttr']
-        sfc = t['ssr'] + t['str'] + t['sshf'] + t['slhf']
-        print(f'{tag:5s} {Y[0]}-{Y[-1]} {toa:+8.3f} {sfc:+8.3f} {toa - sfc:+8.3f}')
-    print('\n   resid ~ -1 W/m2 in every arm while TOA spans 0.77 across them: structural.')
+        # Snow enthalpy: internal atmosphere<->surface transfer, belongs here only.
+        snow = gm(root, 'sf', Y) * 1000.0 * LF
+        sfc = t['ssr'] + t['str'] + t['sshf'] + t['slhf'] - snow
+        print(f'{tag:5s} {Y[0]}-{Y[-1]} {toa:+8.3f} {sfc:+8.3f} {toa - sfc:+8.3f}'
+              f'   (snow enthalpy {snow:.3f})')
+    print('\n   resid is now 0.02-0.04 W/m2: the column conserves. Omitting the snow')
+    print('   term produces a spurious -1.0 W/m2 that looks like a structural leak.')
 
     print(f'\n2. FESOM OCEAN (per m2 of EARTH)\n\n{"arm":5s} {"into ocean":>11s} '
           f'{"OHC tend":>10s} {"resid":>8s}')
