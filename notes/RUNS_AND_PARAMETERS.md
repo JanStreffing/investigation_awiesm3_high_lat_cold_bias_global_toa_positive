@@ -1114,7 +1114,7 @@ sits is a first-order term in its own right.
 
 *Asset:* `scripts/analysis/aerosol_m_series_eval.py`.
 
-### Round 16 — in flight (2026-08-04)
+### Round 16 — SCORED NULL (run 2026-08-04, scored 2026-08-21)
 
 `vlamsk_mod.F90` hardcoded the snow-tile skin conductivities, so they were untunable
 until now. λ_sk sets how tightly the skin couples to the medium below; a small value lets
@@ -1137,6 +1137,29 @@ k_snow 0.1–0.4 W m⁻¹ K⁻¹ and d_skin 0.01–0.05 m, so **roughly 2–40**
 the winter bias lies in boundary-layer mixing instead (Holtslag et al. 2013, Sandu et al.
 2013). Also watching that melt-out and May/June cover **stay** fixed — drift back toward
 the control would mean the two changes interact and the pair is not separable.
+
+#### Result (2026-08-21) — the falsifier fires
+
+Both arms ran 48 years and sat unscored for 17 days. Scored paired against I1 over
+1872–1915 (`scripts/analysis/lamsk_j_series_band.py`):
+
+| arm | 60–90N DJF | threshold | 60–90N ANN | land−ocean gap DJF |
+|---|---:|---:|---:|---:|
+| **J1** `ECE_LAMSK_SN` 15 | +0.125 | 0.41 | +0.062 | +0.009 |
+| **J2** `ECE_LAMSK_SN` 25 | −0.039 | 0.45 | −0.015 | −0.073 |
+
+Predicted +1…+3 K. Measured nothing, at 3.6× the default, with power to detect 0.4 K.
+
+**Not a silent no-op** — checked, because six of those have happened here. The symbol
+lives in `libsurf.SP.so`, *not* `libarpifs.SP.so` (checking only arpifs would have
+returned 0 and looked like the W1 disease); `fort.4` carries 15 / 25; and the arms differ
+from I1 by up to 21 K locally in year 1 across 53 % of cells. The lever is live and the
+mean response is genuinely zero.
+
+**The pre-registered falsifier therefore fires**: skin conductivity is not the winter
+route, and the bias lies in boundary-layer mixing instead. Round 31 follows that pointer,
+and `djf_bias_vertical_structure.py` explains *why* λ_sk could never have worked — the
+skin is already right.
 
 ⚠ **Both J runs are built on I1, before I3 was shown to be the better base in every season.**
 That was correct with the information available, and the round is still diagnostic — it tests
@@ -1807,3 +1830,120 @@ these runs — worth knowing separately for spin-up planning.
 tests** of `restart_target_continuity`, not tuning arms. Never add them to `runs.py`.
 See `notes/lpjg_merge_plan.md`. Standing result: the self-restart round trip is exact to
 machine precision (median drift 2.22e-16, legs 2 and 3 identical to every digit).
+
+
+---
+
+## 9. Round 31 (2026-08-21) — the winter land bias is above the screen
+
+### 9a. What the land bias actually is
+
+`land_bias_season_band.py` localised the coupled land cold bias to winter: the
+land-minus-ocean T2m gap is **−1.37 K in DJF against −0.09 K in JJA**. So the
+land-*specific* error is a cold-season one, and the campaign's boreal-summer framing does
+not describe it.
+
+`djf_bias_vertical_structure.py` then resolved it by height against ERA5 monthly
+pressure-level T (`/pool/data/ERA5/E5/pl/an/1M/130`, DJF 1990–2014, remapped to the model
+grid). **Land cells where the level is below ground are excluded per level** — without
+that mask the "bias" at 1000 hPa reads +28 K, which is mountains being extrapolated, not
+error.
+
+| 11P, DJF | T2m | T1000 | T925 | T850 | lowinv bias | sfcinv bias |
+|---|---:|---:|---:|---:|---:|---:|
+| 60–90N | −3.63 | −2.10 | −0.88 | −0.42 | **+2.81** | **+0.11** |
+| 30–60N | −2.90 | −1.86 | −1.31 | −1.31 | +1.07 | −0.27 |
+| ALL LAND | −2.23 | −1.43 | −1.25 | −1.22 | +0.86 | −0.36 |
+
+`lowinv` = T925−T2m bias (air side), `sfcinv` = T2m−Tskt bias (skin side); positive means
+the model inversion is too strong. Both are differences of differences, so a systematic
+model−ERA5 offset cancels.
+
+**Two conclusions, and they redirect the whole search.**
+
+1. The bias **decays to nothing by 850 hPa** at high latitude, so it is surface-confined
+   and a redistribution lever is the right *class*.
+2. But the **skin is already right** (+0.11 K at 60–90N). The entire excess inversion sits
+   in the layer **between the screen and 925 hPa**.
+
+That second point retires the surface-side candidates as a class, and it is why three
+levers scored null rather than small: **`ECE_LAMSK_SN`** (skin↔soil conduction, Round 16),
+**Raupach z0** (surface-layer exchange, 11J−11I) and **F1 `RVZ0H`** (thermal roughness on
+forest) were each adjusting a part of the column that carries no error. It was not bad
+luck three times; it was the wrong layer three times.
+
+Splitting the all-land number: of −2.23 K in DJF, about **−1.0 K is excess inversion** and
+about **−1.2 K is a deep tropospheric cold bias** still present at 850 hPa, which no
+mixing lever can remove and which tracks the ocean bias (−0.69 K) and the TOA budget.
+
+Across arms the inversion bias falls 3.52 (11G) → 2.88 (11N) → 2.81 (11P) at 60–90N while
+T850 goes −2.12 → −1.09 → −0.42, so LX4 improved both terms.
+
+### 9b. Raupach canopy roughness — scored, null
+
+11J = 11I + `ifraupachz0`, one binary, run-time gate, both branched from 1350. Verified
+before scoring: 11J's `guess.ins` has `ifraupachz0 1` and `fort.4`
+`ECE_CPL_LPJG_Z0 = .true.`; 11I has neither.
+
+| window | 60–90N DJF | 30–60N DJF | land−ocean gap DJF |
+|---|---:|---:|---:|
+| 1380–1389 | +0.302 (0.89) | −0.234 (0.41) | −0.017 (0.20) |
+| 1360–1379 | −0.172 (0.58) | −0.161 (0.43) | −0.003 (0.19) |
+
+Sign flips between windows and the DJF gap is zero twice. The only starred cells (30–60N
+MAM/JJA) do not replicate and are the wrong season.
+
+Note *why* it could not have worked even on the report's own mechanism: Raupach derives
+z0 from FPC and **canopy height**, so where LPJ-GUESS has lost the forest it too returns a
+low z0. It changes the functional form, not the missing forest.
+
+### 9c. The lever that follows — `&NAMVDFS`
+
+The 2 m–925 hPa layer is mixed by the **stable branch of `VDFEXCU`** (Sandu & Beljaars
+2013, named in `vdfexcu.F90:81`), whose constants were all hardcoded literals.
+`scripts/patches/expose_sbl_mixing.py` moves five into `YOEVDFS`, set in `SUVDFS` from a
+new namelist:
+
+| name | default | what it does |
+|---|---:|---|
+| `RSBLB` | 5.0 | coefficient *b* of the LTG stable stability functions |
+| `RSBLD` | 1.0 | coefficient *d* of the same |
+| `RSBLLMIN` | 30.0 | asymptotic mixing length above the stable BL, floor within it [m] |
+| `RSBLLMAX` | 300.0 | cap on the stable mixing length [m] |
+| `RSBLPBLF` | 0.1 | fraction of stable BL depth taken as the mixing length |
+
+Defaults equal the removed literals, so a `fort.4` without `&NAMVDFS` is bit-identical to
+the as-released model. `ZCB`/`ZCD`/`ZLMIN` appear only inside `IF (ZRI > 0)`, checked
+before patching, so the knobs cannot reach unstable or convective mixing.
+
+`F_H = 1/(1 + 2b·Ri·√(1+d·Ri))`, so **lowering `RSBLB` lengthens the stable tail**: at
+Ri = 0.5, `F_H` goes 0.140 (b=5) → 0.214 (b=3) → 0.290 (b=2). More heat mixed down, weaker
+inversion, warmer winter screen.
+
+| run | setting | prediction |
+|---|---|---|
+| **SB1** | LX4 + `RSBLB: 3.0` | 60–90N DJF warms; JJA and the tropics barely move |
+| **SB2** | LX4 + `RSBLB: 2.0` | same, roughly twice the size |
+
+**Falsifier on record:** if 60–90N DJF does not respond, the excess inversion is not set
+by the stable stability function and the remaining candidates are the mixing *length*
+(`RSBLPBLF`, `RSBLLMAX`) or the error is radiative rather than turbulent. **Guardrails:**
+60–90N DJF must not overshoot warm, the inversion bias must not cross zero, global net TOA
+must stay within about ±0.3 at 44 years, Siberian JJA must not go backwards, and **sea ice
+and the Southern Ocean must be checked** — the stable regime is rare over open ocean but
+not over ice, so this is not a land-only lever by construction.
+
+⚠ **`&NAMVDFS` is new and unproven.** `SUVDFS` echoes its values to `NULOUT`; confirm
+`SUVDFS: stable-BL mixing` in `NODE.001_01` shows the intended `RSBLB` before scoring
+either arm. A malformed group aborts by design; an **absent** group silently keeps 5.0,
+which would make the arm a copy of its control.
+
+### 9d. An esm_tools regression fixed on the way
+
+`esm_master recomp-oifs-48r1v5` died in the config parser with
+`KeyError: 'Key general.with_co2_oce_coupling was not defined'`. The `feat/awiesm3-v3.4-co2`
+merge added `choose_general.with_co2_oce_coupling` to the **component** yaml
+(`configs/components/oifs/oifs.yaml`), and a standalone component build has no setup to
+define it — the header comment at the top of that file records the same gap. Fixed with
+esm_parser's documented `"*"` wildcard, which drops the block when the key is undefined.
+Every setup defines the key, so the wildcard never fires for them.
