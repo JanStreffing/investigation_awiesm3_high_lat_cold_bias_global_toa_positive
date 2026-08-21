@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--11})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--21})}
 
 \begin{document}
 \maketitle
@@ -6647,6 +6647,416 @@ $1380$--$01$--$01$ run~$4$; all three restart sets were intact, and the leg-4
 outside XIOS, so the vegetation diagnostics for the lost decade are on disk even though
 every netCDF field is gone. That is worth knowing for any future leg loss.
 
+\section{Round 30 (2026--08--18$\to$19): the Southern Ocean cloud round, coupled}\label{sec:round30}
+
+Six weeks of Southern Ocean work reduced to one question --- \emph{is there a lever that
+brightens SO cloud without wrecking Siberia?} --- and it now has an answer, with the
+candidates named and two of them measured coupled.
+
+\subsection{The reframing: 84\,\% of the coupled SO error is inherited from AMIP}\label{sub:r30inherit}
+
+The same diagnostic applied to AMIP and coupled, 30\,yr each, SO 45--65$^\circ$S TOA SW
+CRE against CERES (\texttt{scripts/analysis/amip\_vs\_coupled\_so.py}):
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+run & SW CRE & vs CERES & tcc \\
+\midrule
+AMIP P5 control            & $-63.097$ & $\mathbf{+4.739}$ & 0.8356 \\
+AMIP LY2 \texttt{ovl 0.10} & $-68.983$ & $-1.147$          & 0.8474 \\
+AMIP LX3 DMS+INPPMIN       & $-68.737$ & $-0.901$          & 0.8435 \\
+CPL 11E                    & $-62.186$ & $\mathbf{+5.651}$ & 0.8365 \\
+CPL 11G $+$S4              & $-63.673$ & $\mathbf{+4.163}$ & 0.8359 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Cloud cover is $0.8356$ in AMIP against $0.8365$ coupled, and the CRE differs by
+$0.91$\,W\,m$^{-2}$: \textbf{the cloud field transfers}. 84\,\% of the coupled error is
+already present in AMIP over a prescribed, correct ocean, and 11G coupled ($+4.163$) is
+\emph{closer} to CERES than the AMIP control ($+4.739$). The Southern Ocean bias is
+mostly an unclosed AMIP problem, not a coupling problem --- which is why the remaining
+effort belongs in AMIP, where an arm costs a fraction of a coupled one.
+
+\subsection{The overlap lever taken coupled: 11L and 11M, both rejected}\label{sub:r30lm}
+
+Both are 11G plus one namelist number, 40\,yr, scored paired over the 30 clean matched
+years 1350--69 $+$ 1380--89. 11G's 1370--79 carries the repaired soil map and has to be
+excluded; \texttt{coupled\_dms\_pair.py} takes an exclusion argument for exactly this.
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+ & \textbf{11L} \texttt{ovl 0.35} & \textbf{11M} \texttt{ovl 0.10} & threshold \\
+\midrule
+SO SW CRE            & $-1.565$\,* & $-5.938$\,* & 0.517 \\
+SO SW CRE DJF        & $-3.399$\,* & $-11.433$\,* & 1.167 \\
+vs CERES             & $+3.89\to\mathbf{+2.33}$ & $+3.89\to\mathbf{-2.05}$ & \\
+net TOA              & $-0.281$ & $\mathbf{-0.698}$\,* & 0.403 \\
+tropics SW CRE       & $-0.297$\,* & $-1.370$\,* & 0.209 \\
+global T2m           & $-0.242$\,* & $-0.604$\,* & 0.162 \\
+\textbf{Siberia JJA T2m} & $\mathbf{-1.000}$\,* & $\mathbf{-2.321}$\,* & 0.406 \\
+Siberia JJA soil     & $-1.014$\,* & $-2.377$\,* & 0.402 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{It transfers --- the first SO lever that does.} AMIP predicted 11L at $+1.992$
+against CERES; coupled lands at $+2.33$. The transfer ratios are $0.57\times$ and
+$1.01\times$ on annual SO CRE, against DMS's $0.19$--$0.44\times$ and S4's
+$0.28$--$0.31\times$. The discriminator, consistent with \S\ref{sub:amplifier}, is how
+much sea ice the lever grows.
+
+\textbf{Both are rejected anyway.} 11M fails net TOA outright. 11L passes net TOA but
+costs $1.000$\,K of Siberian JJA --- it spends the entire budget of target 2 to buy 40\,\%
+of target 1. The vegetation cost is proportionate: against 11G, 11L loses 39.5\,\% of
+boreal needleleaf and 11M loses $89.2$\,\%, all but eliminating larch.
+
+\subsection{Ocean drift, and a correction that inverts its own conclusion}\label{sub:r30drift}
+
+Whole-ocean potential temperature (\texttt{thetaoga}), steady rate after the first decade:
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+arm & K/century & per millennium \\
+\midrule
+11E & $+0.22$ & $+2.2$\,K \\
+\textbf{11G} & $\mathbf{+0.19}$ & $+1.9$\,K \\
+11L & $+0.12$ & $+1.2$\,K \\
+11M & $-0.02$ & $\sim 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Not decelerating, so a multi-millennial spin-up on 11G is untenable.
+
+\textcolor{red}{\textbf{Corrected the same day.}} An earlier reading of this table
+reported a ``$-1.0$\,W\,m$^{-2}$ structural leak, invariant across arms'' between TOA and
+surface, and concluded the drift could not be fixed radiatively. \textbf{That $-1.0$ is
+snow enthalpy.} $sf\cdot L_f$ measures $0.962/0.976/1.018/1.073$ against residuals of
+$-1.006/-0.996/-1.022/-1.088$. The convention was already on record in
+\S\ref{sub:snowenth}: $\text{surface}=ssr+str+sshf+slhf-sf\rho L_f$. With the term
+included the column conserves to $0.02$--$0.04$\,W\,m$^{-2}$ and the ocean warming matches
+what TOA implies, so \textbf{tuning net TOA to zero does stop the drift} --- 11M, at TOA
+$-0.016$, drifts $-0.02$\,K/century. The conclusion inverts.
+
+A second error in the same reading was a window mismatch: 11G's net TOA is $+0.205$ over
+1350--69$+$1380--89 but $+0.732$ over 1380--99. Net TOA is itself drifting upward through
+these runs, which matters separately for spin-up planning.
+
+\section{The 11-series coupled campaign (2026--08--16$\to$21): LX4 taken coupled}\label{sec:r11series}
+
+\subsection{The roster}\label{sub:r11roster}
+
+\begin{center}\small
+\begin{tabular}{llp{0.52\textwidth}}
+\toprule
+arm & content & role \\
+\midrule
+11E & campaign base & the reference the others are read against \\
+11G & 11E $+$ S4 (\texttt{RCL\_INPPMIN} 50000) & the adopted base for rounds 29--30 \\
+11I & 11G $+$ v2soil (LPJG repair) & prices the land-surface repair \\
+11J & 11I $+$ \texttt{ifraupachz0} & the roughness pair, one binary, run-time gate \\
+11L & 11G $+$ \texttt{ovl 0.35} & SO overlap lever, rejected (\S\ref{sub:r30lm}) \\
+11M & 11G $+$ \texttt{ovl 0.10} & SO overlap lever, rejected (\S\ref{sub:r30lm}) \\
+11N & LX4 stack, 1850 forcing & the best AMIP tuning, taken coupled \\
+11P & LX4 stack, constant 1990 forcing & the same stack, period-matched to ERA5 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Is the 1990 forcing actually 1990? Everything except LPJ-GUESS}\label{sub:r11forcing}
+
+11P exists to remove a confound that had been quietly distorting every comparison against
+ERA5: a PI run read against a present-day reanalysis is cold \emph{by construction}, so
+part of the reported land bias was never a model error at all. \texttt{NCMIPFIXYR} pins
+GHG, ozone, composition, stratospheric aerosol, SO$_4$, solar TSI \emph{and} MACv2SP.
+It does \textbf{not} pin LPJ-GUESS, which has its own \texttt{fixed\_CO2},
+\texttt{fixed\_ndep} and \texttt{fixed\_LU}.
+
+Two traps were hit while verifying this and are worth recording:
+
+\begin{itemize}\itemsep1pt
+\item The \texttt{\&NAMECECMIP6} block accepts \texttt{NCMIPFIXYR} and is \textbf{never
+read}. Liveness must be checked as \texttt{Set JYEAR} in \texttt{NODE.001\_01}, not by
+finding the name in \texttt{fort.4}.
+\item \textcolor{red}{\textbf{A correct run was cancelled on a misreading.}} The log line
+\texttt{SP\_SETUP: IYR} reports the MACv2SP \emph{file} that was opened, not the year the
+profile is evaluated at. The evaluation year is \texttt{YEAR\_FR}, which honours
+\texttt{NCMIPFIXYR} in both source trees
+(\texttt{radiation\_scheme.F90:387}). 11P was already right; the patch written to
+``fix'' it was reverted and the arm resubmitted unchanged.
+\end{itemize}
+
+\subsection{What the stack bought: the land bias by band and season}\label{sub:r11land}
+
+Land T2m bias against ERA5, 1380--89, from
+\texttt{scripts/analysis/land\_bias\_season\_band.py}:
+
+\begin{center}\footnotesize
+\begin{tabular}{lrrrrr@{\hskip 14pt}rrrrr@{\hskip 14pt}rrrrr}
+\toprule
+& \multicolumn{5}{c}{\textbf{11G}} & \multicolumn{5}{c}{\textbf{11N} (1850)} & \multicolumn{5}{c}{\textbf{11P} (1990)} \\
+\cmidrule(lr){2-6}\cmidrule(lr){7-11}\cmidrule(lr){12-16}
+band & DJF & MAM & JJA & SON & ANN & DJF & MAM & JJA & SON & ANN & DJF & MAM & JJA & SON & ANN \\
+\midrule
+60--90N   & $-6.35$ & $-4.60$ & $-1.96$ & $-3.65$ & $-4.14$ & $-4.49$ & $-2.99$ & $-1.52$ & $-2.26$ & $-2.82$ & $-3.63$ & $-1.64$ & $-0.58$ & $-1.29$ & $-1.78$ \\
+30--60N   & $-3.83$ & $-3.56$ & $-0.80$ & $-1.84$ & $-2.51$ & $-3.18$ & $-3.37$ & $-0.17$ & $-0.93$ & $-1.91$ & $-2.90$ & $-2.49$ & $+0.72$ & $-0.22$ & $-1.22$ \\
+0--30N    & $-2.96$ & $-2.21$ & $-2.46$ & $-2.33$ & $-2.49$ & $-2.59$ & $-1.98$ & $-1.99$ & $-1.88$ & $-2.11$ & $-1.90$ & $-0.98$ & $-1.16$ & $-1.19$ & $-1.31$ \\
+30S--0    & $-2.75$ & $-2.83$ & $-2.21$ & $-1.68$ & $-2.37$ & $-2.30$ & $-2.20$ & $-1.61$ & $-1.00$ & $-1.78$ & $-1.76$ & $-1.76$ & $-0.90$ & $-0.63$ & $-1.26$ \\
+60--30S   & $-0.89$ & $-1.46$ & $-2.29$ & $-1.52$ & $-1.54$ & $-0.32$ & $-0.90$ & $-1.73$ & $-1.00$ & $-0.99$ & $+0.07$ & $-0.66$ & $-1.13$ & $-0.86$ & $-0.65$ \\
+\midrule
+ALL LAND  & $-3.47$ & $-3.27$ & $-2.14$ & $-2.29$ & $-2.79$ & $-2.76$ & $-2.66$ & $-1.48$ & $-1.54$ & $-2.11$ & $-2.23$ & $-1.85$ & $-0.73$ & $-0.83$ & $-1.41$ \\
+ocean     & $-1.86$ & $-1.64$ & $-1.53$ & $-1.49$ & $-1.63$ & $-1.44$ & $-1.24$ & $-1.15$ & $-1.10$ & $-1.23$ & $-0.86$ & $-0.71$ & $-0.64$ & $-0.56$ & $-0.69$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Read the two steps differently.} $11\text{G}\to11\text{N}$ is a genuine tuning
+gain at a fixed forcing basis: all-land annual $-2.79\to-2.11$, and 60--90N DJF
+$-6.35\to-4.49$, the largest single winter improvement in the campaign. $11\text{N}\to
+11\text{P}$ is \emph{not} a tuning gain --- it is a change of comparison basis, from a
+1850-forced run read against a present-day reanalysis to a period-matched one. Only 11P
+should be quoted as a bias against ERA5.
+
+\textbf{And the shape of what remains is the finding.} In 11P the land--ocean gap is
+$-1.37$\,K in DJF against $-0.09$\,K in JJA. Siberian JJA is essentially spot on
+($10.649$ against ERA5's $10.666$). The campaign was built around a boreal \emph{summer}
+cold bias; what is left is a \emph{winter} one, and \S\ref{sec:round31} resolves where in
+the column it sits.
+
+\section{Round 31 (2026--08--21): the winter land bias is above the screen}\label{sec:round31}
+
+Three surface-side levers are scored null in this round, and the reason turns out to be
+the same for all three.
+
+\subsection{Round 16 scored at last: skin conductivity is not the route}\label{sub:r31lamsk}
+
+Round 16 (\texttt{ECE\_LAMSK\_SN}, the exposed-snow skin
+conductivity $Z_{\text{SNOW}}$ $7\to15\to25$) ran 48 years on 2026--08--04 and then sat
+unscored for 17 days. Scored paired against I1 over 1872--1915:
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+arm & 60--90N DJF & threshold & 60--90N ANN & land$-$ocean gap DJF \\
+\midrule
+\textbf{J1} \texttt{LAMSK\_SN} 15 & $+0.125$ & 0.41 & $+0.062$ & $+0.009$ \\
+\textbf{J2} \texttt{LAMSK\_SN} 25 & $-0.039$ & 0.45 & $-0.015$ & $-0.073$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The round predicted $+1$ to $+3$\,K. It measured nothing, at $3.6\times$ the default, with
+power to detect $0.4$\,K.
+
+This is \textbf{not} a seventh silent no-op, and that was checked before the null was
+believed: the symbol lives in \texttt{libsurf.SP.so}, \emph{not} \texttt{libarpifs.SP.so}
+--- grepping only arpifs returns zero and looks exactly like the W1 failure ---
+\texttt{fort.4} carries 15/25, and the arms differ from I1 by up to $21$\,K locally in
+year 1 across 53\,\% of cells. The lever is live and its mean response is genuinely zero.
+Round 16's own pre-registered falsifier therefore fires: the winter bias lies in
+boundary-layer mixing instead.
+
+\subsection{Raupach roughness, measured: null, as \S\ref{sub:r29raupach} predicted}\label{sub:r31raupach}
+
+11J $=$ 11I $+$ \texttt{ifraupachz0}, one binary with a run-time gate, both branched from
+1350. Verified before scoring: 11J's \texttt{guess.ins} carries \texttt{ifraupachz0 1} and
+\texttt{fort.4} \texttt{ECE\_CPL\_LPJG\_Z0 = .true.}; 11I has neither.
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+window & 60--90N DJF & 30--60N DJF & land$-$ocean gap DJF \\
+\midrule
+1380--1389 & $+0.302$ (0.89) & $-0.234$ (0.41) & $-0.017$ (0.20) \\
+1360--1379 & $-0.172$ (0.58) & $-0.161$ (0.43) & $-0.003$ (0.19) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The sign flips between windows and the DJF gap is zero in both. This is the T2m
+confirmation of the mechanism argument already made in \S\ref{sub:r29raupach}: Raupach
+derives $z_0$ from FPC and \emph{canopy height}, so wherever LPJ-GUESS has lost the
+forest it too returns a low $z_0$. It changes the functional form, not the missing canopy.
+
+\subsection{The decomposition: the skin is already right}\label{sub:r31vertical}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{djf_bias_profile.png}
+\caption{The DJF land cold bias is surface-confined, but the surface is not what is
+broken. \textbf{(a)} Model$-$ERA5 DJF bias over 60--90$^\circ$N land against height. In
+11P the bias runs $-3.63$\,K at the screen to $-0.42$\,K at 850\,hPa, so it decays to
+nothing aloft and a \emph{redistribution} lever is the right class. \textbf{(b)} Splitting
+the near-surface error: the air-side inversion bias ($T_{925}-T_{2m}$) is $+2.81$\,K in
+11P while the skin-side one ($T_{2m}-T_{skt}$) is $+0.11$\,K. The skin is already right,
+so the entire excess inversion sits in the layer between the screen and 925\,hPa. That is
+why skin conductivity (\S\ref{sub:r31lamsk}), Raupach $z_0$ (\S\ref{sub:r31raupach}) and
+F1 \texttt{RVZ0H} all scored null: each adjusts a part of the column carrying no error.
+Note also that the campaign's tuning improved both terms, 11G$\to$11N$\to$11P.}
+\label{fig:djfprofile}
+\end{figure}
+
+Measured against ERA5 monthly pressure-level $T$
+(\texttt{/pool/data/ERA5/E5/pl/an/1M/130}, DJF 1990--2014, remapped to the model grid),
+with land cells excluded \emph{per level} where the level lies below ground. That mask is
+not cosmetic: without it the ``bias'' at 1000\,hPa reads $+28$\,K, which is mountains
+being extrapolated rather than error.
+
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+11P, DJF & T$_{2m}$ & T$_{1000}$ & T$_{925}$ & T$_{850}$ & lowinv bias & sfcinv bias \\
+\midrule
+60--90N  & $-3.63$ & $-2.10$ & $-0.88$ & $-0.42$ & $\mathbf{+2.81}$ & $\mathbf{+0.11}$ \\
+30--60N  & $-2.90$ & $-1.86$ & $-1.31$ & $-1.31$ & $+1.07$ & $-0.27$ \\
+ALL LAND & $-2.23$ & $-1.43$ & $-1.25$ & $-1.22$ & $+0.86$ & $-0.36$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Both inversion columns are differences of differences, so any systematic model$-$ERA5
+offset cancels out of them.
+
+Splitting the all-land number: of the $-2.23$\,K DJF bias, roughly $-1.0$\,K is excess
+inversion and roughly $-1.2$\,K is a \textbf{deep tropospheric cold bias} still present at
+850\,hPa, which no mixing lever can remove and which tracks the ocean bias ($-0.69$\,K)
+and the TOA budget. \textbf{Only about half of the remaining land bias is addressable by
+a surface or boundary-layer lever at all}, and that half is concentrated at high latitude.
+
+\subsection{The lever: \texttt{\&NAMVDFS}, and why it had to be created}\label{sub:r31namvdfs}
+
+The 2\,m--925\,hPa layer is mixed by the stable branch of \texttt{VDFEXCU} (Sandu \&
+Beljaars 2013, cited in the routine's own header at \texttt{vdfexcu.F90:81}), and every
+constant governing it was a hardcoded literal.
+\texttt{scripts/patches/expose\_sbl\_mixing.py} moves five into \texttt{YOEVDFS}, set in
+\texttt{SUVDFS} from a new namelist:
+
+\begin{center}\small
+\begin{tabular}{lrp{0.50\textwidth}}
+\toprule
+name & default & what it does \\
+\midrule
+\texttt{RSBLB}    & 5.0   & coefficient $b$ of the LTG stable stability functions \\
+\texttt{RSBLD}    & 1.0   & coefficient $d$ of the same \\
+\texttt{RSBLLMIN} & 30.0  & asymptotic mixing length above the stable BL, and floor within it [m] \\
+\texttt{RSBLLMAX} & 300.0 & cap on the stable mixing length [m] \\
+\texttt{RSBLPBLF} & 0.1   & fraction of stable BL depth taken as the mixing length \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Defaults equal the removed literals, so a \texttt{fort.4} without the group is
+bit-identical to the as-released model. \texttt{ZCB}, \texttt{ZCD} and \texttt{ZLMIN} were
+checked to appear only inside \texttt{IF (ZRI > 0)} before patching, so the knobs cannot
+reach unstable or convective mixing.
+
+With $F_H = 1/(1+2b\,Ri\sqrt{1+d\,Ri})$, \textbf{lowering $b$ lengthens the stable tail}
+and the gain grows with $Ri$, concentrating the change in exactly the deep-inversion
+columns that carry the error:
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+$Ri$ & $b=5$ & $b=3$ & $b=2$ \\
+\midrule
+0.5 & 0.140 & 0.214 ($\times1.5$) & 0.290 ($\times2.1$) \\
+2.0 & 0.028 & 0.046 ($\times1.6$) & 0.067 ($\times2.4$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Which knob bites where.} Inside the stable BL the mixing length is
+$\text{clamp}(0.1h,\,30,\,300)$, so the $0.1h$ term only takes over once $h>300$\,m and
+the cap needs $h>3000$\,m. An Arctic winter SBL is typically 50--300\,m deep, so in the
+regime being targeted $\lambda$ is pinned at the 30\,m floor and \texttt{RSBLPBLF} never
+fires. The operative pair is therefore \texttt{RSBLB} (always evaluated) and
+\texttt{RSBLLMIN}; \texttt{RSBLLMAX} is effectively inert.
+
+\texttt{POSNAM} is deliberately not used: it aborts when a group is absent, and no
+existing \texttt{fort.4} carries \texttt{\&NAMVDFS}. A plain \texttt{READ} with
+\texttt{IOSTAT} keeps the defaults when the group is missing ($<0$) and \textbf{aborts}
+when it is malformed ($>0$), rather than swallowing a typo into an arm identical to its
+control. \texttt{SUVDFS} echoes the values to \texttt{NULOUT} unconditionally so
+\texttt{NODE.001\_01} proves what ran.
+
+\subsection{The SB arms, and the premise check they rest on}\label{sub:r31sb}
+
+\begin{center}\small
+\begin{tabular}{llp{0.46\textwidth}}
+\toprule
+run & setting & prediction \\
+\midrule
+\textbf{SB0} & LX4, no \texttt{\&NAMVDFS} & rebuilt control (see below) \\
+\textbf{SB1} & LX4 $+$ \texttt{RSBLB: 3.0} & 60--90N DJF warms; JJA and tropics barely move \\
+\textbf{SB2} & LX4 $+$ \texttt{RSBLB: 2.0} & the same, roughly twice the size \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+SB0 exists because the AMIP library was last built 2026--08--09 and commit
+\texttt{75a4e45} has since completed the DMS ICMCL ingest chain --- not an inert namelist
+exposure but a change to which surface field is ingested and under which GRIB code. LX4
+reads DMS, so SB1 minus the old LX4 output would mix the \texttt{RSBLB} effect with an
+ingest change. The Raupach pair was deliberately run from one binary for this reason; the
+same standard applies here, and since a rebuild cannot be a run-time gate, the control is
+re-run instead.
+
+\textbf{Does the AMIP base share the defect?} It has to, or the screen is meaningless, and
+the bias being screened was measured on \emph{coupled} 11P. Checked before the compute was
+spent (\texttt{scripts/analysis/amip\_vs\_coupled\_inversion.py}), low-level inversion
+bias, DJF:
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+band & AMIP LX4 & coupled 11P \\
+\midrule
+60--90N  & $+1.54$ & $+2.81$ \\
+30--60N  & $+0.37$ & $+1.07$ \\
+ALL LAND & $+0.43$ & $+0.86$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Same sign and same vertical shape, so the screen tests the right defect, and $+1.54$\,K
+against a 44-year paired threshold of $\sim 0.4$\,K resolves a lever that removes a
+quarter of the bias. But T$_{925}$ is \emph{identical} in the two ($-0.88$), so the whole
+AMIP--coupled difference sits at the screen: about $1.3$\,K of the coupled excess at
+60--90N has no AMIP counterpart. AMIP prescribes sea ice, which is the obvious home for
+it. \textbf{A clean AMIP result bounds the direct land effect and cannot close the coupled
+gap}, and the sea-ice guardrail cannot be tested in AMIP even in principle.
+
+\textbf{Falsifier on record.} If 60--90N DJF does not respond, the excess inversion is not
+set by the stable stability function, and what remains is the mixing length
+(\texttt{RSBLLMIN}) or a radiative rather than turbulent cause. \textbf{Guardrails:}
+60--90N DJF must not overshoot warm, the inversion bias must not cross zero, global net
+TOA must stay within $\pm0.3$ at 44 years, Siberian JJA must not go backwards, and the
+Southern Ocean must be re-checked --- $Ri>0$ does not know about land, and the stable
+regime is rare over open ocean but common over ice.
+
+\subsection{Infrastructure fixed on the way}\label{sub:r31infra}
+
+\begin{itemize}\itemsep1pt
+\item \texttt{esm\_master recomp-oifs-*} died in the config parser with
+\texttt{KeyError: 'Key general.with\_co2\_oce\_coupling was not defined'}. The
+\texttt{feat/awiesm3-v3.4-co2} merge added a \texttt{choose\_general.} block to the
+\emph{component} yaml, and a standalone component build has no setup to define the key.
+Fixed with esm\_parser's documented \texttt{"*"} wildcard, which drops the block when the
+key is undefined; every setup defines it, so the wildcard never fires for them.
+\item The build then failed three times with \texttt{ifort: error \#10103: can't fork
+process}. Not a code or HPC change: \texttt{ulimit -u} counts \emph{threads} on Linux, and
+the IDE/agent session alone held $\sim$1310 of the 2048 (devin 399, language\_server 300,
+github-mcp 218, claude 206), leaving $\sim$700 for a build that spawns \texttt{make -j32}
+with \texttt{fcm make -j 256} inside it. The first failure also orphaned $\sim$250 fcm
+workers, which then broke the retries. Resolved by building on a compute node
+(\texttt{scripts/build/build\_oifs\_compute.sh}); the as-released \texttt{FCM\_PARALLEL}
+is left untouched. Completed in 8:16 with zero fork failures.
+\end{itemize}
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -6874,10 +7284,38 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--16)}\label{sec:state}
+\section{State of the campaign (2026--08--21)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--21 (rounds 30--31, \S\ref{sec:round30}--\S\ref{sec:round31}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{The Southern Ocean bias is an AMIP problem, not a coupling problem.} 84\,\%
+of the coupled SO SW CRE error is already present in AMIP over a prescribed, correct
+ocean; cloud cover matches to $0.001$ and CRE to $0.91$\,W\,m$^{-2}$
+(\S\ref{sub:r30inherit}).
+\item \textbf{Tuning net TOA to zero does stop the ocean drift.} The apparent
+``$-1.0$\,W\,m$^{-2}$ structural leak'' was the omitted snow-enthalpy term; with it the
+column conserves to $0.02$--$0.04$\,W\,m$^{-2}$ and 11M (TOA $-0.016$) drifts
+$-0.02$\,K/century (\S\ref{sub:r30drift}).
+\item \textbf{The winter land bias sits between the screen and 925\,hPa.} In 11P at
+60--90N DJF the air-side inversion bias is $+2.81$\,K while the skin-side bias is
+$+0.11$\,K, and the profile decays to $-0.42$\,K by 850\,hPa (\S\ref{sub:r31vertical},
+Fig.~\ref{fig:djfprofile}).
+\item \textbf{The surface-side levers are retired as a class, by measurement.} Skin
+conductivity ($+0.125$\,K against a $0.41$ threshold, \S\ref{sub:r31lamsk}) and Raupach
+$z_0$ (DJF land--ocean gap $-0.017$ and $-0.003$ in two windows,
+\S\ref{sub:r31raupach}) both score null, for the reason the decomposition gives: they
+adjust a part of the column that carries no error.
+\item \textbf{Only about half the residual land bias is reachable by any mixing lever.}
+Of the $-2.23$\,K all-land DJF bias, ${\sim}1.0$\,K is excess inversion and ${\sim}1.2$\,K
+is a deep cold bias still present at 850\,hPa (\S\ref{sub:r31vertical}).
+\item \textbf{The LX4 stack is the best coupled state so far}, all-land annual
+$-2.79\to-2.11$\,K at fixed forcing basis and 60--90N DJF $-6.35\to-4.49$\,K
+(\S\ref{sub:r11land}). Note 11N$\to$11P is a change of comparison basis, not a further
+gain.
+\end{itemize}
+
 \textbf{Added 2026--08--16 (round 29, \S\ref{sec:r29}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{Raupach canopy roughness is dead, structurally rather than statistically.}
@@ -7322,6 +7760,22 @@ being built on.
 \begin{tabular}{p{0.30\textwidth} p{0.42\textwidth} l}
 \toprule
 claim & what killed it & where \\
+\midrule
+\dead{Snow skin conductivity is the winter lever: $\lambda_{sk}$ over exposed snow is
+too small, letting the skin radiatively decouple in polar night, so raising
+\texttt{ECE\_LAMSK\_SN} from 7 to 15--25 should warm DJF by $+1$ to $+3$\,K} &
+Measured null at 48\,yr, paired: $+0.125$\,K at 60--90N DJF against a $0.41$ threshold
+(J1) and $-0.039$ against $0.45$ (J2). Verified live first --- the symbol is in
+\texttt{libsurf.SP.so}, \texttt{fort.4} carries the values, and the arms differ locally by
+up to 21\,K. The decomposition then gave the reason: the skin-side bias is already only
+$+0.11$\,K. &
+\S\ref{sub:r31lamsk} \\
+\midrule
+\dead{Raupach roughness will move the coupled winter screen temperature} &
+Scored on the 11J$-$11I run-time-gated pair: DJF land--ocean gap $-0.017$ (1380--89) and
+$-0.003$ (1360--79), sign flipping at 60--90N between windows. Confirms by measurement the
+structural argument already on this list. &
+\S\ref{sub:r31raupach} \\
 \midrule
 \dead{Raupach (1994) canopy roughness is a WINTER lever: a leafless boreal canopy is the
 roughest state, so DJF grid-box $z_0$ rises $0.058\to0.140$\,m and warms Siberian winter
