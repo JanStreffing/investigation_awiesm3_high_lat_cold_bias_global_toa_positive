@@ -10,7 +10,8 @@ PAIRING.  SB0/SB1/SB2 are AMIP arms under identical prescribed SST from the same
 differing in one namelist number, so the year-by-year difference is paired and the
 threshold is 1.96*sd/sqrt(n).  The two-sample form would be far too lax.
 
-SPIN-UP.  Four years are discarded, not the campaign's usual two: RSBLB changes the
+SPIN-UP.  At the 16-year preliminary four years were discarded, not the campaign's
+usual two: RSBLB changes the
 surface energy balance and deep soil temperature has multi-year memory.  The trend column
 is printed so a still-drifting difference is visible rather than averaged away.
 
@@ -32,8 +33,11 @@ warnings.filterwarnings('ignore')
 from runs import RT, LSMF
 
 CTL = ('SB0', 'amip_SB0_ctl')
-ARMS = [('SB1 b=3', 'amip_SB1_sblb3'), ('SB2 b=2', 'amip_SB2_sblb2')]
-Y0, Y1 = 1874, 1885                      # 16 yr on disk, 4 discarded
+ARMS = [('SB1 b=3', 'amip_SB1_sblb3'), ('SB2 b=2', 'amip_SB2_sblb2'),
+        ('SB3 lmin120', 'amip_SB3_lmin120')]
+# Campaign-standard window once the arms are complete; the 16-year preliminary used
+# 1874-1885.  Override on the command line as: sb_series_eval.py Y0 Y1
+Y0, Y1 = (int(sys.argv[1]), int(sys.argv[2])) if len(sys.argv) > 2 else (1872, 1915)
 DJF, JJA = [11, 0, 1], [5, 6, 7]
 
 with xr.open_dataset(LSMF, decode_times=False) as d:
@@ -47,6 +51,8 @@ mid = land & np.broadcast_to(((lat >= 30) & (lat < 60))[:, None], m.shape)
 sib = land & np.broadcast_to(((lat >= 50) & (lat <= 70))[:, None], m.shape) \
            & np.broadcast_to(((lon >= 60) & (lon <= 140))[None, :], m.shape)
 glob = np.ones_like(m, dtype=bool)
+trop = np.broadcast_to(((lat >= -30) & (lat < 30))[:, None], m.shape)
+so = np.broadcast_to(((lat >= -65) & (lat < -45))[:, None], m.shape)
 
 
 def am(f, s):
@@ -83,7 +89,8 @@ def stat(dy):
 
 
 C = {v: load(CTL[1], *v) for v in [('2t',), ('skt',), ('pl_t', 92500, '_pl'),
-                                   ('pl_t', 85000, '_pl'), ('tsr',), ('ttr',)]}
+                                   ('pl_t', 85000, '_pl'), ('tsr',), ('ttr',),
+                                   ('tsrc',)]}
 if any(v is None for v in C.values()):
     sys.exit('control incomplete')
 
@@ -127,6 +134,17 @@ for label, run in ARMS:
                     - (C[('tsr',)][i] + C[('ttr',)][i]).mean(0) / 3600.0, glob)
                    for i in range(len(A[('2t',)]))])
     rows.append(('GUARD global net TOA', *stat(dy)))
+    # The tropical shortwave cost is why SB3 exists: SB2 pays +0.515 of SW CRE there,
+    # concentrated in the subtropical Sc decks, which lands on nino34.
+    for rn, sel in [('tropics', trop), ('SO 45-65S', so)]:
+        dy = np.array([am(((A[('tsr',)][i] - A[('tsrc',)][i])
+                         - (C[('tsr',)][i] - C[('tsrc',)][i])).mean(0) / 3600.0, sel)
+                       for i in range(len(A[('2t',)]))])
+        rows.append((f'COST {rn} SW CRE', *stat(dy)))
+    dy = np.array([am((A[('tsr',)][i] + A[('ttr',)][i]).mean(0) / 3600.0
+                    - (C[('tsr',)][i] + C[('ttr',)][i]).mean(0) / 3600.0, trop)
+                   for i in range(len(A[('2t',)]))])
+    rows.append(('COST tropics net TOA', *stat(dy)))
     for nm, mu, thr, sl in rows:
         star = '*' if abs(mu) > thr else ' '
         print(f'{nm:>28} | {mu:+8.3f}{star} {thr:6.3f} {sl:+7.3f}')
