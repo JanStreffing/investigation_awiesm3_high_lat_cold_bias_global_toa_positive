@@ -63,17 +63,14 @@ def nearest_peat(src_lon, src_lat, src_val, dst_lon, dst_lat):
 
 
 def write_peat(path, lon, lat, val):
-    # The dateline column is emitted under BOTH conventions, once at -180 and
-    # once at +180.  The two files already shipped disagree with each other --
-    # TCO95_peat_frac.txt spans [-176.9, 180.0] and TL255_peat_frac.txt spans
-    # [-180.0, 179.56] -- so which one LPJ-GUESS asks with cannot be inferred,
-    # and a miss here is a fatal "Fixed peat map lookup failed".  A duplicate row
-    # is harmless to a lookup; a missing one stops the run.
-    dl = np.isclose(lon, -180.0)
-    if dl.any():
-        lon = np.concatenate([lon, np.full(dl.sum(), 180.0)])
-        lat = np.concatenate([lat, lat[dl]])
-        val = np.concatenate([val, val[dl]])
+    # ONE row per cell.  Emitting the dateline column under both conventions,
+    # at -180 and again at +180, looks like cheap insurance and is not: the
+    # loader normalises longitude, so the two collapse onto the same coordinate,
+    # LoadUniqueChecked returns UNIQUE_LOAD_MALFORMED ("malformed or duplicate
+    # rows"), and that poisons every lookup in the file rather than just the
+    # dateline -- lon -30 at 82.75N failed with the row sitting right there.
+    # The single [-180, 180) convention from read_oasis_grid is what LPJ-GUESS
+    # asks with; every coordinate it reported is negative.
 
     with open(path, "w") as f:
         f.write("Lon\tLat\tPeat_Frac\n")
