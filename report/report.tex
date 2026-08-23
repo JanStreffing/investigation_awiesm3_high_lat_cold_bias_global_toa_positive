@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--21})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--08--23})}
 
 \begin{document}
 \maketitle
@@ -7030,6 +7030,9 @@ AMIP--coupled difference sits at the screen: about $1.3$\,K of the coupled exces
 it. \textbf{A clean AMIP result bounds the direct land effect and cannot close the coupled
 gap}, and the sea-ice guardrail cannot be tested in AMIP even in principle.
 
+\textbf{Scored in \S\ref{sec:round32}.} The falsifier below did not fire: the inversion
+responded, and coupled the screen followed.
+
 \textbf{Falsifier on record.} If 60--90N DJF does not respond, the excess inversion is not
 set by the stable stability function, and what remains is the mixing length
 (\texttt{RSBLLMIN}) or a radiative rather than turbulent cause. \textbf{Guardrails:}
@@ -7056,6 +7059,234 @@ workers, which then broke the retries. Resolved by building on a compute node
 (\texttt{scripts/build/build\_oifs\_compute.sh}); the as-released \texttt{FCM\_PARALLEL}
 is left untouched. Completed in 8:16 with zero fork failures.
 \end{itemize}
+
+\section{Round 32 (2026--08--21$\to$23): the stable-BL lever, scored}\label{sec:round32}
+
+Round 31 ended with a diagnosis and an untested knob. This round scores it: four AMIP arms,
+one falsification, a coupled pair, and the first coupled state in this campaign that
+improves the winter land bias without paying for it somewhere else.
+
+\subsection{The AMIP screen, and the shortwave bill}\label{sub:r32amip}
+
+SB0/SB1/SB2 ran 46 years each on one binary, scored paired over 1872--1915. SB0 exists
+because the AMIP library predated commit \texttt{75a4e45}, which changed the DMS ICMCL
+ingest --- LX4's own output was therefore not a valid control (\S\ref{sub:r31sb}).
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+DJF, 44\,yr & \textbf{SB1} $b{=}3$ & \textbf{SB2} $b{=}2$ \\
+\midrule
+inversion 60--90N & $-0.424$\,* & $-0.713$\,* \\
+inversion all land & $-0.148$\,* & $-0.282$\,* \\
+T2m 60--90N & $+0.029$ & $+0.285$ \\
+T2m 30--60N & $+0.060$ & $+0.492$\,* \\
+T2m all land & $+0.077$ & $+0.233$\,* \\
+T925 60--90N & $-0.396$\,* & $-0.428$\,* \\
+Siberia JJA & $-0.002$ & $+0.000$ \\
+global net TOA & $+0.090$\,* & $+0.175$\,* \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Three things to read here. The inversion responds strongly and \textbf{dose-consistently}.
+The Arctic \emph{screen} does not --- $+0.285$ against a $0.345$ threshold --- and the
+inversion weakens roughly 40\,\% by warming the screen and 60\,\% by cooling the air above
+it. And \textbf{Siberian JJA is exactly null}, which makes this the first lever in the
+campaign to move the winter bias without spending boreal summer.
+
+The TOA bill is \textbf{shortwave, and cloud-mediated}: of SB2's $+0.175$, SW carries
+$+0.319$ against LW $-0.144$, and SW CRE carries $+0.284$ of the SW with total and low
+cloud both falling ($-0.007$, $-0.005$). Enhanced stable mixing dries and erodes low
+cloud. Regionally the tropics carry all of it (SW CRE $+0.515$, net $+0.235$) because
+\emph{subtropical stratocumulus decks are stable boundary layers}; the Southern Ocean
+mildly improves ($-0.182$); and the Arctic's $+0.620$ is almost all LW, a symptom of the
+cooling aloft reducing outgoing longwave rather than a gain.
+
+\subsection{SB3: the mixing-length route, falsified}\label{sub:r32sb3}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.99\textwidth]{sb_exchange_rate.png}
+\caption{\textbf{(a)} What each arm pays (tropical SW CRE) against what it buys (Arctic
+DJF inversion removed). SB1 and SB2 lie on one line through the origin at $0.87$\,W\,m$^{-2}$
+per K, so the trade is \emph{linear in dose} and cannot be dodged by tuning gentler ---
+halving \texttt{RSBLB} halves both terms. SB3, the mixing-length route, sits far off that
+line at $3.43$. The coupled arms land on the same frontier. \textbf{(b)} Why the coupled
+pair was necessary: in AMIP the inversion weakens mostly by cooling the air aloft and the
+screen response is not significant, whereas coupled --- with sea ice free to respond ---
+it is essentially all screen.}
+\label{fig:sbexchange}
+\end{figure}
+
+\texttt{RSBLLMIN} $30\to120$\,m was a regime-discriminator hypothesis: inside the stable BL
+the length is $\mathrm{clamp}(0.1h,30,300)$, so the 30\,m floor binds only where the
+stable layer is shallower than 300\,m, which a shallow Arctic winter SBL is and a deep
+subtropical Sc boundary layer is not. Crucially this is a \emph{regime} discriminator, not
+a geographic one; no latitude-dependent parameter is invented anywhere.
+
+The runscript recorded, before the run, the reason it might invert: \texttt{RSBLLMIN} also
+sets the length \emph{above} the stable BL, because the \texttt{ELSE} branch of
+\texttt{vdfexcu} assigns \texttt{ZKLENT = ZLMIN} in free-shear layers. Over a Sc deck that
+is enhanced entrainment across the capping inversion, a known way to destroy
+stratocumulus. That is what happened.
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+1874--1901, 28\,yr & SB1 $b{=}3$ & SB2 $b{=}2$ & \textbf{SB3} $\lambda_{min}{=}120$ \\
+\midrule
+Arctic DJF inversion & $-0.318$\,* & $-0.624$\,* & $-0.614$\,* \\
+tropics SW CRE & $+0.281$\,* & $+0.541$\,* & $\mathbf{+2.106}$\,* \\
+global net TOA & $+0.094$\,* & $+0.187$\,* & $\mathbf{+1.673}$\,* \\
+SO SW CRE & $-0.170$ & $-0.182$ & $+1.395$\,* \\
+\midrule
+cost per K of inversion & 0.88 & 0.87 & \textbf{3.43} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+SB3 buys SB2's Arctic benefit at four times the tropical cost and five times outside the
+$\pm0.3$ TOA guardrail, and it damages the Southern Ocean where SB2 mildly helped.
+\textbf{The exchange rate is the durable result}: constant across a factor-two
+\texttt{RSBLB} dose change, so the tropical shortwave cost is intrinsic to enhancing stable
+mixing in this scheme rather than an artefact of which knob is turned. \texttt{RSBLB} is
+the efficient frontier.
+
+\subsection{Coupled: 11Q and 11R}\label{sub:r32coupled}
+
+11Q $=$ 11N $+$ \texttt{RSBLB 2.0} (1850) and 11R $=$ 11P $+$ \texttt{RSBLB 2.0} (1990),
+40\,yr, paired against their controls. No re-run controls were needed here, unlike AMIP:
+the coupled source has no commits since the 08--12 build the controls used, all four
+pre-existing working-tree modifications predate it, and the patch is bit-identical with
+\texttt{\&NAMVDFS} absent.
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+1360--1389 & \textbf{11Q} $-$ 11N & \textbf{11R} $-$ 11P & AMIP SB2 \\
+\midrule
+DJF inversion 60--90N & $-0.680$\,* & $-0.809$\,* & $-0.713$\,* \\
+\textbf{DJF T2m 60--90N} & $\mathbf{+0.614}$\,* & $\mathbf{+0.674}$\,* & $+0.285$ \\
+DJF T2m all land & $+0.566$\,* & $+0.535$\,* & $+0.233$\,* \\
+DJF T925 60--90N & $-0.114$ & $-0.020$ & $-0.428$\,* \\
+ANN T2m all land & $+0.516$\,* & $+0.494$\,* & --- \\
+\textbf{global net TOA} & $\mathbf{-0.001}$ & $\mathbf{-0.027}$ & $+0.175$\,* \\
+tropics SW CRE & $+0.486$\,* & $+0.540$\,* & $+0.541$\,* \\
+tropics net TOA & $-0.059$ & $-0.048$ & $+0.247$\,* \\
+SO SW CRE & $-0.367$\,* & $-0.713$\,* & $-0.182$ \\
+Siberia JJA & $+0.767$\,* & $+0.045$ & $+0.000$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All three questions AMIP could not settle come out favourably.
+
+\textbf{The Arctic screen follows}, $2.2$--$2.4\times$ the AMIP response and significant in
+both arms. That is the sea-ice amplification the pair was run to test: AMIP prescribes
+ice and suppresses it, which is also why 45\,\% of the coupled Arctic inversion bias has
+no AMIP counterpart (\S\ref{sub:r31sb}).
+
+\textbf{The cooling aloft disappears.} T925 and T850 are null in both arms. Coupled, the
+inversion weakens by warming the screen rather than by chilling the layer above --- the
+mechanism, not merely the metric.
+
+\textbf{The TOA cost vanishes.} Tropical SW CRE is unchanged at $+0.5$, so the cloud is
+still lost, but tropical \emph{net} is null and global net TOA is zero to
+$0.03$\,W\,m$^{-2}$: the ocean warms $0.13$--$0.15$\,K and the longwave response cancels
+the shortwave gain. The cost was paid as warming rather than as imbalance, and in a model
+this cold that is where it was wanted.
+
+\subsection{\texttt{cmpitool}: the best-scoring run in the campaign}\label{sub:r32cmpi}
+
+\begin{center}\small
+\begin{tabular}{lr}
+\toprule
+run & CMPI \\
+\midrule
+11E base & 0.8237 \\
+11G & 0.8446 \\
+11N LX4 1850 & 0.8198 \\
+11P LX4 1990 & 0.7709 \\
+\textbf{11R $+$RSBLB2 1990} & \textbf{0.7577} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Against 11P, the largest gains are \texttt{tas} $-0.109$ and \texttt{zg} $-0.088$ ---
+\emph{precisely the two fields where 11G regressed against the base} ($+0.160$, $+0.149$,
+\S\ref{sub:r28g}). Sea ice also improves ($-0.024$, with Arctic SON $0.891\to0.764$).
+
+\textcolor{red}{\textbf{A prediction of this report, falsified by its own test.}}
+\S\ref{sub:r32amip} argued the tropical low-cloud loss would land on \texttt{nino34},
+where 11G had already regressed. It does not: \texttt{nino34} is the \emph{most improved}
+region at $-0.030$ (\texttt{tas} $-0.258$, \texttt{zg} $-0.124$, \texttt{zos} $-0.094$),
+and the tropics as a whole come out neutral at $-0.0002$. The cost is real but lands
+elsewhere --- on \texttt{thetao}, $+0.018$ globally and $+0.051$ in the tropics, i.e.\ the
+ocean absorbing the shortwave. That is a spin-up concern rather than a present-day skill
+one, and it belongs with the standing imbalance rather than with this lever.
+
+\subsection{Base $\to$ best $\to$ this round, at 1850}\label{sub:r32threeway}
+
+All three arms at 1850 forcing, so the differences are clean even though the absolute
+biases against a present-day ERA5 carry a forcing offset of order a kelvin that is
+\emph{not} model error.
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+1360--1389 & 11E base & 11N LX4 & \textbf{11Q $+$RSBLB2} & 11Q$-$11N & 11Q$-$11E \\
+\midrule
+DJF T2m 60--90N & $-6.149$ & $-5.528$ & $\mathbf{-4.913}$ & $+0.614$ & $+1.236$ \\
+DJF T2m 30--60N & $-3.854$ & $-3.757$ & $\mathbf{-2.875}$ & $+0.882$ & $+0.979$ \\
+DJF T2m all land & $-3.351$ & $-3.213$ & $\mathbf{-2.647}$ & $+0.566$ & $+0.704$ \\
+ANN T2m all land & $-2.509$ & $-2.370$ & $\mathbf{-1.854}$ & $+0.516$ & $+0.655$ \\
+ANN T2m ocean & $-1.425$ & $-1.420$ & $-1.266$ & $+0.154$ & $+0.159$ \\
+JJA T2m Siberia & $-2.532$ & $-2.299$ & $\mathbf{-1.532}$ & $+0.767$ & $+1.000$ \\
+DJF inversion 60--90N & $+3.271$ & $+3.109$ & $\mathbf{+2.428}$ & $-0.681$ & $-0.843$ \\
+net TOA & $+0.778$ & $+0.878$ & $+0.877$ & $-0.001$ & $+0.099$ \\
+SW CRE SO 45--65S & $-62.285$ & $-65.462$ & $-65.828$ & $-0.367$ & $-3.543$ \\
+NH ice Mar [$10^6$\,km$^2$] & 14.142 & 13.862 & 13.697 & $-0.165$ & $-0.445$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{11Q gains more over 11N than 11N gained over the base, on every land metric}, and
+the annual land bias falls 26\,\% from base. The result that was not predicted is
+\textbf{Siberian JJA improving by $1.000$\,K over base}, $0.767$ of it from \texttt{RSBLB}
+itself: this campaign's history is levers that buy winter by spending summer or spend
+energy to buy Siberia, and this is the first time both targets move together. It is free
+in energy terms, net TOA changing by $0.001$\,W\,m$^{-2}$.
+
+\textbf{What it does not fix.} Net TOA is $+0.88$ in all three arms. That is the
+campaign's standing imbalance, far outside the $\pm0.3$ target and the other half of this
+report's title, and \texttt{RSBLB} neither helps nor hurts it.
+
+\subsection{Two caveats to carry forward}\label{sub:r32caveats}
+
+\begin{itemize}\itemsep1pt
+\item \textbf{The winter Arctic gain may not be stable.} Restricted to 1380--89 the DJF
+Arctic screen reads $+0.104$ (11Q) and $+0.639$ (11R), neither significant --- but $n{=}10$
+gives a $0.685$\,K threshold, so that window cannot resolve a $0.6$\,K signal either way.
+What is informative is the fitted trend across the 30 years: $-0.456$\,K/decade for 11Q and
+$-0.210$ for 11R. The \emph{annual} land and global warming does not decay
+($+0.409$\,*/$+0.402$\,* all land in the last decade alone).
+\item \textbf{The ocean is absorbing the shortwave.} \texttt{thetao} degrades in
+\texttt{cmpitool}, global T2m rises $0.26$--$0.28$\,K, and net TOA remains $+0.88$. Ocean
+heat content should be priced before this state is committed to a long PI control.
+\end{itemize}
+
+\subsection{One infrastructure note}\label{sub:r32infra}
+
+11Q lost its 1380--89 leg once to LPJ-GUESS reporting \texttt{failed to find element to
+deserialize}. The state was \emph{not} corrupt: all 65 files re-read cleanly at
+446\,MB/s afterwards, the failing \texttt{32.state} is $55.14$\,MB against $55.04$ at
+1370, and 11R passed the identical leg minutes later. It was a transient read, consistent
+with the DKRZ Lustre/Infiniband incident open since 2026--08--17. The leg was re-run and
+the failed attempt preserved at \texttt{run\_13800101-13891231\_dead\_lustre\_20260822}.
+Recorded because the obvious misreading --- a genuine LPJ-GUESS restart bug --- would have
+argued for switching \texttt{guess} binaries mid-experiment and destroyed the pairing
+against 11N.
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
@@ -7284,10 +7515,34 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--21)}\label{sec:state}
+\section{State of the campaign (2026--08--23)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--23 (round 32, \S\ref{sec:round32}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Stable-BL mixing is the winter land lever, and it works coupled.} 11Q/11R
+$=$ 11N/11P $+$ \texttt{RSBLB 2.0} give Arctic DJF screen $+0.614$\,*/$+0.674$\,* against
+AMIP's non-significant $+0.285$, with T925/T850 null --- coupled, the inversion weakens by
+warming the screen, not by chilling the air above (\S\ref{sub:r32coupled},
+Fig.~\ref{fig:sbexchange}b).
+\item \textbf{It is free in energy terms coupled.} Global net TOA $-0.001$/$-0.027$,
+both null, against AMIP's $+0.175$\,*: the tropical shortwave gain is absorbed as ocean
+warming and cancelled by the longwave response (\S\ref{sub:r32coupled}).
+\item \textbf{Winter and summer move together for the first time.} Siberian JJA improves
+$1.000$\,K over base, $0.767$ of it from \texttt{RSBLB}, against a campaign history of
+levers that buy one by spending the other (\S\ref{sub:r32threeway}).
+\item \textbf{11R is the best-scoring run in the campaign}, CMPI $0.7577$ against 11E's
+$0.8237$, and it reverses 11G's \texttt{tas}/\texttt{zg} regression
+(\S\ref{sub:r32cmpi}).
+\item \textbf{The stable-mixing trade is linear in dose and cannot be dodged.} Tropical
+SW CRE per K of Arctic inversion is $0.88$/$0.87$ for \texttt{RSBLB} $b{=}3$/$b{=}2$ and
+$3.43$ for the mixing-length route, so the shortwave cost is a property of the scheme
+rather than of the knob (\S\ref{sub:r32sb3}, Fig.~\ref{fig:sbexchange}a).
+\item \textbf{Best coupled land state so far:} annual all-land bias $-2.509\to-1.854$\,K
+from base at 1850, a 26\,\% reduction, at unchanged net TOA (\S\ref{sub:r32threeway}).
+\end{itemize}
+
 \textbf{Added 2026--08--21 (rounds 30--31, \S\ref{sec:round30}--\S\ref{sec:round31}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The Southern Ocean bias is an AMIP problem, not a coupling problem.} 84\,\%
@@ -7760,6 +8015,22 @@ being built on.
 \begin{tabular}{p{0.30\textwidth} p{0.42\textwidth} l}
 \toprule
 claim & what killed it & where \\
+\midrule
+\dead{\texttt{RSBLLMIN} spares the tropics: the 30\,m floor binds only where the stable
+layer is shallower than 300\,m, so a shallow Arctic winter SBL feels it and a deep
+subtropical Sc boundary layer does not} &
+It also sets the length in free-shear layers, so it enhances entrainment across the Sc
+capping inversion. Same Arctic gain as SB2 at four times the tropical cost
+($+2.106$ against $+0.541$ of SW CRE) and $+1.673$\,W\,m$^{-2}$ of net TOA. The risk was
+recorded in the runscript before the run. &
+\S\ref{sub:r32sb3} \\
+\midrule
+\dead{The tropical low-cloud loss will degrade \texttt{nino34}, where 11G already
+regressed} &
+\texttt{cmpitool} on 11R: \texttt{nino34} is the MOST improved region, $-0.030$
+(\texttt{tas} $-0.258$), and the tropics are neutral at $-0.0002$. The cost is real but
+lands on \texttt{thetao} ($+0.018$ global), the ocean absorbing the shortwave. &
+\S\ref{sub:r32cmpi} \\
 \midrule
 \dead{Snow skin conductivity is the winter lever: $\lambda_{sk}$ over exposed snow is
 too small, letting the skin radiatively decouple in polar night, so raising
