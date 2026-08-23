@@ -7344,6 +7344,7 @@ band & area\,\% & net bias & contribution & SW CRE bias \\
 \end{tabular}
 \end{center}
 
+\textcolor{red}{Superseded by \S\ref{sub:r33ocean}, which redoes this over ocean.}
 The two Southern Ocean bands are the largest positive contributors, $+0.74$\,W\,m$^{-2}$
 combined, against a tropical $-0.87$. The global figure is a small residual of large
 regional cancellations, so ``close the TOA imbalance and the SO follows'' is circular:
@@ -7383,6 +7384,9 @@ sign against the $-0.367$\,* measured for 45--65S over 30 years, and is a 10-yea
 on a noisy band.
 
 \subsection{Amount versus opacity: the two bands need opposite corrections}\label{sub:r33opacity}
+
+\textcolor{red}{Superseded by \S\ref{sub:r33ocean}: over ocean the split is
+half amount and half opacity, not predominantly opacity.}
 
 DJF, SW CRE per unit cloud cover, which isolates opacity from amount:
 
@@ -7477,6 +7481,89 @@ explains the season the other cannot.
 \textbf{A cloud-opacity lever therefore addresses the summer half only.} Even a perfect
 fix to the $+6.98$ leaves the autumn refreeze failure intact, because that one is fed
 from 100\,m down.
+
+\subsection{\textcolor{red}{Corrected: recomputed over ocean, and the numbers above understate it}}\label{sub:r33ocean}
+
+Everything in \S\ref{sub:r33toa}--\S\ref{sub:r33opacity} was area-averaged over whole
+latitude bands. That folds the \textbf{Antarctic ice sheet} into the 90--60S band. The ice
+sheet is brilliant white and radiatively unlike the sea-ice zone, and it cancels part of
+the signal: over the whole cap the surface net SW bias reads $-0.57$\,W\,m$^{-2}$, over
+ocean alone $+7.99$. The sea-ice question is about the ocean, so the band averages are the
+wrong domain and the committed numbers are too small.
+
+Two further points of method, both checked rather than assumed. A model's \texttt{tsrc} is
+\emph{total-region} clear sky, so the comparable CERES field is \texttt{toa\_sw\_clr\_t},
+not \texttt{clr\_c} which is clear sky over cloud-free scenes only; the choice moves the
+polar numbers by $1.7$\,W\,m$^{-2}$, not enough to change any conclusion here. And the
+surface flux is now compared alongside the TOA, because agreement at two semi-independent
+levels is what distinguishes a real radiative error from a cloud-mask artefact.
+
+\textbf{SW CRE bias against CERES \texttt{clr\_t}, OCEAN ONLY:}
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+arm & 90--60S DJF & 90--60S ANN & 60--45S DJF & 60--45S ANN \\
+\midrule
+11E base & $+24.24$ & $+11.46$ & $+4.20$ & $+4.31$ \\
+11G $+$S4 & $+21.66$ & $+11.01$ & $+1.75$ & $+2.21$ \\
+11N LX4 & $+16.50$ & $+8.44$ & $-0.36$ & $+0.85$ \\
+11P LX4 1990 & $+16.91$ & $+8.48$ & $-2.91$ & $-0.29$ \\
+11Q $+$RSBLB & $+18.07$ & $+8.96$ & $-2.17$ & $-0.04$ \\
+\textbf{11R $+$RSBLB 1990} & $\mathbf{+13.36}$ & $\mathbf{+7.26}$ & $\mathbf{-3.70}$ & $\mathbf{-0.93}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The polar ocean deficit is $\mathbf{+13.36}$\,W\,m$^{-2}$ in DJF, not the $+6.98$ reported
+above --- close to double. The campaign's progress is also larger than it looked,
+$24.24\to13.36$, and the sub-Antarctic overcorrection is deeper, $-3.70$ rather than
+$-2.97$. The qualitative conclusion --- a meridional gradient in lever effectiveness, with
+60--45S driven through zero while 90--60S still leaks --- is unchanged and in fact
+sharper.
+
+\textbf{The surface confirms it, which \S\ref{sub:r33opacity} could not show:}
+
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+ocean band, summer & CRE & cover & CRE/cover & sfc net SW & CERES & bias \\
+\midrule
+60--90S DJF, model & $-92.62$ & 0.858 & $-108.0$ & 139.4 & 131.4 & $\mathbf{+7.99}$ \\
+60--90S DJF, CERES & $-105.98$ & 0.916 & $-115.7$ & & & \\
+\midrule
+50--70S DJF, model & $-116.34$ & 0.851 & $-136.7$ & 163.0 & 163.4 & $-0.40$ \\
+50--70S DJF, CERES & $-120.75$ & 0.912 & $-132.5$ & & & \\
+\midrule
+60--90N JJA, model & $-90.00$ & 0.884 & $-101.8$ & 114.2 & 127.6 & $\mathbf{-13.34}$ \\
+60--90N JJA, CERES & $-71.78$ & 0.826 & $-86.9$ & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The Southern Ocean sea-ice zone absorbs $+7.99$\,W\,m$^{-2}$ too much shortwave at
+the surface in summer.} That is the direct measurement the melt mechanism needed and did
+not have: \S\ref{sub:r33subsurface} inferred the excess from the ice and the 100\,m heat,
+and it is now confirmed at the surface. Note it is confined to the ice zone --- 50--70S
+reads $-0.40$, i.e.\ nothing.
+
+\textcolor{red}{\textbf{But the amount/opacity split changes.}} Over ocean the polar
+deficit is roughly \emph{half amount and half opacity}: cover is $5.8$\,pp too low
+($0.858$ against $0.916$) and each cloud is $6.7\,\%$ too dim ($-108.0$ against $-115.7$),
+each accounting for about $6.5$ of the $13.36$. The band-averaged version reported
+$\approx72\,\%$ opacity, and that was an artefact of including the ice sheet. A pure
+opacity lever therefore addresses at most half of this, which is consistent with SC2/SC3
+underperforming.
+
+\textbf{The Arctic, and why it is not yet a target.} Over ocean in JJA the model has
+$5.8$\,pp \emph{more} cloud than CERES and each is $17\,\%$ brighter, giving TOA CRE
+$-18.22$ and a surface shortwave deficit of $-13.34$\,W\,m$^{-2}$. TOA and surface agree,
+so the radiative error is real rather than a cloud-mask artefact. \emph{But the
+temperature does not corroborate it}: 60--90N ocean T2m is $+0.84$\,K \textbf{warm} in
+JJA. A 13\,W\,m$^{-2}$ surface shortwave deficit that leaves the surface warm means
+something else is compensating, and until that is explained the Arctic cloud error should
+not be treated as a lever target --- even though it is three times the Antarctic one and
+points toward the campaign's founding cold bias.
 
 \subsection{Method notes from this round}\label{sub:r33method}
 
