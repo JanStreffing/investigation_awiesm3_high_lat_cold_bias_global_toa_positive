@@ -55,7 +55,10 @@ warnings.filterwarnings('ignore')
 
 R = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
 GOCCP = '/work/ab0246/a270092/obs/CALIPSO_GOCCP'
-BANDS = (('SO 45-65S', -65, -45), ('Siberia 55-75N', 55, 75))
+BANDS = (('SO 45-65S', -65, -45), ('polar 60-90S', -90, -60), ('Siberia 55-75N', 55, 75))
+# 2026-08-23: the polar band was added after the TOA decomposition showed the residual
+# SW CRE deficit has moved poleward -- 60-45S is now overcorrected (-2.97 DJF) while
+# 90-60S still reads +6.98.  The 2026-08-19 conclusion below covers 45-65S ONLY.
 
 
 def model_lowfrac(root, years, lo, hi, nlow=25):
@@ -113,13 +116,13 @@ def main():
     print(f'model: mass-based, lowest 25 model levels\n')
     print(f'  {"arm":6s} ' + '  '.join(f'{b[0]:>16s}' for b in BANDS) + f'  {"contrast":>9s}')
     for tag, root, Y in [('11G', f'{R}/Tuning_test_11G_inppmin50k', range(1390, 1400)),
-                         ('11L', f'{R}/11L', range(1380, 1390)),
-                         ('11M', f'{R}/11M', range(1380, 1390))]:
+                         ('11P', f'{R}/11P', range(1380, 1390)),
+                         ('11R', f'{R}/11R', range(1380, 1390))]:
         v = [model_lowfrac(root, list(Y), lo, hi) for _, lo, hi in BANDS]
         print(f'  {tag:6s} ' + '  '.join(f'{x:16.3f}' for x in v)
-              + f'  {v[0] - v[1]:+9.3f}')
+              + f'  {v[0] - v[-1]:+9.3f}')
     v = [obs[b[0]] for b in BANDS]
-    print(f'  {"GOCCP":6s} ' + '  '.join(f'{x:16.3f}' for x in v) + f'  {v[0] - v[1]:+9.3f}')
+    print(f'  {"GOCCP":6s} ' + '  '.join(f'{x:16.3f}' for x in v) + f'  {v[0] - v[-1]:+9.3f}')
     print('\n  The model is not too icy in the SO; it is slightly MORE liquid than')
     print('  observed. The cloud-phase argument for lowering RCL_INPSEA below 0.2 fails,')
     print('  and the residual SO CRE gap is an amount problem, not a phase problem.')

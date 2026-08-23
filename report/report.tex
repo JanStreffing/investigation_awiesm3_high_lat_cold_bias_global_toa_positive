@@ -7288,6 +7288,218 @@ Recorded because the obvious misreading --- a genuine LPJ-GUESS restart bug --- 
 argued for switching \texttt{guess} binaries mid-experiment and destroyed the pairing
 against 11N.
 
+\section{Round 33 (2026--08--23): the Southern Ocean has two problems, not one}\label{sec:round33}
+
+Round 32 left the model with a $-0.74$\,K global cold bias and a $+0.88$\,W\,m$^{-2}$
+imbalance, i.e.\ still warming toward equilibrium. The question this round answers is
+where that warming lands, and it turns out the Southern Ocean is not a passive recipient
+of a global imbalance --- it is where the imbalance is generated.
+
+\subsection{The drift is in every arm, including the 1850 controls}\label{sub:r33drift}
+
+Drift from 1350--59 to 1380--89, SH ocean south of 60S:
+
+\begin{center}\small
+\begin{tabular}{llrr}
+\toprule
+arm & forcing & $\Delta$T2m & $\Delta$Sep ice [$10^6$\,km$^2$] \\
+\midrule
+11N & 1850 & $+0.70$ & $-2.21$ \\
+11Q & 1850 & $+0.81$ & $-1.94$ \\
+11P & 1990 & $+0.90$ & $-2.61$ \\
+11R & 1990 & $+0.97$ & $-2.50$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The 1850 arms drift almost as hard as the 1990 arms, so this is \textbf{not} the response
+to present-day forcing --- that adds only about $+0.2$\,K and $-0.5\times10^6$\,km$^2$ on
+top. The PI controls are warming at roughly $+0.8$\,K and shedding
+$2\times10^6$\,km$^2$ of September ice per 40 years.
+
+Two consequences. First, at 1350--59 the T2m bias south of 60S was $-0.06$ to $-0.65$\,K,
+i.e.\ neutral to slightly cold: \textbf{the air was not too warm at the start}, so the
+ocean cannot have been warmed by sitting under warm air. Both warm together. Second,
+September ice goes $20\to17.6$ against $16.27$ observed, so the model is passing
+\emph{through} the right answer on its way past it --- anything tuned to match the ice
+now is tuned to a transient.
+
+\subsection{The imbalance is generated in the Southern Ocean}\label{sub:r33toa}
+
+Net TOA bias against CERES, 11R, with each band's share of the global mean:
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+band & area\,\% & net bias & contribution & SW CRE bias \\
+\midrule
+\textbf{90--60S} & 6.7 & $\mathbf{+5.76}$ & $\mathbf{+0.383}$ & $+3.65$ \\
+\textbf{60--45S} & 7.9 & $\mathbf{+4.46}$ & $\mathbf{+0.353}$ & $-0.53$ \\
+45--30S & 10.3 & $-3.59$ & $-0.370$ & $-6.82$ \\
+30S--30N & 49.7 & $-1.75$ & $-0.872$ & $-3.35$ \\
+30--45N & 10.3 & $+2.41$ & $+0.248$ & $+3.40$ \\
+45--60N & 7.9 & $+3.75$ & $+0.296$ & $+3.47$ \\
+60--90N & 6.7 & $+2.05$ & $+0.137$ & $-5.83$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The two Southern Ocean bands are the largest positive contributors, $+0.74$\,W\,m$^{-2}$
+combined, against a tropical $-0.87$. The global figure is a small residual of large
+regional cancellations, so ``close the TOA imbalance and the SO follows'' is circular:
+the SO ice loss absorbs the shortwave that \emph{is} the imbalance.
+
+\subsection{What the campaign has actually done to those bands}\label{sub:r33arms}
+
+SW CRE bias against CERES; positive means the model cloud reflects too little.
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+arm & 90--60S ANN & 90--60S DJF & 60--45S ANN & 60--45S DJF \\
+\midrule
+11E base & $+6.25$ & $+13.63$ & $+4.67$ & $+4.84$ \\
+11G $+$S4 & $+5.99$ & $+12.09$ & $+2.61$ & $+2.39$ \\
+11I v2soil & $+6.33$ & $+13.49$ & $+2.61$ & $+1.55$ \\
+11N LX4 & $+4.39$ & $+8.91$ & $+1.25$ & $+0.34$ \\
+11P LX4 1990 & $+4.37$ & $+9.05$ & $+0.08$ & $-2.20$ \\
+11Q $+$RSBLB & $+4.70$ & $+9.85$ & $+0.35$ & $-1.46$ \\
+\textbf{11R $+$RSBLB 1990} & $\mathbf{+3.65}$ & $\mathbf{+6.98}$ & $\mathbf{-0.53}$ & $\mathbf{-2.97}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The polar band has been more than halved, $+13.63\to+6.98$ in DJF, so it is \emph{not} an
+untouched region. What the table actually shows is a \textbf{meridional gradient in lever
+effectiveness}: the same levers drove 60--45S from $+4.84$ through zero to $-2.97$,
+overcorrected, while 90--60S still reads $+6.98$. Pushing any of them harder buys the
+last of the polar band at the cost of driving the sub-Antarctic further negative --- and
+60--45S is inside the campaign's own 45--65S SO metric, which is part of why this looked
+solved.
+
+Only 11P$\to$11R is a clean like-for-like step here; the 1850 arms carry a forcing
+mismatch against a present-day CERES. The 11N$\to$11Q reading of $+0.31$ has the wrong
+sign against the $-0.367$\,* measured for 45--65S over 30 years, and is a 10-year window
+on a noisy band.
+
+\subsection{Amount versus opacity: the two bands need opposite corrections}\label{sub:r33opacity}
+
+DJF, SW CRE per unit cloud cover, which isolates opacity from amount:
+
+\begin{center}\small
+\begin{tabular}{llrrr}
+\toprule
+band & & CRE & cover & CRE\,/\,cover \\
+\midrule
+90--60S & CERES & $-65.99$ & 0.748 & $-88.2$ \\
+90--60S & 11R & $-59.01$ & 0.726 & $\mathbf{-81.3}$ \\
+\midrule
+60--45S & CERES & $-121.01$ & 0.879 & $-137.7$ \\
+60--45S & 11R & $-123.98$ & 0.827 & $\mathbf{-149.9}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+At \textbf{60--45S} the model has 5\,pp too \emph{few} clouds, each 9\,\% too \emph{bright};
+they compensate, which is how the net CRE ended up slightly overcorrected. At
+\textbf{90--60S} the amount is nearly right ($-2.2$\,pp) but each cloud is 8\,\% too
+\emph{dim}. Splitting the $+6.98$\,W\,m$^{-2}$: about $5.2$ is opacity and $2.0$ amount.
+So the polar residual is an \textbf{opacity} problem --- the opposite of the 45--65S
+diagnosis that closed the SO cloud question in round 30.
+
+That also explains the gradient above: every campaign lever works by raising opacity, and
+at 45--60S opacity was already too high.
+
+The phase measurement agrees, and it flips sign at 60S. Low-level liquid fraction against
+CALIPSO-GOCCP: 45--65S model $0.873$ vs GOCCP $0.858$ (too liquid, $+0.015$);
+\textbf{60--90S model $0.731$ vs $0.759$ (too icy, $-0.028$)}; Siberia $0.813$ vs $0.818$.
+Icier cloud precipitates out and carries less liquid water, which is how a cloud can be
+present and optically thin. \textbf{The INP family was retired on a phase measurement
+taken in the one band where the model is too liquid, and that conclusion does not extend
+poleward.}
+
+\subsection{The sea ice itself}\label{sub:r33ice}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.99\textwidth]{so_two_problems.png}
+\caption{Two Southern Ocean problems in two different seasons. \textbf{(a)} The SH ice
+seasonal cycle is too large: September is $+0.78$ ($10^6$\,km$^2$ area, $+2.01$ extent)
+against OSI-SAF, while February--May is far too low and the March regrowth is absent
+entirely (model $1.30$ against $3.10$ observed). \textbf{(b)} The T2m warm anomaly over
+the ice zone peaks in \emph{MAM}, the refreeze season, which no shortwave mechanism
+explains. \textbf{(c)} A $+0.9$\,K anomaly at exactly 100\,m, directly under a neutral
+surface layer and above \emph{cold} water at 500--1000\,m --- the depth the autumn mixed
+layer reaches.}
+\label{fig:sotwo}
+\end{figure}
+
+The ice is \textbf{not too dark}: September albedo over compact ice is $0.760$ at
+$ci\ge0.9$ and $0.778$ at $ci\ge0.95$, with snow albedo $0.850$, inside the observed
+range. But in January--March there is \textbf{no compact ice anywhere} --- every SH cell
+is below 90\,\% concentration --- so the area-mean albedo the sun sees falls to
+$0.49$--$0.51$. The pack is also too diffuse: mean concentration inside the ice edge is
+$0.767$ in September against OSI-SAF's $0.804$, spread over $2\times10^6$\,km$^2$ more
+extent. Diffuse ice has less volume per unit area to lose and melts out rather than
+retreating to a compact core.
+
+\subsection{The subsurface, measured at last}\label{sub:r33subsurface}
+
+Temperature against PHC3, area-weighted zonal means, 90--60S:
+
+\begin{center}\small
+\begin{tabular}{rrrrrr}
+\toprule
+depth [m] & PHC3 & 11P & 11R & 11N & 11Q \\
+\midrule
+0 & $-0.52$ & $-0.25$ & $-0.17$ & $-0.17$ & $-0.25$ \\
+50 & $-0.69$ & $-0.15$ & $-0.07$ & $-0.07$ & $-0.15$ \\
+\textbf{100} & $-0.78$ & $\mathbf{+0.87}$ & $\mathbf{+0.93}$ & $\mathbf{+0.76}$ & $\mathbf{+0.79}$ \\
+200 & $+0.50$ & $+0.22$ & $+0.29$ & $+0.09$ & $+0.19$ \\
+500 & $+1.14$ & $-0.40$ & $-0.33$ & $-0.54$ & $-0.35$ \\
+1000 & $+1.03$ & $-0.42$ & $-0.34$ & $-0.52$ & $-0.37$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A sharp $+0.9$\,K anomaly at 100\,m, beneath a near-neutral surface and \emph{above} cold
+water at depth. Not a deep warm drift --- a shallow one, at the depth the winter mixed
+layer reaches. It is present in all four arms, so it predates \texttt{RSBLB}, which
+worsens it by only $0.03$--$0.06$\,K.
+
+\textbf{This closes the melt-from-above versus melt-from-below question: it is both, in
+different seasons.} In DJF, $+6.98$\,W\,m$^{-2}$ of cloud shortwave melts from above. In
+MAM, autumn cooling deepens the mixed layer into the 100\,m warm layer and entrains it,
+which is why the MAM anomaly is $+4.48$\,W\,m$^{-2}$ of \emph{longwave} with almost no
+shortwave, why the surface cannot cool, and why March ice never regrows. Each mechanism
+explains the season the other cannot.
+
+\textbf{A cloud-opacity lever therefore addresses the summer half only.} Even a perfect
+fix to the $+6.98$ leaves the autumn refreeze failure intact, because that one is fed
+from 100\,m down.
+
+\subsection{Method notes from this round}\label{sub:r33method}
+
+\begin{itemize}\itemsep1pt
+\item \textcolor{red}{\textbf{reval's PHC3 ocean plots are empty for every run in this
+campaign}} --- grey maps, \texttt{rmsd=nan}, \texttt{bias=nan}, byte-identical
+153\,687-byte files for 11E, 11G, 11N, 11P and 11R. The ocean interior had never been
+validated. The comparison above was done by hand because of it.
+\item PHC3 as staged is itself in FESOM format but on a \emph{different} mesh (126\,858
+nodes against CORE3's 211\,567), so it cannot be differenced node-by-node. Both share an
+identical 47-level vertical grid, so binning onto a common (latitude, depth) grid avoids
+interpolation entirely. Node coordinates for the PHC3 mesh are in its
+\texttt{fesom.mesh.diag.nc} as \texttt{nodes} (2, nod2) in \emph{radians}; the CORE3 diag
+instead carries explicit \texttt{lat}/\texttt{lon} in degrees.
+\item Sea ice AREA and EXTENT are different numbers and mixing them inverts the sign of
+the answer. September: area $+0.78$ but extent $+2.01$.
+\item \textcolor{red}{\textbf{SST is the wrong variable for this question.}} Under sea ice
+it is pinned near freezing and reads $-0.9$ to $+0.0$\,K in the ice zone, which says
+nothing. T2m is the free variable and reads $+1.5$ to $+1.9$\,K at 70--80S. An early
+reading of this round used SST and concluded the Southern Ocean was too cold and that the
+ice-albedo feedback would work in the model's favour as it warms. Both were wrong.
+\end{itemize}
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -7515,10 +7727,38 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--23)}\label{sec:state}
+\section{State of the campaign (2026--08--23b)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--08--23 (round 33, \S\ref{sec:round33}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{The Southern Ocean generates the TOA imbalance rather than responding to
+it.} The 90--60S and 60--45S bands contribute $+0.383$ and $+0.353$\,W\,m$^{-2}$ to the
+global mean, the two largest positive terms, against a tropical $-0.872$
+(\S\ref{sub:r33toa}).
+\item \textbf{Every arm drifts, including the 1850 controls}: $+0.8$\,K and
+$-2\times10^6$\,km$^2$ of September ice per 40 years. The air was NOT warm at the branch
+point ($-0.06$ to $-0.65$\,K), so the ocean was not warmed by the atmosphere --- both
+warm together (\S\ref{sub:r33drift}).
+\item \textbf{The polar cloud residual is an OPACITY problem, the sub-Antarctic one an
+AMOUNT problem.} At 90--60S cover is right to $2$\,pp but each cloud is 8\,\% too dim; at
+60--45S there are 5\,pp too few clouds each 9\,\% too bright. Every campaign lever raises
+opacity, which is why 60--45S is now overcorrected at $-2.97$ while 90--60S still reads
+$+6.98$ (\S\ref{sub:r33opacity}).
+\item \textbf{Cloud phase flips sign at 60S}: $+0.015$ too liquid at 45--65S, $-0.028$ too
+icy poleward. The INP family was retired on a measurement taken in the one band where the
+model is too liquid (\S\ref{sub:r33opacity}).
+\item \textbf{The ice melts from above in summer and fails to refreeze from below in
+autumn.} $+6.98$\,W\,m$^{-2}$ of DJF cloud shortwave, and a $+0.9$\,K anomaly at exactly
+100\,m that autumn mixed-layer deepening entrains --- which is why the MAM anomaly is
+longwave with no shortwave component (\S\ref{sub:r33subsurface},
+Fig.~\ref{fig:sotwo}).
+\item \textbf{The sea ice is not too dark} (compact-ice albedo $0.760$--$0.778$); it is
+too diffuse. No cell exceeds 90\,\% concentration in January--March, so the area-mean
+albedo falls to $0.49$--$0.51$ (\S\ref{sub:r33ice}).
+\end{itemize}
+
 \textbf{Added 2026--08--23 (round 32, \S\ref{sec:round32}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{Stable-BL mixing is the winter land lever, and it works coupled.} 11Q/11R
@@ -8015,6 +8255,19 @@ being built on.
 \begin{tabular}{p{0.30\textwidth} p{0.42\textwidth} l}
 \toprule
 claim & what killed it & where \\
+\midrule
+\dead{The Southern Ocean surface is too cold, so the ice-albedo feedback works in the
+model's favour as it warms toward equilibrium} &
+Measured with SST, which under sea ice is pinned near freezing and cannot show the
+error. T2m is the free variable and reads $+1.5$ to $+1.9$\,K at 70--80S, peaking at
+$+4.5$\,K in MAM. The feedback works against us. &
+\S\ref{sub:r33method} \\
+\midrule
+\dead{The residual Southern Ocean cloud deficit is in a band the campaign has never
+worked on} &
+It has: 90--60S DJF SW CRE has gone $+13.63\to+6.98$ across 11E$\to$11R. The real
+structure is a meridional gradient in lever effectiveness, not an untouched region. &
+\S\ref{sub:r33arms} \\
 \midrule
 \dead{\texttt{RSBLLMIN} spares the tropics: the 30\,m floor binds only where the stable
 layer is shallower than 300\,m, so a shallow Arctic winter SBL feels it and a deep
