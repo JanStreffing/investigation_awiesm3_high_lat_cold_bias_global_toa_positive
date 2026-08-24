@@ -19,6 +19,15 @@ Years 1350-51 are an initialisation transient, roughly -1.0 to -1.6 W/m2 in ever
 are shaded.  The campaign's "starts near zero" numbers are the 1352-59 mean and deliberately
 exclude them.
 
+THE DECADAL SMOOTH.  A centred 11-point Kaiser window, beta = 8.6, spanning 10 years either
+side to side.  Kaiser at that beta is close to Blackman: the sidelobes are ~75 dB down, so
+interannual variance does not leak into the smoothed curve and the residual wiggle is
+signal.  It is drawn ONLY where the full window fits, five years in from each end.  No
+reflection or zero-padding: on a series that is drifting this hard, a padded endpoint is
+fabricated and would land exactly where the eye looks for the answer.  That is also why
+the smooth is the honest way to see the slowdown, which is curvature, where a single OLS
+slope over the whole record cannot show it at all.
+
 TRAP.  IFS TOA fluxes are accumulated J/m2 over the output step; divide by 3600 or every
 number is ~3600x too large.  Verified against global ASR 240.4 W/m2.
 """
@@ -81,6 +90,19 @@ MATCH_END = min(lengths)
 ax.axvspan(1349.5, 1351.5, color='#999999', alpha=0.16, zorder=0)
 ax.text(1350.0, -1.72, 'init\ntransient', fontsize=7.5, color='#666666', va='bottom')
 
+KAISER_N, KAISER_BETA = 11, 8.6
+
+def kaiser_smooth(v, n=KAISER_N, beta=KAISER_BETA):
+    """Centred Kaiser-weighted running mean; returns NaN where the window overhangs."""
+    w = np.kaiser(n, beta)
+    w /= w.sum()
+    out = np.full(len(v), np.nan)
+    h = n // 2
+    for i in range(h, len(v) - h):
+        out[i] = float(np.dot(v[i - h:i + h + 1], w))
+    return out
+
+
 def fit(x, v):
     b, a = np.polyfit(x, v, 1)
     res = v - (a + b * x)
@@ -100,23 +122,25 @@ for label, root, col, ls in ARMS:
     if not len(ys):
         continue
     partial = len(ys) < 40
-    ax.plot(ys, v, color=col, lw=1.1, alpha=0.5, marker='o', ms=2.6,
+    ax.plot(ys, v, color=col, lw=0.8, alpha=0.30, marker='o', ms=2.2,
             label=f'{label}   {len(ys)} yr' + ('  (running)' if partial else ''))
+    sm = kaiser_smooth(v)
+    ax.plot(ys, sm, color=col, lw=3.0, zorder=5, solid_capstyle='round')
     m = ys <= MATCH_END
     a, b, se = fit(ys[m], v[m])
-    ax.plot(ys[m], a + b * ys[m], color=col, lw=2.8, zorder=4)
+    ax.plot(ys[m], a + b * ys[m], color=col, lw=1.1, ls='--', alpha=0.75, zorder=4)
     full = (np.nan, np.nan)
     if not partial:
-        a2, b2, se2 = fit(ys, v)
-        ax.plot(ys, a2 + b2 * ys, color=col, lw=1.2, ls=':', alpha=0.85, zorder=3)
+        _, b2, se2 = fit(ys, v)
         full = (b2 * 10, se2 * 10)
     e = (ys >= 1352) & (ys <= 1359)
     summary.append((label, len(ys), v[e].mean(), b * 10, se * 10, full, partial))
 
 ax.set_xlabel('model year'); ax.set_ylabel('global net TOA  [W m$^{-2}$]')
 ax.set_title(f'1850 arms: net TOA is a DRIFT, not a standing offset\n'
-             f'thick line = trend over the matched window 1350-{MATCH_END} (all arms); '
-             f'dotted = full 40 yr', fontsize=11)
+             f'thick = {KAISER_N}-point Kaiser decadal mean ($\\beta$={KAISER_BETA}, '
+             f'full windows only);  dashed = OLS over the matched window 1350-{MATCH_END}',
+             fontsize=11)
 ax.legend(loc='lower right', fontsize=9, framealpha=0.92)
 ax.grid(alpha=0.25, lw=0.5)
 ax.set_xlim(1349, 1390)
