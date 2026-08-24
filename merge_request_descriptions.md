@@ -2,24 +2,26 @@
 
 The campaign branch `movcav-landice+co2-concdriven` split into seven stacked branches on `git.smhi.se/jan.streffing/oifs48r1`, to be merged into `ec-earth/vendor/openifs/oifs48r1` `main` in the order below. Each branch is cut from the one before it, so a branch's own change is its diff against its predecessor, and its diff against `main` shrinks to that once its predecessors have landed.
 
+The "standalone" column records whether the branch's own commit also applies cleanly straight onto `main`. The first two do, so they can be reviewed and merged in either order. The rest overlap their predecessors textually, almost always in `surfece.F90`, and need the stack order.
+
 Copy the fenced block for each merge request straight into the GitLab description field. The fences are not part of the text: everything inside one is the description, already in GitLab-flavoured markdown.
 
-| # | branch | own diff | merge request |
-|---|--------|----------|---------------|
-| 1 | `pr1/landice-ism-coupling` | 8 files, +198 / -35 | !91, open |
-| 2 | `pr2/oasis-xios-coupling` | 5 files, +63 / -9 | to open |
-| 3 | `pr3/ocean-skin-and-surface-fixes` | 10 files, +473 / -14 | to open |
-| 4 | `pr4/snow-cover-depletion` | 2 files, +502 / -7 | to open |
-| 5 | `pr5/dms-marine-ccn` | 7 files, +143 / -6 | to open |
-| 6 | `pr6/namelist-tuning-exposures` | 16 files, +432 / -11 | to open |
-| 7 | `pr7/lpjg-raupach-roughness` | 4 files, +194 / -14 | to open |
+| # | branch | own diff | standalone | merge request |
+|---|--------|----------|------------|---------------|
+| 1 | `pr1/landice-ism-coupling` | 8 files, +198 / -35 | yes | !91, open |
+| 2 | `pr2/coupling-fixes-and-co2-spinup` | 5 files, +63 / -9 | yes | to open |
+| 3 | `pr3/ocean-skin-and-surface-fixes` | 10 files, +473 / -14 | no | to open |
+| 4 | `pr4/snow-cover-depletion` | 2 files, +502 / -7 | no | to open |
+| 5 | `pr5/dms-marine-ccn` | 7 files, +143 / -6 | no | to open |
+| 6 | `pr6/namelist-tuning-exposures` | 16 files, +432 / -11 | no | to open |
+| 7 | `pr7/lpjg-raupach-roughness` | 4 files, +194 / -14 | no | to open |
 
 
 ---
 
 ## 1. `pr1/landice-ism-coupling`
 
-Commit `0e73454`, author Jorjo Bernales.
+Commit `b8bfb83`, author Jorjo Bernales.
 
 This one is already open as !91. Replace its title and description with the text below, because GitLab does not re-read either when a branch is force-pushed.
 
@@ -85,32 +87,28 @@ Co-authored-by: Jan Streffing <jan.streffing@awi.de>
 
 ---
 
-## 2. `pr2/oasis-xios-coupling`
+## 2. `pr2/coupling-fixes-and-co2-spinup`
 
-Commit `7872394`, author Jan Streffing.
+Commit `82797ac`, author Jan Streffing.
 
 **Title**
 
 ```
-OASIS/XIOS coupling fixes and a concentration-driven CO2 spin-up mode
+Coupling fixes and a concentration-driven CO2 spin-up mode
 ```
 
 **Description**
 
 ```markdown
-Several independent coupling fixes, plus one new mode:
+Three coupling changes, unrelated to each other:
 
 - initialise OASIS_OUT fields to 0 rather than -HUGE, so the first send does not carry the sentinel into the receiving model
-- restore the xios_oasis_enddef() call dropped by 7db0940, which XIOS-2.5 needs against AWI FESOM2
 - receive FESOM sea-ice thickness for the coupled-slab ice surface
 - add ECE_CPL_FESOM_RECOM_CONCDRIVEN, a concentration-driven CO2 spin-up mode for FESOM-RECOM
 
-Squashed from the AWI-ESM3 tuning campaign branch (6 commits):
+Squashed from the AWI-ESM3 tuning campaign branch (3 commits):
 
 - `b7eacd0` cplng2: init OASIS_OUT fields to 0, not -HUGE (fixes first-send sentinel) (Jan Streffing)
-- `a89ef77` cplng2: restore xios_oasis_enddef() removed by 7db0940 (Jan Streffing)
-- `00282ff` cplng2: disable xios_oasis_enddef for XIOS-2.5 + AWI FESOM2 (Jan Streffing)
-- `0e8bfd2` Revert "cplng2: disable xios_oasis_enddef for XIOS-2.5 + AWI FESOM2" (Jan Streffing)
 - `058c473` fesom-fesim: coupled-slab ice surface -- receive FESOM ice thickness (Jan Streffing)
 - `d3e3817` Add ECE_CPL_FESOM_RECOM_CONCDRIVEN spinup mode for CO2 (Jan Streffing)
 ```
@@ -119,7 +117,7 @@ Squashed from the AWI-ESM3 tuning campaign branch (6 commits):
 
 ## 3. `pr3/ocean-skin-and-surface-fixes`
 
-Commit `f1567b7`, author Jan Streffing.
+Commit `d492bb4`, author Jan Streffing.
 
 **Title**
 
@@ -152,7 +150,7 @@ Co-authored-by: Xiaojie Hao <xiaojie.hao@awi.de>
 
 ## 4. `pr4/snow-cover-depletion`
 
-Commit `da73856`, author Jan Streffing.
+Commit `8f67f39`, author Jan Streffing.
 
 **Title**
 
@@ -188,7 +186,7 @@ Co-authored-by: Jorjo Bernales <bernales.work@gmail.com>
 
 ## 5. `pr5/dms-marine-ccn`
 
-Commit `ae0395c`, author Jan Streffing.
+Commit `0fcfb40`, author Jan Streffing.
 
 **Title**
 
@@ -210,7 +208,7 @@ Squashed from the AWI-ESM3 tuning campaign branch (1 commit):
 
 ## 6. `pr6/namelist-tuning-exposures`
 
-Commit `4f00876`, author Jan Streffing.
+Commit `11905ee`, author Jan Streffing.
 
 **Title**
 
@@ -242,7 +240,7 @@ Squashed from the AWI-ESM3 tuning campaign branch (7 commits):
 
 ## 7. `pr7/lpjg-raupach-roughness`
 
-Commit `98f2a19`, author Jan Streffing.
+Commit `2b6ea91`, author Jan Streffing.
 
 **Title**
 
