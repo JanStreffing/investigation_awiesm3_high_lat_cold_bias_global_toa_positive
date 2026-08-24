@@ -1,0 +1,113 @@
+\documentclass[9pt,a4paper]{article}
+\usepackage[a4paper,margin=1.5cm,landscape]{geometry}
+\usepackage[T1]{fontenc}\usepackage{lmodern}\usepackage{booktabs}\usepackage{array}
+\usepackage{longtable}\usepackage{xcolor}\usepackage[normalem]{ulem}\usepackage{amssymb}
+\setlength{\parindent}{0pt}\setlength{\parskip}{3pt}
+\newcommand{\pk}{\textcolor{black!55}}
+\title{\vspace{-1.4cm}\textbf{AWI--ESM3 v3.4 (TCO95L91 / CORE3) --- tuning parameter summary}}
+\author{Campaign 2026-06-30 to 2026-08-24 \quad$\cdot$\quad current best coupled arm: \textbf{11R}
+ (LX4 stack $+$ \texttt{RSBLB} 2.0, 1990 forcing) / \textbf{11Q} (1850)}
+\date{}
+\begin{document}\maketitle\vspace{-8mm}
+
+\section*{1. Kept --- the adopted stack as it stands in 11Q / 11R}
+Everything below is live in the current best arm. Defaults are the as-released values.
+
+\begin{center}\footnotesize
+\begin{longtable}{p{0.055\textwidth} p{0.20\textwidth} p{0.085\textwidth} p{0.075\textwidth} p{0.50\textwidth}}
+\toprule
+round & parameter & default & adopted & what it does / why kept \\
+\midrule\endhead
+\multicolumn{5}{l}{\textbf{OpenIFS --- cloud and radiation}}\\
+D2b & \texttt{RCL\_INPSEA} & 1.0 & \textbf{0.2} & Marine ice-nuclei floor over ocean. Southern-Ocean cloud phase. Spent: phase is already more liquid than CALIPSO-GOCCP at 45--65S \\
+S4 & \texttt{RCL\_INPPMIN} & 70000 & \textbf{50000} & \textcolor{red}{\textbf{UNDER REVIEW}} --- INP gate depth. Buys nothing at the pole, authored the $-3.70$ sub-Antarctic overcorrection, and its Siberian JJA benefit reverses coupled ($+1.19$ AMIP $\to-0.37$). Arms 11V/11W testing removal \\
+B7$^{-}$ & \texttt{RVICE} & 0.13 & \textbf{0.16} & Ice fall speed \\
+LX4 & \texttt{RSNOWLIN2} & 0.035 & \textbf{0.04} & Snow autoconversion. The only lever in ${\sim}52$ AMIP arms that moves the tropical longwave \\
+32 & \texttt{RSBLB} \emph{(new)} & 5.0 & \textbf{2.0} & Stable-BL stability-function coefficient $b$, exposed as \texttt{\&NAMVDFS} this campaign. The winter land lever: Arctic DJF screen $+0.67$\,K coupled, zero Siberian summer cost, zero net TOA \\
+\midrule
+\multicolumn{5}{l}{\textbf{OpenIFS --- land surface}}\\
+G4 & \texttt{ECE\_TUNE\_RVRSMIN(3,4)} & 250 & \textbf{1000} & Stomatal resistance, needleleaf. Less transpiration $\to$ more sensible heat \\
+G4 & \texttt{ECE\_TUNE\_RVRSMIN(9)} & 80 & \textbf{225} & Same, tundra --- 25.6\,\% of the boreal box that F4 missed \\
+P3 & \texttt{ECE\_SNOW\_SCF} & 1 & \textbf{3} & Snow-cover depletion fitted to observations, resolution-aware \\
+P3 & \pk{\texttt{..\_RHOREF/DCL/DCH/MD/BL/BH/DCMAX/SCALE/SWEMIN}} & --- & \pk{9 values} & \pk{The fitted depletion curve: 200, 0.014, 0.026, 4.70, 1.46, 0.40, 0.30, 1.0, 15.0} \\
+K1 & \texttt{ECE\_TUNE\_RVVEGALB} & --- & \textbf{12 values} & Vegetation albedo, types 1/10/11 only, all four spectral components \\
+K1 & \texttt{ECE\_TUNE\_SOILALB(1--4)} & 1.0 & \textbf{0.95} & Bare-soil background scale \\
+--- & \texttt{LRDALB} & True & \textbf{False} & Coupled albedo on, LPJG-driven \\
+\midrule
+\multicolumn{5}{l}{\textbf{OpenIFS --- other}}\\
+09C & \texttt{ENTSTPC3} & 3.0 & \textbf{1.0} & Extra entrainment, PBL inversion height only \\
+--- & \texttt{GGAUSSB} & --- & \textbf{$-0.5$} & Non-orographic gravity-wave source \\
+26 & \texttt{ECE\_CLIMR\_DMS} & .false. & \textbf{.true.} & DMS-Rev3 ICMCL field READ \ldots \\
+26 & \texttt{ECE\_DMS\_CCN\_SENS} & 0.0 & \textbf{0.0} & \ldots but the CCN lever left \textbf{OFF}: at $S{=}166$ it costs $-2.35$\,W\,m$^{-2}$ in the tropics and is not polar-selective \\
+\midrule
+\multicolumn{5}{l}{\textbf{FESOM / sea ice --- inherited from the 06T/09B ocean round}}\\
+09B & \texttt{pndaspect} & 0.8 & \textbf{1.3} & Melt-pond aspect ratio \\
+09B & \texttt{rfracmax} & 1.0 & \textbf{0.75} & Max melt-pond refreeze fraction \\
+09B & \texttt{albpnd} & 0.2 & \textbf{0.28} & Melt-pond albedo \\
+09B & \texttt{use\_momix} / \texttt{momix\_kv} & .false. & \textbf{.true.} / 0.01 & Monin--Obukhov mixing \\
+09B & \texttt{kpp\_av0} / \texttt{kpp\_kv0} & 0.005 & \textbf{0.003} & KPP mixing. Suppresses Weddell/Ross open-ocean convection; improves 500--1000\,m by ${\sim}0.15$\,K \\
+09B & \texttt{kpp\_avbckg} & 1e-4 & \textbf{5e-5} & KPP background momentum diffusivity \\
+09B & \texttt{kpp\_kvbckg} & 1e-5 & \textbf{5e-6} & KPP background tracer diffusivity \\
+--- & \texttt{spp} & --- & \textbf{false} & Stochastic physics off \\
+\midrule
+\multicolumn{5}{l}{\textbf{Coupling}}\\
+06T & \texttt{oasis3mct.time\_step} & 7200 & \textbf{3600} & 1-hour coupling \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\newpage
+\section*{2. Tried and discarded}
+Struck through where the mechanism itself was falsified rather than the arm merely
+underperforming. \textcolor{red}{Red} marks a verdict overturned or reopened by later work.
+
+\begin{center}\footnotesize
+\begin{longtable}{p{0.055\textwidth} p{0.20\textwidth} p{0.10\textwidth} p{0.575\textwidth}}
+\toprule
+arm & parameter & change & why discarded \\
+\midrule\endhead
+\multicolumn{4}{l}{\textbf{Cloud overlap, ice nuclei, microphysics}}\\
+A1a & \texttt{RCL\_OVERLAPLIQICE} & 0.65$\to$0.10 & Overshoots: SO CRE $-6.51$ but Siberian JJA $-1.15$\,K. Wrecks the boreal \\
+A1b & \texttt{RCL\_OVERLAPLIQICE} & 0.65$\to$0.35 & Best early arm, superseded; coupled as 11L it costs $1.000$\,K of Siberian JJA \\
+11L/11M & \texttt{RCL\_OVERLAPLIQICE} & 0.35 / 0.10 & Coupled. First SO lever that transfers ($0.57$--$1.01\times$), both rejected: 11M fails net TOA, 11L spends the whole Siberia budget for 40\,\% of the SO target \\
+A1c & \texttt{RDEPLIQREFDEPTH} & 500$\to$1500 & \textcolor{red}{\textbf{Reopened.}} Recorded ``failed --- cloud-depth selectivity idea dead'' on the 45--65S metric. Re-scored on the polar band it is significant ($-1.30$ ocean DJF) and nearly free (TOA $+0.01$) \\
+A2 & \texttt{RCL\_KK\_CLOUD\_NUM\_LAND} & 300$\to$150 & Nothing significant anywhere \\
+B1 & \texttt{DETRPEN} & 0.75e-4$\to$0.45e-4 & More SW yet colder; worst tropics and global RMSE \\
+B2 & \texttt{RCLDIFF\_CONVI} & 10$\to$25 & \textcolor{red}{\textbf{Reopened.}} Killed on subpolar N.\ Atlantic RMSE. On the polar band it is the \emph{only} arm passing both vetoes: polar $-0.68$, Arctic $+0.13$ (null), sub-Antarctic $+0.18$, Siberia $+0.38$\,K \\
+B3 & \texttt{RCLDIFF} & 6e-6$\to$1.5e-5 & Energy fails: surface flux $+1.14$, tropics $+1.72$ \\
+B4 & \texttt{ENTSHALP} & 2.0$\to$3.0 & Boreal within noise \\
+B5 & \texttt{RCAPDCYCL} & 2.0$\to$0.0 & Boreal within noise \\
+B6 & \texttt{RLCRITSNOW} & $\to$1e-5 & No traction \\
+B7 & \texttt{RVICE} & $\to$0.22 & Superseded by 0.16 \\
+N1/N2 & \texttt{RCL\_INPSEA} & 0.2$\to$0.1 / 0.05 & Phase is already \emph{more} liquid than GOCCP at 45--65S; buying CRE by worsening phase \\
+W1 & \sout{\texttt{RCLCRIT\_SEA}} & 2.5e-4$\to$6e-4 & \textbf{Dead parameter}: never read in the \texttt{IWARMRAIN==3} KK branch. 46\,yr identical to control \\
+SC2/SC3 & \texttt{RDEPLIQREFRATE} & 0.5$\to$0.2 & SC3 (rate$+$depth) breaks the Arctic ($-1.85$, already $-18$ overcorrected). Rate is what destroys selectivity, not depth. SC2 cancelled at 24\,yr \\
+26 & \texttt{ECE\_DMS\_CCN\_SENS} & 0$\to$166 & Works at the pole ($-6.10$ DJF) but hits 60--45S equally ($-6.55$), so it deepens the overcorrection that blocks it. Tropics $-2.35$, global TOA $-1.61$ \\
+\midrule
+\multicolumn{4}{l}{\textbf{Land surface and boundary layer}}\\
+expA & \texttt{RVRSMIN(3,4)} & 250$\to$500 & Within noise; sign unconfirmed \\
+F1 & \texttt{ECE\_TUNE\_RVZ0H} & forest, /10 & No boreal gain. Wrong side of the column: the skin bias is only $+0.11$\,K \\
+F2/F3 & \texttt{RVLAI} / \texttt{RVCOV} & --- & No significant boreal gain \\
+F5 & F1$+$F2$+$F3$+$F4 & --- & $+0.746$, no better than F4 alone ($+0.749$): near-total saturation \\
+B8/E1 & \texttt{ECE\_TUNE\_RVLAMSK} & $\to$5 / 25 & $+0.502$ at 4\,yr was pure noise; $-0.038$ at 44\,yr \\
+J1/J2 & \sout{\texttt{ECE\_LAMSK\_SN}} & 7$\to$15 / 25 & \textbf{Falsified.} Predicted $+1$ to $+3$\,K DJF; measured $+0.125$ (thr 0.41) and $-0.039$. The skin is already right \\
+C1/C2 & \texttt{RLAM} & 150$\to$75 / 40 & Null. Momentum mixing length, not heat \\
+SB3 & \sout{\texttt{RSBLLMIN}} & 30$\to$120\,m & \textbf{Falsified.} Same Arctic gain as \texttt{RSBLB} at 4$\times$ the tropical cost and $+1.67$\,W\,m$^{-2}$ net TOA: it also sets the length in free-shear layers, so it strips stratocumulus \\
+D1 & \texttt{RCAPDCYCL} mode 4 & --- & Mechanism falsified \\
+\midrule
+\multicolumn{4}{l}{\textbf{Vegetation and coupling}}\\
+11H/11J & \sout{\texttt{ifraupachz0}} & off$\to$on & \textbf{Falsified twice.} Structurally (Raupach needs a canopy the model has lost: $h=2.89$\,m, $z_0=0.0132$ against IFS's 0.058) and by measurement (DJF land--ocean gap $-0.017$ and $-0.003$ in two windows) \\
+06O/06T & \pk{\texttt{kpp*} $+$ \texttt{mospp}, aggressive} & --- & \pk{Improves the ocean interior but ``the cooling leaks well beyond where an ocean-mixing parameter has any business acting'' --- tropics and Ni\~no-3.4 redden. Milder settings retained (\S1)} \\
+06V & \texttt{ENTSTPC3} & aggressive & Largest atmospheric degradation: \texttt{tas} $+0.45$, \texttt{zg} $+0.46$ \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\vspace{2mm}\footnotesize
+\textbf{Standing caveats.} (i)~AMIP$\to$coupled transfer has been wrong in \emph{sign}: S4 gives
+$+1.19$\,K of Siberian JJA in AMIP and $-0.37$\,K coupled. (ii)~Two \texttt{lpj\_guess} binary
+generations exist (\texttt{production\_8c5ab467} for 11E/11G, \texttt{raupach\_junebase\_gated}
+for 11L--11R); comparisons spanning them are confounded, and all arms are now pinned.
+(iii)~The PI controls start near zero net TOA ($-0.06$ to $-0.08$) and \emph{drift} to ${\sim}+1.0$
+over 40 years, driven by SH sea-ice loss --- the energy problem is a drift, not an offset.
+\end{document}
