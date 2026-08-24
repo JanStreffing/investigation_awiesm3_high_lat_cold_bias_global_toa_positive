@@ -50,6 +50,7 @@ import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 R092 = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
+R270 = '/work/bb1469/a270270/runtime/awiesm3-v3.4'
 OUT = ('/work/ab0246/a270092/postprocessing/'
        'investigation_awiesm3_high_lat_cold_bias_global_toa_positive/plots')
 ACC = 3600.0
@@ -59,7 +60,18 @@ def resolve(p):
     g = [x for x in glob.glob(f'{R092}/{p}') if os.path.isdir(x)]
     return g[0] if g else None
 
-ARMS = [('11N  LX4',            resolve('*11N*'), '#888888'),
+def res270(p):
+    import glob as _g
+    g = [x for x in _g.glob(f'{R270}/{p}') if os.path.isdir(x)]
+    return g[0] if g else None
+
+# 06_Baseline is the untuned v3.4 configuration and 11E the campaign's coupled base,
+# both piControl from the same 1350 state, so both answer "where would it have landed
+# before any of this".  11E is the longest 1850 arm on disk at 50 years, which is the
+# only existing look past 1389 and therefore the best preview of the 100-year window.
+ARMS = [('06_Baseline  untuned', res270('Tuning_test_06_Baseline'), '#9467bd'),
+        ('11E  campaign base',   resolve('Tuning_test_11E_swemin15_K1'), '#ff7f0e'),
+        ('11N  LX4',            resolve('*11N*'), '#888888'),
         ('11Q  LX4+RSBLB  +S4', resolve('11Q'),   '#1f77b4'),
         ('11W  LX4+RSBLB  -S4', resolve('11W'),   '#d62728')]
 
