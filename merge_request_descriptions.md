@@ -4,26 +4,28 @@ The campaign branch `movcav-landice+co2-concdriven` split into seven stacked bra
 
 The "standalone" column records whether the branch's own commit also applies cleanly straight onto `main`. The first two do, so they can be reviewed and merged in either order. The rest overlap their predecessors textually, almost always in `surfece.F90`, and need the stack order.
 
+Merge request numbers assume the six still to be opened take !92 through !97 in order, which holds only if nobody else opens one on this project first. !91 is confirmed. Check the numbers before pasting, and fix the stack sentence at the top of any description whose number came out different.
+
 Copy the fenced block for each merge request straight into the GitLab description field. The fences are not part of the text: everything inside one is the description, already in GitLab-flavoured markdown.
 
-| # | branch | own diff | standalone | merge request |
-|---|--------|----------|------------|---------------|
-| 1 | `pr1/landice-ism-coupling` | 8 files, +198 / -35 | yes | !91, open |
-| 2 | `pr2/coupling-fixes-and-co2-spinup` | 5 files, +63 / -9 | yes | to open |
-| 3 | `pr3/ocean-skin-and-surface-fixes` | 10 files, +473 / -14 | no | to open |
-| 4 | `pr4/snow-cover-depletion` | 2 files, +502 / -7 | no | to open |
-| 5 | `pr5/dms-marine-ccn` | 7 files, +143 / -6 | no | to open |
-| 6 | `pr6/namelist-tuning-exposures` | 16 files, +432 / -11 | no | to open |
-| 7 | `pr7/lpjg-raupach-roughness` | 4 files, +194 / -14 | no | to open |
+| # | MR | branch | own diff | standalone |
+|---|----|--------|----------|------------|
+| 1 | !91 | `pr1/landice-ism-coupling` | 8 files, +198 / -35 | yes |
+| 2 | !92 | `pr2/coupling-fixes-and-co2-spinup` | 5 files, +63 / -9 | yes |
+| 3 | !93 | `pr3/ocean-skin-and-surface-fixes` | 10 files, +473 / -14 | no |
+| 4 | !94 | `pr4/snow-cover-depletion` | 2 files, +502 / -7 | no |
+| 5 | !95 | `pr5/dms-marine-ccn` | 7 files, +143 / -6 | no |
+| 6 | !96 | `pr6/namelist-tuning-exposures` | 16 files, +432 / -11 | no |
+| 7 | !97 | `pr7/lpjg-raupach-roughness` | 4 files, +194 / -14 | no |
 
 
 ---
 
-## 1. `pr1/landice-ism-coupling`
+## 1. `pr1/landice-ism-coupling`  (!91)
 
 Commit `b8bfb83`, author Jorjo Bernales.
 
-This one is already open as !91. Replace its title and description with the text below, because GitLab does not re-read either when a branch is force-pushed.
+Already open as !91. Replace its title and description with the text below, because GitLab does not re-read either when a branch is force-pushed.
 
 **Title**
 
@@ -34,6 +36,8 @@ Land-ice coupling: ice-sheet mask, ice surface physics and the ISM exchange
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97, splitting the AWI-ESM3 tuning campaign branch. This is the first of them, and it also applies cleanly to `main` on its own.
+
 Adds an optional interactive land-ice surface to HTESSEL, together with the OASIS field exchange with an ice-sheet model (CISSEMBEL). Everything is gated off by default behind ECE_LANDICE and ECE_ISM_OROG, so an unconfigured run is bit-identical.
 
 Over cells flagged as ice sheet, the soil column is replaced by ice thermodynamics and snow is coupled to an ice substrate. Roughness lengths are set for ice, as are the SW albedo and the LW emissivity, and the SEB linearisation is adjusted to match. The mask is either read from the forcing file or delivered by OASIS as PLIT, with a configurable threshold and fractional blending between ice and land physics. Multiple ISM regions are supported through a region loop in the coupling driver.
@@ -87,7 +91,7 @@ Co-authored-by: Jan Streffing <jan.streffing@awi.de>
 
 ---
 
-## 2. `pr2/coupling-fixes-and-co2-spinup`
+## 2. `pr2/coupling-fixes-and-co2-spinup`  (!92)
 
 Commit `82797ac`, author Jan Streffing.
 
@@ -100,6 +104,8 @@ Coupling fixes and a concentration-driven CO2 spin-up mode
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97. It is branched from !91, but it also applies cleanly to `main` on its own, so it does not have to wait for !91 to land.
+
 Three coupling changes, unrelated to each other:
 
 - initialise OASIS_OUT fields to 0 rather than -HUGE, so the first send does not carry the sentinel into the receiving model
@@ -115,7 +121,7 @@ Squashed from the AWI-ESM3 tuning campaign branch (3 commits):
 
 ---
 
-## 3. `pr3/ocean-skin-and-surface-fixes`
+## 3. `pr3/ocean-skin-and-surface-fixes`  (!93)
 
 Commit `d492bb4`, author Jan Streffing.
 
@@ -128,6 +134,8 @@ Ocean skin: only over water, and fix warm-start surface field seeding
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97. It is branched from !92 and overlaps its predecessors textually, so !91 through !92 need to land first. Until they do, the diff shown here against `main` includes their changes as well.
+
 The mesh-increment friction velocity could overflow where voskin was evaluated over cells with no water. It is now computed only where there is ocean, and the diagnostic probes added to find that are removed again.
 
 Separately, two warm-start defects. reresf did not seed surface defaults before re-reading ICMGG, and surface_fields_mix SETDEFAULT skipped fields with NREQIN==0. Both left surface fields undefined on a warm start. The 4-layer ice temperature now also uses the coupled ocean sea-ice thickness.
@@ -148,7 +156,7 @@ Co-authored-by: Xiaojie Hao <xiaojie.hao@awi.de>
 
 ---
 
-## 4. `pr4/snow-cover-depletion`
+## 4. `pr4/snow-cover-depletion`  (!94)
 
 Commit `8f67f39`, author Jan Streffing.
 
@@ -161,6 +169,8 @@ Optional snow-cover depletion formulations (ECE_SNOW_SCF), off by default
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97. It is branched from !93 and overlaps its predecessors textually, so !91 through !93 need to land first. Until they do, the diff shown here against `main` includes their changes as well.
+
 Adds alternative snow-cover fraction parameterisations, selected by ECE_SNOW_SCF and all off by default:
 
 - 1: unchanged operational behaviour
@@ -184,7 +194,7 @@ Co-authored-by: Jorjo Bernales <bernales.work@gmail.com>
 
 ---
 
-## 5. `pr5/dms-marine-ccn`
+## 5. `pr5/dms-marine-ccn`  (!95)
 
 Commit `0fcfb40`, author Jan Streffing.
 
@@ -197,6 +207,8 @@ Marine biogenic CCN from DMS, with the coefficient in the namelist
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97. It is branched from !94 and overlaps its predecessors textually, so !91 through !94 need to land first. Until they do, the diff shown here against `main` includes their changes as well.
+
 Wires a DMS surface concentration field through the ICMCL ingest chain into PCCNO, so that marine biogenic aerosol can modulate the cloud droplet number over ocean instead of the fixed climatological value. The conversion coefficient is exposed as a namelist parameter, and with no DMS field present the behaviour is unchanged.
 
 Squashed from the AWI-ESM3 tuning campaign branch (1 commit):
@@ -206,7 +218,7 @@ Squashed from the AWI-ESM3 tuning campaign branch (1 commit):
 
 ---
 
-## 6. `pr6/namelist-tuning-exposures`
+## 6. `pr6/namelist-tuning-exposures`  (!96)
 
 Commit `11905ee`, author Jan Streffing.
 
@@ -219,6 +231,8 @@ Expose HTESSEL, cloud and stable-BL tuning constants to namelists
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97. It is branched from !95 and overlaps its predecessors textually, so !91 through !95 need to land first. Until they do, the diff shown here against `main` includes their changes as well.
+
 Makes tuning constants that were hard-coded PARAMETERs settable from the namelist, with every default left at its as-released value, so this changes no results by itself. It exists so that a tuning campaign does not need a recompile per parameter.
 
 - NAMSURFTUNE: the HTESSEL tuning tables, the snow-tile skin conductivities and RVLAMSKS
@@ -238,7 +252,7 @@ Squashed from the AWI-ESM3 tuning campaign branch (7 commits):
 
 ---
 
-## 7. `pr7/lpjg-raupach-roughness`
+## 7. `pr7/lpjg-raupach-roughness`  (!97)
 
 Commit `2b6ea91`, author Jan Streffing.
 
@@ -251,6 +265,8 @@ Receive the Raupach canopy roughness length from LPJ-GUESS
 **Description**
 
 ```markdown
+Part of an ordered stack of 7 merge requests, !91 through !97. It is branched from !96 and overlaps its predecessors textually, so !91 through !96 need to land first. Until they do, the diff shown here against `main` includes their changes as well.
+
 When coupled to LPJ-GUESS, take the momentum roughness length for vegetated tiles from the dynamic vegetation's Raupach canopy formulation instead of the static per-type table, so that z0m follows the simulated canopy structure. Falls back to the table when the field is absent.
 
 Squashed from the AWI-ESM3 tuning campaign branch (1 commit):
