@@ -77,7 +77,10 @@ for b in "${BRANCHES[@]}"; do
   echo '```'; echo; echo "**Description**"; echo; echo '```markdown'
   note_for $i "${SA[$b]}"
   echo
-  g log -1 --format=%b "origin/$b" | awk 'BEGIN{RS="\0"} {sub(/\n+$/,"")} 1'
+  # linkify each subsumed sha so a reviewer can click straight through to the
+  # original on the fork; the commit message keeps them plain for `git log`
+  g log -1 --format=%b "origin/$b" | awk 'BEGIN{RS="\0"} {sub(/\n+$/,"")} 1' \
+    | sed -E 's|^- `([0-9a-f]{7})` |- [`\1`](https://git.smhi.se/jan.streffing/oifs48r1/-/commit/\1) |'
   echo '```'
 done
 } > "$OUT"
