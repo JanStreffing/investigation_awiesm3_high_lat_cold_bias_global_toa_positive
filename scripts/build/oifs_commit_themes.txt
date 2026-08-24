@@ -1,0 +1,71 @@
+09f4de9|LANDICE|Define coupling stages/fields for OIFS-->ISMM
+2382b71|LANDICE|Add ISM region loop
+e1d0708|MISC|tidy up
+930bc84|LANDICE|LandIce: Couple snow to ice substrate
+0956bfb|LANDICE|LandIce: Replace soil by ice thermodynamics
+bb99c16|LANDICE|LandIce: Impose ice roughness lengths
+70a0be4|MISC|Tidy up
+94447a4|LANDICE|ISMM-->OIFS field exchange
+d3bf27b|LANDICE|LandIce: Modify SEB linearisation
+be849dd|LANDICE|LandIce: Adjust SW albedo and LW emissivity
+a383624|LANDICE|LandIce: Implement evolving albedo over ice
+41334b0|LANDICE|LandIce: Add storage/API in SURFECE module
+c3b2608|LANDICE|LandIce: Read/pack ice sheet mask from file
+748c647|LANDICE|LandIce: Add active-block bridge for SURF routines
+c7234e9|LANDICE|LandIce: Wire ice-sheet mask to surf routines
+f535186|LANDICE|Add ECE_LANDICE gate and conditional mask wiring
+d8ce225|LANDICE|Add ECE_LANDICE to ECEARTH module as well
+0c9e575|SNOWSCF|Extend permanent-snow resets to thin-snow glacier cells in AMIP
+8cbc4fc|LANDICE|LandIce: Configurable mask threshold and fractional physics blending
+98fd0cf|LANDICE|Framework for multiple ism regions
+655097d|LANDICE|Fix mis-tag in DISGRID_RECV for PLIT read-in
+4ef058a|LANDICE|Add region loop to Landice block
+a0ec0ae|LANDICE|LandIce: Harden mask intake with error handling and diagnostics
+06ff388|LANDICE|LandIce: Fix thread-safety and consolidate surface physics constants
+5383f36|LANDICE|LandIce: Unified region loop for orography and mask reads
+0e4032d|LANDICE|LandIce: Wire OASIS-delivered PLIT into SURFECE monthly update
+21387d6|LANDICE|LandIce: Drop duplicate ECE_LANDICE import in ece_updclie_cpl
+393c21d|LANDICE|LandIce: Read plit_oifs and usurf_oifs from forcing file
+415091b|LANDICE|LandIce: Remove noisy unset-block-index warning from SURFECE
+69315a3|LANDICE|LandIce: Clean up development artifacts
+e3f2efd|LANDICE|LandIce: narrow USE NETCDF to ONLY used symbols in suorog
+b9ba5df|MISC|Restore original formatting in modified SURF routines
+7b730d9|LANDICE|[OIFS] CISSEMBEL field exchange
+7d043b2|LANDICE|[OIFS] allocate ISMRGNCIS
+722fe38|MISC|file merge edit corrections
+a331739|MISC|Fix merge error
+b7eacd0|COUPLE|cplng2: init OASIS_OUT fields to 0, not -HUGE (fixes first-send sentinel)
+a89ef77|XIOS|cplng2: restore xios_oasis_enddef() removed by 7db0940
+1c4fa0e|XIOS|Make XIOS axis IDs configurable from iodef.xml
+00282ff|XIOS|cplng2: disable xios_oasis_enddef for XIOS-2.5 + AWI FESOM2
+0e8bfd2|XIOS|Revert "cplng2: disable xios_oasis_enddef for XIOS-2.5 + AWI FESOM2"
+a284bd1|VOSKIN|OIFS moving-cavity/moving-lsm coupling fixes
+058c473|COUPLE|fesom-fesim: coupled-slab ice surface -- receive FESOM ice thickness
+491fb76|SFCFIX|surf: use coupled ocean sea-ice thickness in the 4-layer ice temperature
+d3e3817|COUPLE|Add ECE_CPL_FESOM_RECOM_CONCDRIVEN spinup mode for CO2
+f3ccacb|SFCFIX|fix surfece switch
+45a7bea|VOSKIN|voskin: diagnostic probes for the mesh-increment friction-velocity overflow
+5bea52e|EXPOSE|Round 10 tuning-campaign annotations (values at as-released defaults)
+2630bd1|EXPOSE|Round 11: RCAPDCYCL mode 4, and two NAMCLDP parameters for continental INP
+1004cba|EXPOSE|Make the HTESSEL tuning tables namelist-settable via NAMSURFTUNE
+5779a3d|LANDICE|Create separate ECE_ISMM_SET_STATE subroutine, call in callpar.F90
+38c3ab0|LANDICE|callpar: give the ECE_ISMM_SET_STATE call an explicit interface
+28b5542|SNOWSCF|Add optional Niu & Yang (2007) snow-cover depletion, off by default
+9f12d79|SNOWSCF|Set ECE_SNOW_SCF_Z0 default to the calibrated 0.016 m
+3a918c8|SFCFIX|reresf: seed surface defaults before re-reading ICMGG on a warm start
+ab9f53b|SFCFIX|surface_fields_mix: SETDEFAULT also seeds NREQIN==0 fields
+04d1481|VOSKIN|voskin: only compute the ocean skin where there is water
+f00a397|VOSKIN|strip the diagnostics the voskin root cause made redundant
+6e817ea|SNOWSCF|Add ECE_SNOW_SCF=2: scale-aware depletion via SDOR
+509c7b0|EXPOSE|Expose the snow-tile skin conductivities to NAMSURFTUNE
+068d523|EXPOSE|Expose RVLAMSKS to NAMSURFTUNE
+83c720c|LANDICE|Make the OASIS-driven land-ice mask update opt-in
+460015f|LANDICE|suorog: gate the orography read on ECE_ISM_OROG
+c16220a|SNOWSCF|Add ECE_SNOW_SCF=3: snow-cover depletion fitted to observations
+5952bed|SNOWSCF|Fix ECE_SNOW_SCF=3 crash: floor d_c at a minimum snow MASS (ECE_SNOW_SCF_SWEMIN)
+562df81|SNOWSCF|Make ECE_SNOW_SCF=3 resolution-aware, and stop DCMAX from disabling the mass floor
+8707cd1|DMS|Wire marine biogenic CCN from DMS into PCCNO, with the coefficient as a namelist knob
+75a4e45|EXPOSE|Complete the DMS ICMCL ingest chain, and expose RCLCRIT_SEA/LAND
+e13e341|LANDICE|updtim LANDICE: describe what the hook does
+5893ee0|EXPOSE|Expose the stable-BL mixing constants to NAMVDFS
+869be00|LPJG|Receive the Raupach canopy roughness from LPJ-GUESS
