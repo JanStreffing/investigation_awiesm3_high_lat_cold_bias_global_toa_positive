@@ -64,10 +64,16 @@ LF = 3.337e5      # J/kg, latent heat of fusion
 EARTH = 5.10072e14
 RHO, CP = 1027.0, 3990.0
 
-ARMS = [('11E', f'{R}/Tuning_test_11E_swemin15_K1', range(1380, 1400)),
-        ('11G', f'{R}/Tuning_test_11G_inppmin50k', range(1380, 1400)),
-        ('11L', f'{R}/11L', range(1380, 1390)),
-        ('11M', f'{R}/11M', range(1380, 1390))]
+# All six coupled arms on ONE common window, 1380-1389 -- the last decade every arm has.
+# Earlier versions mixed 1380-1399 for 11E/11G with 1380-1389 for the shorter arms, which
+# is not comparable: 11G's own net TOA reads +0.205 over 1350-69+1380-89 but +0.732 over
+# 1380-99, so the window choice moves the answer by more than most levers do.
+ARMS = [('11E  base',        f'{R}/Tuning_test_11E_swemin15_K1', range(1380, 1390)),
+        ('11G  +S4',         f'{R}/Tuning_test_11G_inppmin50k',  range(1380, 1390)),
+        ('11L  +ovl0.35',    f'{R}/11L',                          range(1380, 1390)),
+        ('11M  +ovl0.10',    f'{R}/11M',                          range(1380, 1390)),
+        ('11N  +rsnow 1850', f'{R}/11N',                          range(1380, 1390)),
+        ('11P  +rsnow 1990', f'{R}/11P',                          range(1380, 1390))]
 
 
 def gm(root, var, years):

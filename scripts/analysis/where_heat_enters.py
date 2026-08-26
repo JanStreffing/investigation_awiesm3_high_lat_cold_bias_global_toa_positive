@@ -41,7 +41,7 @@ import numpy as np, xarray as xr, warnings
 warnings.filterwarnings('ignore')
 
 R092 = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
-MESH = '/work/ab0246/a270092/input/fesom2/core3'
+MESH = '/work/ab0246/a270092/input/fesom2/core3_beta'
 RHO, CP = 1027.0, 3996.0
 A_EARTH = 5.101e14
 SEC_YR = 365.25 * 86400.0

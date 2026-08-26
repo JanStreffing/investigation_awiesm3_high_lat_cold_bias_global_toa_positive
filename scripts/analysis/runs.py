@@ -211,7 +211,18 @@ RUNS = [
     # for area.  Disqualifier: tropics beyond +-0.5.
     ('N1 inpsea0.1', 'N1'),                   # RCL_INPSEA 0.2 -> 0.10
     ('N2 inpsea0.05', 'N2'),                  # RCL_INPSEA 0.2 -> 0.05
-    ('W1 clcritsea6e4', 'W1'),                # RCLCRIT_SEA 2.5e-4 -> 6.0e-4
+    ('W1 clcritsea6e4', 'W1'),                # RCLCRIT_SEA 2.5e-4 -> 6.0e-4  *** VOID ***
+    # W1 IS A NO-OP AND MUST NOT BE READ AS A RESULT.  RCLCRIT_SEA=6e-4 reached fort.4,
+    # but the shared library staged with the run (work/lib/oifs/libarpifs.SP.so) was built
+    # 2026-08-09 while the namelist exposure landed 2026-08-10, so the name was read and
+    # ignored.  Its columns are identical to S4 to three decimals.  W2 is the re-run.
+    #
+    # NOTE ON NAMES: an older amip_W1..W9 series exists (rprcon, entrorg, rmfdeps, ...),
+    # 1-year screens, not registered here.  Directory names differ so no data collides,
+    # but do not confuse 'W2 clcritsea' with 'amip_W2_entrorg207'.
+    ('W2 clcritsea6e4', 'W2'),                # RCLCRIT_SEA 2.5e-4 -> 6.0e-4, W1 re-run
+    ('W3 kknumsea100', 'W3'),                 # RCL_KK_CLOUD_NUM_SEA 50 -> 100 cm-3
+    ('LX4 rsnow+inp50k', 'LX4'),              # RSNOWLIN2 0.04 on the S4 base (nested LX1)
 ]
 
 # Not tuning levers -- do not add these to RUNS.  Eleven LPJG forcing-generator runs

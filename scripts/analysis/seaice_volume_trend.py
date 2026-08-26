@@ -18,7 +18,7 @@ years = np.arange(Y0, Y1 + 1)
 FWO = "/work/bb1469/a270092/runtime/awicm3-develop/awicm3_noLPJG_CORE3_30y/outdata/fesom"
 FWI = "/work/bb1469/a270270/runtime/awiesm3-v3.4/Tuning_test_06_Baseline/outdata/fesom"
 
-md = xr.open_dataset("/work/ab0246/a270092/input/fesom2/core3/fesom.mesh.diag.nc")
+md = xr.open_dataset("/work/ab0246/a270092/input/fesom2/core3_beta/fesom.mesh.diag.nc")
 narea = md["nod_area"].isel(nz=0).values            # m^2 per surface node
 lat = xr.open_dataset(f"{FWO}/m_ice.fesom.{Y0}.nc")["lat"].values
 nh = lat > 0; sh = lat < 0

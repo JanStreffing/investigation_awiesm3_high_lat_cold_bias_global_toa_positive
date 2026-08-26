@@ -68,6 +68,9 @@ RUNS = [
     # "no tsr/tsrc output" until their first leg lands, which is not an error.
     ('CPL  11L (+ovl 0.35)', f'{CPL}/11L', 'cpl'),
     ('CPL  11M (+ovl 0.10)', f'{CPL}/11M', 'cpl'),
+    # LX4's lever coupled: 11G + RSNOWLIN2 0.04, at two forcing years.
+    ('CPL  11N (+rsnow 1850)', f'{CPL}/11N', 'cpl'),
+    ('CPL  11P (+rsnow 1990)', f'{CPL}/11P', 'cpl'),
 ]
 
 

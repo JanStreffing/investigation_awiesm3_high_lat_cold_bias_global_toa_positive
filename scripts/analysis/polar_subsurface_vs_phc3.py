@@ -26,7 +26,7 @@ import numpy as np, xarray as xr, warnings
 warnings.filterwarnings('ignore')
 
 R092 = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
-MESH = '/work/ab0246/a270092/input/fesom2/core3'
+MESH = '/work/ab0246/a270092/input/fesom2/core3_beta'
 REF = '/work/ab0246/a270092/postprocessing/climatologies/CORE3/temp.fesom.1958.nc'
 
 BANDS = [('90-60S  Antarctic/SO', -90, -60),

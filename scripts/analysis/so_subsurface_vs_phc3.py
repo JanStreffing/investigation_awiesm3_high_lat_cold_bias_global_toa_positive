@@ -37,7 +37,7 @@ warnings.filterwarnings('ignore')
 
 R = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
 PHC = '/work/ab0246/a270092/obs/phc3'
-MESH = '/work/ab0246/a270092/input/fesom2/core3/fesom.mesh.diag.nc'
+MESH = '/work/ab0246/a270092/input/fesom2/core3_beta/fesom.mesh.diag.nc'
 Y0, Y1 = 1380, 1389
 ARMS = [('11P', f'{R}/11P'), ('11R', f'{R}/11R'),
         ('11N', f'{R}/11N'), ('11Q', f'{R}/11Q')]

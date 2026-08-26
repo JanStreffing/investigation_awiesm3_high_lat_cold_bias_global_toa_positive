@@ -33,7 +33,7 @@ import numpy as np, xarray as xr, warnings
 warnings.filterwarnings('ignore')
 
 R092 = '/work/bb1469/a270092/runtime/awiesm3-v3.4'
-MESH = '/work/ab0246/a270092/input/fesom2/core3'
+MESH = '/work/ab0246/a270092/input/fesom2/core3_beta'
 WOA = '/work/ab0246/a270092/obs/WOA/woa18_decav81B0_M0216_01.nc'
 ARM = os.environ.get('ARM', '11Q')
 YEARS = list(range(1382, 1390))

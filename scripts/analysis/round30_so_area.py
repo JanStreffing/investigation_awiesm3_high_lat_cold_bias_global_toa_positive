@@ -50,7 +50,10 @@ FLUX = ('tsr', 'ttr', 'tsrc', 'ttrc')
 ARMS = [('S4 control', 'amip_S4_inppmin50000'),
         ('N1 inpsea0.10', 'N1'),
         ('N2 inpsea0.05', 'N2'),
-        ('W1 clcrit6e-4', 'W1')]
+        # W1 omitted: no-op, its library predated the namelist exposure.  W2 is the re-run.
+        ('W2 clcrit6e-4', 'W2'),
+        ('W3 kknum100', 'W3'),
+        ('LX4 rsnow+S4', 'LX4')]
 
 
 def load(root, var, y):
@@ -180,13 +183,23 @@ def main():
         d_tn = S[tag]['trop net'].mean() - S[base]['trop net'].mean()
         d_sj = (S[tag]['Sib JJA'].mean() - S[base]['Sib JJA'].mean()
                 if 'Sib JJA' in S[tag] else np.nan)
-        trop_fail = abs(d_tsw) > 0.5 or abs(d_tn) > 0.5
+        # ONE-SIDED on the tropics, and score NET not SW.  The report already struck the
+        # two-sided form: the tropics sit BELOW CERES and need MORE absorbed energy, so a
+        # positive d(trop net) is an IMPROVEMENT, not a cost.  Scoring |d(trop SW)| also
+        # mis-reads any lever that trades SW for LW -- RSNOWLIN2 is exactly that, and the
+        # two-sided test flagged LX4 as disqualified while its net tropics IMPROVED.
+        trop_fail = d_tn < -0.5
         print(f'  {tag}:  d(area) {d_area:+.3f} pp of the 6.4 pp deficit,  '
               f'd(SO CRE) {d_cre:+.3f}')
         print(f'      tropics SW {d_tsw:+.3f}, net {d_tn:+.3f}  -> '
-              f'{"DISQUALIFIED on the tropics" if trop_fail else "tropics within +-0.5"}')
-        print(f'      Siberia JJA {d_sj:+.3f} K  (expected ~0: the lever branches on PLSM '
-              f'and cannot act over land)')
+              + ('DISQUALIFIED: tropics lose energy they cannot afford' if trop_fail
+                 else ('tropics IMPROVE (they need more energy)' if d_tn > 0.05
+                       else 'tropics neutral')))
+        d_toa = S[tag]['net TOA'].mean() - S[base]['net TOA'].mean()
+        abs_toa = S[tag]['net TOA'].mean()
+        print(f'      Siberia JJA {d_sj:+.3f} K')
+        print(f'      net TOA {abs_toa:+.3f} absolute ({d_toa:+.3f} vs S4)  -> '
+              + ('OK' if abs(abs_toa) < 0.3 else 'DISQUALIFIED on the PI energy target'))
         if not np.isnan(d_area) and abs(d_area) < 0.7 and d_cre < -0.5:
             print('      -> buys OPACITY, not AREA: the same trap the INP branch fell into.')
         print()
