@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--08--23})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--09--09})}
 
 \begin{document}
 \maketitle
@@ -7587,6 +7587,281 @@ reading of this round used SST and concluded the Southern Ocean was too cold and
 ice-albedo feedback would work in the model's favour as it warms. Both were wrong.
 \end{itemize}
 
+\section{Round 34 (2026--09--06$\to$09): four defects in the coupled ice skin}\label{sec:round34}
+
+A separate thread from the radiative campaign, recorded here because it changes what the
+coupled arms mean. The coupled-slab ice surface temperature diverged to $-36{,}470$\,K and
+overflowed single-precision OpenIFS at \texttt{ece\_updclie\_cpl.F90}:104 after ${\sim}43$
+model days. Four independent defects were found; the first is the one that mattered.
+
+\subsection{The anchor that was never delivered}\label{sub:r34waitgroup}
+\texttt{oasis\_put} returns \texttt{OASIS\_Sent} (4) only to the call that completes a
+coupling group. Every earlier field in the group gets \texttt{OASIS\_Waitgroup} (14) --- the
+data is accepted and buffered, and transmission happens when the last field puts. FESOM's
+\texttt{cpl\_driver.F90} tested only for 4 and 8, read 14 as ``not sent'', and never wrote
+the received field.
+
+The consequence was silent and specific. \texttt{ist\_ref}, the reference skin temperature
+the implicit solve is expanded about, was 0.0 in all $63{,}923$ logged events. \texttt{tref}
+then fell back to the model's own previous \texttt{t}, at which point the
+$\zeta_{\mathrm{lam}}$ terms cancel identically:
+\[
+ t=\frac{c_p\Delta t^{-1}t + a_{2i}hf + \zeta_{\mathrm{lam}}t_{\mathrm{ref}} + \zeta_{ice}}
+        {c_p\Delta t^{-1} + \kappa/h + \zeta_{\mathrm{lam}}}
+ \;\xrightarrow{\;t_{\mathrm{ref}}=t\;}\;
+ t^{*}=T_{\mathrm{frz}} + \frac{a_{2i}hf}{\kappa/h},
+\]
+an unbounded steady state with no restoring term at all. The fix is one line ---
+\texttt{action=(info==OASIS\_Sent .OR. info==OASIS\_SentOut .OR. info==OASIS\_Waitgroup)}.
+
+\subsection{The other three, and what a year of running says}\label{sub:r34three}
+\begin{itemize}\itemsep2pt
+\item Recovering the advected ice temperature divided by \texttt{max(a\_ice, 1e-6)}, which
+injects ${\approx}0$\,K wherever concentration collapses rather than leaving the node alone.
+\item The fallback anchor had no sanity bound; it now clamps outside $173.15$--$400$\,K to
+$271.35$\,K.
+\item The skin is now taken from OpenIFS (\texttt{A\_Ice\_tskin}, new coupling field)
+instead of FESOM solving a second, independent one. Two models solving the same skin and
+exchanging only part of the state is the structural version of the same bug.
+\end{itemize}
+Verified over a full coupled year: \texttt{ist} minimum $-36{,}470$\,K\,$\to$\,$224.39$\,K,
+p1 $233.57$\,K, \textbf{zero} points below 200\,K, no overflow.
+
+\subsection{GSMART is not smart enough for a field that changes sign}\label{sub:r34gssmar}
+\texttt{A\_Q\_ice} carried \texttt{CONSERV} method \texttt{GSMART}, which is
+\texttt{GLBPOS} (multiplicative, $\Sigma_{src}/\Sigma_{dst}$) with a fallback used only when
+the denominator is \emph{exactly} zero --- a condition floating point never meets. The field
+changes sign between the hemispheres, so the denominator passes through zero and the factor
+blows up near it. Measured over a coupled year, GSMART delivered \textbf{9105 excursions
+above 1\,kW\,m$^{-2}$ onto real ice, maximum $22{,}550$\,W\,m$^{-2}$}; \texttt{GLOBAL} and
+the new \texttt{GSSMAR} deliver \textbf{none}. \texttt{GSSMAR} (OASIS \texttt{ip\_cgssmar},
+method 9) scores the additive, whole-field multiplicative and per-sign multiplicative
+corrections at each step and applies whichever distorts the field least, with no extra MPI
+reductions. Note the keyword is six characters because the \texttt{namcouple} parser
+tokenises on that width; a seven-character name shifts the line and aborts with a garbage
+model name.
+
+\subsection{A restart that was never collected}\label{sub:r34restart}
+11Y ran its first ten years cleanly and then lost legs 2 and 3. FESOM 2.8 renamed the
+NetCDF restarts --- one directory per restart \emph{instant}, stamped with its date
+(\texttt{fesom.1360-01-01.oce.restart}), where pre-2.8 wrote one directory per year named by
+that year (\texttt{fesom.1359.oce.restart}). The reader still falls back to the old name, so
+a leg branched off a pre-2.8 restart works and the change is invisible for exactly one leg;
+the writer only ever emits the new name. esm-tools' unchanged patterns therefore collected
+nothing, \texttt{restart/fesom} stayed empty, and the next leg died reading a file that had
+never been staged --- while the date file advanced, so the wreckage looked like progress.
+Fixed version-bound in the awiesm3 \texttt{v3.5} arm.
+
+
+\section{Round 35 (2026--09--09): the heat does not go down in the tropics}\label{sec:round35}
+
+The campaign's standing account of the imbalance is that the model removes heat from the
+surface faster than it should, so the surface never warms enough to radiate the excess away.
+That account had never been located: ``too much mixing'' was an inference from a cold surface
+and a warm interior, not a measurement. This round measures it, on 11X --- the 40-year 1850
+control on the corrected CORE3 mesh (220509 nodes). The conclusion is that the mechanism is
+real and the region was wrong.
+
+\subsection{Definitions first, because they are not the same quantity}\label{sub:r35defs}
+``Mixed layer depth'' names four different things here, and a model-minus-obs map is
+worthless if the two numbers are not the same one.
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+source & criterion & reference \\
+\midrule
+WOA18 \texttt{M\_an} & $\sigma_\theta$ exceeds reference by $0.125$\,kg\,m$^{-3}$ & \textbf{10\,m} \\
+FESOM \texttt{MLD2} & the same $0.125$\,kg\,m$^{-3}$ & \textbf{top level, 2.5\,m} \\
+FESOM \texttt{MLD3} & CMOR $0.03$\,kg\,m$^{-3}$ & top level \\
+FESOM \texttt{MLD1} & Large et al.\ (1997) buoyancy gradient & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent WOA's criterion is stated verbatim in the file's \texttt{summary} attribute rather
+than inferred; FESOM's is \texttt{oce\_ale\_pressure\_bv.F90}:462 with the threshold set at
+line 219. Comparing \texttt{MLD2} against \texttt{M\_an} compares a surface-referenced depth
+with a 10\,m-referenced one, and where a warm or fresh skin sits above 10\,m the
+surface-referenced version trips its threshold earlier and reads \emph{shallower} --- it
+flatters the model on precisely the hypothesis under test. So the model MLD is recomputed
+offline from the model's own monthly $T$ and $S$ under WOA's criterion, with EOS-80
+$\sigma_\theta$ (the equation of state WOA is built on).
+
+That recompute was validated before it was used. Reproducing FESOM's \emph{own} convention
+from the same fields gives $r=0.99763$ against the written \texttt{MLD2}, a global
+area-weighted $91.08$ against $93.33$\,m, and a median per-node difference of $1.42$\,m ---
+the residual being FESOM's Jackett--McDougall EOS against EOS-80. The definitional effect
+itself is small: switching the reference from 2.5\,m to 10\,m deepens the global mean by
+$+1.9$\,m, at most $+3.6$\,m in any band. \textbf{So the definition matters at the
+few-metre level and cannot explain anything below.} That is a measurement, where before it
+was a worry.
+
+\subsection{The mixed layer: right in the tropics, catastrophic in the Southern Ocean}\label{sub:r35mld}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.72\textwidth]{mld_wintermax_11X_vs_woa18.png}
+\caption{Deepest month of the climatology, 11X (1380--89) against WOA18, \textbf{both on
+WOA's $0.125$\,kg\,m$^{-3}$ / 10\,m criterion}. The model's over-deep mixing is confined to
+the Southern Ocean, the subpolar North Atlantic and the western boundary currents; the
+tropical band is unbiased. Red is the model mixing too deep.}
+\label{fig:mldmax}
+\end{figure}
+
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+band & ann model & ann obs & \textbf{ann bias} & max model & max obs & \textbf{max bias} \\
+\midrule
+90--60S  & $371.4$ & $123.2$ & $\mathbf{+248.2}$ & $840.1$ & $232.7$ & $\mathbf{+607.4}$ \\
+60--45S  & $140.0$ & $169.8$ & $-29.8$ & $264.1$ & $301.2$ & $-37.1$ \\
+45--30S  & $105.0$ & $97.6$  & $+7.5$  & $251.1$ & $202.2$ & $+48.9$ \\
+\textbf{30S--30N} & $43.6$ & $51.6$ & $\mathbf{-8.1}$ & $81.0$ & $80.8$ & $\mathbf{+0.3}$ \\
+30--45N  & $78.5$  & $70.8$  & $+7.6$  & $206.4$ & $157.5$ & $+48.9$ \\
+45--60N  & $141.5$ & $104.3$ & $+37.2$ & $389.8$ & $234.0$ & $+155.7$ \\
+60--90N  & $118.9$ & $80.2$  & $+38.7$ & $272.5$ & $176.9$ & $+95.5$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The tropics are the one band that comes out clean, and the sign is wrong for the
+mixing story}: $8.1$\,m too \emph{shallow} in the annual mean, and a dead heat at the
+seasonal maximum ($81.0$ against $80.8$). The seasonal cycle (Fig.~\ref{fig:mldseason})
+shows the model shallower than WOA in all twelve months, not only in the annual mean. The
+convention also works against the model here: MLD computed from a monthly-\emph{mean}
+profile is biased shallow relative to WOA's per-profile-then-analyse, so correcting it moves
+the tropical model toward the observations, not away.
+
+Where the model does over-mix is entirely extratropical and entirely winter, and 90--60S is
+not a mixing-coefficient error at all: \textbf{18.7\,\% of model month-nodes there mix to
+the sea floor} (60--90N 12.5\,\%, 45--60N 7.9\,\%, tropics 1.4\,\%). That is open-ocean deep
+convection, and no diffusivity knob addresses it.
+
+Two caveats, stated rather than buried. WOA's Southern Ocean coverage is $13.9\,\%$ of
+analysed cells annually and \textbf{$6.6\,\%$ in September}, so the $+607$ leans on a
+sparsely constrained analysis --- though the ``reaches the bottom'' statistic is a model-side
+number needing no observations. The Arctic is $18.7\,\%$; every other band is $50$--$73\,\%$.
+WOA18 is also 1981--2010 against an 1850 control.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{mld_seasonal_bands_11X.png}
+\caption{Seasonal cycle by band. The Southern Ocean panel is the failure: model and
+observations agree from January to March, then the model runs away to $840$\,m in
+September--October while WOA stays near $210$\,m. The tropical panel shows the model
+shallower than WOA in every month. Band means are computed on each grid in its own
+geometry, so no regridding enters.}
+\label{fig:mldseason}
+\end{figure}
+
+\subsection{Where the heat actually lands}\label{sub:r35ohc}
+The mixed layer is not heat uptake, so the next measurement is the heat itself: the drift of
+11X's own temperature between its first and last decade (1350--59 to 1380--89), which is
+unambiguously what \emph{this run} put there rather than what it inherited.
+
+The ocean gains \textbf{$+1.502$\,W\,m$^{-2}$ per unit ocean area} ($\approx +1.07$
+globally), which is the right size to be the TOA imbalance --- so this is the missing heat,
+not a residual. Its depth distribution is the finding:
+
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+band (share of global budget) & 0--100\,m & 100--300\,m & 300--700\,m & 700--2000\,m & $>$2000\,m & total \\
+\midrule
+90--60S  & $+0.001$ & $-0.004$ & $-0.020$ & $-0.063$ & $+0.009$ & $\mathbf{-0.076}$ \\
+60--45S  & $+0.016$ & $+0.022$ & $+0.060$ & $+0.007$ & $+0.038$ & $+0.144$ \\
+45--30S  & $+0.005$ & $-0.018$ & $+0.157$ & $+0.245$ & $+0.072$ & $+0.462$ \\
+30S--30N & $-0.043$ & $-0.217$ & $+0.373$ & $+0.411$ & $+0.082$ & $\mathbf{+0.607}$ \\
+30--45N  & $+0.013$ & $+0.035$ & $+0.084$ & $+0.029$ & $+0.031$ & $+0.192$ \\
+45--60N  & $+0.015$ & $+0.005$ & $+0.014$ & $+0.039$ & $+0.024$ & $+0.098$ \\
+60--90N  & $+0.006$ & $+0.006$ & $+0.010$ & $+0.040$ & $+0.013$ & $+0.075$ \\
+\midrule
+\textbf{GLOBAL} & $\mathbf{+0.013}$ & $\mathbf{-0.170}$ & $\mathbf{+0.678}$ & $\mathbf{+0.710}$ & $+0.270$ & $\mathbf{+1.502}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The top 100\,m gains essentially nothing and the 100--300\,m layer cools.} Almost all
+of it lands between 300 and 2000\,m, peaking at $+0.50$\,K near $580$--$680$\,m with the zero
+crossing at ${\sim}340$\,m. And 90--60S is the one band with a \emph{net heat loss}, cooling
+at every depth from 70\,m to 2400\,m and peaking $-0.26$\,K near 1000\,m --- the runaway
+convection ventilates the abyss with cold surface water. \textbf{The Southern Ocean releases
+heat; it does not bury it.}
+
+\subsection{Heave versus water mass: the discriminator}\label{sub:r35heave}
+A cooling-above / warming-below dipole at fixed depth has two possible causes, and they call
+for opposite fixes: heat crossing density surfaces (diapycnal mixing or a changed source
+water), or the surfaces themselves moving (circulation). Temperature on isopycnals separates
+them.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{ocean_heat_routing_11X.png}
+\caption{(a) The heat is not in the top 100\,m: the global drift is negative from ${\sim}60$
+to ${\sim}340$\,m and peaks $+0.50$\,K at $580$--$680$\,m. (b) The tropics take the largest
+share of the global heat gain and the Southern Ocean is the only band that \emph{loses}
+heat. (c) Heat genuinely crossing density surfaces is a mid- and high-latitude phenomenon
+($30$--$45$N $+0.58$\,K at $500$\,m, $45$--$30$S $+0.57$\,K at $950$\,m); the tropical upper
+thermocline goes \emph{colder} on isopycnals. (d) The tropical deep warming is instead
+heave --- the $\sigma_0=27.0$ surface sinks $+42$\,m. Only isopycnals present in
+$\ge25\,\%$ of a band's nodes are drawn; sparser ones give hundreds of metres of spurious
+heave.}
+\label{fig:heatroute}
+\end{figure}
+
+In the tropics at $\sigma_0=27.0$ (mean depth $575$\,m) the water on that surface warmed by
+\textbf{$+0.047$\,K} while the surface itself sank \textbf{$+42.4$\,m}. The fixed-depth
+warming there is $+0.477$\,K, and $42$\,m against the local ${\sim}0.01$\,K\,m$^{-1}$
+gradient accounts for $0.42$ of it. \textbf{Roughly $90\,\%$ of the tropical deep warming is
+heave.} Above it, the tropical upper thermocline went \emph{colder} on isopycnals,
+$-0.45$ to $-0.56$\,K from $83$ to $350$\,m, with salinity down $-0.153$\,psu over 0--100\,m
+--- colder and fresher at fixed density is a water-mass change running the opposite way from
+heat burial.
+
+Heat that genuinely crossed density surfaces is mid- and high-latitude: $30$--$45$N
+$+0.53$ to $+0.58$\,K at $400$--$500$\,m, $45$--$60$N $+0.35$ to $+0.52$\,K over
+$100$--$700$\,m, $45$--$30$S $+0.57$\,K at $950$\,m, $60$--$90$N $+0.43$ to $+0.72$\,K at
+$280$--$750$\,m. \textbf{Those are the winter outcrop regions, and they are exactly where the
+mixed layer is too deep} --- $30$--$45$N $+48.9$\,m, $45$--$30$S $+48.9$\,m, $45$--$60$N
+$+155.7$\,m at the seasonal maximum.
+
+\subsection{What this rules out, and what it does not}\label{sub:r35ruleout}
+\begin{itemize}\itemsep2pt
+\item \textbf{Ruled out: a tropical interior mixing lever.} The tropical mixed layer is not
+too deep, and $90\,\%$ of the tropical deep warming is heave rather than diapycnal flux.
+A diffusivity knob there has almost nothing to act on.
+\item \textbf{Ruled out: the Southern Ocean as the burial route.} It loses heat at every
+depth. Its convection is a separate and larger pathology, and it works against the interior
+warming rather than causing it.
+\item \textbf{Not established: causality at the outcrops.} The subduction warming sits in
+the same regions as the too-deep winter mixed layer. That is a coincidence of location, not
+a demonstration; only a lever test settles it.
+\item \textbf{Method limits.} $\sigma_0$ is a poor coordinate below ${\sim}2000$\,m, so the
+deepest rows are weak. Heave is a local decomposition and can be driven remotely. And band
+drift cannot separate local vertical transfer from lateral import --- which is precisely why
+the isopycnal split was needed.
+\end{itemize}
+
+\subsection{Method notes from this round}\label{sub:r35method}
+\begin{itemize}\itemsep2pt
+\item \textbf{Read the observational product's own definition out of the file.} WOA18's
+criterion is in the \texttt{summary} global attribute. Two products can share a threshold
+($0.125$\,kg\,m$^{-3}$) and still differ in the reference depth, which is the part nobody
+writes on the axis label.
+\item \textbf{Reproduce the model's own diagnostic before trusting a recompute of it.}
+$r=0.99763$ against \texttt{MLD2} is what licenses the WOA-convention number; without that
+check a difference of the size found here would be indistinguishable from a coding error.
+\item \textbf{Do not mask an objectively analysed field on raw observation counts.} A first
+pass masked WOA \texttt{M\_an} on \texttt{M\_dd}\,$\ge3$ and deleted most of the ocean ---
+\texttt{M\_an} is complete over the ocean (41088 of 64800 cells) while \texttt{M\_dd} is
+sparse. Coverage belongs in a caveat, not in a mask.
+\item \textbf{Compute nonlinear diagnostics on the native mesh, regrid afterwards.} MLD is a
+nonlinear functional of the profile; regridding $T$ and $S$ first and computing after gives
+a different quantity. Band means were additionally computed with no regridding at all as a
+cross-check.
+\item \textbf{Require coverage on isopycnal averages.} Density surfaces that outcrop in a
+handful of nodes produced $-1134$\,m of ``heave'' in $45$--$60$N. A $25\,\%$ band-coverage
+floor removes it.
+\end{itemize}
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -7814,10 +8089,37 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--08--23b)}\label{sec:state}
+\section{State of the campaign (2026--09--09)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--09--09 (rounds 34--35, \S\ref{sec:round34}, \S\ref{sec:round35}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{The ocean heat gain accounts for the imbalance, and it lands below 300\,m.}
+11X gains $+1.502$\,W\,m$^{-2}$ per ocean area over 30 years; the top 100\,m gains
+$+0.013$ and the 100--300\,m layer \emph{loses} $0.170$, while 300--2000\,m gains
+$+1.388$ (\S\ref{sub:r35ohc}).
+\item \textbf{The tropical mixed layer is not too deep.} $43.6$ against WOA18's $51.6$\,m
+annually and $81.0$ against $80.8$ at the seasonal maximum, both on WOA's criterion. The
+model is shallower than observed in all twelve months (\S\ref{sub:r35mld}).
+\item \textbf{The tropical deep warming is heave, not diapycnal flux.} At $\sigma_0=27.0$
+(575\,m) the water warmed $+0.047$\,K while the surface sank $+42.4$\,m, accounting for
+$0.42$ of the $+0.477$\,K seen at fixed depth (\S\ref{sub:r35heave}).
+\item \textbf{Heat crosses density surfaces at the mid- and high-latitude winter
+outcrops}, where the mixed layer is $+48.9$ to $+155.7$\,m too deep: $30$--$45$N
+$+0.58$\,K at 500\,m, $45$--$30$S $+0.57$\,K at 950\,m (\S\ref{sub:r35heave}).
+\item \textbf{The Southern Ocean loses heat rather than burying it.} $-0.076$\,W\,m$^{-2}$
+of the global budget, cooling at every depth from 70 to 2400\,m, with $18.7\,\%$ of
+month-nodes mixing to the sea floor (\S\ref{sub:r35ohc}, \S\ref{sub:r35mld}).
+\item \textbf{The coupled ice skin was diverging because \texttt{oasis\_put} returns
+\texttt{OASIS\_Waitgroup} for every field in a group but the last.} The anchor was 0.0 in
+all $63{,}923$ logged events; the skin reached $-36{,}470$\,K. After four fixes the
+minimum is $224.39$\,K with zero points below 200\,K (\S\ref{sec:round34}).
+\item \textbf{OASIS \texttt{GSMART} on a sign-changing field is unsafe.} $9105$ excursions
+above 1\,kW\,m$^{-2}$ onto real ice in one coupled year, maximum $22{,}550$;
+\texttt{GSSMAR} and \texttt{GLOBAL} deliver none (\S\ref{sub:r34gssmar}).
+\end{itemize}
+
 \textbf{Added 2026--08--23 (round 33, \S\ref{sec:round33}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The Southern Ocean generates the TOA imbalance rather than responding to
@@ -8172,6 +8474,27 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Re-ranked 2026--09--09 after round 35 (\S\ref{sec:round35}).} The ocean side now
+has a located mechanism, and it is not where the plan assumed.
+\begin{enumerate}\itemsep2pt
+\item \textbf{Price a winter mixed-layer lever at the subtropical and subpolar outcrops.}
+That is where heat crosses density surfaces, and where the model over-mixes by $+48.9$
+($30$--$45$N, $45$--$30$S) to $+155.7$\,m ($45$--$60$N) at the seasonal maximum. The
+coincidence of location is established; the causal link is not, so the first arm is a
+measurement, not an adoption.
+\item \textbf{The Southern Ocean convection, still unfixed and now quantified.}
+$18.7\,\%$ of month-nodes reach the sea floor and the band cools at every depth. The
+corrected CORE3 mesh did not fix it. This is a stratification and salinity problem, not a
+diffusivity one, and it is the largest single ocean defect in the model.
+\item \textbf{Re-baseline the energy target} against 11X now that the ocean heat gain
+($+1.502$\,W\,m$^{-2}$ of ocean area) can be set against a TOA number directly.
+\item \textbf{Dropped: tropical interior ocean mixing.} It was the intended next lever and
+round 35 removes it --- see the falsified list.
+\item \textbf{A PHC3 climatology on the corrected CORE3.} Only \texttt{core3\_beta}
+(211567 nodes) exists, which forces every obs comparison onto a regular grid or onto drift
+rather than bias.
+\end{enumerate}
+
 \textbf{Campaign plan, set 2026--08--10 (evening): finish the Southern Ocean and the
 tropics, then one final land round.} The vegetation result (\S\ref{sub:r27forest}) shows
 Siberian tuning is not finished, but it also shows what finishing it requires --- closing
@@ -8343,6 +8666,33 @@ being built on.
 \toprule
 claim & what killed it & where \\
 \midrule
+\dead{The model buries surface heat by mixing it down in the tropics, which is why the
+surface stays cold while TOA stays positive --- so tropical ocean mixing is the lever} &
+The tropical mixed layer is $8.1$\,m too \emph{shallow} annually and level at the
+seasonal maximum ($81.0$ against $80.8$), and $90\,\%$ of the tropical deep warming is
+heave ($\sigma_0=27.0$ sinks $+42.4$\,m while the water on it warms $+0.047$\,K). Heat
+crosses density surfaces at the mid-latitude outcrops instead. The burial itself is real:
+the ocean gains $+1.502$\,W\,m$^{-2}$ and none of it stays in the top 100\,m. &
+\S\ref{sub:r35mld}, \S\ref{sub:r35heave} \\
+\midrule
+
+\dead{The Southern Ocean convection is a route by which surface heat reaches the deep
+ocean} &
+90--60S is the only band with a net heat \emph{loss}, $-0.076$\,W\,m$^{-2}$ of the global
+budget, cooling at every depth from 70 to 2400\,m and peaking $-0.26$\,K near 1000\,m.
+Convection ventilates: it connects the abyss to a cold surface. &
+\S\ref{sub:r35ohc} \\
+\midrule
+
+\dead{\texttt{force\_flux\_consv} in FESOM's coupling receive is amplifying
+\texttt{A\_Q\_ice} into the kilowatt excursions that reach the ice skin solve} &
+A probe comparing the field immediately before and after the two calls found
+\texttt{raw\_max} $=$ \texttt{corrected\_max} in all $20{,}760$ samples of a coupled
+year. The path is inert in this configuration; the excursions came from OASIS's
+\texttt{GSMART} conservation instead. &
+\S\ref{sub:r34gssmar} \\
+\midrule
+
 \dead{The Southern Ocean surface is too cold, so the ice-albedo feedback works in the
 model's favour as it warms toward equilibrium} &
 Measured with SST, which under sea ice is pinned near freezing and cannot show the

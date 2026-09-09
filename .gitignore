@@ -16,3 +16,10 @@ data/vprof/
 # Intermediate DMS grids -- regenerable from ocp_tool/dms_rev3_to_grib.py
 data/dms_conc_modelgrid.nc
 data/vprof/
+
+# Ocean drift / isopycnal caches -- 0.4-0.4 GB each, regenerable from
+# scripts/analysis/ohc_drift_by_depth_band.py and heave_vs_watermass.py
+data/ohc_drift_*.npz
+data/heave_watermass_*.npz
+data/mld_*_vs_woa18.npz
+scripts/analysis/mld_audit_*.npz
