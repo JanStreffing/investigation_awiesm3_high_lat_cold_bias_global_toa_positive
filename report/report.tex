@@ -7840,6 +7840,98 @@ drift cannot separate local vertical transfer from lateral import --- which is p
 the isopycnal split was needed.
 \end{itemize}
 
+\subsection{The free checks, and the two hypotheses they killed}\label{sub:r35checks}
+Before pricing any lever, four checks that cost nothing and could each have invalidated the
+whole framing. Two of them did.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{free_checks_budget_11X.png}
+\caption{(a) The drift is flat for about five years after the branch and then perfectly
+straight: the three decade-to-decade steps are $+1.461$, $+1.433$ and $+1.472$\,W\,m$^{-2}$,
+so this is a standing bias and not an equilibrating transient. Global mean salinity (blue,
+right axis) drifts $-2.5\times10^{-5}$\,psu in 30 years --- salt is conserved, which kills
+the virtual-salt-flux hypothesis. (b) Only the tropics and the subantarctic take heat in
+through the surface; every band that accumulates strongly ($45$--$30$S, $30$--$45$N,
+$45$--$60$N) \emph{loses} heat at the surface and is fed by lateral convergence.}
+\label{fig:freechecks}
+\end{figure}
+
+\textbf{Check 1: the drift does not decelerate.} \texttt{thetaoga} over all forty years
+gives decade-to-decade steps of $+1.461$, $+1.433$, $+1.472$\,W\,m$^{-2}$ --- flat to
+$3\,\%$. There is a short adjustment over roughly the first five years after the branch and
+then a straight ramp. \textbf{So the imbalance is a standing bias, and tuning against it is
+legitimate} rather than tuning against a spin-up that would have equilibrated anyway.
+
+\textbf{Check 2: salt is conserved, and the virtual-salt-flux hypothesis is dead.} This was
+the leading candidate: \texttt{which\_ale = 'linfs'} applies freshwater as a virtual salt
+flux, and the surface salinity trends at the outcrops ($+0.30$\,psu at $45$--$60$N,
+$+0.37$\,psu at $60$--$90$N over 30 years) looked like the numerical signature of it. If
+salt were accumulating at the outcrops it would deepen the winter mixed layer there, and
+every mixing coefficient would be the wrong end of the problem.
+
+It is not. \texttt{soga} drifts $-0.000025$\,psu over the same 30 years, five orders below
+the regional trends; \texttt{balance\_salt\_water} closes the budget. And the sign kills it
+a second time: at $45$--$60$N the virtual salt flux is \emph{freshening}
+($-8.3\times10^{-7}$\,m\,s$^{-1}$\,psu, equivalent to $-2.6$\,psu per decade if it stayed in
+the top 100\,m) while the layer became $0.30$\,psu \emph{saltier}. \textbf{The
+salinification is advective and convective --- a consequence of the too-deep mixing, not its
+cause.}
+
+\textbf{Check 3: the winds did not drift.} Zonal surface stress changes by at most $4.3\,\%$
+in any band carrying meaningful stress ($60$--$45$S $-2.4\,\%$, $45$--$30$S $+4.3\,\%$,
+tropics $+2.2\,\%$; the two larger percentages are on stresses of $0.01$\,N\,m$^{-2}$ and are
+noise). So the $42$\,m of tropical thermocline heave in \S\ref{sub:r35heave} is
+\textbf{adjustment to a standing bias, not a trend inside the run} --- and with check 1
+showing no deceleration, that adjustment is still running after forty years.
+
+\textbf{Check 4: the surface budget closes, and the accumulating bands are fed laterally.}
+FESOM's \texttt{fh} is positive \emph{upward}; its 1380--89 global mean is $-1.535$, against
+a storage rate of $+1.455$\,W\,m$^{-2}$ from \texttt{thetaoga}, so the budget closes to
+$0.08$\,W\,m$^{-2}$ only with that convention. \textcolor{red}{An earlier pass read it as
+positive-downward and produced lateral terms with the wrong sign throughout.} With the sign
+right, \texttt{fh} and the CMOR pair \texttt{opottempdiff}/\texttt{opottemprmadvect} agree
+band by band to about $1$\,W\,m$^{-2}$, which is what licenses the table:
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+band & into ocean at surface & lateral convergence & kept \\
+\midrule
+90--60S  & $-16.88$ & $+15.62$ & $-1.260$ \\
+60--45S  & $\mathbf{+7.42}$  & $-6.09$  & $+1.331$ \\
+45--30S  & $-8.83$  & $+12.36$ & $\mathbf{+3.524}$ \\
+30S--30N & $\mathbf{+13.91}$ & $-12.74$ & $+1.164$ \\
+30--45N  & $-26.98$ & $+29.33$ & $+2.356$ \\
+45--60N  & $-16.58$ & $+18.57$ & $+1.994$ \\
+60--90N  & $-27.54$ & $+29.10$ & $+1.559$ \\
+\midrule
+\textbf{GLOBAL} & $\mathbf{+1.53}$ & --- & $+1.455$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Only the tropics and the subantarctic are net surface heat gainers.} Every band that
+accumulates the most --- $45$--$30$S, $30$--$45$N, $45$--$60$N --- loses heat at the surface
+and imports more than it loses. So the burial is not the mid-latitude surface pushing heat
+down. It is heat entering at the tropical surface, being exported poleward, and being placed
+into the $300$--$2000$\,m layer at the mid-latitudes.
+
+\textbf{One limitation, and a fix for the next run.} \texttt{opottempdiff} is written
+column-integrated, so it cannot separate interior dianeutral mixing from the surface
+boundary flux --- integrated over a column the interior term nearly cancels and what remains
+is essentially the surface flux, which is why it reproduces \texttt{fh}. The 3D field would
+measure the interior diapycnal heat flux directly and settle \S\ref{sub:r35heave} without
+the isopycnal inference. \textbf{Add \texttt{opottempdiff} and \texttt{opottemprmadvect} in
+3D to the FESOM \texttt{io\_list} for the next arm.}
+
+\textbf{What survives.} The subduction account survives but its \emph{source} moves: the
+heat enters in the tropics. That raises the question none of these checks asked --- whether
+$+13.9$\,W\,m$^{-2}$ of net tropical surface uptake is itself too much, which ERA5 and NCEP2
+on disk can answer. And the structural candidate is untouched by any of this: \textbf{FESOM
+2.7 carries no Fox--Kemper mixed-layer-eddy restratification} (nothing in \texttt{src/}
+matches), whose absence is the standard reason coarse models over-deepen winter mixed layers
+at exactly these outcrops.
+
 \subsection{Method notes from this round}\label{sub:r35method}
 \begin{itemize}\itemsep2pt
 \item \textbf{Read the observational product's own definition out of the file.} WOA18's
@@ -7857,6 +7949,10 @@ sparse. Coverage belongs in a caveat, not in a mask.
 nonlinear functional of the profile; regridding $T$ and $S$ first and computing after gives
 a different quantity. Band means were additionally computed with no regridding at all as a
 cross-check.
+\item \textbf{Check a flux variable's sign convention against a budget, not against its
+name.} FESOM's \texttt{fh} is positive upward. Taking it as positive-downward inverted
+every lateral-transport term in \S\ref{sub:r35checks}; the error was caught only by
+requiring the global surface flux to match the \texttt{thetaoga} storage rate.
 \item \textbf{Require coverage on isopycnal averages.} Density surfaces that outcrop in a
 handful of nodes produced $-1134$\,m of ``heave'' in $45$--$60$N. A $25\,\%$ band-coverage
 floor removes it.
@@ -8488,8 +8584,22 @@ corrected CORE3 mesh did not fix it. This is a stratification and salinity probl
 diffusivity one, and it is the largest single ocean defect in the model.
 \item \textbf{Re-baseline the energy target} against 11X now that the ocean heat gain
 ($+1.502$\,W\,m$^{-2}$ of ocean area) can be set against a TOA number directly.
-\item \textbf{Dropped: tropical interior ocean mixing.} It was the intended next lever and
-round 35 removes it --- see the falsified list.
+\item \textbf{Is the tropical surface uptake itself too large?} $+13.9$\,W\,m$^{-2}$ net
+into the ocean at 30S--30N is the source of the heat that the mid-latitudes then bury
+(\S\ref{sub:r35checks}). ERA5 and NCEP2 are on disk and this has never been scored.
+\item \textbf{Implement Fox--Kemper mixed-layer-eddy restratification.} FESOM 2.7 has
+none, and its absence is the standard reason coarse models over-deepen winter mixed layers
+at the outcrops. Implementation work rather than a knob, but it acts exactly where the
+measurement points.
+\item \textbf{Write \texttt{opottempdiff} and \texttt{opottemprmadvect} in 3D} in the
+next arm's \texttt{io\_list}. The column-integrated versions cannot separate interior
+diapycnal mixing from the surface flux.
+\item \textbf{Dropped: tropical interior ocean mixing}, and \textbf{dropped: the
+\texttt{linfs} virtual salt flux} --- both falsified in round 35.
+\item \textbf{Excluded by instruction: sea surface salinity restoring.}
+\texttt{surf\_relax\_s} stays $0$ in every arm, including as a suppressant for the
+Weddell convection. Restoring hides the model's error rather than fixing it and makes a
+coupled PI spin-up non-conservative.
 \item \textbf{A PHC3 climatology on the corrected CORE3.} Only \texttt{core3\_beta}
 (211567 nodes) exists, which forces every obs comparison onto a regular grid or onto drift
 rather than bias.
@@ -8666,6 +8776,24 @@ being built on.
 \toprule
 claim & what killed it & where \\
 \midrule
+\dead{The \texttt{linfs} virtual salt flux is accumulating salt at the mid- and
+high-latitude outcrops, which deepens the winter mixed layer there and is the real cause
+of the heat burial} &
+Global mean salinity drifts $-2.5\times10^{-5}$\,psu in 30 years, so salt is conserved.
+And at $45$--$60$N the virtual salt flux is \emph{freshening} while the layer becomes
+$0.30$\,psu saltier --- the salinification is advective, a consequence of the deep mixing
+rather than its cause. &
+\S\ref{sub:r35checks} \\
+\midrule
+
+\dead{The ocean heat uptake is spin-up from the initial condition and will equilibrate,
+so it should not be tuned against} &
+The three decade-to-decade steps of \texttt{thetaoga} are $+1.461$, $+1.433$ and
+$+1.472$\,W\,m$^{-2}$ --- flat to $3\,\%$ over forty years, with no deceleration after
+the first five. &
+\S\ref{sub:r35checks} \\
+\midrule
+
 \dead{The model buries surface heat by mixing it down in the tropics, which is why the
 surface stays cold while TOA stays positive --- so tropical ocean mixing is the lever} &
 The tropical mixed layer is $8.1$\,m too \emph{shallow} annually and level at the
