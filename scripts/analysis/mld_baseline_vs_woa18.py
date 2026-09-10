@@ -99,6 +99,7 @@ MIN_OBS = 0
 BANDS = [('90-60S  Antarctic/SO', -90, -60), ('60-45S  subantarctic', -60, -45),
          ('45-30S', -45, -30), ('30S-30N  tropics', -30, 30), ('30-45N', 30, 45),
          ('45-60N  subpolar NA', 45, 60), ('60-90N  Arctic/Nordic', 60, 90)]
+BANDS = BANDS[::-1]          # report north to south
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -394,14 +395,16 @@ def main():
     mod_ann_g = to_grid(mod_ann, flat, area, nearest)
     mod_max_g = to_grid(mod_max, flat, area, nearest)
 
-    map_triptych(mod_ann_g, obs_ann, wlat, wlon,
-                 f'Annual-mean mixed layer depth  --  {ARM} vs WOA18, both on the '
-                 f'0.125 kg/m$^3$ / 10 m criterion',
-                 f'mld_annmean_{ARM}_vs_woa18.png')
-    map_triptych(mod_max_g, obs_max, wlat, wlon,
-                 f'Deepest month of the climatology (winter mixing)  --  {ARM} vs WOA18, '
-                 f'same criterion',
-                 f'mld_wintermax_{ARM}_vs_woa18.png')
+    # NOMAP=1 skips the cartopy maps (the system cartopy fails with a newer matplotlib)
+    if os.environ.get('NOMAP', '0') != '1':
+        map_triptych(mod_ann_g, obs_ann, wlat, wlon,
+                     f'Annual-mean mixed layer depth  --  {ARM} vs WOA18, both on the '
+                     f'0.125 kg/m$^3$ / 10 m criterion',
+                     f'mld_annmean_{ARM}_vs_woa18.png')
+        map_triptych(mod_max_g, obs_max, wlat, wlon,
+                     f'Deepest month of the climatology (winter mixing)  --  {ARM} vs WOA18, '
+                     f'same criterion',
+                     f'mld_wintermax_{ARM}_vs_woa18.png')
 
     edges = [(lo, hi) for _, lo, hi in BANDS]
     zm_mod = np.array([zonal_native(mod[m], mlat, area, edges) for m in range(12)])
