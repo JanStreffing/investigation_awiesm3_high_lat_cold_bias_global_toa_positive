@@ -39,11 +39,13 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--09--11).} The coupled baseline is 15F, the new
+\medskip\noindent\textbf{Where we are (2026--09--12).} The coupled baseline is 15F, the new
 ice physics on the fixed single-precision ocean, and the TOA imbalance a run settles at follows
-how much heat it buries at 700--2000\,m ($r=+0.86$ across 17 runs); the goal is now to cut that
-mid-depth uptake, with stronger GM mixing the first lever that reaches it
-(\S\ref{sec:round36}, \S\ref{sec:state}).
+how much heat it buries at 700--2000\,m ($r=+0.72$ across 20 runs). Stronger GM mixing is the
+lever that reaches that mid-depth uptake: 16E (\texttt{K\_GM\_max} 2500, Redi 1000) settles at
+$+0.70$\,W\,m$^{-2}$ in decade 4, the lowest plateau the campaign has kept, but cutting mid-depth
+uptake buys only about a third of the TOA the first fit promised, and the step from GM 1500
+to 2500 costs $1.7$\,Sv of AMOC at 40--60N (\S\ref{sec:round36}, \S\ref{sec:state}).
 
 \medskip\noindent\textbf{What is left.} Three routes are closed by measurement rather than
 opinion: transpiration$\to$cloud (\S\ref{sub:routea}), snow-melt albedo
@@ -7953,7 +7955,7 @@ handful of nodes produced $-1134$\,m of ``heave'' in $45$--$60$N. A $25\,\%$ ban
 floor removes it.
 \end{itemize}
 
-\section{Round 36 (2026--09--10$\to$11): mid-depth heat storage sets the TOA plateau}\label{sec:round36}
+\section{Round 36 (2026--09--10$\to$12): mid-depth heat storage sets the TOA plateau}\label{sec:round36}
 
 Two things changed underneath the coupled work before this round, and both are documented in
 \url{notes/ICE_SKIN_OPTIONS_2026-09-10_14series.md}. The single-precision FESOM lost
@@ -7969,7 +7971,7 @@ coupled baseline.
 
 This round asks what sets the TOA imbalance a coupled run settles at, using every coupled run
 since the 06 series. Annual global net TOA and annual ocean heat content in four depth ranges
-are kept for 73 runs in one store, \texttt{data/coupled\_annual\_diag.nc}.
+are kept for 76 runs in one store, \texttt{data/coupled\_annual\_diag.nc}.
 
 \subsection{Every run ramps, then settles at a configuration-dependent plateau}\label{sub:r36plateau}
 
@@ -7981,8 +7983,10 @@ $+10$\,W\,m$^{-2}$, a different output convention). The first chunk is the lowes
 every run; TOA rises through years 6--15 and is flat afterwards. The level it settles at is the
 configuration's: $+1.4$ to $+1.8$ for the 06/07/08 series, $+0.7$ to $+1.0$ for the
 new-sea-ice chain 09C--11J, $0.9$--$1.0$ for 11W and 11X, $1.2$--$1.4$ for the 1990-forced
-11P/11R/11V. 15F reads $0.25$, $0.76$, $1.30$, $1.13$, $1.45$, the highest 1850 plateau since
-the 07/08 series. The darker ice of 15F absorbs about $0.9$\,W\,m$^{-2}$ more shortwave than 13A.}
+11P/11R/11V. 15F reads $0.25$, $0.76$, $1.30$, $1.13$, $1.45$, $1.17$, the highest 1850 plateau
+since the 07/08 series. The darker ice of 15F absorbs about $0.9$\,W\,m$^{-2}$ more shortwave than
+13A. Of the 40-year 16 arms, 16C and 16D settle at $0.9$--$1.1$ and \textbf{16E at $0.66$--$0.83$},
+the lowest plateau of any run the campaign has kept.}
 \label{fig:r36toa}
 \end{figure}
 
@@ -8013,6 +8017,11 @@ $0.22$--$0.41$ and 11I $0.21$--$0.44$ at mid-depth, both $0.10$--$0.17$ below 20
 $0.15$--$0.23$ below. 15F tracks 11X after its first decade ($0.65$, $0.72$, $0.61$ against
 $0.68$, $0.65$, $0.51$), and its first decade is the highest of the recent runs
 ($0.92$, $0.96$).
+\item \textbf{Stronger GM moves the whole column down from the first chunk.} 16C and 16D decay
+to $0.29$--$0.37$ at mid-depth by years 31--40. \textbf{16E starts at $0.37$ and stays at
+$0.24$--$0.45$}, and below 2000\,m it is nearly shut: $0.04$--$0.09$ throughout, against
+$0.16$--$0.36$ in 15F. The heat 16E does take goes into 100--700\,m instead ($0.57$ in years
+31--35).
 \item 11Y's $0.84$--$1.30$\,W\,m$^{-2}$ below 2000\,m is the heat-leak artefact, not physics.
 \end{itemize}
 
@@ -8021,29 +8030,40 @@ $0.68$, $0.65$, $0.51$), and its first decade is the highest of the recent runs
 \begin{figure}[H]\centering
 \includegraphics[width=\textwidth]{toa_vs_middepth_uptake.png}
 \caption{Net TOA in decade 4 (years 31--40) against the 700--2000\,m heating rate in decade 4
-(a) and averaged over years 1--40 (b), for the 17 runs with 1850 forcing and at least 40 years.
-The 1990-forced runs and the single-precision heat-leak runs are excluded. Dashed: least-squares
-fit.}
+(a) and averaged over years 1--40 (b), for the 20 runs with 1850 forcing and at least 40 years,
+now including the 40-year arms 16C, 16D and 16E. The 1990-forced runs and the single-precision
+heat-leak runs are excluded. Dashed: least-squares fit. 16E has the lowest 40-year mid-depth
+uptake of any run and sits well above the line.}
 \label{fig:r36corr}
 \end{figure}
 
 \begin{center}\small
 \begin{tabular}{lcccc}
 \toprule
-decade-4 TOA against & all 17 & without 080 & without 080, 11M & without 080, 11M, 11L \\
+decade-4 TOA against & all 20 & without 080 & without 080, 11M & without 080, 11M, 11L \\
 \midrule
-700--2000\,m uptake, years 1--40 & $\mathbf{+0.86}$ & $+0.78$ & $+0.73$ ($p=0.002$) & $+0.59$ ($p=0.03$) \\
-700--2000\,m uptake, decade 4 & $+0.76$ & $+0.66$ & $+0.53$ ($p=0.04$) & $+0.48$ ($p=0.08$) \\
-total ocean uptake, decade 4 & $+0.96$ & $+0.94$ & $+0.83$ & $+0.72$ \\
+700--2000\,m uptake, years 1--40 & $\mathbf{+0.72}$ & $+0.59$ ($p=0.008$) & $+0.59$ ($p=0.01$) & $+0.58$ ($p=0.015$) \\
+700--2000\,m uptake, decade 4 & $+0.73$ & $+0.61$ ($p=0.006$) & $+0.49$ ($p=0.04$) & $+0.47$ ($p=0.06$) \\
+total ocean uptake, decade 4 & $+0.96$ & $+0.94$ & $+0.82$ & $+0.72$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \noindent The leave-out columns were computed from the tabulated values to two decimals. 080 is
 the old configuration at the top of both axes, and 11M and 11L are the rejected overlap levers
-at the bottom. Without them the 40-year relation stays significant. \textbf{Cumulative
-mid-depth storage predicts decade-4 TOA better than the decade-4 rate does}: what the run has
-already buried sets how far it still is from balance. The last row is largely the energy
+at the bottom. Without them the 40-year relation stays significant ($+0.58$, $p=0.015$, 17
+runs), and cumulative mid-depth storage still predicts decade-4 TOA better than the decade-4
+rate does ($+0.58$ against $+0.47$): what the run has already buried sets how far it still is
+from balance. With the extremes included the two are equal.
+
+\noindent\textbf{The first version of this table (17 runs, $r=+0.86$) overstated the slope.} Its
+fit, $4.1$\,W\,m$^{-2}$ of decade-4 TOA per W\,m$^{-2}$ of 40-year mid-depth uptake, was set
+by 080 and 11M. It predicted the three GM arms far too low: 16C $+0.59$ (measured $+0.96$), 16D
+$+0.67$ ($+0.91$), \textbf{16E $-0.03$ ($+0.70$, $4.4$ residual sd off)}. The fit without the
+extremes (slope $1.3$) predicts 16E at $+0.59$, close to what it did. So the relation holds, but
+cutting mid-depth uptake buys about a third of what the headline correlation implied: stronger
+GM lowers the mid-depth heating rate by more than it lowers TOA, and part of the heat it keeps
+out of 700--2000\,m is stored higher up instead (\S\ref{sub:r36ohc}). The last row is largely the energy
 budget itself (slope $0.91$) and confirms the bookkeeping rather than adding evidence. From 11X
 to 11G, about $0.1$\,W\,m$^{-2}$ less 40-year mid-depth uptake goes with $0.15$--$0.2$ lower
 decade-4 TOA ($0.95$ against $0.80$).
@@ -8089,6 +8109,91 @@ $0.96$ against 15F's $0.76$ in 1355--59). The first decade is the adjustment in 
 (\S\ref{sub:r36plateau}); the lever's effect on the plateau shows in decades 2--4.
 \end{itemize}
 
+\subsection{The 40-year arms: 16E settles lowest, and pays in NH ice and AMOC}\label{sub:r36forty}
+
+Three arms ran 40 years from the 1350 restart: 16C (\texttt{K\_GM\_max} 1500, Redi 1000), 16D
+(16C plus Fox--Kemper MLE) and 16E (\texttt{K\_GM\_max} 2500, Redi 1000). The 15F control
+stopped at 1380, so it enters with its third decade. Heating rates are over the decade from
+annual heat content, in W\,m$^{-2}$ of Earth.
+
+\begin{center}\small
+\begin{tabular}{llccccc}
+\toprule
+run & decade & net TOA & 100--700\,m & 700--2000\,m & $>2000$\,m & TOA decade 3 \\
+\midrule
+15F & 1370--79 & $1.31$ & $0.36$ & $0.57$ & $0.19$ & $1.31$ \\
+16C & 1380--89 & $0.96$ & $0.37$ & $0.36$ & $0.15$ & $1.11$ \\
+16D & 1380--89 & $0.91$ & $0.34$ & $0.31$ & $0.16$ & $0.99$ \\
+\textbf{16E} & 1380--89 & $\mathbf{0.70}$ & $0.40$ & $\mathbf{0.28}$ & $\mathbf{0.07}$ & $\mathbf{0.77}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Clean pairs from the same restart, mean over the common years with the standard
+error from the scatter of the annual difference:
+
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+pair & net TOA & 700--2000\,m & $>2000$\,m & total ocean \\
+\midrule
+16C $-$ 15F (1350--79) & $-0.21\pm0.06$ & $-0.19\pm0.03$ & $-0.09\pm0.01$ & $-0.24\pm0.04$ \\
+16E $-$ 15F (1350--79) & $\mathbf{-0.45\pm0.08}$ & $-0.37\pm0.03$ & $-0.19\pm0.01$ & $-0.48\pm0.05$ \\
+16E $-$ 16C (1350--89) & $-0.24\pm0.06$ & $-0.15\pm0.02$ & $-0.09\pm0.01$ & $-0.25\pm0.05$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}\itemsep2pt
+\item \textbf{The GM dose response continues to 2500.} 16E takes $0.45$\,W\,m$^{-2}$ off 15F's
+TOA and another $0.24$ off 16C's, and settles at $+0.66$ to $+0.83$ in every 5-year chunk after
+year 10 with no upward drift. It is the lowest plateau of any run the campaign has kept.
+\item \textbf{The pairs measure the slope directly}: TOA falls $1.2$ ($16E-15F$) to $1.6$
+($16E-16C$) times the mid-depth cut and about one-for-one with the total ocean uptake. That is
+the shallow slope of the extremes-free fit in \S\ref{sub:r36corr}, not the steep one of the
+first 17-run fit.
+\item \textbf{The deep sink is nearly shut}: below 2000\,m 16E takes $0.04$--$0.09$ in every
+chunk. What 16E still stores goes to 100--700\,m ($0.40$ in decade 4, the most of the four).
+\item \textbf{MLE on top of GM 1500 adds nothing resolvable at 40 years}: 16D minus 16C is
+$-0.05$ in decade-4 TOA and $-0.05$ at mid-depth.
+\end{itemize}
+
+\noindent The climate, decade means (15F: 1370--79; others 1380--89):
+
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+run & AMOC 26.5N & AMOC 40--60N & NH Mar ext. & NH Sep ext. & SH Sep ext. & global T2m \\
+ & [Sv] & [Sv] & [M\,km$^2$] & [M\,km$^2$] & [M\,km$^2$] & [K] \\
+\midrule
+15F & $12.5$ & $14.9$ & $16.4$ & $7.1$ & $20.9$ & $286.28$ \\
+16C & $14.9$ & $17.3$ & $15.7$ & $7.4$ & $20.6$ & $286.60$ \\
+16D & $15.1$ & $18.1$ & $16.1$ & $7.2$ & $20.3$ & $286.62$ \\
+\textbf{16E} & $13.3$ & $14.5$ & $17.2$ & $6.8$ & $20.2$ & $286.56$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Differences below are 16E minus 15F over 1350--79 unless stated. The standard error of
+a 30-year mean difference is about $\mathrm{sd}\sqrt{2/30}$ from 16E's detrended interannual
+scatter: $0.24$\,M\,km$^2$ for NH March extent, $0.15$ for SH September, $0.04$\,K for global
+T2m, $0.23$\,K for Arctic winter land.
+\begin{itemize}\itemsep2pt
+\item \textbf{NH winter ice is the main cost}: March extent $+1.3$\,M\,km$^2$ against 15F and
+$+0.7$ against 16C over 40 years; in decade 4 16E has $17.2$ against 16C's $15.7$ and the observed
+$15.0$. It shrinks at $-0.8$\,M\,km$^2$ per decade, as 16C does, but from a higher start.
+September extent is $0.2$ lower.
+\item \textbf{SH winter ice shrinks, as expected with less heat stored}: September extent
+$-0.4$ against 15F, and $20.2$ in decade 4. The direction holds; the size is small.
+\item \textbf{The surface warms}: global T2m $+0.21$\,K, 90--60S $+0.39$\,K. Arctic winter land
+$+0.20$\,K is not resolved. Southern Ocean SW cloud radiative effect (45--65S) is
+$0.76$\,W\,m$^{-2}$ more negative.
+\item \textbf{The AMOC does not keep the GM 1500 gain} (\S\ref{sub:r36amoc}): 16E is
+$1.0\pm0.2$\,Sv weaker than 16C at 26.5N and $1.7\pm0.2$ at 40--60N over 40 years. Against 15F
+it is level at 26.5N ($+0.04\pm0.24$) and $0.67\pm0.23$ weaker at 40--60N. 16E's first decade
+already showed a subpolar North Atlantic winter mixed layer $144$\,m shallower than 15F's.
+\end{itemize}
+
 \subsection{The stable-BL lever carries part of the late mid-depth uptake, but not the TOA}\label{sub:r36rsblb}
 
 Within the 11 chain the late mid-depth uptake splits along \texttt{RSBLB = 2} (the stable
@@ -8126,14 +8231,15 @@ correlation is therefore partly carried by other differences between those runs,
 ($+0.6$--$0.7$\,K) and Siberian summer ($+0.77$\,K) gains for no measured TOA benefit.
 \end{itemize}
 
-\subsection{The AMOC: GM does not weaken it}\label{sub:r36amoc}
+\subsection{The AMOC: GM 1500 strengthens it, GM 2500 gives it back}\label{sub:r36amoc}
 
 \begin{figure}[H]\centering
 \includegraphics[width=\textwidth]{amoc_timeseries.png}
 \caption{Atlantic overturning maximum below 500\,m at 26.5N (a) and over 40--60N (b), annual
 means. Solid: Eulerian, from $w$; dashed: residual, $w+w^{*}$ with the GM bolus velocity. Older
-runs in grey. Every run strengthens as it spins up; 15F is the weakest throughout, and 16C
-(GM 1500) sits above it.}
+runs in grey. Every run strengthens as it spins up; 15F is the weakest of the older
+configurations, 16C (GM 1500) and 16D sit above it, and 16E (GM 2500) falls back to 15F's level
+at 26.5N and below it at 40--60N.}
 \label{fig:r36amoc}
 \end{figure}
 
@@ -8148,8 +8254,9 @@ AMOC at 26.5N [Sv] & yrs 1--10 & 11--20 & 21--30 & 31--40 & 41--50 \\
 11G & 13.5 & 14.6 & 15.4 & 16.3 & 17.5 \\
 11I & 13.2 & 14.4 & 16.0 & 16.8 & 17.8 \\
 15F & 11.7 & 11.4 & 12.5 & & \\
-\textbf{16C} & 11.8 & 12.6 & \textbf{13.8} & & \\
-16D & 12.0 & 11.4 & & & \\
+\textbf{16C} & 11.8 & 12.6 & 13.8 & \textbf{14.9} & \\
+16D & 12.0 & 11.4 & 13.5 & 15.1 & \\
+\textbf{16E} & 12.0 & 11.7 & 12.0 & \textbf{13.3} & \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -8159,13 +8266,17 @@ AMOC at 26.5N [Sv] & yrs 1--10 & 11--20 & 21--30 & 31--40 & 41--50 \\
 over the same years; RAPID observes about 17\,Sv today. The likeliest cause is the new ice
 physics (a warmer, less icy North Atlantic and Nordic Seas forming less dense water); this is
 not tested.
-\item \textbf{Stronger GM strengthens the AMOC rather than weakening it}: 16C is $1.3$\,Sv above
-15F at 26.5N in decade 3 and $0.7$\,Sv above at 40--60N. MLE takes that gain back (16D
-$11.4$\,Sv in decade 2).
+\item \textbf{The response depends on the dose.} GM 1500 strengthens it: 16C minus 15F is
+$+0.83\pm0.21$\,Sv at 26.5N and $+0.63\pm0.19$ at 40--60N over 1350--79. GM 2500 gives that back:
+16E minus 16C is $-0.99\pm0.21$ and $-1.68\pm0.21$ over 40 years, and in decade 4 16E reads
+$13.3$ and $14.5$\,Sv against 16C's $14.9$ and $17.3$.
+\item \textbf{MLE does not take the GM 1500 gain back}: 16D dipped in decade 2 ($11.4$\,Sv) and
+caught up by decade 4 ($15.1$); 16D minus 16C is $-0.25\pm0.18$\,Sv over 40 years.
 \item The GM eddy-induced part is negligible at 26.5N (Eulerian and residual differ by at most
 $0.2$\,Sv) and adds 1--2\,Sv at 40--60N in every run.
-\item So the AMOC is no obstacle to a stronger GM dose, and 16C's early NH ice excess
-($+1.4$\,M\,km$^2$ in 1355--59, gone by 1375--79) is not an overturning effect.
+\item \dead{So the AMOC is no obstacle to a stronger GM dose.} 16E killed this: a larger
+dose than 1500 weakens it again (\S\ref{sub:r36forty}). 16C's early NH ice excess
+($+1.4$\,M\,km$^2$ in 1355--59, gone by 1375--79) is still not an overturning effect.
 \end{itemize}
 
 \subsection{Method notes from this round}\label{sub:r36method}
@@ -8186,6 +8297,10 @@ incrementally. It needs \texttt{fesom.mesh.diag.nc}, which FESOM writes only on 
 generated for the corrected CORE3 mesh with FESOM's \texttt{fesom\_meshdiag} utility
 (\url{scripts/model/comp_fesom_meshdiag.sh}, \url{scripts/model/run_fesom_meshdiag.sh}) and
 placed in the mesh directory. The RSBLB pairs: \url{scripts/analysis/rsblb_pair_ohc.py}.
+\item Clean-pair differences (heat by depth, TOA, AMOC) with standard errors:
+\url{scripts/analysis/pair_diff_store.py} (\texttt{PAIRS=15F:16E,16C:16E}). Per-year T2m, TOA,
+SW CRE and ice extent for any arm: \url{scripts/analysis/detection_threshold_4yr.py}
+(\texttt{ARM=16E Y1=1389 SERIES=1}).
 \end{itemize}
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
@@ -8415,7 +8530,7 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--09--11)}\label{sec:state}
+\section{State of the campaign (2026--09--12)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
@@ -8424,18 +8539,25 @@ A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated
 \item \textbf{The single-precision ocean heat leak is fixed.} 15F closes at $-0.069$\,W\,m$^{-2}$
 over 10 years and $-0.035$ over 20, like the double-precision 13A ($-0.073$); the unfixed 15C
 reads $-0.544$ (FESOM PR \#1054).
-\item \textbf{Decade-4 TOA follows mid-depth heat storage.} Across 17 runs with 1850 forcing
-and at least 40 years, decade-4 TOA against the 700--2000\,m heating rate averaged over years
-1--40 gives $r=+0.86$, and $+0.73$ ($p=0.002$) without the extremes 080 and 11M
-(\S\ref{sub:r36corr}).
+\item \textbf{Decade-4 TOA follows mid-depth heat storage, with a shallow slope.} Across 20 runs
+with 1850 forcing and at least 40 years (now including 16C, 16D, 16E), decade-4 TOA against the
+700--2000\,m heating rate averaged over years 1--40 gives $r=+0.72$, and $+0.58$ ($p=0.015$)
+without 080, 11M and 11L. The slope without the extremes is about $1.3$\,W\,m$^{-2}$ per
+W\,m$^{-2}$, not the $4.1$ of the first 17-run fit (\S\ref{sub:r36corr}).
 \item \textbf{Only the new-sea-ice chain lets mid-depth uptake decay}, to $0.21$--$0.44$\,W\,m$^{-2}$
 by years 25--45 (11G, 11I). 11X levels off at $0.50$--$0.62$, and 15F tracks it
 (\S\ref{sub:r36ohc}).
 \item \textbf{Stronger GM is the lever that reaches mid-depth.} 16C (\texttt{K\_GM\_max} 1500)
 cuts first-decade 700--2000\,m uptake by about 30\,\% ($0.67$/$0.62$ against $0.92$/$0.96$).
 Weaker Redi raises it and MLE leaves it unchanged (\S\ref{sub:r36levers}).
-\item \textbf{Stronger GM does not weaken the AMOC.} 16C is $1.3$\,Sv above 15F at 26.5N in
-decade 3; 15F is the weakest AMOC of all runs ($11.4$--$12.5$\,Sv, \S\ref{sub:r36amoc}).
+\item \textbf{16E (\texttt{K\_GM\_max} 2500, Redi 1000) settles at the lowest TOA plateau the
+campaign has kept}: $+0.70$\,W\,m$^{-2}$ in decade 4, $-0.45\pm0.08$ against 15F and
+$-0.24\pm0.06$ against 16C in clean pairs. Its deep uptake below 2000\,m is nearly shut
+($0.04$--$0.09$). The costs: NH March ice $+1.3$\,M\,km$^2$ against 15F ($17.2$ in decade 4, obs
+$15.0$), global T2m $+0.21$\,K (\S\ref{sub:r36forty}).
+\item \textbf{The AMOC response to GM depends on the dose.} GM 1500 strengthens it ($+0.83\pm0.21$\,Sv
+at 26.5N against 15F); GM 2500 is $1.0\pm0.2$\,Sv weaker than GM 1500 at 26.5N and $1.7\pm0.2$ at
+40--60N. MLE changes neither ($-0.25\pm0.18$, \S\ref{sub:r36amoc}).
 \item \textbf{\texttt{RSBLB = 2} adds late mid-depth uptake but not TOA}: $+0.17$/$+0.19$
 \,W\,m$^{-2}$ at 700--2000\,m in decade 4 of both clean pairs, net TOA unchanged within
 $\pm0.07$ (\S\ref{sub:r36rsblb}).
@@ -8826,20 +8948,23 @@ measured rather than inferred, and the two reflection columns are not separable
 to use the relation between mid-depth heat storage and TOA to bring TOA close to zero without
 degrading the rest of the climate; then retune the melt-pond albedo for NH sea ice.}
 \begin{enumerate}\itemsep2pt
-\item \textbf{Bring TOA to about zero by cutting 700--2000\,m uptake.} 16C runs to 1390
-(40 years) to show whether its 30\,\% cut persists and lowers the decade-4 TOA as
-\S\ref{sub:r36corr} predicts. The 15F control stops at 1380 to save CPU hours. Running:
-16E (\texttt{K\_GM\_max} 2500, Redi 1000) and 16D (GM 1500 with MLE), 40 years each. Arms are
-judged first on the mid-depth heating rate, then TOA, then the rest of the climate.
-\item \textbf{Then retune the melt-pond albedo for NH sea ice.} The GM lever costs
-$+1.4$\,M\,km$^2$ of NH March extent ($20.2$ against obs $15.0$). This comes after TOA,
-because the ice responds to the ocean state.
+\item \textbf{Bring TOA to about zero.} The three 40-year GM arms are done
+(\S\ref{sub:r36forty}). 16E is the best, at $+0.70$ in decade 4, and GM alone will not close
+the rest: the pairs give $1.2$--$1.6$\,W\,m$^{-2}$ of TOA per W\,m$^{-2}$ of mid-depth uptake,
+16E's mid-depth rate is already $0.28$, and the step from GM 1500 to 2500 cost $1.7$\,Sv of
+AMOC at 40--60N. Open: which second lever takes the remaining $0.7$.
+\item \textbf{Then retune the melt-pond albedo for NH sea ice.} 16E has NH March extent
+$17.2$\,M\,km$^2$ in decade 4, against 16C's $15.7$ and the observed $15.0$. This comes after
+TOA, because the ice responds to the ocean state.
 \item \textbf{SH sea ice should improve by itself} once the ocean holds less heat and warms the
-ice less from below. Verify this rather than tune it.
+ice less from below. Verify this rather than tune it. 16E: September extent $-0.4$\,M\,km$^2$
+against 15F over 30 years; the direction holds, the size is small.
 \item \dead{Check the AMOC for the GM arms.} Done 2026--09--11: GM strengthens it
-(\S\ref{sub:r36amoc}). Open instead: why 15F has the weakest AMOC of all runs.
-\item \textbf{16C\_1990} (50 years, constant 1990 forcing as 11P/11R/11V) gives the present-day
-pair for period-clean scoring against observations.
+(\S\ref{sub:r36amoc}). Open instead: why 15F has the weakest AMOC of the older
+configurations, and why GM 2500 gives back the gain GM 1500 made.
+\item \textbf{16E\_1990} (constant 1990 forcing as 11P/11R/11V, with 1850 land use; running,
+38 years at 1387) gives the present-day pair for period-clean scoring against observations.
+16C\_1990 failed: LPJ-GUESS refused the 1990 land use on the 1850 state.
 \end{enumerate}
 
 \textbf{Previous ranking, 2026--09--09:}
@@ -9049,6 +9174,24 @@ being built on.
 \begin{tabular}{p{0.30\textwidth} p{0.42\textwidth} l}
 \toprule
 claim & what killed it & where \\
+\midrule
+\dead{Decade-4 TOA falls about $4$\,W\,m$^{-2}$ per W\,m$^{-2}$ of 40-year mid-depth uptake
+removed ($r=+0.86$, 17 runs), so a GM arm that cuts the uptake by $0.2$--$0.3$ reaches TOA
+balance} &
+16E cut the 40-year 700--2000\,m uptake to $0.34$, the lowest of any run; the fit predicted
+decade-4 TOA $-0.03$, and it measured $+0.70$ ($4.4$ residual sd). The slope was set by 080
+and 11M; without them it is about $1.3$. &
+\S\ref{sub:r36corr} \\
+\midrule
+\dead{Stronger GM strengthens the AMOC, so it is no obstacle to a larger GM dose} &
+True for GM 1500 only. GM 2500 (16E) is $1.0\pm0.2$\,Sv weaker than GM 1500 at 26.5N and
+$1.7\pm0.2$ at 40--60N over 40 years, and below 15F at 40--60N. &
+\S\ref{sub:r36amoc} \\
+\midrule
+\dead{Fox--Kemper MLE takes back the AMOC gain of GM 1500} &
+Read off 16D's second decade ($11.4$\,Sv). By decade 4 16D is at $15.1$, and 16D minus 16C is
+$-0.25\pm0.18$\,Sv over 40 years. &
+\S\ref{sub:r36amoc} \\
 \midrule
 \dead{The \texttt{linfs} virtual salt flux is accumulating salt at the mid- and
 high-latitude outcrops, which deepens the winter mixed layer there and is the real cause

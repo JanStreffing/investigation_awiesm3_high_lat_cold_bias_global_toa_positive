@@ -14,7 +14,8 @@ import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ds = xr.open_dataset(os.path.join(REPO, 'data', 'amoc_annual_diag.nc'))
 yrs = ds['year'].values.astype(int)
-MAIN = [('15F', '#2a78d6'), ('16A', '#eb6834'), ('16B', '#1baf7a'), ('16C', '#eda100'), ('16D', '#e87ba4')]
+MAIN = [('15F', '#2a78d6'), ('16A', '#eb6834'), ('16B', '#1baf7a'), ('16C', '#eda100'), ('16D', '#e87ba4'),
+        ('16E', '#6b4fbb')]
 CTX = [('11X', '-'), ('11W', '--'), ('11E', ':'), ('11G', '-.'), ('11I', (0, (1, 3)))]
 runs = list(ds['run'].values.astype(str))
 

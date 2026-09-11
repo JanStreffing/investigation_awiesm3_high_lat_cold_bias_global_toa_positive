@@ -4,7 +4,7 @@ Reads data/coupled_annual_diag.nc (scripts/analysis/coupled_annual_store.py), ru
 counted from each run's first year, so the 1850-dated piControl lines up with the 1350-dated
 tuning arms.  Diverging scale centred on 0: blue = losing energy, red = gaining.
 Rows marked (1990) ran with constant 1990 forcing, (SP leak) on the unfixed single-precision ocean, (piCtl) is the concentration-driven
-piControl; the current arms (15F, 16A-C) are in bold.  Also prints the table.
+piControl; the current arms (15F and the 16 series) are in bold.  Also prints the table.
 
 Usage:  python3 scripts/figures/toa_decadal_heatmap_all_runs.py            (10-yr chunks)
         CHUNK=5 python3 scripts/figures/toa_decadal_heatmap_all_runs.py    (5-yr chunks)
@@ -20,7 +20,7 @@ DS = xr.open_dataset(os.path.join(REPO, 'data', 'coupled_annual_diag.nc'))
 FORCED_1990 = {'11P', '11R', '11V'}
 SP_LEAK = {'11Y', '15A', '15B', '15C'}       # single-precision FESOM before the FCT fix
 EXCLUDE = ('AWIESM7',)   # CMIP7 spin-ups: TOA comes out at ~+10 W/m2, a different output convention
-CURRENT = {'15F', '16A', '16B', '16C', '16D'}
+CURRENT = {'15F', '16A', '16B', '16C', '16D', '16E'}
 
 
 def short(run):
@@ -29,7 +29,7 @@ def short(run):
     lab = m.group(1) if m else s
     if run.startswith('Test_piControl'):
         lab = 'piCtl ' + s.replace('Test_piControl_TCO095_CORE3_', '')[:22]
-    if lab in FORCED_1990:
+    if lab in FORCED_1990 or run.endswith('_1990'):
         lab += ' (1990)'
     if lab in SP_LEAK:
         lab += ' (SP leak)'

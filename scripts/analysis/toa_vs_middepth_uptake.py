@@ -5,7 +5,7 @@ From data/coupled_annual_diag.nc.  Decade 4 = years 31-40 of each run (y0+30 .. 
   mid4     700-2000 m heating rate over decade 4: [H(y0+39) - H(y0+29)] / 10 yr  [W/m2 of Earth]
   mid40    700-2000 m heating rate averaged over years 1-40: [H(y0+39) - H(y0)] / 39 yr
   ohu4     total (all depths) heating rate over decade 4, for the energy-conservation check
-Excludes the 1990-forced runs (11P, 11R, 11V), the SP-leak runs (11Y, 15A-C), the CMIP7
+Excludes the 1990-forced runs (11P, 11R, 11V, *_1990), the SP-leak runs (11Y, 15A-C), the CMIP7
 spin-ups and runs shorter than 40 years.  Prints the table and Pearson r (n, p) for each pair
 and writes report/plots/toa_vs_middepth_uptake.png.
 
@@ -27,7 +27,7 @@ def short(run):
 rows = []
 for run in ds['run'].values.astype(str):
     lab = short(run)
-    if lab in EXCL or run.startswith(('AWIESM7', 'Test_')):
+    if lab in EXCL or run.endswith('_1990') or run.startswith(('AWIESM7', 'Test_')):
         continue
     t = ds['toa'].sel(run=run).values
     H = {v: ds[v].sel(run=run).values for v in ('ohc_0_100', 'ohc_100_700', 'ohc_700_2000', 'ohc_gt2000')}

@@ -2083,6 +2083,7 @@ Each is 15F plus one change, same restart and OpenIFS libraries, scored against 
 | 16D | 27385669 | `use_mle = .true.` (12D settings) + `K_GM_max = 1500`, `Redi_Kmax = 1000`; 40 yr | 79dfae3f (MLE build) | GM for mid-depth plus MLE for the subtropical outcrops |
 | 16E | 27391238 | `K_GM_max = 2500`, `Redi_Kmax = 1000`; 40 yr | 540e1029 (15F's) | GM dose step from 16C |
 | 16C_1990 | 27385382 | 16C under 1990 forcing (recipe of 11R/11V), 50 yr | 540e1029 | **failed** at start: LPJ-GUESS 4.1.11 "Stand-type metadata does not match physical stands before land-cover change" (1990 land use on the 1850 state) |
+| 16E_1990 | 27394298 | 16E under 1990 forcing (`NCMIPFIXYR 1990`, LPJ-GUESS `fixed_CO2`/`fixed_ndep` 1990) with land use kept at 1850; 50 yr | 540e1029 (15F's) | present-day pair of 16E |
 
 ### 10i. Other
 
