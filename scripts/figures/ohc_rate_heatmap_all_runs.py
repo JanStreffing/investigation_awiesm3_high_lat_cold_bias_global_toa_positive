@@ -17,7 +17,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 AE, SY, CH, ND = 5.101e14, 365.25 * 86400, 5, 9
 FORCED_1990 = {'11P', '11R', '11V'}
 SP_LEAK = {'11Y', '15A', '15B', '15C'}
-CURRENT = {'15F', '16A', '16B', '16C'}
+CURRENT = {'15F', '16A', '16B', '16C', '16D'}
 COLS = ['J_0_100', 'J_100_700', 'J_700_2000', 'J_gt2000']
 NAMES = ['0-100 m', '100-700 m', '700-2000 m', '>2000 m']
 

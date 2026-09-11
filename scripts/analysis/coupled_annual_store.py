@@ -125,18 +125,18 @@ else:
 
 
 def write():
-    runs = sorted({k[0] for v in VARS for k in VAL[v]} | set(META))
+    runs = sorted({str(k[0]) for v in VARS for k in VAL[v]} | {str(r) for r in META})
     years = sorted({k[1] for v in VARS for k in VAL[v]})
     ri = {r: i for i, r in enumerate(runs)}; yi = {y: j for j, y in enumerate(years)}
     data = {}
     for v in VARS:
         a = np.full((len(runs), len(years)), np.nan)
         for (r, y), x in VAL[v].items():
-            a[ri[r], yi[y]] = x
+            a[ri[str(r)], yi[int(y)]] = x
         data[v] = (('run', 'year'), a)
     data['root'] = (('run',), np.array([META.get(r, ['?', 0])[0] for r in runs], dtype=object))
     data['nodes'] = (('run',), np.array([META.get(r, ['?', 0])[1] for r in runs], dtype=np.int32))
-    ds = xr.Dataset(data, coords={'run': np.array(runs, dtype=object), 'year': np.array(years, dtype=np.int32)})
+    ds = xr.Dataset(data, coords={'run': np.array(runs, dtype=str), 'year': np.array(years, dtype=np.int32)})
     ds['toa'].attrs = {'units': 'W m-2', 'long_name': 'global net TOA, tsr+ttr, annual mean'}
     for v in OHC:
         ds[v].attrs = {'units': 'J', 'long_name': f'global ocean heat content, {v[4:].replace("_", "-")} m'}

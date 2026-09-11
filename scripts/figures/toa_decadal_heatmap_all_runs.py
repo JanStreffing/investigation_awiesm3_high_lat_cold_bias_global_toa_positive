@@ -20,7 +20,7 @@ DS = xr.open_dataset(os.path.join(REPO, 'data', 'coupled_annual_diag.nc'))
 FORCED_1990 = {'11P', '11R', '11V'}
 SP_LEAK = {'11Y', '15A', '15B', '15C'}       # single-precision FESOM before the FCT fix
 EXCLUDE = ('AWIESM7',)   # CMIP7 spin-ups: TOA comes out at ~+10 W/m2, a different output convention
-CURRENT = {'15F', '16A', '16B', '16C'}
+CURRENT = {'15F', '16A', '16B', '16C', '16D'}
 
 
 def short(run):

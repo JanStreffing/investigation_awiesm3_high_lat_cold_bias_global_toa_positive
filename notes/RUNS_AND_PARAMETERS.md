@@ -1,5 +1,7 @@
 # AWI-ESM3 v3.4 AMIP tuning — runs and kept parameters
 
+> **Coupled 1850 runs (09C to the 16 series) are listed in section 10 at the end.**
+
 Companion to `ATMOSPHERE_TUNING_LOGBOOK.md` (which is chronological). This file is
 the **reference**: what every run was, what it measured, and — most importantly —
 **which parameter settings we keep** and how to set them.
@@ -1947,3 +1949,149 @@ merge added `choose_general.with_co2_oce_coupling` to the **component** yaml
 define it — the header comment at the top of that file records the same gap. Fixed with
 esm_parser's documented `"*"` wildcard, which drops the block when the key is undefined.
 Every setup defines the key, so the wildcard never fires for them.
+
+---
+
+## 10. Coupled 1850 runs, every arm (added 2026-09-10)
+
+Keys: **S** = `report/summary.tex`, **R** = `report/report.tex`, **RP** = this file, **N9** =
+`notes/ICE_SKIN_OPTIONS_2026-09-09.md`, **N10** = `notes/ICE_SKIN_OPTIONS_2026-09-10_14series.md`;
+a `.yaml` citation is that arm's runscript in `esm_tools/runscripts/awiesm3/develop/`.
+Length = years with `sst.fesom.<y>.nc` in `outdata` ("work" = only in the work dir).
+**DP†** = not stated in the header, but FESOM at 4d7da170 or earlier hard-codes WP=real64
+(`13B_dp.yaml:30-32`).
+
+### 10a. The coupled baseline: 15F
+
+15F = 15C on the fixed single-precision FESOM (FCT low-order tendency in flux form, FESOM
+PR #1054). Libraries: FESOM `bin/libfesom.so.sp_fctflux_hp_20260910` (md5 540e1029),
+OpenIFS `sp_20260910_qout` (libarpifs 3726203165e7, libsurf 7be7373571da). Extended to
+1389 (job 27381276, leg 2 running since 2026-09-10 19:58).
+
+| component | setting on top of the 11X chain |
+|---|---|
+| OpenIFS | `NAMECECFG ECE_CPL_FESOM_ICE_QOUT = .true.` (A_Q_ice = heat leaving the IFS ice column) |
+| FESOM ice | `snowmelt_tgate = .false.`, `alb_tramp = 1.0`, ECHAM6 albedos `albsn .75 albsnm .65 albi .66 albim .64` |
+| FESOM ocean | as 11X: momix (south of 50S, kv .01), KPP av0/kv0 .003, bckg 5e-5/5e-6, GM 1000 with Redi tied to it (`Redi_Kmax = 0`) |
+
+First decade, 1350-1359 (4-yr-mean thresholds from 15F's own detrended scatter in brackets):
+
+| metric | 15F | 13A (DP, old ice) | obs |
+|---|---:|---:|---:|
+| ocean heat closure [W/m2] | −0.069 | −0.073 | 0 |
+| SO convection >1000 m, yr 1-10 [M km2] | 2.39 | 2.71 | — |
+| T2m trend [K/decade] | −0.78 | −1.23 | — |
+| net TOA trend [W/m2/decade] | +1.2 | +0.9 | — |
+| NH March ice extent trend [M km2/decade] | −0.06 | +4.0 | — |
+| T2m DJF 60-90N, 1355-59 [K vs ERA5] (±1.70) | −4.49 | −5.99 | 0 |
+| NH March extent, 1355-59 [M km2] (±0.64) | 18.8 | 21.8 | 15.0 |
+| SH Sept extent, 1355-59 [M km2] (±0.81) | 24.0 | 25.4 | 18.5 |
+| net TOA, 1355-59 [W/m2] (±0.41) | +0.76 | +0.33 | — |
+| heat 1350→59, 700-2000 m [W/m2 Earth] | +0.94 | +0.92 | — |
+| heat 1350→59, 0-100 m [W/m2 Earth] | −0.66 | −0.84 | — |
+
+**Why the 16 series targets mid-depth uptake:** the surface cools while 700-2000 m gains
+(45-30S +0.54, 30-60N +0.21), so OLR falls and TOA rises. Between 1353-57 and 1355-59 OLR
+drops 0.35 W/m2 while absorbed SW moves −0.09. Winter mixed layer vs WOA18 (seasonal max,
+1355-59): 30-45N +50 m, 45-30S +35 m too deep, but 45-60N −46 m and 60-45S −40 m too
+shallow, 90-60S +594 m (16 % of month-nodes to the sea floor).
+
+### 10b. 09C / 11E-11J (early chain, core3_beta mesh)
+
+| arm | parent | change | length | FESOM | status |
+|---|---|---|---|---|---|
+| 09C | 06T | 06T + ENTSTPC3=1 on the new sea-ice thermodynamics (implicit ice skin + OIFS slab tile) | 1350-1379 | DP† | superseded by 10A/10B; best of round 09, TOA ≈+1.06 (R:4495) |
+| 11E | 11D | ECE_SNOW_SCF_SWEMIN 30→15 + K1 | 1350-1399 | DP† | campaign reference (S:194); net TOA +0.765 (R:8629-8630) |
+| 11F | 11E | ECE_DMS_CCN_SENS = 166 | 1350-1369 | DP† | cancelled at 20 of 50 yr (R:5991-5992); coupled amplification 1.40× |
+| 11G | 11E | RCL_INPPMIN 70000→50000 (S4) | 1350-1399 | DP† | adopted, later retired: global T2m −0.320 K (S:195, S:312-345) |
+| 11H | 11G | Raupach z0 | not run | – | superseded by 11J |
+| 11H0 (variants) | 11G | Raupach compiled in, switches off | none | DP† | smoke test; deadlocked, no output (S:676) |
+| 11H1 | 11H0 | Raupach switches on | 1350 (partial) | DP† | smoke test |
+| 11I | 11G | `lpjg_slt_suffix = "_v2"` (repaired soil map) | 1350-1399 | DP† | adopted as a trade: Siberian DJF soil +0.308 K (S:196-197, R:8878-8883) |
+| 11J | 11I | `ifraupachz0 1`, `ECE_CPL_LPJG_Z0 = .true.` | 1350-1389 | DP† | rejected, null (RP:1882-1896, S:198) |
+
+### 10c. 11K-11Y
+
+| arm | parent | change | length | FESOM | status |
+|---|---|---|---|---|---|
+| 11K | 11G | 1-day connectivity check | 1 day | DP† | smoke test |
+| 11L | 11G | RCL_OVERLAPLIQICE = 0.35 | 1350-1389 | DP† | rejected: Siberia JJA −1.000 K (RP:1679-1700, S:199-200) |
+| 11M | 11G | RCL_OVERLAPLIQICE = 0.10 | 1350-1389 | DP† | rejected: net TOA −0.698 (S:199-200) |
+| 11N | 11G | RSNOWLIN2 = 0.04 (LX4) | 1350-1389 | DP† | superseded by 11Q; 60-90N DJF −6.35→−4.49 (S:201-202) |
+| 11P | 11N | NCMIPFIXYR = 1990 (**1990 forcing**) | 1350-1389 | DP† | pair partner only (S:210) |
+| 11Q | 11N | RSBLB = 2.0 | 1350-1389 | DP† | adopted, best of the pre-11X stack (S:203) |
+| 11R | 11P | RSBLB = 2.0 (**1990**) | 1350-1389 | DP† | CMPI 0.7577 (S:203-204) |
+| 11S / 11T / 11U | 11I / 11T | 1-day smoke, LPJG repair-first builds | ≤1 day | DP† | smoke tests (11U header is a copy of 11T's) |
+| 11V | 11R | S4 removed, RCL_INPPMIN back to 70000 (**1990**) | 1350-1389 | DP† | S4 removal confirmed: Siberia JJA +0.590 K (S:341-345) |
+| 11W | 11Q | S4 removed | 1350-1399 | DP† | S4 retired (S:312); last arm on core3_beta |
+| 11Wab | 11W | new binaries on the old mesh, 1 month | 1350-01 | DP† | smoke test (commit 3cfa95a) |
+| 11X | 11W | corrected CORE3 mesh (220509 nodes), core3_linfs restart | 1350-1389 | DP (N9:118) | baseline for 11X-13D, then superseded: 27 % too icy, warm for the wrong reason (N9:241-244) |
+| 11Xt512 | 11X | nproc 512, matched rmp weights, 1 yr | 1350 | DP | smoke test, verified the OASIS weight fix (3cfa95a) |
+| 11Xdbg (+ sub-attempts) | 11X | ice_skin_debug, daily a2ihf/istref | 1350 | ? | diagnostic: exposed the ice-skin divergence (eb88dd1) |
+| 11Xg | 11Xdbg | A_Q_ice CONSERV GLOBAL instead of GSMART | 1350 | ? | diagnostic (`global_vs_gsmart_eval.py`) |
+| 11Xgss / 11Xv35 / 11Xbc / 11Xqgl / 11Xqgs | 11Xdbg | LPJG softinit binary, setup v3.5, variants | 1350 or none | ? | ? |
+| 11Y | 11X | FESOM main + ice-skin fixes (0b07f9a3) | 1350-1389 | **SP, unfixed** | tainted: NH March ice 26.3, ocean heat closure −0.517 (N9:123, N10:188-189) |
+
+### 10d. 12: Fox-Kemper MLE smoke tests (1 yr each, library dfd1b306, old ice physics)
+
+| arm | parent | change | length | FESOM | status |
+|---|---|---|---|---|---|
+| 12A | 11X state | `use_mle`, mle_hmax 500, ustar_max .05, tau 1 d, Ce .06 | 1350 | ? (pre-#1054) | MLE shoals the mixed layer in every band (annual mean −1.9 to −17.5 m; −62 m 45-60N Mar, −48 m 30-45S Oct); added bolus Psi at the ML base 0.00-0.03 m2/s vs 0.9-2.0 predicted, not understood. Two earlier attempts blew up (steps 112, 151) before the bolus limiter |
+| 12B | 12A | `use_mle = .false.` | 1350 | ? | control |
+| 12C | 12A | mle_hmax = 1e5 (cap off) | 1350 | ? | smoke test |
+| 12D | 12C | Lf as a field (mle_Lf_min 1000, decay 0) | 1350 | ? | smoke test; settings reused by 16B |
+
+### 10e. 13: ice-skin ladder, DP
+
+| arm | parent | change | length | FESOM | status |
+|---|---|---|---|---|---|
+| 13A | 11Y | 0b07f9a3 in DP | 1350-1359 | DP | reproduces 11Y's ice runaway, so it is not precision (N9:13-20); DP control for 15F, closure −0.073 |
+| 13B | 11X | FESOM main 327e467d, no skin fixes | 1350 (work) | DP | crashed at ~48 d (N9:119) |
+| 13C | 13B | + OASIS_Waitgroup fix (41400d5d) | 1350-1359 | DP | rejected: 204 nodes reach 31.7 K (N9:190-195) |
+| 13D | 13A | FESOM's own skin solve (ac7a0d5c) | 1350-1359 | DP | superseded: tref pinned at 271.35 K, never tested solve vs take (N9:164-175) |
+
+### 10f. 14: snow-melt gate and albedo, SP (unfixed)
+
+| arm | parent | change | length | FESOM | status |
+|---|---|---|---|---|---|
+| 14A | 11Y | `snowmelt_tgate = .false.` | 1350-1352 (work) | SP | rejected alone: melts snow in polar night (N10:67-76, 94) |
+| 14B | 14A | + `alb_tramp = 1.0` | 1350-1352 (work) | SP | rejected (N10:94) |
+| 14C | 14B | + ECHAM6 albedos | 1350-1351 (work) | SP | rejected alone (N10:94) |
+| 14D / 14E | 13A-like | gate on + ramp / + ECHAM6 albedos | not run | SP | written, never submitted (N10:89-90) |
+
+### 10g. 15: ECHAM-contract ice heat flux
+
+| arm | parent | change | length | FESOM | status |
+|---|---|---|---|---|---|
+| 15A | 11Y | `ECE_CPL_FESOM_ICE_QOUT = .true.` + `snowmelt_tgate = .false.` | 1350-1359 | SP, unfixed | superseded: fixes the flux contract, not the bright-snow loop (N10:120-130) |
+| 15B | 15A | + `alb_tramp = 1.0` | 1350-1357 (work) | SP, unfixed | the ramp alone does nothing (N10:153) |
+| 15C | 15B | + ECHAM6 albedos | 1350-1357 | SP, unfixed | best NH arm but closure −0.544 (N10:154-160, 416); cancelled after 1357 |
+| 15D | 15C | DP build | not run | DP | written, not submitted |
+| **15F** | 15C | fixed SP FESOM (#1054) | 1350-1359, extending to 1389 | SP, fixed | **adopted as the coupled baseline**, see 10a |
+
+### 10h. 16: the 700-2000 m heat burial (10 yr from 1350, submitted 2026-09-10)
+
+Each is 15F plus one change, same restart and OpenIFS libraries, scored against 15F
+1350-1359 on heat by depth band (primary), T2m drift and net TOA.
+16C was extended to 40 years (to 1390) on 2026-09-11; 15F stops at 1380.
+
+| arm | job | change vs 15F | FESOM library | mechanism tested |
+|---|---|---|---|---|
+| 16A | 27381658 | `Redi_Kmax = 300` (K_GM_max stays 1000) | 540e1029 (15F's) | weaker along-isopycnal diffusion from the outcrops to mid-depth |
+| 16B | 27381821 | `use_mle = .true.`, 12D settings | 79dfae3f (`sp_mle_7aa5be48`, 15F code + MLE) | restratify the too-deep subtropical outcrops; watch 45-60N and 60-45S, already too shallow |
+| 16C | 27381692 | `K_GM_max = 1500`, `Redi_Kmax = 1000` | 540e1029 (15F's) | flatter isopycnals, less subduction; Redi held at 15F's effective value |
+| 16D | 27385669 | `use_mle = .true.` (12D settings) + `K_GM_max = 1500`, `Redi_Kmax = 1000`; 40 yr | 79dfae3f (MLE build) | GM for mid-depth plus MLE for the subtropical outcrops |
+| 16E | 27391238 | `K_GM_max = 2500`, `Redi_Kmax = 1000`; 40 yr | 540e1029 (15F's) | GM dose step from 16C |
+| 16C_1990 | 27385382 | 16C under 1990 forcing (recipe of 11R/11V), 50 yr | 540e1029 | **failed** at start: LPJ-GUESS 4.1.11 "Stand-type metadata does not match physical stands before land-cover change" (1990 land use on the 1850 state) |
+
+### 10i. Other
+
+| arm | change | status |
+|---|---|---|
+| HP_* | 5-day heat-budget probes, 2026-09-10 | diagnostic: located and verified the SP leak fix (N10:225-397) |
+| R1-R4, A_ab_ctl / A_ab_fix | LPJG restart stress tests | infrastructure, not tuning (RP:1827-1832) |
+
+**Caveats.** 11Y, 14A-C and 15A-C ran the unfixed SP FESOM (−0.5 W/m2 ocean heat, no SO
+convection), so their SH, deep-ocean and TOA-drift numbers are tainted. DP† is inferred.
+09C-11W are on core3_beta and 11X onward on corrected CORE3, so the two are not directly
+comparable. 11P, 11R and 11V use 1990 forcing.
