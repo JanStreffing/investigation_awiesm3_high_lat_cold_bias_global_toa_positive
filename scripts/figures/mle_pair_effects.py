@@ -6,7 +6,8 @@
 (c) winter mixed-layer depth bias against WOA18 (deepest month, WOA criterion), control -> arm
     per band.  Values from scripts/analysis/mld_baseline_vs_woa18.py: 15F/16B 1355-59,
     16C/16D 1365-69 (tables of 2026-09-10/11).
-Usage:  python3 scripts/figures/mle_pair_effects.py
+Usage:  python3 scripts/figures/mle_pair_effects.py            (both pairs)
+        PAIRS=15F:16B python3 scripts/figures/mle_pair_effects.py   (one pair)
 """
 import os
 import numpy as np, xarray as xr
@@ -15,8 +16,10 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 AE, SY = 5.101e14, 365.25 * 86400
 C = xr.open_dataset(os.path.join(REPO, 'data', 'coupled_annual_diag.nc'))
 A = xr.open_dataset(os.path.join(REPO, 'data', 'amoc_annual_diag.nc'))
-PAIRS = [('15F', '16B', '15F → 16B (MLE on 15F, 10 yr)', '#2a78d6'),
-         ('16C', '16D', '16C → 16D (MLE on GM 1500, 25 yr)', '#eb6834')]
+ALL = {'15F:16B': ('15F', '16B', '15F → 16B (use_mle only, 10 yr)', '#2a78d6'),
+       '16C:16D': ('16C', '16D', '16C → 16D (use_mle only, 25 yr)', '#eb6834')}
+SEL = os.environ.get('PAIRS', '15F:16B,16C:16D').split(',')
+PAIRS = [ALL[k] for k in SEL]
 DEP = [('0-100 m', 'ohc_0_100'), ('100-700 m', 'ohc_100_700'), ('700-2000 m', 'ohc_700_2000'), ('>2000 m', 'ohc_gt2000')]
 
 def diffs(ctl, arm):
@@ -52,7 +55,7 @@ D = [diffs(c, a) for c, a, _, _ in PAIRS]
 def forest(ax, labels, unit, title):
     ax.set_facecolor(SURF); yv = np.arange(len(labels))[::-1]
     for k, ((c, a, lab, col), d) in enumerate(zip(PAIRS, D)):
-        off = 0.14 if k == 0 else -0.14
+        off = (0.14 if k == 0 else -0.14) if len(PAIRS) > 1 else 0.0
         m = [d[l][0] for l in labels]; e = [d[l][1] for l in labels]
         ax.errorbar(m, yv + off, xerr=e, fmt='o', ms=6, color=col, ecolor=col, elinewidth=1.6, capsize=3,
                     mec=SURF, mew=1, label=lab, zorder=3)
@@ -71,7 +74,7 @@ forest(axb, ['AMOC 26.5N', 'AMOC 40-60N'], 'MLE arm minus control  [Sv]', '(b) A
 
 axc.set_facecolor(SURF); yb = np.arange(len(MLD['bands']))[::-1]
 for k, (c, a, lab, col) in enumerate(PAIRS):
-    off = 0.16 if k == 0 else -0.16
+    off = (0.16 if k == 0 else -0.16) if len(PAIRS) > 1 else 0.0
     for i, b in enumerate(MLD['bands']):
         x0, x1 = MLD[c][i], MLD[a][i]
         axc.annotate('', xy=(x1, yb[i] + off), xytext=(x0, yb[i] + off),
@@ -86,8 +89,8 @@ for s in ('top', 'right', 'left'): axc.spines[s].set_visible(False)
 axc.spines['bottom'].set_color(GRID); axc.tick_params(colors=TXT2, labelsize=8.5, length=0)
 axc.set_xlabel('winter mixed-layer depth bias vs WOA18 [m]\n(open dot = control, arrow head = MLE arm; symlog)', color=TXT2, fontsize=9)
 axc.set_title('(c) Winter mixed layer, control → MLE', loc='left', fontsize=10, color=TXT1)
-fig.suptitle('Fox–Kemper MLE from clean pairs: arm minus control (error bars 95 %)', x=0.01, ha='left', fontsize=12, color=TXT1)
-out = os.path.join(REPO, 'report', 'plots', 'mle_pair_effects.png'); fig.savefig(out, facecolor=SURF, bbox_inches='tight')
+fig.suptitle('Fox–Kemper MLE: ' + ('clean pairs' if len(PAIRS) > 1 else PAIRS[0][2]) + ', arm minus control (error bars 95 %)', x=0.01, ha='left', fontsize=12, color=TXT1)
+out = os.path.join(REPO, 'report', 'plots', 'mle_pair_effects.png' if len(PAIRS) > 1 else f'mle_pair_effects_{PAIRS[0][0]}_{PAIRS[0][1]}.png'); fig.savefig(out, facecolor=SURF, bbox_inches='tight')
 print('saved', out)
 for (c, a, lab, _), d in zip(PAIRS, D):
     print(lab); [print(f'  {k:<13} {v[0]:+.3f} +- {v[1]:.3f}') for k, v in d.items()]
