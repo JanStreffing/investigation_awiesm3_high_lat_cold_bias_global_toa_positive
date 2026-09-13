@@ -1,0 +1,223 @@
+# AWI-ESM3 CMIP7 piControl - TCO95-CORE3 - Round 11F
+# =============================================================================
+# 11F = 11E plus marine biogenic CCN from DMS.  A clean one-variable pair with 11E:
+# same branch, same library, same initial states; only NAMECECFG and the ICMCL file
+# differ.
+#
+# THE LEVER.  radpar.F90, immediately after SURFRAD fills PCCNO from Genthon (1992)
+# sea salt:  Sc Saltzman et al. (1993); k Nightingale et al. (2000); F = k*Cw;
+# PCCNO += ECE_DMS_CCN_SENS * F_S.  PCCNO then flows through the Martin et al. (1994)
+# quadratic to droplet number and effective radius -- the Twomey effect.  Ocean only.
+#
+# WHAT AMIP ALREADY SETTLED, and why this is still worth 50 coupled years.
+# The AMIP bracket (T3 S=0, U2 43, U3 90, U1 166, one year each) found:
+#   * the lever is REAL at S=166: SO SW CRE -2.25 W/m2 annual, above the +-1.97
+#     one-year detection floor, and -7.25 in DJF, which is 67 % of the +10.86 DJF
+#     Southern Ocean deficit.  The selectivity is the bloom's, not a tuned parameter.
+#   * the tropical cost is monotonic and clean, 0.0124 W/m2 per unit S, so the
+#     +-0.5 W/m2 tropical guardrail binds at S ~ 40 -- just BELOW Woodhouse et al.
+#     (2010)'s published floor of 43.  No value in the published range passes the
+#     guardrail on AMIP evidence.
+#
+# So this run is NOT a tuning candidate.  It is run at S=166, the only setting AMIP
+# could resolve, to answer the question AMIP structurally cannot: with SST and sea
+# ice free to respond, does brightening Southern Ocean cloud in the season the bloom
+# occurs change the coupled Southern Ocean state -- SST, ice edge, and the TOA
+# imbalance -- by more than the tropical cost?  Fixed SSTs suppress exactly the
+# feedback that makes a Southern Ocean cloud change matter.
+#
+# 50 years also measures the tropical response with feedbacks and proper statistics,
+# instead of from a single AMIP year.
+#
+# READ THE PAIR, NOT THE RUN.  Everything is scored as 11F minus 11E.
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    install_esm_tools_branch: 'feat/awiesm3-v3.4-co2'
+    setup_name: "awiesm3"
+    version: "develop"
+    account: "ab0246"
+    compute_time: "08:00:00"
+    initial_date: "1350-01-01"
+    final_date: "1400-01-01"  # 50 years -- matches 11A/11B
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-v3.4/"
+    nday: 0
+    nmonth: 0
+    nyear: 10
+    use_venv: False
+    # Raise per-process FD limit before model launch to avoid LPJ restart
+    # failures when opening many state shards plus forcing NetCDF files.
+    pre_run_commands: "ulimit -n 262144 || ulimit -n 65535 || true"
+
+computer:
+    taskset: true
+
+awiesm3:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+fesom:
+    resolution: "CORE3"
+    time_step: 1200
+    nproc: 1792
+    omp_num_threads: 1
+    lresume: true
+    restart_rate: 10
+    restart_unit: 'y'
+    restart_first: 10
+    tar_binary_restarts: false
+    with_cavity: true
+    vis_sync: false
+    # 06T mixed-layer stack (identical to 09C/11A)
+    add_namelist_changes:
+        namelist.ice:
+            meltpond:
+                pndaspect: 1.3
+                rfracmax: 0.75
+                albpnd: 0.28
+        namelist.tra:
+            tracer_phys:
+                use_momix: true
+                momix_kv: 0.01
+        namelist.cvmix:
+            param_kpp:
+                kpp_av0: 0.003
+                kpp_kv0: 0.003
+                kpp_avbckg: 5.0e-05
+                kpp_kvbckg: 5.0e-06
+        namelist.oce:
+            oce_dyn:
+                spp: false
+    ini_parent_exp_id: "CORE3_restart"
+    ini_parent_date: "2000-01-01"
+    ini_restart_dir: "/work/ab0246/a270092/input/fesom2/restart/CORE3"
+    choose_general.run_number:
+        1:
+            restart_in_sources:
+                par_oce_restart: /${ini_restart_dir}/fesom.2000.oce.restart/*.nc
+                par_ice_restart: /${ini_restart_dir}/fesom.2000.ice.restart/*.nc
+    further_reading:
+        - fesom.tripyview.yaml
+    cmip7_cmor_output: True
+
+lpj_guess:
+    resolution: "TCO95"
+    mip: cmip7
+    scenario: piControl
+    daily_output: true
+    nproc: 64
+    omp_num_threads: 4
+    lresume: true
+    ini_parent_exp_id: "LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPandCERES_daily_variability"
+    ini_parent_date: "3900-12-31"
+    ini_restart_dir: "/work/bb1469/a270270/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPandCERES_daily_variability/run_19000101-38991231/work/"
+    choose_general.run_number:
+        1:
+            restart_in_sources:
+                state: /${ini_restart_dir}/lpjg_state_3901/*
+            restart_in_in_work:
+                state: lpjg_state_${initial_date!syear}/*
+    # Soil-temperature sensitivity: pin the modified template explicitly so
+    # every LPJ-GUESS rank uses useifssoiltemp=1, independent of which
+    # ESM-Tools checkout provides esm_runscripts on PATH.
+    add_config_sources:
+        "guess_ins_[[proc_list-->PROC_NUM]]": /home/a/a270092/esm_tools/namelists/lpj_guess/guess.ins.useifssoiltemp1.j2
+    fixed_CO2: 1850
+    fixed_ndep: 1850
+    fixed_LU: 1850
+    file_luh3_states: /work/ab0246/a270092/input/lpj-guess/land_use/TCO95/multiple-states_input4MIPs_landState_CMIP_UofMD-landState-3-1-2_gn_0850-2024_TCO95.nc
+    file_luh3_management: /work/ab0246/a270092/input/lpj-guess/land_use/TCO95/multiple-management_input4MIPs_landState_CMIP_UofMD-landState-3-1-2_gn_0850-2024_TCO95.nc
+    file_luh3_transitions: /work/ab0246/a270092/input/lpj-guess/land_use/TCO95/multiple-transitions_input4MIPs_landState_CMIP_UofMD-landState-3-1-2_gn_0850-2023_TCO95.nc
+
+oifs:
+    # DMS-Rev3 (Hulswar et al. 2022) ingested through ocp-tool as the eighth ICMCL
+    # field; 96 messages instead of the shipped 84.  Verified in T3 (12 dates, 8
+    # fields, a full clean year).  Identical file to the AMIP U-series.
+    icmcl_dir: "/work/ab0246/a270092/input/oifs-48r1/climate.v020/95_4_dms_rev3/"
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    mip: cmip7
+    scenario: piControl
+    lresume: false
+    cmip7_cmor_output: True
+    add_namelist_changes:
+        fort.4:
+            NAMECECFG:
+                # Read the eighth ICMCL field (emdms, paramId 210043) and let it feed
+                # PCCNO.  Both default OFF, so 11E's binaries and 11F's are the same
+                # library; the only difference is this namelist and the ICMCL file.
+                ECE_CLIMR_DMS: .true.
+                ECE_DMS_CCN_SENS: 166.0
+            NAMCLDP:
+                RVICE: 0.16
+                RCL_INPSEA: 0.2
+                RCL_INPPMIN: 70000.0
+            NAMGWWMS:
+                GGAUSSB: -0.5
+            NAEPHY:
+                LRDALB: False        # Coupled albedo on (LPJG-driven)
+            NAMCUMF:
+                ENTSTPC3: 1          # retained from 09C
+            NAMSURFTUNE:
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                ECE_SNOW_SCF: 3
+                ECE_SNOW_SCF_RHOREF: 200.0
+                ECE_SNOW_SCF_DCL: 0.014
+                ECE_SNOW_SCF_DCH: 0.026
+                ECE_SNOW_SCF_MD: 4.70
+                ECE_SNOW_SCF_BL: 1.46
+                ECE_SNOW_SCF_BH: 0.40
+                ECE_SNOW_SCF_DCMAX: 0.30
+                ECE_SNOW_SCF_SCALE: 1.0
+                # 11E change 1: the autumn snow-mass floor, 30 -> 15.
+                ECE_SNOW_SCF_SWEMIN: 15.0
+                # --- K1: snow-free land albedo, vegetation types 1 / 10 / 11 only.
+                # Tundra is DELIBERATELY EXCLUDED so K1 stays orthogonal to the boreal
+                # levers and adds no absorbed shortwave to the Arctic: 60-90N net TOA
+                # stays at -97.463 against a control -97.737 and CERES -97.98.  Do not
+                # add tundra entries -- they compete for the same Arctic energy budget.
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+    add_input_files:
+        dust_clim: dust_clim
+    add_input_sources:
+        dust_clim: '/work/ab0246/a270092/input/oifs-48r1/cmip7-data/dust/onlinedust_v4_rmp.nc'
+    add_input_in_work:
+        dust_clim: 'composition/onlinedust_v4_rmp.nc'
+
+oasis3mct:
+    use_lucia: false
+    lresume: true
+    time_step: 3600       # 1 hour coupling (06T/06V stack)
+
+xios:
+    with_model:
+        - oifs
+        - fesom
+    nproc: 16
+    omp_num_threads: 128
+    compression_level: 3

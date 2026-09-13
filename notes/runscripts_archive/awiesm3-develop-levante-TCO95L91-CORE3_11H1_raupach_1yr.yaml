@@ -1,0 +1,320 @@
+# AWI-ESM3 CMIP7 piControl - TCO95-CORE3 - 11H1: IS THE LEVER ENGAGED?
+# =============================================================================
+# ONE YEAR, SWITCHES ON.  The ON half of a paired mechanism check against
+# Tuning_test_11H0_raupach_null, which is the same binary and the same 8-entry
+# namcouple with both switches OFF.  Only ifraupachz0 and ECE_CPL_LPJG_Z0 differ,
+# so this is a true one-variable pair.
+#
+# WHY NOT JUST RUN 11H.  The 50-year arm is scored on Siberian DJF soil and T2m,
+# whose thresholds are 30-year numbers (+-0.37 K soil, +-0.61 K T2m).  Those say
+# nothing at one year, so a 50-year run is the only way to see the RESPONSE -- but
+# it is a terrible way to find out whether the lever is even connected.  This run
+# scores the MECHANISM instead, which responds immediately:
+#
+#   ewss / nsss   surface momentum stress -- direct, first-timestep response to z0
+#   10u / 10v     10 m wind
+#   2t - skt      surface decoupling, the path the DJF cold bias acts through
+#   GUE_Z0HV      the transmitted field itself, readable from vegin.nc
+#
+# PREDICTION.  DJF grid-box roughness over Siberia 0.058 -> 0.140 m (2.4x), so
+# surface stress should rise by tens of percent in the first winter and 2t-skt
+# should narrow.  JJA roughness FALLS 0.190 -> 0.120 m, so the summer stress signal
+# should be the opposite sign and smaller.
+#
+#   mechanism moves, right sign  -> the lever is connected; spend the 50 years
+#   nothing moves                -> the field is being sent and ignored; debug the
+#                                   IFS side before spending anything
+#   moves the wrong way          -> sign error in vupdz0 or in the drag aggregation
+#
+# NOTE the binary here is the UNGATED build (11a7debf).  The gated one cannot form
+# this pair: with the switch off it stops putting the field while OpenIFS still
+# expects it.  The gate is for production safety, not for the experiment.
+# =============================================================================
+# (original 11H header follows)
+# ---------------------------------------------------------------------------
+# =============================================================================
+# 11H = 11G with the high-vegetation roughness computed by Raupach (1994) inside
+# LPJ-GUESS and sent to OpenIFS, instead of OpenIFS scaling its RVZ0M lookup value by the
+# phenological cover fraction.  Everything else is 11G unchanged, so this is a strict
+# one-lever coupled pair against a run started from the same initial state.
+#
+# THE ERROR BEING FIXED.  FracHVeg is the foliar projective cover of TODAY's LAI
+# (framework.cpp, computeDailyLAIandFPCforIFS: fpc = 1 - exp(-0.5*LAI_today)), so a
+# summergreen boreal canopy is handed to the atmosphere as nearly ABSENT in winter.
+# Measured in coupled 11E over the Siberian box, with the forest still standing:
+#
+#   month        Jan    Apr    Jul    Aug    Oct    Dec
+#   cvh        0.091  0.091  0.233  0.239  0.105  0.091
+#   lai_hv     2.577  2.608  2.496  2.506  2.603  2.577
+#
+# The high-vegetation TILE keeps its 2.00 m (vupdz0_mod.F90:276); what collapses is the
+# tile AREA, so ~91 % of the winter grid box gets the bare-soil 0.013 m in polar night.
+# Note lai_hv stays at 2.5 through January because it is lai/fpc -- the model is not
+# representing a leafless forest, it is representing a smaller area of LEAFY forest.
+# Raupach has the opposite behaviour: z0 peaks for a sparse, leafless canopy and FALLS as
+# the foliage fills in, because the stem frontal area persists while the smoothing
+# foliage is gone.  Diagnosed independently by the LPJ-GUESS group (Roughness_length.pdf)
+# and confirmed here against our own output.
+#
+# WHAT IS IMPLEMENTED.  z0 = h(1-d/h)exp(-kappa/(u*/U) + psi_h) with the published
+# constants, frontal area index = 0.5*LAI + densindiv*diam*height (the stem term is exact
+# for cylinders and is what survives leaf-off), aggregated over patches in DRAG space --
+# Cdn = (kappa/ln(1+z/z0))^2 at a common blending height, averaged, inverted -- because
+# roughness lengths do not average.  That is the same operation vupdz0 already performs
+# when it combines tiles, so the two levels are consistent.  Verified against the Lund
+# note's 20 m curve to 0.004 m (scripts/model/raupach_z0_check.cpp).
+#
+# PREDICTION, pre-registered.  Effective grid-box roughness over Siberia, from 11E's own
+# cvh and an assumed 15 m larch stand: DJF 0.058 -> 0.140 m (2.4x), JJA 0.190 -> 0.120 m.
+# So this is a WINTER lever:
+#   * DJF T2m and DJF soil WARMER, through a weaker stable-boundary-layer inversion.  The
+#     campaign's own regression (+0.4 cvh -> +1.2 K DJF) scales to roughly +0.3 to +0.9 K.
+#   * JJA ~unchanged.  Our lai_hv sits on the Raupach/IFS crossover, and F1 (RVZ0H cut
+#     tenfold) moved JJA only +0.185 K, so expect well under the +-0.246 K threshold.
+#   * It is NOT a forest fix.  BNS clears every climate gate already (tcmax_est -2 C
+#     against a measured coldest month of -36.1 C) and is limited by C3 grass
+#     outcompeting it, which roughness does not touch.  Judge this on DJF soil, not on
+#     tree cover.
+#
+# FALSIFIERS.  Scored against 11G over a common 30-year window (10-year windows have
+# produced the WRONG SIGN on Siberian DJF here; thresholds are +-0.37 K DJF soil and
+# +-0.61 K DJF T2m):
+#   DJF soil warms, JJA inside noise, global net TOA not worse  -> adopt
+#   DJF soil does not resolve                                   -> the roughness route is
+#                                                                  weaker than the
+#                                                                  regression implied
+#   JJA cools beyond -0.246                                     -> the summer cost is real
+#                                                                  and must be priced
+#
+# RUN THE NULL ARM (11H0) FIRST.  It proves the rewritten vupdz0 is inert with the
+# switches off.  Until that passes, a difference here cannot be attributed to Raupach.
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    install_esm_tools_branch: 'feat/awiesm3-v3.4-co2'
+    setup_name: "awiesm3"
+    version: "develop"
+    account: "ab0246"
+    compute_time: "08:00:00"
+    initial_date: "1350-01-01"
+    final_date: "1350-01-02"  # ONE DAY: connectivity check only
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-v3.4/"
+    nday: 1
+    nmonth: 0
+    nyear: 0
+    use_venv: False
+    # Raise per-process FD limit before model launch to avoid LPJ restart
+    # failures when opening many state shards plus forcing NetCDF files.
+    pre_run_commands: "ulimit -n 262144 || ulimit -n 65535 || true"
+
+computer:
+    taskset: true
+
+awiesm3:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+fesom:
+    resolution: "CORE3"
+    time_step: 1200
+    nproc: 1792
+    omp_num_threads: 1
+    lresume: true
+    restart_rate: 1
+    restart_unit: 'd'
+    restart_first: 1
+    tar_binary_restarts: false
+    with_cavity: true
+    vis_sync: false
+    # 06T mixed-layer stack (identical to 09C/11A)
+    add_namelist_changes:
+        namelist.ice:
+            meltpond:
+                pndaspect: 1.3
+                rfracmax: 0.75
+                albpnd: 0.28
+        namelist.tra:
+            tracer_phys:
+                use_momix: true
+                momix_kv: 0.01
+        namelist.cvmix:
+            param_kpp:
+                kpp_av0: 0.003
+                kpp_kv0: 0.003
+                kpp_avbckg: 5.0e-05
+                kpp_kvbckg: 5.0e-06
+        namelist.oce:
+            oce_dyn:
+                spp: false
+    ini_parent_exp_id: "CORE3_restart"
+    ini_parent_date: "2000-01-01"
+    ini_restart_dir: "/work/ab0246/a270092/input/fesom2/restart/CORE3"
+    choose_general.run_number:
+        1:
+            restart_in_sources:
+                par_oce_restart: /${ini_restart_dir}/fesom.2000.oce.restart/*.nc
+                par_ice_restart: /${ini_restart_dir}/fesom.2000.ice.restart/*.nc
+    further_reading:
+        - fesom.tripyview.yaml
+    cmip7_cmor_output: True
+
+lpj_guess:
+    add_veg_atm_fields: [GUE_Z0HV]
+    resolution: "TCO95"
+    mip: cmip7
+    scenario: piControl
+    daily_output: true
+    nproc: 64
+    omp_num_threads: 4
+    lresume: true
+    ini_parent_exp_id: "LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPandCERES_daily_variability"
+    ini_parent_date: "3900-12-31"
+    ini_restart_dir: "/work/bb1469/a270270/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_CRUNCEPandCERES_daily_variability/run_19000101-38991231/work/"
+    choose_general.run_number:
+        1:
+            restart_in_sources:
+                state: /${ini_restart_dir}/lpjg_state_3901/*
+            restart_in_in_work:
+                state: lpjg_state_${initial_date!syear}/*
+    # Soil-temperature sensitivity: pin the modified template explicitly so
+    # every LPJ-GUESS rank uses useifssoiltemp=1, independent of which
+    # ESM-Tools checkout provides esm_runscripts on PATH.
+    add_config_sources:
+        # 11H: same template plus "ifraupachz0 1".  MUST be paired with
+        # ECE_CPL_LPJG_Z0 below -- one without the other is not the experiment.
+        "guess_ins_[[proc_list-->PROC_NUM]]": /home/a/a270092/esm_tools/namelists/lpj_guess/guess.ins.useifssoiltemp1.raupach.j2
+    fixed_CO2: 1850
+    fixed_ndep: 1850
+    fixed_LU: 1850
+    file_luh3_states: /work/ab0246/a270092/input/lpj-guess/land_use/TCO95/multiple-states_input4MIPs_landState_CMIP_UofMD-landState-3-1-2_gn_0850-2024_TCO95.nc
+    file_luh3_management: /work/ab0246/a270092/input/lpj-guess/land_use/TCO95/multiple-management_input4MIPs_landState_CMIP_UofMD-landState-3-1-2_gn_0850-2024_TCO95.nc
+    file_luh3_transitions: /work/ab0246/a270092/input/lpj-guess/land_use/TCO95/multiple-transitions_input4MIPs_landState_CMIP_UofMD-landState-3-1-2_gn_0850-2023_TCO95.nc
+
+oifs:
+    add_atm_veg_fields: [Z0HVeg]
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    mip: cmip7
+    scenario: piControl
+    lresume: false
+    cmip7_cmor_output: True
+    add_namelist_changes:
+        fort.4:
+            NAMECECFG:
+                # Take the high-vegetation roughness from LPJ-GUESS instead of RVZ0M.
+                # Reads any non-positive incoming value as "no value, keep the table",
+                # which is what makes the OASIS $NNOREST cold start safe -- vegin.nc
+                # carries no entry for the new field and supplies 0 on the first step.
+                ECE_CPL_LPJG_Z0: True
+            NAMCLDP:
+                RVICE: 0.16
+                RCL_INPSEA: 0.2
+                RCL_INPPMIN: 50000.0   # 11G: S4 -- the ONLY change from 11E
+            NAMGWWMS:
+                GGAUSSB: -0.5
+            NAEPHY:
+                LRDALB: False        # Coupled albedo on (LPJG-driven)
+            NAMCUMF:
+                ENTSTPC3: 1          # retained from 09C
+            NAMSURFTUNE:
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                ECE_SNOW_SCF: 3
+                ECE_SNOW_SCF_RHOREF: 200.0
+                ECE_SNOW_SCF_DCL: 0.014
+                ECE_SNOW_SCF_DCH: 0.026
+                ECE_SNOW_SCF_MD: 4.70
+                ECE_SNOW_SCF_BL: 1.46
+                ECE_SNOW_SCF_BH: 0.40
+                ECE_SNOW_SCF_DCMAX: 0.30
+                ECE_SNOW_SCF_SCALE: 1.0
+                # 11E change 1: the autumn snow-mass floor, 30 -> 15.
+                ECE_SNOW_SCF_SWEMIN: 15.0
+                # --- K1: snow-free land albedo, vegetation types 1 / 10 / 11 only.
+                # Tundra is DELIBERATELY EXCLUDED so K1 stays orthogonal to the boreal
+                # levers and adds no absorbed shortwave to the Arctic: 60-90N net TOA
+                # stays at -97.463 against a control -97.737 and CERES -97.98.  Do not
+                # add tundra entries -- they compete for the same Arctic energy budget.
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+    add_input_files:
+        dust_clim: dust_clim
+    add_input_sources:
+        dust_clim: '/work/ab0246/a270092/input/oifs-48r1/cmip7-data/dust/onlinedust_v4_rmp.nc'
+    add_input_in_work:
+        dust_clim: 'composition/onlinedust_v4_rmp.nc'
+
+oasis3mct:
+    # -----------------------------------------------------------------------------
+    # Raupach canopy-roughness coupling: LPJ-GUESS -> OpenIFS, one extra field.
+    #
+    # DEFINED HERE, NOT IN configs/setups/awiesm3/awiesm3.yaml, ON PURPOSE.  Putting it
+    # in the shared setup file makes every awiesm3 experiment negotiate a 7-field veg
+    # exchange, and any run whose staged binaries predate the field then dies in
+    # OasisCoupler::abort().  That happened on 2026-08-11 and cost 11G three legs.
+    #
+    # APPENDED LAST, ALSO ON PURPOSE.  The LOCTRANS accumulators OASIS stores in
+    # vegin.nc are named by namcouple ENTRY INDEX -- loc000011_T2MVeg,
+    # loc000012_SoilTVeg.L001, and so on.  Inserting a new entry in the middle of the
+    # vegin.nc list renumbers every entry after it, so on restart OASIS reads those
+    # accumulators back against the WRONG fields.  The first attempt put this entry
+    # directly after the six-field veg bundle; LPJ-GUESS then received scrambled soil
+    # temperature and moisture on the first coupling step and four ranks aborted in
+    # Soil::update_soil_diffusivities with Frac_air < 0.  Keep it last.
+    # -----------------------------------------------------------------------------
+    # add_coupling_target_fields REPLACES the vegin.nc list rather than appending to
+    # it, so the whole list has to be restated here.  The first seven entries are
+    # copied verbatim from configs/setups/awiesm3/awiesm3.yaml and MUST stay in this
+    # order: the LOCTRANS accumulators OASIS stores in vegin.nc are named by namcouple
+    # ENTRY INDEX (loc000011_T2MVeg, loc000012_SoilTVeg.L001, ...), so reordering or
+    # inserting in the middle makes OASIS read them back against the wrong fields.  A
+    # first attempt put Z0HVeg second and LPJ-GUESS got scrambled soil temperature and
+    # moisture on step one, aborting in Soil::update_soil_diffusivities with
+    # Frac_air < 0.  New entries go LAST.
+    #
+    # MAINTENANCE HAZARD: this is a copy.  If the shared vegin.nc list in awiesm3.yaml
+    # ever changes, this block goes stale and must be re-synced by hand.
+    add_coupling_target_fields:
+        vegin.nc:
+            - 'LAILVeg:LAIHVeg:FracLVeg:FracHVeg:TypeLVeg:TypeHVeg <--loctrans_avg-- GUE_LLAI:GUE_HLAI:GUE_FRAL:GUE_FRAH:GUE_TYPL:GUE_TYPH'
+            - 'T2M_LPJG:TPRE_LPJ:SNOC_LPJ:SNOD_LPJ <--loctrans_avg-- T2MVeg:TPVeg:SDVeg:SDensVeg'
+            - 'ST1L_LPJ:ST2L_LPJ:ST3L_LPJ:ST4L_LPJ <--loctrans_avg-- SoilTVeg.L001:SoilTVeg.L002:SoilTVeg.L003:SoilTVeg.L004'
+            - 'SM1L_LPJ:SM2L_LPJ:SM3L_LPJ:SM4L_LPJ <--loctrans_avg-- SoilMVeg.L001:SoilMVeg.L002:SoilMVeg.L003:SoilMVeg.L004'
+            - 'SWNR_LPJ:LWNR_LPJ:SHUM_LPJ:SPRE_LPJ:WSPD_LPJ <--loctrans_avg-- SSRVeg:SLRVeg:SHUMVeg:PRESVeg:WSPDVeg'
+            - 'TMIN_LPJ <--loctrans_min-- TMINVeg'
+            - 'TMAX_LPJ <--loctrans_max-- TMAXVeg'
+            - 'Z0HVeg <--loctrans_avg-- GUE_Z0HV'
+    use_lucia: false
+    lresume: true
+    time_step: 3600       # 1 hour coupling (06T/06V stack)
+
+xios:
+    with_model:
+        - oifs
+        - fesom
+    nproc: 16
+    omp_num_threads: 128
+    compression_level: 3
