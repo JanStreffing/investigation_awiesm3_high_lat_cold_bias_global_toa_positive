@@ -1,0 +1,162 @@
+# J2 -- I1 (G4 + snow depletion) PLUS a higher exposed-snow skin
+# conductivity, ZSNOW 7 -> 25.0. Round 16.
+#
+# WHY. Fixing the snow-cover depletion in round 15 worked exactly as designed --
+# melt-out went from 15 days late to 1 day late, June cover 0.413 -> 0.160 against
+# a satellite 0.203 -- and it delivered essentially NO summer temperature on its own
+# (I2: JJA +0.094 K, inside the noise floor). What it did do was expose a large
+# winter cold bias: DJF went from -1.95 K against ERA5 to -4.71 K.
+#
+# That is a COMPENSATING ERROR being removed, not a new one being created. The old,
+# excessive snow cover had been propping Siberian winter up by ~2.7 K and hiding a
+# bias that was there all along. The right response is to fix the winter separately,
+# not to restore the wrong snow field. The control is too cold in EVERY season
+# (DJF -1.95, MAM -1.97, JJA -2.58, SON -2.69), so there was never a warm bias to
+# protect.
+#
+# NOT A RADIATION PROBLEM. Downward LW over the box in DJF is +0.9 W/m2 against
+# CERES -- essentially exact -- which rules out the Pithan et al. (2014)
+# supercooled-liquid route for midwinter. (There IS a -12 W/m2 LW deficit in
+# Oct/Nov; that is a separate autumn problem.) With the radiation right and the
+# surface still too cold, the deficit must sit in the non-radiative terms.
+#
+# THE LEVER. vlamsk_mod.F90 hardcodes the snow-tile skin conductivities, so they
+# were untunable until now:
+#     ZSNOW         =  7   tile 5, EXPOSED snow -- the weakly coupled one, and the
+#                          tile that dominates over tundra (25.6 % of the box)
+#     ZSNOW_GLACIER =  8   tile 5 where SWE > 9000 mm
+#     ZSNOWHVEG     = 20   tile 7, snow under high vegetation
+#     ZLARGESN      = 50   tile 5 when melting
+# lambda_sk sets how tightly the skin couples to the medium below; a small value
+# lets it radiatively decouple and crash in polar night. Physically
+# lambda_sk ~ k_snow/d_skin with k_snow 0.1-0.4 W/m/K and d_skin 0.01-0.05 m, so
+# roughly 2-40. The as-released 7 sits at the decoupled end. This run uses 25.0:
+# the upper end of the physical range k_snow/d_skin.
+#
+# NOTE tile 5 is the one raised here, deliberately: it is the exposed-snow tile that
+# covers tundra, where the bias is. Tile 7 already sits at 20.
+#
+# PREDICTION: DJF warms by +1 to +3 K, recovering the -4.71 K toward the control's
+# -1.95 or better, WITHOUT giving back the snow-cover fix. JJA should barely move,
+# since the skin decoupling matters most in polar night. If DJF does not respond,
+# skin conductivity is not the route and the winter bias lies in the boundary-layer
+# mixing instead (Holtslag et al. 2013, Sandu et al. 2013).
+#
+# WATCH: melt-out date and May/June cover must STAY fixed -- if they drift back
+# toward the control the two changes are interacting and the pair is not separable.
+#
+# ---------------------------------------------------------------------------
+# G1 -- F4 (boreal stomatal resistance) + D2b (ocean INP, gated below 700 hPa)
+#
+# THE FIRST PAIRING WHERE THE TWO TARGETS DO NOT FIGHT.
+#
+#   F4  RVRSMIN(3,4) 250 -> 1000   SOURCE  -- boreal: +0.749 K, t=6.06, best of campaign
+#   D2b RCL_INPSEA 0.2, RCL_INPPMIN 70000  -- Southern Ocean: SW RMSE 6.88 -> 4.96
+#
+# Measured individually at 44 yr (threshold +-0.242 K boreal, +-0.019 SO SW RMSE):
+#                Siberia dT2m        SO SW RMSE d      tropics      global TOA
+#   D2b          -0.222 (marginal)   -0.17 signif       +0.09        -0.28
+#   F4           +0.749 (signif)     -0.02 (barely)     +0.07        +0.10
+#   naive sum    +0.53               -0.19              +0.16        -0.18
+#
+# WHY THEY SHOULD NOT CONFLICT. Every previous conflict in this campaign ran through
+# mixed-phase overlap, which brightens SO cloud AND boreal mid-level cloud at once -- A1a
+# bought 82% of the SO gap at the price of -0.75 K in Siberia. These two are disjoint in
+# BOTH process and geography: stomatal conductance on vegetation types 3/4 (land, boreal
+# only) versus ice nucleation over ocean below 700 hPa. Types 5/6/18 keep their defaults so
+# the tropics are untouched by construction, and F4's SO effect (-0.02) is barely past the
+# detection threshold -- it does not help the Southern Ocean, it simply does not harm it.
+#
+# THIS IS A PREDICTION, NOT A MEASUREMENT. AB (A1b+B2) predicted +0.21 K boreal and measured
+# -0.053; ABB8's parts summed to +0.76 and measured -0.167; F5 showed near-TOTAL saturation
+# where only strong sub-additivity was expected. Superposition in this model has been wrong
+# in SIGN twice. The disjoint mechanisms are the best prior we have had, which is an argument
+# for running it, not for believing it.
+#
+# WHAT TO CHECK: (i) does D2b's -0.222 K boreal cooling -- MARGINAL, t=-1.80, possibly noise
+# -- actually eat 30% of F4's gain, or is the combination closer to the full +0.749?
+# (ii) does F4 still leave the SO alone once D2b has changed it? (iii) tropics must stay near
+# 42.6; any drift toward B5's 40.67 kills the package.
+#
+# WHAT IT STILL WILL NOT FIX: global net TOA stays ~+0.6 against a ~0 target, the SO cloud
+# AREA deficit (83% vs CERES 89.7%) is untouched by everything tried so far, and the tropics
+# remain ~2.4 W/m2 too low.
+#
+# FORCING: historical, as for every other lever run, so deltas stay comparable.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare. Adding the tune entries to NAMECECFG kills the arpifs
+            # read at su0yoma.F90:152. Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # F4, formerly a source edit to susveg_mod.F90:272-273.
+                # 3 = Evergreen Needleleaf Trees, 4 = Deciduous Needleleaf Trees.
+                # Types 5/6/18 deliberately keep their defaults so the tropics and
+                # the broadleaf forests are untouched by construction.
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # Round 15: sub-grid snow depletion, Niu & Yang (2007).
+                ECE_SNOW_SCF: 1
+                ECE_SNOW_SCF_Z0: 0.016
+                # Round 16: exposed-snow skin conductivity, 7 -> 25.0
+                ECE_LAMSK_SN: 25.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

@@ -1,0 +1,138 @@
+# O1 -- the snow-cover depletion RE-PARAMETERISED so density separates autumn from
+# spring. Round 19, paired with N1/N2. K1 base, 10 yr, same daily snow/soil output.
+#
+# THE PROBLEM WITH THE CURRENT PARAMETERS. SCF = tanh(d/L), L = 2.5*z0*(rho/rho_new)^m.
+# The ratio of the two tanh arguments for the two months that matter is
+#     x_Oct/x_May = (d_Oct/d_May) * (rho_May/rho_Oct)^m = 0.469 * 1.853^m
+# using Siberian box means d_Oct=0.135 m rho_Oct=170, d_May=0.288 m rho_May=315.
+# DEPTH WORKS AGAINST US -- October's pack is half as deep, pushing it toward LESS
+# cover. Density works for us, and whether it wins depends entirely on m:
+#     m > 1.23   needed merely for October to hold more cover than May
+#     m = 1.6    (current) clears that bar but gives a ratio of only 1.23
+#                -> SCF_Oct 0.894 vs SCF_May 0.817, separation 0.077. Almost none.
+#     m = 4      gives 5.5, ample separation
+# So the fault is NOT that density cannot discriminate -- it is that at m=1.6 it
+# BARELY does, and the -0.075 October cover deficit that seeds the winter soil
+# collapse is the price paid for a spring depletion that is itself only 0.08 deeper.
+#
+# RAISING m ALONE MAKES OCTOBER WORSE. October rho=170 already exceeds rho_new=100, so
+# it sits on the depleting branch and a steeper exponent depletes it harder
+# (m=4, rho_new=100 -> SCF_Oct 0.383). BOTH parameters must move: recentre rho_new on
+# autumn density so October becomes the reference state, THEN steepen.
+#     z0=0.018 rho_new=170 m=4.0 -> SCF_Oct 0.995  SCF_May 0.495   (O1)
+#     z0=0.018 rho_new=170 m=3.0 -> SCF_Oct 0.995  SCF_May 0.764   (O2)
+# O1 is aggressive, O2 conservative; they bracket the useful range.
+#
+# WHY THIS BEATS THE HYSTERESIS I WAS ABOUT TO BUILD. It is namelist-only -- no source
+# change, no new prognostic -- and it sidesteps the reversibility objection that killed
+# the ripe/not-ripe state test: DENSITY IS A GENUINE PHYSICAL MEMORY VARIABLE. It
+# ripens monotonically through the season and does not flip back overnight, so the
+# depletion cannot walk backwards the way a melt-state switch would.
+#
+# CAVEATS, STATED BECAUSE THIS IS CURVE-FITTING UNTIL PROVEN OTHERWISE:
+#  * m=4 is far from Niu & Yang's calibrated 1.6 and needs justifying as more than a
+#    fit to the two monthly numbers it was derived from.
+#  * Those are BOX-MEAN MONTHLY densities. The model sees a cell-by-cell distribution,
+#    and a steep exponent amplifies spread -- the box mean may mislead badly. N1/N2's
+#    daily output is what settles this.
+#  * Recentring rho_new on 170 changes depletion EVERYWHERE, including regions where
+#    the original calibration was validated against Rutgers/IMS satellite cover.
+#
+# WHAT WOULD FALSIFY IT: winter soil (stl1/stl2, DJF) must stay at the N1 reference --
+# if O1 still shows the -16 K collapse the density route is dead. And May/June cover
+# must still deplete, or the summer gain is lost and this is all cost.
+#
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr, campaign standard
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare. Adding the tune entries to NAMECECFG kills the arpifs
+            # read at su0yoma.F90:152. Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K1: vegetation albedo, types 1 / 10 / 11 only ---
+                # Components are (1) UV/VIS direct, (2) UV/VIS diffuse,
+                # (3) NIR direct, (4) NIR diffuse. Forests (3,4,5,6,18,19) and
+                # tundra (9) are deliberately untouched -- see header.
+                # Crops, x0.8868 of as-released 0.0265/0.0341/0.2848/0.3210
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                # Irrigated Crops, x0.9099 of 0.0250/0.0296/0.2572/0.2790
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                # Semidesert, x0.9063 of 0.0529/0.0865/0.2045/0.2900
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+                # N2 ONLY: the snow-cover depletion under test.
+                ECE_SNOW_SCF: 1
+                ECE_SNOW_SCF_Z0: 0.018
+                ECE_SNOW_SCF_RHONEW: 170.0
+                ECE_SNOW_SCF_M: 4.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # Per-run override so the shared template is untouched: adds daily
+    # sd/rsn/tsn/asn/stl1/stl2 to the remapped daily stream.
+    add_config_sources:
+        file_def: ${xml_dir}/file_def_snowdiag.xml.j2
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

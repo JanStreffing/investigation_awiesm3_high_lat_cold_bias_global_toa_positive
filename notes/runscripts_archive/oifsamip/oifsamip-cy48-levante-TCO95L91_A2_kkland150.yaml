@@ -1,0 +1,82 @@
+# =============================================================================
+# Round 10, prong A2 -- boreal-land summer cloud excess
+#   RCL_KK_CLOUD_NUM_LAND : 300 -> 150 cm-3   (SOURCE change, sucldp.F90:418)
+# =============================================================================
+# WHY THIS PARAMETER
+# It is the ONLY genuinely land-selective cloud parameter in the scheme: used
+# solely in the PLSM>0.5 branch (cloudsc.F90:2134), with ocean taking
+# RCL_KK_CLOUD_NUM_SEA=50 instead. Zero ocean effect, so it structurally cannot
+# undo the Southern Ocean brightening of prong A1.
+#
+# It enters KK-2000 autoconversion as ZCONST**RCL_KKBAUN with RCL_KKBAUN=-1.79,
+# so 300->150 speeds land warm-rain autoconversion by 2**1.79 ~ 3.5x, raining
+# out cloud water and thinning the excess boreal summer cloud.
+#
+# Verified live: bypassed only if NCLOUDACT>0, but the default is NCLOUDACT=0
+# (suecrad.F90:553) and we do not override it.
+#
+# TARGET (AMIP 1872-79 vs CERES, Siberia land JJA):
+#   cloud area 77.8% vs 69.6% (+8.2 pp); surface SW CRE -91.6 vs -75.1
+#   (-16.5 W/m2); surface net SW 11 W/m2 too low; ~2 K summer cold bias.
+#
+# PHYSICAL JUSTIFICATION: boreal forest is a CLEAN continental environment with
+# observed droplet numbers ~100-200 cm-3; 300 is a polluted-continental value.
+# COLLATERAL: single global land value, so polluted regions (Europe, E Asia,
+# N America) where 300 is defensible are lowered too. Acts through cloud water
+# amount only, not droplet size -- radiation takes N_d independently from the
+# Martin scheme with climatological CCN.
+#
+# FALSIFIABLE PREDICTION: the Southern Ocean should be UNCHANGED (land-only).
+#
+# CONTROL: amip_pi_base. Binary carries RVRSMIN=250 (experiment A reverted).
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "02:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1876-01-01"
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 6
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+
+oasis3mct:
+    lresume: false
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32

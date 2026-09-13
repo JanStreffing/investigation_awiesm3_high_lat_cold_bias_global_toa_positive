@@ -1,0 +1,113 @@
+# M2 -- amip_presentday with LAER3D=.true. (the 3D CAMS aerosol distribution).
+# Round 18. DIAGNOSTIC, paired with M1.
+#
+# THE QUESTION M2 ASKS, and it is different from M1's. M1 asks how much of the
+# clear-sky over-scattering is ANTHROPOGENIC. M2 asks whether the problem is the
+# VERTICAL DISTRIBUTION of the same aerosol amount.
+#
+# We run LAER3D=.false., which takes the CAMS column loading and spreads it
+# vertically by an internal formula. ECMWF's own TCO95L91 reference fort.4 sets
+# nothing in &NAERAD, so it takes the shipped default LAER3D=.TRUE. -- the true 3D
+# CAMS field. Our .false. comes from esm_tools
+# configs/components/oifs/oifs48.tuning.yaml, i.e. it is an EC-Earth/AWI tuning
+# choice, not an ECMWF one.
+#
+# THIS IS FREE TO TEST: aerosol_cams_climatology_43R3_3D.nc is already staged in
+# ifsdata alongside the 2D file. Verified that the two carry the SAME aerosol --
+# summing the 3D over levels gives 1.5235e-4 kg/m2 global sea salt against the 2D's
+# 1.5295e-4, agreement to 0.4%. So M2 changes ONLY where the aerosol sits in the
+# column, not how much there is. That makes it a clean attribution: if the clear-sky
+# excess moves, the 2D vertical parameterisation is implicated; if it does not, the
+# amount is, and the target becomes Sea_Salt_bin2 (see below).
+#
+# WHY IT COULD MATTER. Scattering aloft and scattering near the surface do not
+# produce the same TOA reflection, because the amount of Rayleigh and cloud above
+# the aerosol layer differs, and because the RH the aerosol sees -- which sets sea
+# salt's growth and hence its optical depth -- is strongly height-dependent. A
+# column-correct but vertically-misplaced sea-salt load can be optically wrong.
+#
+# WHAT WE ARE CHASING. TOA reflected SW vs CERES splits into two near-independent
+# errors that cancel in the all-sky total [W/m2, + = model reflects MORE]:
+#     band            clear-sky   cloud
+#     30-60N              +4.22   -4.22
+#     SO 45-65S           +5.10   -7.65
+#     GLOBAL              +2.68   -1.17
+# In the Southern Ocean they nearly cancel (+5.10 and -7.65 give only -2.54 all-sky),
+# which is why the SO looks nearly right overall while both halves are badly wrong.
+#
+# AND THE SPECIES IS IDENTIFIED. Reading the CAMS climatology directly, the SO
+# 45-65S implied AOD550 is ~0.140 against an observed MODIS/MISR 0.05-0.12, and
+# 77% of it is a SINGLE species, Sea_Salt_bin2 (119 mg/m2). Globally the model's
+# 0.151 vs ~0.13-0.15 observed is unremarkable -- this is specifically a Southern
+# Ocean problem, exactly where the clear-sky excess is largest. Sea salt has NO
+# tuning knob anywhere in the radiation tree; only dust does (RDUMULF/RWGHTDU*), and
+# those are not even namelist-settable.
+#   CAVEAT: that AOD uses nominal literature mass extinction efficiencies, NOT the
+#   model's own RH-dependent tables in aerosol_ifs_rrtm_48R1.nc. Order of magnitude
+#   only. A rough forcing estimate from the implied dAOD gives ~1-2 W/m2, short of
+#   the +5.10 measured, so sea salt is likely part of the story, not all of it.
+#
+# SCORE IT ON BOTH COLUMNS, BY BAND. The all-sky total is where the cancellation
+# hides the signal. Also watch the cloud column: LMACV2SP_CCNF=.true. couples
+# aerosol to droplet number, so nothing here is a pure clear-sky lever.
+#
+# DO NOT ADOPT WITHOUT THE SO ENERGY CHECK. Less clear-sky scattering warms the
+# Southern Ocean, which already retains too much energy (net TOA -49.5 vs CERES
+# -55.55). Any clear-sky fix must be paired with a cloud-amount increase there.
+#
+# BASE: amip_presentday, identical in every other respect, so M2 minus presentday
+# isolates the vertical-distribution term alone.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1989-01-01"
+    final_date: "2015-01-01"   # evaluate 1990-2014 against ERA5/CERES
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 13
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+            # THE ONE CHANGE. Uses the true 3D CAMS aerosol field instead of the
+            # 2D column spread vertically by formula. Same aerosol MASS (verified
+            # to 0.4%), different vertical placement. This restores ECMWF's own
+            # shipped default; our .false. comes from oifs48.tuning.yaml.
+            NAERAD:
+                LAER3D: true
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

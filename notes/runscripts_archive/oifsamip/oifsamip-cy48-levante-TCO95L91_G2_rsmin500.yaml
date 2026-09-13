@@ -1,0 +1,136 @@
+# G2 -- G1 with F4 at HALF strength: RVRSMIN(3,4) = 500 instead of 1000.
+#
+# WHY. The single biggest criticism of G1 is that RVRSMIN 250 -> 1000 is an
+# UNANCHORED 4x excursion from what ECMWF ships. It was never chosen from a
+# measurement; it was the first value tried that worked. Until now testing another
+# value meant a source edit and a rebuild, so it was never done. It is a namelist
+# entry as of 2026-08-02, so it costs nothing.
+#
+# G2 and G3 (2000) bracket G1 and map the response curve. Three outcomes, all useful:
+#   * roughly LINEAR in RVRSMIN  -> the mechanism is still far from saturation and
+#     G3 should beat G1; the honest reading is that we are fitting, and the right
+#     move is to find the physical constraint rather than keep climbing.
+#   * SATURATING near 1000       -> 1000 sits on the knee, which is the best defence
+#     the value can have: results are insensitive to the exact choice.
+#   * NON-MONOTONIC              -> treat the whole F4 result with suspicion.
+#
+# F5 already hinted at saturation: F1+F2+F3+F4 together gave +0.746 versus F4 alone
+# at +0.749, i.e. the other three levers added NOTHING once F4 was in. That is a
+# property of the surface energy balance saturating, and if so G2 at half strength
+# should lose much less than half of F4 gain.
+#
+# PREDICTION: if saturating, G2 keeps >60% of G1 boreal gain (>= +0.31 K).
+# If G2 comes in near +0.26 (half of 0.521) the response is linear and we are on a
+# ramp with no natural stopping point.
+#
+# The G1 namelist mechanism and physics rationale follow.
+#
+# ---------------------------------------------------------------------------
+# G1 -- F4 (boreal stomatal resistance) + D2b (ocean INP, gated below 700 hPa)
+#
+# THE FIRST PAIRING WHERE THE TWO TARGETS DO NOT FIGHT.
+#
+#   F4  RVRSMIN(3,4) 250 -> 1000   SOURCE  -- boreal: +0.749 K, t=6.06, best of campaign
+#   D2b RCL_INPSEA 0.2, RCL_INPPMIN 70000  -- Southern Ocean: SW RMSE 6.88 -> 4.96
+#
+# Measured individually at 44 yr (threshold +-0.242 K boreal, +-0.019 SO SW RMSE):
+#                Siberia dT2m        SO SW RMSE d      tropics      global TOA
+#   D2b          -0.222 (marginal)   -0.17 signif       +0.09        -0.28
+#   F4           +0.749 (signif)     -0.02 (barely)     +0.07        +0.10
+#   naive sum    +0.53               -0.19              +0.16        -0.18
+#
+# WHY THEY SHOULD NOT CONFLICT. Every previous conflict in this campaign ran through
+# mixed-phase overlap, which brightens SO cloud AND boreal mid-level cloud at once -- A1a
+# bought 82% of the SO gap at the price of -0.75 K in Siberia. These two are disjoint in
+# BOTH process and geography: stomatal conductance on vegetation types 3/4 (land, boreal
+# only) versus ice nucleation over ocean below 700 hPa. Types 5/6/18 keep their defaults so
+# the tropics are untouched by construction, and F4's SO effect (-0.02) is barely past the
+# detection threshold -- it does not help the Southern Ocean, it simply does not harm it.
+#
+# THIS IS A PREDICTION, NOT A MEASUREMENT. AB (A1b+B2) predicted +0.21 K boreal and measured
+# -0.053; ABB8's parts summed to +0.76 and measured -0.167; F5 showed near-TOTAL saturation
+# where only strong sub-additivity was expected. Superposition in this model has been wrong
+# in SIGN twice. The disjoint mechanisms are the best prior we have had, which is an argument
+# for running it, not for believing it.
+#
+# WHAT TO CHECK: (i) does D2b's -0.222 K boreal cooling -- MARGINAL, t=-1.80, possibly noise
+# -- actually eat 30% of F4's gain, or is the combination closer to the full +0.749?
+# (ii) does F4 still leave the SO alone once D2b has changed it? (iii) tropics must stay near
+# 42.6; any drift toward B5's 40.67 kills the package.
+#
+# WHAT IT STILL WILL NOT FIX: global net TOA stays ~+0.6 against a ~0 target, the SO cloud
+# AREA deficit (83% vs CERES 89.7%) is untouched by everything tried so far, and the tropics
+# remain ~2.4 W/m2 too low.
+#
+# FORCING: historical, as for every other lever run, so deltas stay comparable.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare. Adding the tune entries to NAMECECFG kills the arpifs
+            # read at su0yoma.F90:152. Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # F4, formerly a source edit to susveg_mod.F90:272-273.
+                # 3 = Evergreen Needleleaf Trees, 4 = Deciduous Needleleaf Trees.
+                # Types 5/6/18 deliberately keep their defaults so the tropics and
+                # the broadleaf forests are untouched by construction.
+                "ECE_TUNE_RVRSMIN(3)": 500.0
+                "ECE_TUNE_RVRSMIN(4)": 500.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

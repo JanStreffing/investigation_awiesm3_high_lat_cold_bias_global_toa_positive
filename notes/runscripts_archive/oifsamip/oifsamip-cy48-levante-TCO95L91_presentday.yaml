@@ -1,0 +1,85 @@
+# Present-day AMIP control -- scored against ERA5 and CERES in THEIR OWN period
+#
+# Every target in this campaign has been scored across a ~130-year period gap: the runs are
+# 1870s observed SST with 1850 GHG, while the T2m reference is ERA5 1990-2014 and the
+# radiation reference is the CERES EBAF 07/2005-06/2015 climatology. That gap turned out to
+# be about HALF the boreal "cold bias" (~1.12 K of the -2.16 K) and to overstate the SO SW
+# CRE gap (~6 W/m2 real, not +8.08).
+#
+# Those corrections were derived indirectly -- ERA5 back-periods plus a HadCRUT5 chain for
+# T2m, and ERA5's model-derived TOA fluxes for the energy target. This run removes the need
+# for any of that: same model, same configuration, run in the reference period itself.
+#
+#   initial_date 1989 -> discard 1989 as spin-up -> evaluate 1990-2014 (25 yr)
+#   NCMIPFIXYR: 0     -> TRANSIENT GHG (updclie_compo.F90:134, LFIXYEAR = NCMIPFIXYR > 0),
+#                        following SSPNAME 'historical', which runs to 2014
+#   SST/ice           -> the AMIP forcing file already spans 187001-201512
+#
+# Scored directly against ERA5 1990-2014 and CERES 2005-2015, this gives the FIRST
+# period-clean measurement of both targets: the true boreal cold bias and the true SO SW CRE
+# and TOA errors. It is one job of ~26 yr against the 19 x 46 yr extensions.
+#
+# BINARY: built from the as-released tree (RCL_KK_CLOUD_NUM_LAND=300, RVLAMSK/S(3,4)=10,
+# RVRSMIN=250), md5 to be verified == d1c4a3f3e327 before submission -- the same binary the
+# control and the whole A1/B family used, so this is comparable to them.
+#
+# nyear 13 -> two legs (1989-2002, 2002-2015), ~3.9 h each at the observed ~18 min/simulated
+# year worst case, safely inside the 8 h wallclock. One 26-yr leg would not fit.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1989-01-01"
+    final_date: "2015-01-01"   # evaluate 1990-2014 against ERA5/CERES
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 13
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=0 makes GHG/ozone/aerosol TRANSIENT along SSPNAME 'historical'
+    # (the PI runs pin it to 1850 instead). historical CMIP6 forcing ends 2014,
+    # which is why final_date is 2015-01-01.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

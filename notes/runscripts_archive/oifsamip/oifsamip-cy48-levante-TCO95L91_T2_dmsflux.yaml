@@ -1,0 +1,128 @@
+# T2 -- DMS SEA-AIR FLUX, unit validation.  Not a science run; nothing is coupled.
+#
+# WHY.  T1 proved the ingest works: 12 dates, 8 fields, emdms at CLIMR slot 8, twelve
+# distinct monthly values with a clean seasonal march.  But the field is NOT what its
+# GRIB label claims.  Measured at full precision it is 29.9 % land sentinel and, over
+# ocean, min 0.043 / median 2.05 / max 53.25 with a global mean of 2.36 -- that is DMS
+# SEAWATER CONCENTRATION in nmol/L, not an emission flux in kg m-2 s-1.  Lana et al.
+# (2011) put the global surface mean at ~2.3.  So a sea-air flux must be formed before
+# the field can drive anything, and the flux is what has to be validated first.
+#
+# WHAT IS COMPUTED (surfrad_layer.F90, diagnostic only):
+#   Schmidt number   Saltzman et al. (1993), T in degC, clamped to [-2, 35]
+#   transfer velocity Nightingale et al. (2000), k600 = 0.222 u^2 + 0.333 u  [cm/hr]
+#   k = k600 * sqrt(600/Sc) / 360000                                        [m/s]
+#   F = k * Cw * 1e-6                                                       [mol m-2 s-1]
+# 1 nmol/L = 1e-6 mol/m3; the /360000 is cm/hr -> m/s.  Wind is the model's own
+# instantaneous lowest-level speed, NOT a monthly mean -- k is quadratic in u, and
+# round 24 showed monthly vector averaging halves the Southern Ocean wind.
+#
+# PASS CRITERION, and it is a real one.  Hand-evaluating the chain at Cw = 2 nmol/L,
+# u = 7 m/s, T = 15 degC gives k600 = 13.2 cm/hr, Sc = 1177, k = 2.6e-5 m/s and
+# F = 5.2e-11 mol m-2 s-1.  Scaling by ocean area 3.6e14 m2 and 3.15e7 s and by
+# 32.06 g/mol that is ~19 Tg S/yr, against a published global DMS flux of 18-34
+# (Lana et al. 2011 give 28.1).  So the printed global-ish mean flux should land in
+# the 1e-11 to 1e-10 mol m-2 s-1 range.  Orders of magnitude away means the unit
+# chain is wrong, which is the entire point of running this.
+#
+# NOT WIRED INTO PCCNO.  The flux->CCN relation is a separate scientific choice that
+# needs a published basis rather than a fitted constant, and it is deliberately not
+# made here.  This run changes no physics; it only prints.
+#
+# ICMCL comes from 95_4_dms via the icmcl_dir override, so the shared input file is
+# untouched and the live S4 is undisturbed.
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "01:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1871-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr, campaign standard
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 1
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    icmcl_dir: "/work/ab0246/a270092/input/oifs-48r1/climate.v020/95_4_dms/"
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMECECFG:
+                ECE_CLIMR_DMS: .true.   # read the 8th ICMCL field (emdms, paramId 210043)
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare.  Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K1: vegetation albedo, types 1 / 10 / 11 only ---
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+                # --- P3: the fitted depletion, taken literally at course scale ---
+                ECE_SNOW_SCF: 3
+                ECE_SNOW_SCF_RHOREF: 200.0
+                ECE_SNOW_SCF_DCL: 0.014     # field / low veg, d_c at rho=200
+                ECE_SNOW_SCF_DCH: 0.026     # forest / high veg
+                ECE_SNOW_SCF_MD: 4.70
+                ECE_SNOW_SCF_BL: 1.46
+                ECE_SNOW_SCF_BH: 0.40
+                ECE_SNOW_SCF_DCMAX: 0.30
+                ECE_SNOW_SCF_SCALE: 1.0
+                ECE_SNOW_SCF_SWEMIN: 15.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # Per-run override so the shared template is untouched: adds daily
+    # sd/rsn/tsn/asn/stl1/stl2.  Retained from N/O because f_full -- the fraction
+    # of the box at cover >= 0.999 -- is the diagnostic that exposed the defect and
+    # is the one that has to come back.
+    add_config_sources:
+        file_def: ${xml_dir}/file_def_snowdiag.xml.j2

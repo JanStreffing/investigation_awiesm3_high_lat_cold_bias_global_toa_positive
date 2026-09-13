@@ -1,0 +1,91 @@
+# =============================================================================
+# AMIP sensitivity test A -- boreal needleleaf canopy resistance RVRSMIN 250 -> 500
+# =============================================================================
+# THIS IS A SENSITIVITY TEST, NOT A DEFAULT RESTORATION.
+#
+# 250 s/m is what OpenIFS 48r1 ships: both the active 250 and the commented-out
+# 500 are present in the release import commit cf82033 ("initial commit of 48r1
+# released version"), and no AWI commit has ever touched RVRSMIN. 500 is the
+# older HTESSEL-era value that ECMWF appear to have revised. Setting 500 moves
+# AWAY from the as-released configuration.
+#
+# Why test it anyway
+# ------------------
+# The corrected AMIP baseline (amip_pi_base) is 2.16 K too cold over Siberian
+# land in JJA against CRUNCEP3, and the surface energy budget there shows
+# SH/LH = -24.6/-56.8, i.e. Bowen ratio 0.43 -- low against the general
+# observed picture for boreal conifer forest. Doubling minimum canopy
+# resistance halves stomatal conductance, cutting transpiration and moving
+# energy from latent into sensible heat, which warms the screen temperature.
+# Because it is a turbulent-flux repartition it changes no radiation directly,
+# so it is the cheapest way to test how much of the summer cold bias is an
+# evaporative-partitioning error rather than the shortwave error that dominates
+# the diagnosis (SW net at the surface is 33 W/m2 too low, from excess cloud).
+#
+# CONTROL: amip_pi_base (identical configuration, RVRSMIN 250). Same prescribed
+# SST, same initial state, same start date -- so the difference is paired and
+# most interannual variance cancels.
+#
+# Binary provenance
+#   control     /work/ab0246/a270092/model_codes/oifsamip-cy48/bin/OpenIFS.rvrsmin250_control
+#   this test   built from susveg_mod.F90 with RVRSMIN(3)=RVRSMIN(4)=500
+#   revert      git checkout -- ifs-source/surf/module/susveg_mod.F90, then rebuild
+#
+# 6 years: discard 1870-71 for deep-soil spin-up, evaluate 1872-1875 against the
+# control's same four years. Measured interannual sigma of the Siberian JJA mean
+# is 0.59 K, so a paired 4-year difference resolves the 1-2 K signal comfortably.
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "02:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1876-01-01"    # 6 yr; evaluate 1872-1875
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 6
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # identical to amip_pi_base -- the ONLY difference is the compiled-in RVRSMIN
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+
+oasis3mct:
+    lresume: false
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # default file_def/field_def, as in amip_pi_base: full atm_remapped_1m output
+    # including TOA radiation (tsr/ttr/tsrc/ttrc) and the surface energy budget
+    # terms (ssr/str/sshf/slhf/sf) needed for both objectives.

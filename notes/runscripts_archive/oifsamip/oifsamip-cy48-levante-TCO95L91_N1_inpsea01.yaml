@@ -1,0 +1,137 @@
+# AMIP TCO95L91 -- RCL_INPSEA SCAN, arm N1: ocean INP -> 10 %
+# =============================================================================
+# N1 = S4 with RCL_INPSEA 0.2 -> 0.1.  ONE namelist number, against a control
+# already run at 46 years, so this needs no new control.
+#
+# WHY THIS LEVER AND NOT ANOTHER.  It is the only Southern Ocean lever in the campaign
+# that is SPATIALLY SELECTIVE BY CONSTRUCTION.  cloudsc.F90:2520-2521:
+#
+#     IF (PAP(JL,JK) > RCL_INPPMIN) &
+#       & ZICENUCLEI(JL) = ZICENUCLEI(JL)*(RCL_INPSEA+(1.0_JPRB-RCL_INPSEA)*PLSM(JL))
+#
+# PLSM is the land-sea mask, so over land the multiplier is exactly 1 and Siberian cloud
+# CANNOT respond.  Measured 2026-08-19 in the coupled arms, the contrast is stark --
+# column liquid fraction, SO 45-65S against Siberia 55-75N:
+#
+#     11G  (inpsea 0.2)     SO 0.733    Siberia 0.671
+#     11L  (+ovl 0.35)      SO 0.761    Siberia 0.708
+#     11M  (+ovl 0.10)      SO 0.806    Siberia 0.781
+#
+# The overlap lever moves cloud phase in BOTH regions -- that IS its Siberian cooling,
+# -1.000 K and -2.321 K, which disqualified both coupled arms.  RCL_INPSEA structurally
+# cannot do that.
+#
+# WHY SCAN IT NOW, AFTER A MONTH AND A HALF.  Because it has never been scanned.  All 46
+# runscripts that set it use 0.2, and 0.2 was never measured -- it is justified in those
+# scripts as the "marine biogenic floor", an argument about INP CONCENTRATION.  The
+# observable that actually constrains this is CLOUD PHASE, and if the Southern Ocean is
+# still too icy at 0.2 then lowering it is a correction toward observations rather than a
+# fudge past a floor.  The model sits at 0.733 column liquid fraction; CALIPSO-GOCCP is
+# being fetched to say whether that is low.
+#
+# In AMIP at 0.2 this lever already delivers SO SW -4.80 W/m2 (D2a, 44 yr) -- stronger
+# than S4's -4.67 and comparable to the overlap at 0.10 (-6.44).  So it is not weak.  The
+# open question is whether it has HEADROOM: 0.2 has already removed 80 % of ocean INP, so
+# the marginal effect of the next step may be small.
+#
+# WHAT WOULD SETTLE IT EITHER WAY.  If SO SW CRE barely moves from 0.1, the response has
+# saturated, the lever is spent, and the Southern Ocean cannot be closed selectively --
+# that is a real answer and the campaign should stop looking here.  If it keeps moving,
+# there is a selective lever with headroom and the only question left is how far below the
+# biogenic-INP floor the cloud-phase observation justifies going.
+#
+# WATCH THE TROPICS ANYWAY.  RCL_INPPMIN 50000 gates the reduction to below ~500 hPa, so
+# tropical anvils are spared by construction, but the tropical SW response is scored
+# regardless -- DMS was disqualified on exactly that term after looking selective.
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr, campaign standard
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.1         # N1: ocean INP -> 10 %; the ONLY change from S4
+                RCL_INPPMIN: 50000.0     # S4: gate ceiling to ~500 hPa, covering the observed 656 hPa cloud
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare.  Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K1: vegetation albedo, types 1 / 10 / 11 only ---
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+                # --- P3: the fitted depletion, taken literally at course scale ---
+                ECE_SNOW_SCF: 3
+                ECE_SNOW_SCF_RHOREF: 200.0
+                ECE_SNOW_SCF_DCL: 0.014     # field / low veg, d_c at rho=200
+                ECE_SNOW_SCF_DCH: 0.026     # forest / high veg
+                ECE_SNOW_SCF_MD: 4.70
+                ECE_SNOW_SCF_BL: 1.46
+                ECE_SNOW_SCF_BH: 0.40
+                ECE_SNOW_SCF_DCMAX: 0.30
+                ECE_SNOW_SCF_SCALE: 1.0
+                ECE_SNOW_SCF_SWEMIN: 15.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # Per-run override so the shared template is untouched: adds daily
+    # sd/rsn/tsn/asn/stl1/stl2.  Retained from N/O because f_full -- the fraction
+    # of the box at cover >= 0.999 -- is the diagnostic that exposed the defect and
+    # is the one that has to come back.
+    add_config_sources:
+        file_def: ${xml_dir}/file_def_snowdiag.xml.j2

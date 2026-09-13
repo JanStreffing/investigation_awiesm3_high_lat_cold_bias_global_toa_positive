@@ -1,0 +1,87 @@
+# =============================================================================
+# Round 10, prong A1 -- Southern Ocean cloud deficit
+#   RCL_OVERLAPLIQICE : 0.65 (OpenIFS 48r1 default) -> 0.1
+# =============================================================================
+# WHY THIS PARAMETER
+# It is the assumed sub-grid overlap of supercooled liquid with ice in the
+# Wegener-Bergeron-Findeisen deposition term (cloudsc.F90:2499 -> 2540):
+#     ZDEPOS = MAX(ZOVERLAP_LIQICE * ZA * (ZINEW - ZICE0), 0)
+# Lowering it exposes less liquid to growing ice crystals, so supercooled
+# liquid survives and the cloud brightens -- the mechanism the Southern Ocean
+# literature blames for the SW bias.
+#
+# Three independent lines converged on it:
+#   * EC-Earth4 tuning_v0.3.yml sets RCL_OVERLAPLIQICE: 0.1 as its ONLY OpenIFS
+#     tuning entry (git.smhi.se, struthers/ecearth4)
+#   * ECMWF wrote a regime-selective version setting exactly 0.1 in shallow
+#     convection and left it commented out at cloudsc.F90:2501-2504
+#   * the SO literature attributes the bias to a supercooled-liquid deficit
+#
+# TARGET (AMIP 1872-79 vs CERES EBAF, 45-65S ocean):
+#   cloud area 83.1% vs 89.7% (-6.6 pp); TOA SW CRE -60.3 vs -68.1 (+7.8 W/m2);
+#   net TOA +5.8 W/m2 too much absorbed, contributing +0.57 W/m2 globally.
+#
+# FALSIFIABLE PREDICTION: boreal JJA should be essentially UNCHANGED. The
+# deposition/riming/snow-autoconversion terms only act where supercooled liquid
+# coexists with ice (RTHOMO <= T < RTT-5 K); boreal-land summer BL cloud is warm
+# (T > 268 K) and never enters that window. If boreal JJA moves substantially,
+# the temperature-window argument is wrong.
+#
+# NOTE: SST and sea ice are PRESCRIBED, so this cannot and must not be judged on
+# an SO temperature response -- only on radiation. The SO warm bias is a COUPLED
+# phenomenon; confirming the fix requires a coupled run.
+#
+# CONTROL: amip_pi_base (identical otherwise). Binary is the as-released
+# RVRSMIN=250 build -- experiment A's 500 was reverted first so this is clean.
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "02:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1876-01-01"    # 6 yr; evaluate 1872-1875 against the control
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 6
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+                RCL_OVERLAPLIQICE: 0.1
+
+oasis3mct:
+    lresume: false
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32

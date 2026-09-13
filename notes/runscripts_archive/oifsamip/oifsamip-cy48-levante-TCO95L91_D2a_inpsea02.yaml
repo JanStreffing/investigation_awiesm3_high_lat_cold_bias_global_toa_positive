@@ -1,0 +1,99 @@
+# D2a -- continental INP scaling, WITHOUT a remoteness gate (a leverage test)
+#
+# WHAT. New NAMCLDP parameter RCL_INPSEA multiplies ZICENUCLEI, continuously in PLSM so
+# coastlines blend:  ZICENUCLEI *= RCL_INPSEA + (1-RCL_INPSEA)*PLSM
+# Default 1.0 reproduces as-released behaviour exactly. Here: 0.2 (ocean INP cut to 20%).
+#
+# WHY. The Southern Ocean supercooled-liquid deficit is an ice-NUCLEATION problem, and the
+# scheme has no aerosol dependence at all: ZICENUCLEI (cloudsc.F90:2517,:2621) is Meyers et
+# al. (1992), a function of ice supersaturation ONLY, documented to overestimate INP in clean
+# environments -- i.e. exactly the remote SO. DeMott et al. (2010/2015) make INP depend on
+# aerosol number instead. INP sources are continental (mineral dust, biological), so cutting
+# INP over ocean has a real mechanism, with the right sign in BOTH regions at once: SO liquid
+# survives and brightens; continental INP is untouched so the boreal is not cooled. Leverage
+# is strong since ZCVDS ~ ZICENUCLEI**0.666, so 0.2 cuts deposition to ~0.34.
+#
+# WHY 0.2 AND NOT 0.01. Sea salt itself is a poor INP, but sea spray carries marine biogenic
+# organics (sea-surface microlayer, phytoplankton exudates) which ARE a modest INP source
+# (Wilson et al. 2015; DeMott et al. 2016). There is a marine biogenic INP FLOOR, so the
+# ocean factor must not approach zero. 0.1-0.3 is defensible; 0.2 is the midpoint.
+#
+# THIS RUN IS EXPECTED TO DAMAGE THE TROPICS, and is run anyway as a LEVERAGE TEST.
+# The scaling acts only inside the mixed-phase window (235.15 K <= T < 268.15 K with liquid
+# present), which in the tropics sits at ~500-300 hPa and IS populated -- deep convective
+# updraughts carry supercooled liquid well above the freezing level, and anvils feed it. More
+# retained liquid there brightens tropical mid-level cloud and pushes tropical TOA FURTHER
+# BELOW CERES, already 2.5 W/m2 too low. Expect a cost of order A1a's -1.07 or worse.
+#
+# Physically, "ocean" is also the WRONG discriminator: tropical and subtropical oceans are not
+# dust-remote (Saharan dust over the tropical Atlantic, Asian dust over the N Pacific); the SO
+# is uniquely far from continental sources. The distinguishing property is REMOTENESS, which a
+# local land-fraction mask cannot encode. That is what D2b adds.
+#
+# SO THE QUESTION THIS RUN ANSWERS is narrow and deliberate: does the INP route have Southern
+# Ocean leverage at all? If the SO barely moves, D2b is not worth building and the INP idea is
+# dead regardless of how good the proxy gets. If the SO moves well and only the tropics suffer,
+# D2b's remoteness gate is the fix and is worth the plumbing.
+#
+# Tempering caveat: marine biogenic INP peaks with the austral-summer bloom (DJF), exactly when
+# SO insolation and our SW bias peak, so the SO is LEAST INP-starved in the season we care most
+# about. Do not expect A1a-sized gains.
+#
+# FORCING: same as the 19 round-10 levers (oifs.scenario defaults to "historical").
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # ocean INP -> 20%; floor set by marine biogenic INP
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

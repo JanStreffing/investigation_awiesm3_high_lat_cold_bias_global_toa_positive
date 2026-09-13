@@ -1,0 +1,91 @@
+# W-SERIES -- the v3.4.2 DARS2 TCO95L91 cloud stack, taken apart.
+#
+# WHERE THIS COMES FROM.  awiesm3-v3.4.2-levante-TCO95L91-DARS2_{{1d,2y}}.yaml carry a
+# jointly-tuned eight-parameter cloud stack for OUR EXACT RESOLUTION:
+#
+#     namcumf: RPRCON 1.48E-3  ENTRORG 2.07E-3  RMFDEPS 0.48  DETRPEN 1.32E-4
+#              ENTRDD 1.08E-4
+#     namcldp: RVICE 0.18  RLCRITSNOW 1.46E-5  RSNOWLIN2 0.04
+#
+# No fort.4 on disk sets any of them, so as far as this machine knows the stack was
+# written and never executed.  The values are precise to three figures (1.48, 2.07, 0.48,
+# 1.32, 1.08, 1.46), which is an optimiser's output, not hand-tuning -- consistent with
+# the EPPES perturbation table in the logbook.
+#
+# WHY THE CAMPAIGN NEVER SAW IT.  preflight.py scanned one runtime tree and one runscript
+# directory, so every one of these read as "never set in any run".  That is fixed as of
+# 2026-08-10; it had already hidden the RPRCON history (#87/#95) the same day.
+#
+# WHAT THE SERIES DOES.  Eight one-variable arms plus the full stack, all one year,
+# all against amip_pi_base year 1870 -- identical initial state, identical forcing.  The
+# combination is run because these were tuned TOGETHER and superposition has been wrong
+# in SIGN twice in this campaign (AB, ABB8): W9 minus the sum of W1..W8 measures the
+# interaction directly instead of assuming it away.
+#
+# ONE YEAR IS ENOUGH FOR THE RADIATIVE METRICS, and only those.  Measured 1-yr pair
+# thresholds from the control's interannual scatter: tropical LW CRE +-0.279, tropical
+# SW CRE +-0.990, tropical net TOA +-1.656, SO SW CRE +-1.974, SO LW CRE +-0.584,
+# global net TOA +-1.333.  Anything below its threshold is a bound, not a result, and
+# NOTHING here licenses a temperature claim.
+#
+# W3: RMFDEPS -> 0.48   (default 0.30 (sucumf.F90:146))
+#     downdraught mass flux fraction at the LFS -- +60 % over default.
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "01:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1871-01-01"   # ONE screening year
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 1
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCUMF:
+                RMFDEPS: 0.48
+            NAMCLDP:
+                RVICE: 0.16          # base value unless overridden below
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

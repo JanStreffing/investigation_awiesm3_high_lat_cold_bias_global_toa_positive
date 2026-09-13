@@ -1,0 +1,167 @@
+# I1 -- G4 plus SUB-GRID SNOW DEPLETION (Niu & Yang 2007). Round 15.
+#
+# WHAT IS BROKEN. HTESSEL sets snow cover from the CELL-MEAN depth,
+# ZCVS = min(1, d_cm/10), so a 100 km cell counts as fully covered until its MEAN
+# depth falls under 10 cm. The model median May cell holds 27 cm, so it reports
+# ~full cover while the Rutgers/IMS satellite record shows 0.647. Melt-out lands
+# 13 days late and June cover is roughly double observed, which is the source of
+# the +0.046 June albedo bias measured against CERES and the -5.6 W/m2 June
+# surface SW deficit that G4 leaves completely untouched.
+#
+# WHY ROUND 13 COULD NOT HAVE WORKED. Changing RQSNCR 1/10 -> 1/30 moves the
+# threshold from 10 to 30 cm, which does NOTHING at 27-51 cm depth. It could only
+# act where depths sit near the threshold -- 13-27 cm, i.e. October/November --
+# and that is exactly where its response appeared (-8.2 albedo points in October,
+# -0.95 in June). The lever was not weak, it was arithmetically incapable of
+# acting in spring. The commented-out tanh/sqrt variants in surfbc_ctl_mod.F90
+# share the defect: tanh(27/10) = 0.99.
+#
+# THE CHANGE. ECE_SNOW_SCF=1 selects
+#     SCF = tanh( d / (2.5*z0g*(rho_bulk/rho_new)**m) )
+# Density is the mechanism: fresh snow is ~100 kg/m3, the model May pack has aged
+# to 320, and that ratio to the power 1.6 inflates the scale ~7x -- so the same
+# 27 cm that scored full cover in March scores 0.65 in May. Density acts as a
+# proxy for how far through the melt season the pack is, which is when a real
+# landscape goes patchy. No new prognostic needed.
+#
+# CALIBRATION, done on existing output BEFORE any code was written. z0 and m are
+# degenerate, so m is held at Niu & Yang observational 1.6 and only z0 tuned:
+#     z0        0.008  0.012  0.016  0.020
+#     melt-out  +11.6   +5.4   +0.7   -3.5  days vs satellite
+#     RMSE       0.122  0.059  0.027  0.050  Mar-Jun cover
+# z0=0.016 is the joint optimum: May 0.654 vs satellite 0.647, June 0.219 vs
+# 0.203, melt-out within a day. Melt DATE and cover FRACTION are independent
+# constraints and agree at the same z0, which is the argument that this is
+# calibration and not curve-fitting. 0.016 m is an ordinary tundra ground
+# roughness.
+#
+# PREDICTION. Recovering most of the -5.6 W/m2 June albedo term is worth roughly
+# +0.3 to +0.8 K on Siberian JJA T2m IF the June albedo bias actually drives
+# temperature. IT MAY NOT: G4 gained +0.952 K while snow mass was unchanged and
+# cover got WORSE, so the albedo-to-T2m link is unproven (report sub:weaklink).
+# THIS RUN IS THE CLEAN TEST OF THAT LINK, and a null result is a real result --
+# it would mean the June albedo bias is a radiative error the atmosphere exports,
+# and that Route B is not where the remaining boreal kelvin lives.
+#
+# WHAT IT WILL NOT FIX: autumn. Sep/Oct cover stays ~+0.18 to +0.25 too high;
+# that is the accumulation season where the threshold formulation is what bites.
+#
+# GUARDRAILS: melt-out date and May/June cover vs satellite (the direct test);
+# DJF against its own +-0.588 K threshold, since a snow change is a cold-season
+# change first; NH-SH albedo; tropics net TOA near 42.6.
+#
+# The G4 header and physics rationale follow.
+#
+# ---------------------------------------------------------------------------
+# G1 -- F4 (boreal stomatal resistance) + D2b (ocean INP, gated below 700 hPa)
+#
+# THE FIRST PAIRING WHERE THE TWO TARGETS DO NOT FIGHT.
+#
+#   F4  RVRSMIN(3,4) 250 -> 1000   SOURCE  -- boreal: +0.749 K, t=6.06, best of campaign
+#   D2b RCL_INPSEA 0.2, RCL_INPPMIN 70000  -- Southern Ocean: SW RMSE 6.88 -> 4.96
+#
+# Measured individually at 44 yr (threshold +-0.242 K boreal, +-0.019 SO SW RMSE):
+#                Siberia dT2m        SO SW RMSE d      tropics      global TOA
+#   D2b          -0.222 (marginal)   -0.17 signif       +0.09        -0.28
+#   F4           +0.749 (signif)     -0.02 (barely)     +0.07        +0.10
+#   naive sum    +0.53               -0.19              +0.16        -0.18
+#
+# WHY THEY SHOULD NOT CONFLICT. Every previous conflict in this campaign ran through
+# mixed-phase overlap, which brightens SO cloud AND boreal mid-level cloud at once -- A1a
+# bought 82% of the SO gap at the price of -0.75 K in Siberia. These two are disjoint in
+# BOTH process and geography: stomatal conductance on vegetation types 3/4 (land, boreal
+# only) versus ice nucleation over ocean below 700 hPa. Types 5/6/18 keep their defaults so
+# the tropics are untouched by construction, and F4's SO effect (-0.02) is barely past the
+# detection threshold -- it does not help the Southern Ocean, it simply does not harm it.
+#
+# THIS IS A PREDICTION, NOT A MEASUREMENT. AB (A1b+B2) predicted +0.21 K boreal and measured
+# -0.053; ABB8's parts summed to +0.76 and measured -0.167; F5 showed near-TOTAL saturation
+# where only strong sub-additivity was expected. Superposition in this model has been wrong
+# in SIGN twice. The disjoint mechanisms are the best prior we have had, which is an argument
+# for running it, not for believing it.
+#
+# WHAT TO CHECK: (i) does D2b's -0.222 K boreal cooling -- MARGINAL, t=-1.80, possibly noise
+# -- actually eat 30% of F4's gain, or is the combination closer to the full +0.749?
+# (ii) does F4 still leave the SO alone once D2b has changed it? (iii) tropics must stay near
+# 42.6; any drift toward B5's 40.67 kills the package.
+#
+# WHAT IT STILL WILL NOT FIX: global net TOA stays ~+0.6 against a ~0 target, the SO cloud
+# AREA deficit (83% vs CERES 89.7%) is untouched by everything tried so far, and the tropics
+# remain ~2.4 W/m2 too low.
+#
+# FORCING: historical, as for every other lever run, so deltas stay comparable.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare. Adding the tune entries to NAMECECFG kills the arpifs
+            # read at su0yoma.F90:152. Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # F4, formerly a source edit to susveg_mod.F90:272-273.
+                # 3 = Evergreen Needleleaf Trees, 4 = Deciduous Needleleaf Trees.
+                # Types 5/6/18 deliberately keep their defaults so the tropics and
+                # the broadleaf forests are untouched by construction.
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # Round 15: sub-grid snow depletion, Niu & Yang (2007).
+                ECE_SNOW_SCF: 1
+                ECE_SNOW_SCF_Z0: 0.016
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

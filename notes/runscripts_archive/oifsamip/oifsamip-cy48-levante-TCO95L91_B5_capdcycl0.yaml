@@ -1,0 +1,48 @@
+# Round 10 boreal sweep -- B5_capdcycl0
+# RCAPDCYCL 2.0 -> 0.0. Disables the CAPE diurnal-cycle correction, which exists specifically for the LAND diurnal convection cycle -- so this is one of the few convection knobs with an inherent land bias.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "02:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1876-01-01"
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 6
+    use_venv: false
+computer:
+    taskset: true
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+            NAMCUMF:
+                RCAPDCYCL: 0.0
+oasis3mct:
+    lresume: false
+    time_step: 86400
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32

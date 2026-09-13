@@ -1,0 +1,80 @@
+# F4 -- boreal needleleaf minimum stomatal resistance 250 -> 1000  (susveg_mod.F90:272-273)
+#
+# expA already tried 250 -> 500 and gave +0.232 K (marginal, t=1.9 at 44 yr). This doubles
+# again. If the response is linear, expect ~+0.45 K; if it saturates, that is itself the
+# answer and closes the stomatal route.
+#
+# NOTE: 250 is what ECMWF ships in 48r1 (verified in git: both the active 250 and a commented
+# 500 are present in the initial 48r1 commit, and no AWI commit ever touched RVRSMIN). So
+# 1000 is a deliberate excursion FAR from the released value, not a restoration -- the least
+# conservative of the four, and it should be read as a sensitivity probe.
+#
+# ALL FOUR F-RUNS SHARE ONE OBSERVATIONAL ANCHOR: the measured Siberian JJA Bowen ratio is
+# 0.43, against ~0.5-1.5 observed for boreal conifer. The model puts too much of the surface
+# energy into latent heat. Every F lever raises Bowen, and all are indexed on vegetation
+# types 3 and 4 (evergreen/deciduous needleleaf), so they are boreal-selective by
+# construction -- types 5/6/18 (broadleaf, mixed) keep their defaults, leaving the tropics
+# and temperate forests alone. That is the property B5 lacked: its +0.407 K came with
+# -1.94 W/m2 in the tropics, which are already 2.5 below CERES.
+#
+# NONE of these has been tried before: RVZ0H, RVLAI and RVCOV have zero mentions in the
+# campaign logbook, and RVRSMIN was tried only at 500 (expA, +0.232 K, marginal).
+#
+# FORCING: same as every other lever run (oifs.scenario defaults to "historical"), so deltas
+# are directly comparable to B5's +0.407 K. 46 yr, evaluated 1872-1915, threshold +-0.240 K.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

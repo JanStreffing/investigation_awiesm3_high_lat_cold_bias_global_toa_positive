@@ -1,0 +1,110 @@
+# K2 -- G4 PLUS the bare-soil background albedo scale ALONE. Round 17.
+#
+# THE ISOLATE. K1 changes two things at once: the vegetation albedo table (crops,
+# irrigated crops, semidesert) and the bare-soil background. K2 changes ONLY the
+# soil background, so K1 minus K2 gives the vegetation-table contribution and
+# K1 vs (K2 + veg-only) MEASURES superposition instead of assuming it.
+#
+# That last point is not a formality. Superposition in this model has been wrong in
+# SIGN twice -- AB predicted +0.21 K boreal and measured -0.053; ABB8's parts summed
+# to +0.76 and measured -0.167 -- and F5 showed near-total saturation where only
+# strong sub-additivity was expected. The standing rule is never to predict
+# superposition, only to measure it.
+#
+# WHY THE SOIL HALF DESERVES ITS OWN RUN. It is the larger half by area: bare-soil
+# dominated cells are 25.3 % of land against 17.4 % for the three vegetation types
+# in K1, and it is the half that NOTHING can reach except this knob -- RVVEGALB is
+# identically zero for types 0, 8 and 12, and those cells are only ~6 % vegetated.
+# It is also the half with the most regional scatter (Sahara +0.0192, Arabia
+# +0.0255, Gobi +0.0284), so a single global scale is more of a compromise here than
+# for the vegetation types, and it is worth knowing what that compromise buys on its
+# own.
+#
+# ONE KNOWN UNKNOWN, STATED SO IT IS NOT MISTAKEN FOR SIGNAL. Bare cells poleward of
+# 65N show a +0.14 albedo bias with a snow-free model albedo of 0.571, which is not a
+# physically plausible soil value. It is NOT Greenland (excluding Greenland makes it
+# worse) and those cells are not flagged as ice caps. Something is wrong with either
+# the mask or the fields there and it is unexplained. It is 2.3 % of land and the
+# global bare-soil number is +0.0159 with or without it, so it does not drive the
+# value used here -- but if K2 produces a surprising high-latitude response, this is
+# the first place to look.
+#
+# SCALE, NOT OFFSET: across Sahara/Arabia/Gobi the model/CERES RATIO varies by 3.5 %
+# of its mean while the additive offset varies by 20 %, so the scale generalises
+# better across regions, and it cannot drive an albedo negative. 0.95 delivers the
+# measured -0.0163 on bare-soil cells.
+#
+# HOW TO SCORE IT: like K1, on bias_by_tile.py and global T2m RMSE vs ERA5, NOT on
+# the Siberian box -- the mass of this lever is the subtropical desert belt.
+#
+# BASE: G4, the adopted configuration. Tundra excluded throughout round 17 so K stays
+# orthogonal to the concurrent J (winter skin conductivity) and L (moss layer on
+# types 4 and 9) families.
+#
+# FORCING: historical, as for every other lever run, so deltas stay comparable.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare. Adding the tune entries to NAMECECFG kills the arpifs
+            # read at su0yoma.F90:152. Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K2: bare-soil background scale ONLY, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

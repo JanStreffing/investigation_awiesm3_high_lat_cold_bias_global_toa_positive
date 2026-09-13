@@ -1,0 +1,98 @@
+# TRUE piControl AMIP control -- the forcing configuration the coupled model uses
+#
+# WHY THIS EXISTS. Every oifsamip runscript hand-wrote a &NAMECECMIP6 namelist block
+# carrying LCMIP6/CMIP6DATADIR/NCMIPFIXYR: 1850/SSPNAME. OpenIFS 48r1 renamed that
+# namelist to &NAMECECMIP, so the block was NEVER READ (ece_cmip.F90:68 POSNAMs
+# 'NAMECECMIP' only; NAMECECMIP6 and SSPNAME do not appear anywhere in the source).
+# The block survives in esm-tools' fort.4 template, so f90nml patched it happily and the
+# generated namelist looked right -- but NCMIPFIXYR stayed at its default -1, and
+# LFIXYEAR = NCMIPFIXYR > 0 is therefore FALSE.
+#
+# Consequence, verified from the model's own output: amip_pi_base ran TRANSIENT CMIP7
+# historical forcing at its actual calendar year --
+#     UPDRGAS: greenhouse gas concentrations for YEAR/MONTH 1870/01
+#     CO2 = 286.94 -> 287.12 -> 287.31 ... (rising through the run)
+#     SP_SETUP: IYR = 1870, 1871, ... (MACv2-SP aerosols advancing too)
+# So the "1850 GHG PI control" was actually an 1870-1915 historical run, including
+# Krakatoa (1883, -0.98 K in Siberian JJA) and Santa Maria (1902).
+#
+# WHAT THIS DOES NOT INVALIDATE. All 19 lever runs share that identical forcing
+# trajectory, and the perturbations live in NAMCLDP/NAMVDF/source which ARE read. The
+# run x year ANOVA absorbs the shared trend and the volcanoes in g[year]. The lever
+# results stand: B5 +0.407 K, B2 +0.344, B3 +0.306, all significant at +-0.240 K.
+#
+# WHAT IT DOES AFFECT: the ABSOLUTE targets, which are all read off the control. CO2
+# drifts 287->301 ppm (~+0.15 W/m2 mid-run vs 1850, partly offset by aerosols) and the
+# volcanoes depress the 44-yr mean by ~0.05 K. Small, but the global TOA target is only
+# +0.53 W/m2, so a ~0.1 W/m2 forcing error is not negligible there.
+#
+# THE FIX is not a hand-patch but the setup's own switch: oifs.scenario: "piControl"
+# routes through configs/components/oifs/oifs48.cmip.yaml, which writes NCMIPFIXYR into
+# the LIVE &NAMECECMIP block and sets the CMIP7 stratospheric-aerosol switches in NAERAD
+# (LCMIP_STRATAER_CMIP7=True, LCMIP_STRATAER_BCKGD=False) -- so volcanoes go to
+# background too. oifsamip.yaml:101 currently defaults oifs.scenario to "historical".
+#
+# A NEW experiment, deliberately NOT overwriting amip_pi_base: all 19 lever deltas are
+# referenced to that control, so it must stay exactly as it is.
+#
+# CAVEAT: AMIP prescribes OBSERVED 1870s SST, which is itself historical, so piControl
+# forcing + observed SST is a hybrid either way. The reason to prefer it is that the
+# coupled rounds 06-09 use NCMIPFIXYR=1850, so the testbed should match the
+# configuration it is meant to inform.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    scenario: "piControl"   # THE POINT OF THIS RUN
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

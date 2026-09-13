@@ -1,0 +1,146 @@
+# P1 -- the OBSERVATIONALLY FITTED snow-cover depletion, at course scale (SCALE=1).
+# Round 20, paired with P2.  K1 base, 46 yr, daily snow/soil output retained.
+#
+# WHY THE WHOLE SCF LINE WAS RESTARTED.  tanh(x) has range (0,1), OPEN AT 1, so
+# complete snow cover is not representable at ANY (z0, rho_new, m).  Russian snow
+# courses (RIHMI-WDC snmar, 1-2 km transects, 14369 Siberian DJF surveys) report
+# cover of exactly 10/10 in 99.74% of cases.  Measured on the same surveys the tanh
+# reaches complete cover on 29% of January field cases against an observed 99.6%.
+#
+# That is not cosmetic.  The exposed AREA is 1 - mean cover either way, but the
+# as-released ramp CLIPS, so the deficit sits in a few genuinely bare cells and 93.5%
+# of the box stays perfectly insulated; the tanh smears the same deficit as a sliver
+# of bare ground inside EVERY cell, each coupling its soil to the air at
+# lambda_sk = 10 W m-2 K-1 -- about 16x stiffer per unit area than the entire snow
+# column (0.61) -- so no soil is left insulated.  Measured, 44 yr AMIP:
+#     f_full (fraction of box at cover >= 0.999), January:  N1 0.960   N2 0.773
+#     Siberian DJF soil at 0.2 m vs 174676 RIHMI observations (-6.1 degC):
+#         N1 (scheme off) -5.3, bias +0.8      <- as-released is RIGHT
+#         N2 (tanh)      -26.3, bias -20.2
+#         O1 (m=4)       -22.2, bias -16.1
+#         O2 (m=3)       -20.8, bias -14.7
+# In N2 the soil sits 2 K from its own snowpack under half a metre of snow, which
+# conduction cannot produce.  This also RETRACTS the round-15/16 claim that the
+# depletion scheme "removed a compensating error": for soil temperature the
+# as-released cover was correct and the scheme replaced it with a broken field.
+#
+# WHAT P1 RUNS.  ECE_SNOW_SCF = 3:
+#     SCF = (1-cvh)*min(1,(d/d_cl)**b_l) + cvh*min(1,(d/d_ch)**b_h)
+#     d_c = min(DCMAX, SCALE * DC * (rho/200)**MD)
+# min(1,.) reaches 1 exactly -- that is the fix.  Density still supplies the spring
+# depletion, so no new prognostic, no hysteresis flag, and NOTHING KNOWS THE DATE.
+# Split by vegetation TYPE and FRACTION only, so it stays portable to other climate
+# states and follows the vegetation if LPJ-GUESS moves the treeline.
+#
+# Parameters are FITTED, not chosen: 36492 snow-course surveys measuring depth,
+# density and covered fraction on the same transect, split by course type
+# (1 = pole/field -> low veg, 2 = les/forest -> high veg).  Constrained fit holding
+# Oct-Feb saturated, then minimising Mar-May error.  The frontier is FLAT, so the
+# winter/spring trade-off that dominated rounds 15-19 was an artefact of the tanh.
+#     Mar-May RMSE   mode 3  0.0025 field / 0.0001 forest
+#                    as-rel  0.0229 / 0.0156
+#                    tanh    0.1207 / 0.0964
+#
+# WHY SCALE=1 HERE AND 3 IN P2.  A snow course is 1-2 km; a TCO95 box is ~100 km.
+# Sub-grid variance grows with scale, so d_c fitted on courses is a LOWER BOUND and
+# SCALE > 1 is the physically expected direction.  It is the ONE parameter the
+# station data cannot constrain.  P1 takes the observations literally; P2 scales.
+# At the Siberian box-mean May state (d = 0.31 m, rho = 313) SCALE=1 gives d_c =
+# 0.118 m, i.e. d/d_c = 2.6 and NO depletion -- so P1 is expected to behave much like
+# as-released in spring.  That is the point: P1 isolates whether the winter defect is
+# cured, P2 asks whether the summer gain can be recovered on top.
+#
+# WHAT WOULD FALSIFY P1: if DJF soil does NOT return to the N1/K1 reference, the
+# distribution diagnosis is wrong and the whole round-20 argument fails.  Secondary:
+# f_full in January must come back to ~0.96 (N1) from N2's 0.773.
+#
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr, campaign standard
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare.  Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K1: vegetation albedo, types 1 / 10 / 11 only ---
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+                # --- P1: the fitted depletion, taken literally at course scale ---
+                ECE_SNOW_SCF: 3
+                ECE_SNOW_SCF_RHOREF: 200.0
+                ECE_SNOW_SCF_DCL: 0.014     # field / low veg, d_c at rho=200
+                ECE_SNOW_SCF_DCH: 0.026     # forest / high veg
+                ECE_SNOW_SCF_MD: 4.70
+                ECE_SNOW_SCF_BL: 1.46
+                ECE_SNOW_SCF_BH: 0.40
+                ECE_SNOW_SCF_DCMAX: 0.30
+                ECE_SNOW_SCF_SCALE: 1.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # Per-run override so the shared template is untouched: adds daily
+    # sd/rsn/tsn/asn/stl1/stl2.  Retained from N/O because f_full -- the fraction
+    # of the box at cover >= 0.999 -- is the diagnostic that exposed the defect and
+    # is the one that has to come back.
+    add_config_sources:
+        file_def: ${xml_dir}/file_def_snowdiag.xml.j2

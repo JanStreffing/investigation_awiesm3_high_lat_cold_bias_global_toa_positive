@@ -1,0 +1,92 @@
+# D2b -- continental INP scaling WITH a lower-troposphere gate
+#
+# D2a's flaw, stated when it was set up: "ocean" is the wrong discriminator. Tropical and
+# subtropical oceans are NOT dust-remote (Saharan dust over the tropical Atlantic, Asian dust
+# over the N Pacific), so a land/sea INP cut also brightens tropical mid-level cloud and
+# pushes tropical TOA further below CERES, already 2.5 W/m2 too low.
+#
+# The fix here is NOT a latitude gate. Thinking about WHERE the mixed-phase window sits gives
+# a better and less arbitrary discriminator:
+#
+#   the window is RTHOMO <= T < RTT-5, i.e. 235.15-268.15 K with liquid present
+#     * Southern Ocean (surface ~275 K): that window sits at ~900-550 hPa, coinciding with the
+#       boundary-layer / low cloud that actually controls SO albedo.
+#     * Tropics: the SAME window sits at ~600-300 hPa, inside deep convective and anvil cloud,
+#       where the radiative role is quite different.
+#
+# So gating on PRESSURE separates the two by their actual thermal structure rather than by
+# geography -- no hand-picked latitudes, no new fields, no plumbing. RCL_INPPMIN = 70000 Pa
+# captures SO low cloud while excluding the tropical window almost entirely.
+#
+# This is why D2b is not simply "D2a plus tiles". The tile-based two-term INP proxy
+# (dust from bare soil x wind; biological from vegetation tiles) refines LAND INP and would
+# affect the BOREAL side; it needs callpar plumbing of SURFL%ZFRTI into cloudsc. The pressure
+# gate fixes the OCEAN discrimination, which is the flaw that would disqualify D2a. The two are
+# orthogonal, and the tropics problem is the one that matters first -- so it is done first.
+#
+# CHANGE vs D2a: identical RCL_INPSEA = 0.2, plus RCL_INPPMIN = 70000.0.
+# Comparing D2b against D2a therefore isolates the gate itself.
+#
+# PREDICTION: retains most of D2a's Southern Ocean gain while recovering most of its tropical
+# cost. If the SO gain disappears along with the tropical cost, then D2a's SO signal was coming
+# from mid/upper-level cloud rather than low cloud, and the low-cloud framing is wrong.
+#
+# FORCING: same as the 19 round-10 levers (oifs.scenario defaults to "historical").
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # ocean INP -> 20%; floor set by marine biogenic INP
+                RCL_INPPMIN: 70000.0     # apply only below ~700 hPa (SO low cloud, not tropical anvils)
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

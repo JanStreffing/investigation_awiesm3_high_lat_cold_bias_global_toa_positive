@@ -1,0 +1,89 @@
+# D1 -- RCAPDCYCL mode 4: reformulate the land CAPE closure instead of deleting it
+#
+# WHY. Round 10's B5 (RCAPDCYCL 2.0 -> 0.0) gave the single best boreal response of the
+# campaign at 44 years: Siberian JJA T2m +0.407 K, t=3.32, significant against a +-0.240 K
+# floor. But RCAPDCYCL is a MODE SELECTOR, not a magnitude (cumastrn.F90:773,777):
+#     1.0 = correction over LAND only, scaled on ZKHVFL (surface kinematic virtual heat flux)
+#     2.0 = EVERYWHERE: land via ZCAPPBL*ZTAU/ZTAURES, ocean via a wind-based ZTAUPBL
+#     0.0 = OFF entirely   <- what B5 did
+# So B5 did not tune anything down; it DELETED the Bechtold et al. (2014) CAPE diurnal-cycle
+# correction globally. That correction exists to fix a documented error (land convection
+# triggering too early in the day), so deleting it is a regression -- and it cost -1.94 W/m2
+# in the tropics, which are already 2.5 W/m2 BELOW CERES. The boreal gain came from the land
+# branch; the tropical cost from losing the ocean branch. The two are separable.
+#
+# THE PHYSICAL ARGUMENT. The two land formulations differ in what they scale on. Mode 1 is
+# proportional to the actual surface buoyancy flux and VANISHES when that forcing is weak;
+# mode 2's land branch uses boundary-layer CAPE instead. Boreal summer has weak insolation,
+# a shallow BL and small surface fluxes, so the buoyancy-flux version self-limits while the
+# BL-CAPE version need not. That is a real reason to think mode 2's land branch is
+# mis-scaled for weak-forcing high-latitude convection, and it predicts the sign measured.
+#
+# THE CHANGE. New mode 4 (cumastrn.F90, this build): mode-1 LAND physics + mode-2 OCEAN
+# branch verbatim. Both branches are existing code; no new physics is invented.
+#
+# FALSIFIABLE PREDICTION: recovers part of B5's +0.407 K with little of its -1.94 W/m2
+# tropical cost. If the boreal gain vanishes too, the gain was never about the land closure
+# formulation and the whole B5 result needs re-reading.
+#
+# FORCING: deliberately the SAME as the 19 round-10 lever runs (oifs.scenario defaults to
+# "historical") so the delta is directly comparable to B5's. Not piControl -- that is
+# amip_picontrol's job, as a corrected absolute baseline.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCUMF:
+                RCAPDCYCL: 4.0
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

@@ -1,0 +1,104 @@
+# V2 -- DETRPEN 0.75E-4 -> 1.11E-4.  The emissivity term, at its defensible bound.
+#
+# Detrainment rate for penetrative convection; it sets PLUDE, the detrained total
+# condensate that feeds the cloud scheme (cuascn.F90:108).  More detrainment means more
+# anvil condensate, higher ice water path, higher emissivity, more LW trapping.
+#
+# THE DIRECTION IS MEASURED, NOT ASSUMED.  B1 ran this knob the OTHER way, 0.75E-4 ->
+# 0.45E-4, and tropical LW CRE fell 0.510 -- the second-largest response in the archive --
+# while the Southern Ocean did not move at all (SO SW -0.067 against a +-0.298 threshold,
+# SO LW -0.009).  B1's recorded verdict was "failed -- more SW yet colder; WORST TROPICS";
+# we now know the tropical half of that failure was this term, so its reverse is the
+# lever.  Slope from B1: +1.70 W/m2 per 1E-4 of DETRPEN.
+#
+# WHY 1.11E-4 AND NOT MORE.  x1.48 is the EPPES 1-sigma bound for the entrainment /
+# detrainment family, so this is the largest defensible value.  Predicted response
+# +0.61 W/m2, about 28 % of the deficit -- deliberately NOT a closure, and said in advance.
+# EC-Earth3's tuned T159/T511 value is 0.85E-4, which predicts only +0.17 and would be
+# BELOW the +-0.28 one-year threshold, so it cannot be screened this way and is not run.
+#
+# CONTROL is amip_pi_base, year 1870 -- identical initial state, identical forcing,
+# identical namelist except the one line below.  A strict one-variable pair.
+#
+# WHY ONE YEAR IS LEGITIMATE HERE, and it is not the usual reason.  The one-year
+# screening rule (round 24) says a lever screens at 1 yr if its effect exceeds ~2 W/m2,
+# which is about the Southern Ocean SW CRE noise.  This target is a DIFFERENT metric and
+# a far quieter one: tropical LW CRE has an interannual sd of 0.101 W/m2, so a pair of
+# single years resolves +-0.28.  The screen works because the METRIC is quiet, not
+# because the lever is loud.  Measured in tropical_lw_scan.py, not assumed.
+#
+# WHAT WE ARE AIMING AT.  LW CRE ~ f_high * epsilon * (OLR_clear - sigma T_c^4): area,
+# opacity, and the HEIGHT the radiation escapes from.  Every tropical-LW lever this
+# campaign has tried acted on epsilon (DETRPEN sets the detrained condensate PLUDE,
+# RVICE the ice fall speed, RPRCON the conversion to rain) -- and emissivity SATURATES.
+# The archive scan is consistent with that: 50 arms, largest positive response +0.373,
+# 17 % of the -2.16 deficit, and the term has a 44-yr threshold of only +-0.042.
+#
+# GUARDRAIL, from the same scan: the Southern Ocean must not move.  The whole point of a
+# convection-keyed lever is that deep convection barely exists at 45-65S.  B1 demonstrated
+# this is achievable -- it moved tropical LW by -0.510 with SO SW at -0.067, below its own
+# +-0.298 threshold, a selectivity of ~57:1 against RVICE's ~1:1.
+#
+# PASS/FAIL, stated in advance:
+#   d(trop LW CRE) > +0.28 and |d(SO SW CRE)| < 1.97  -> promote to 44 years
+#   d(trop LW CRE) > +0.28 but the SO moves           -> another RVICE; reject
+#   |d(trop LW CRE)| < 0.28                           -> no leverage at a defensible value
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "01:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1871-01-01"   # ONE screening year -- see header
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 1
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCUMF:
+                DETRPEN: 1.11E-4
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

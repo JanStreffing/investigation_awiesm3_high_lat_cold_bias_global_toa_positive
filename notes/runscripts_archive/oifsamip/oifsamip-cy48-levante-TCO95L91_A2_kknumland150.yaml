@@ -1,0 +1,103 @@
+# =============================================================================
+# Round 10, prong A2 -- boreal-land summer cloud excess
+#   RCL_KK_CLOUD_NUM_LAND : 300 -> 150 cm-3   (source edit, sucldp.F90:418)
+# =============================================================================
+# THE TARGET (AMIP 1872-79 vs CERES EBAF, Siberian land, JJA):
+#   cloud area 77.8% vs 69.6% (+8.2 pp, too MUCH cloud)
+#   surface SW CRE -91.6 vs -75.1 (-16.5 W/m2)
+#   surface net SW 11 W/m2 too low  ->  ~2 K summer cold bias
+#   clear-sky surface SW is +5.3 W/m2, i.e. slightly too BRIGHT, so aerosol,
+#   water vapour and surface albedo are all exonerated: it is a cloud error.
+#
+# WHY THIS PARAMETER, AND WHY NOT THE OBVIOUS ONES
+# A2 must not undo A1 (Southern Ocean brightening). That rules out every global
+# cloud knob:
+#   RCLDIFF up          -> global erosion, thins SO cloud too
+#   RCLDIFF_CONVI up    -> gated on KTYPE>=2 .AND. PEIS<10 K, i.e. weak-inversion
+#                          convective regimes, which INCLUDES SO cold-air outbreaks
+#   RCL_INHOMOGAUT/ACC  -> global warm-rain enhancement, thins marine cloud too
+#   RVRSMIN / RVLAI     -> genuinely land-only, but experiment A measured only
+#                          +0.19 K against a -2.16 K bias: too weak to be primary
+#
+# RCL_KK_CLOUD_NUM_LAND is the ONLY genuinely land-selective cloud parameter in
+# the scheme. It is used solely in the PLSM>0.5 branch (cloudsc.F90:2134); ocean
+# takes RCL_KK_CLOUD_NUM_SEA=50 instead. It therefore CANNOT undo A1.
+#
+# It enters KK-2000 autoconversion as ZCONST**RCL_KKBAUN with RCL_KKBAUN=-1.79
+# (cloudsc.F90:2255-2257), so 300->150 speeds land warm-rain autoconversion by
+# 2**1.79 ~ 3.5x, raining out cloud water and thinning the excess cloud.
+#
+# Verified live: it is bypassed when NCLOUDACT>0, but the default is NCLOUDACT=0
+# (suecrad.F90:553) and we do not override it.
+#
+# PHYSICALLY MOTIVATED, not just a fudge: boreal forest is a CLEAN continental
+# environment with observed droplet numbers ~100-200 cm-3; 300 is a polluted-
+# continental value and too high there.
+#
+# CAVEATS
+#  * single global LAND value, so polluted continental regions (Europe, E Asia,
+#    N America) where 300 is defensible are lowered too. A spatially varying
+#    treatment would be the proper fix if this works.
+#  * acts purely through cloud WATER AMOUNT, not droplet size -- radiation gets
+#    N_d independently from the Martin scheme with climatological CCN. That is
+#    the right channel here, since the diagnosis is cloud amount (+8.2 pp).
+#
+# FALSIFIABLE PREDICTION: the Southern Ocean should be UNCHANGED (land-only by
+# construction). If the SO moves, the land-mask argument is wrong.
+#
+# CONTROL: amip_pi_base. Binary otherwise identical (RVRSMIN back at the
+# as-released 250; experiment A's 500 was reverted before A1/A2).
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "02:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1876-01-01"    # 6 yr; evaluate 1872-1875 against the control
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 6
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # identical to amip_pi_base -- the ONLY difference is the compiled-in
+    # RCL_KK_CLOUD_NUM_LAND. RCL_OVERLAPLIQICE is deliberately NOT set here, so
+    # A2 is independent of A1 and the two can be combined afterwards.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+
+oasis3mct:
+    lresume: false
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32

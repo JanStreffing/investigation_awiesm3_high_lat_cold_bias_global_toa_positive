@@ -1,0 +1,94 @@
+# H1 -- snow-cover critical depth 10 cm -> 30 cm, ALONE
+#
+# Clean attribution against the control: RQSNCR is the only change, everything else at
+# as-released defaults. Pairs with H2 (the same change on top of G1) so the effect can be
+# checked for additivity rather than assumed -- AB, ABB8 and F5 all violated superposition,
+# though G1 (disjoint mechanisms) did not.
+#
+# THE LEVER. ZCVS = min(1, snow_depth_cm * RQSNCR)  (surfbc_ctl_mod.F90:320, LESN09=T).
+# As released RQSNCR = 1/10, i.e. FULL snow cover at only 10 cm depth, linear below, with no
+# sub-grid orography or vegetation masking. H-series sets 1/30.
+#
+# WHY. The albedo investigation showed half the 12.5 W/m2 Siberian JJA surface-SW deficit is
+# NOT cloud: 7.0 cloud, 5.5 albedo. And the albedo half is not vegetation and not soil --
+# July/August, when the surface is snow-free, are near-perfect (+0.004), while June (+0.086 to
+# +0.116) and September (+0.08 to +0.10) are far too bright and April is too DARK. That is a
+# snow-season-too-long signature, not an albedo-magnitude one. In the growing season the split
+# is almost clean in time: June is albedo (13.4 W/m2), July is cloud (9.9).
+#
+# At 65-75N in June the model carries 0.020 m w.e. at +6.2 C under 213 W/m2 of insolation, with
+# an implied areal snow cover near 17% where CERES implies ~2%. Snow should not survive that.
+#
+# PERMANENT SNOW IS UNAFFECTED. Antarctica and Greenland have depths far above any critical
+# value, so min(1,..) saturates at 1 for any RQSNCR. The change bites only on shallow snow --
+# the melt and onset transitions.
+#
+# PREDICTION: recovers a good part of June's 13.4 W/m2 albedo term, hence roughly +0.2 to
+# +0.7 K on Siberian JJA T2m (0.033 K/W/m2 from the spatial regression, 0.136 from F4's own
+# response). Should do LITTLE in July/August, where the surface is already snow-free and the
+# residual deficit is cloud. If it warms July as much as June, the mechanism is not what is
+# claimed.
+#
+# WATCH: this is the first lever of the campaign that is NOT boreal-selective -- it touches
+# every shallow-snow surface (NH seasonal snow margin, sea ice, Tibet). The seasonal check has
+# now caught THREE levers with hidden winter costs (B5 -0.72 DJF, B3 -0.49, D2b -0.46), so
+# check DJF/MAM/SON, not only JJA. September is a separate problem this may also touch: snow
+# returning too early, which unlike June IS plausibly cold-driven.
+#
+# FORCING: historical, as every other lever run, so deltas stay comparable. 46 yr, eval 1872-1915.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

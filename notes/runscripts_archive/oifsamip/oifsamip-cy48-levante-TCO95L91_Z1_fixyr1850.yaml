@@ -1,0 +1,91 @@
+# Z1 -- VERIFY that NCMIPFIXYR can be pinned from the live namelist block.
+#
+# THE PROBLEM.  Every AMIP run in this campaign, including amip_pi_base, runs with
+# NCMIPFIXYR = -1, i.e. TRANSIENT GHG/ozone/aerosol -- the log reads 1869 in the first
+# leg and 1911 in the last.  The coupled runs are correctly pinned at 1850 (11E:
+# "Set JYEAR=MIN(JYEAR,2100)= 1850"), so this is AMIP-only.
+#
+# WHY IT WENT UNNOTICED.  amip_pi_base's fort.4 CONTAINS "NCMIPFIXYR = 1850" -- in the
+# dead &NAMECECMIP6 block that 48r1 renamed and no longer reads.  Anyone grepping fort.4
+# sees the right number.  Only NODE.001_01 shows the truth.  The base runscript already
+# documents the trap and removed the dead block on 2026-07-30, but its replacement
+# (oifs.mip + oifs.scenario) was never added, because that path aborts with
+# GRID_IN MISSING FIELD on the awi3 INIT.
+#
+# WHAT THIS RUN DECIDES, in one year:
+#   1. does NCMIPFIXYR reach the live block and take effect?  PASS = NODE.001_01 shows
+#      "Set JYEAR=MIN(JYEAR,2100)= 1850", as the coupled run does, instead of 1870.
+#   2. does the model still start, or does pinning trip the missing-field abort?
+#
+# WHAT IT DOES NOT DECIDE.  Whether to adopt it.  Fixing the forcing changes the ABSOLUTE
+# energy baseline by an estimated ~0.15 W/m2 (CO2 284.3 -> ~294 ppm at the window
+# midpoint, 5.35*ln ratio = 0.18, less some land adjustment), so a fixed-forcing run is
+# NOT comparable to the 50-run transient archive in absolute terms.  Lever DELTAS are
+# unaffected -- both arms of every pair share the forcing -- so the archive keeps its
+# value and only the BASELINE needs re-establishing, with one new control run, later.
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "01:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1871-01-01"   # ONE verification year
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 1
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMECECMIP:
+                # THE POINT OF THIS RUN.  NAMECECMIP is the LIVE block in 48r1 and it is
+                # generated (T3 has it: LCMIP7/LCMIP6/CMIP7DATADIR/LMACV2SP); it simply
+                # lacks this key, so NCMIPFIXYR defaults to -1 and the model reads yearly
+                # transient GHG, ozone and aerosol.  Setting it HERE avoids the
+                # oifs.mip/oifs.scenario route, which the base runscript documents as
+                # aborting with GRID_IN MISSING FIELD because the awi3 INIT has no
+                # aerosol fields 117-120.
+                NCMIPFIXYR: 1850
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

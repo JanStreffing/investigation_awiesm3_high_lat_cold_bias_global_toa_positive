@@ -1,0 +1,95 @@
+# F5 -- all four boreal vegetation levers combined (SOURCE: susveg_mod.F90)
+#
+#   RVZ0H(3,4)   = RVZ0M/10   (F1)
+#   RVLAI(3,4)   = 3.0        (F2)
+#   RVCOV(3,4)   = 0.7        (F3)
+#   RVRSMIN(3,4) = 1000.0     (F4)
+#
+# WHY RUN THE COMBINATION AT ALL, RATHER THAN ADDING UP F1-F4 AFTERWARDS.
+# The campaign has predicted superposition twice and been wrong in SIGN both times:
+#   AB   = A1b + B2        predicted +0.21 K boreal, measured -0.053  (A1b CANCELS B2)
+#   ABB8 = A1b + B2 + B8   parts sum to +0.76 K,     measured -0.167
+# So the superposition is a measurement, not an inference.
+#
+# PREDICTION, STATED IN ADVANCE: F5 << F1+F2+F3+F4, probably closer to the largest single
+# lever than to their sum. Unlike AB -- which combined a cloud-overlap change with a
+# convective-erosion change, i.e. genuinely different processes -- F1-F4 all act through the
+# SAME pathway: suppressing latent heat flux from boreal needleleaf. Once evaporation is
+# reduced by one lever the others have less left to act on, and latent heat cannot go below
+# zero, so saturation is close to guaranteed. If F5 instead comes out near-additive, that
+# means the four are working through partly separate channels -- e.g. F1's roughness change
+# altering boundary-layer structure rather than only evaporation -- which is worth knowing.
+#
+# RISK, NAMED IN ADVANCE: all four at full strength may drive the Siberian JJA Bowen ratio
+# PAST the observed 0.5-1.5 range into a dry/warm bias. That is still informative: with
+# F1-F4 individually plus this one superposition point we can interpolate down to a sensible
+# amplitude instead of guessing. Do not read a large F5 as automatically good -- check Bowen,
+# soil moisture and the T2m RMSE, not just the Siberian JJA mean.
+#
+# SCOPE: F3 is included even though it is the weakest-justified of the four, so that F5 is
+# exactly the sum of the four tested runs and the non-additivity is cleanly attributable. A
+# production configuration can drop it later. D2b (the adopted Southern Ocean lever) is
+# deliberately NOT included -- mixing it in would conflate two questions. Boreal + SO
+# together is a separate, later run.
+#
+# All four are indexed on vegetation types 3 and 4 only, so types 5/6/18 (broadleaf, mixed)
+# keep their defaults and the tropics and temperate forests are untouched by construction.
+#
+# FORCING: same as every other lever run ("historical"), 46 yr, evaluated 1872-1915,
+# threshold +-0.240 K. Compare against B5's +0.407 K.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

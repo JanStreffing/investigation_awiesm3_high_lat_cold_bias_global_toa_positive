@@ -1,0 +1,167 @@
+# K1 -- G4 PLUS a snow-free land albedo correction: vegetation table (crops,
+# irrigated crops, semidesert) AND the bare-soil background. Round 17.
+#
+# WHY THIS EXISTS. The boreal budget is nearly spent -- Siberia's JJA -2.58 K is
+# ~0.7 universal (present over prescribed-SST ocean too), ~0.3 orographic and only
+# 1.3-1.6 boreal-specific, of which G4 has taken ~0.95. The remaining large term is
+# the UNIVERSAL one, and no boreal-indexed lever can touch it. This is the first run
+# aimed at it.
+#
+# THE MEASUREMENT. Global land surface albedo is +0.0154 too high against CERES
+# (assumption-free: each dataset divided by its OWN downward flux). Snow is a TILE
+# overlying every vegetation type, not a type itself, and masking it per cell per
+# month splits that almost exactly in half:
+#     snow           +0.0074   <- the I-series snow-depletion scheme acts on this
+#     snow-free      +0.0080   <- THIS RUN, untouched by all 41 previous runs
+#
+# WHICH TYPES. Once snow is masked, EVERY FOREST TYPE is already correct -- all
+# within +0.006, tropical broadleaf at -0.0003 -- so RVVEGALB's high-vegetation
+# entries are sound and are deliberately NOT touched. The error sits on sparse and
+# cultivated surfaces:
+#     Crops        +0.0204   (7.9 % of land, cv=0.96)
+#     Semidesert   +0.0169   (5.8 %, cv=0.92 -- despite the name it IS vegetated)
+#     Irrig Crops  +0.0138   (3.7 %, cv=0.94)
+#     bare soil    +0.0145   (25.3 %, cv=0.06 -- RVVEGALB CANNOT reach it)
+#
+# TWO KNOBS, BECAUSE ONE CANNOT DO IT. alpha = RVVEGALB(TVL)*CVL +
+# RVVEGALB(TVH)*CVH + alpha_soil*(1-CVL-CVH). Only 57 % of the residual sits on
+# cv>0.5 types; the rest is bare soil, whose RVVEGALB row is identically zero (as
+# for Desert and Ice Caps), so no table entry can reach it. Hence ECE_TUNE_SOILALB.
+#
+# TUNDRA IS DELIBERATELY EXCLUDED. Type 9 also carries a snow-free error (+0.0105,
+# and it gets WORSE under snow-masking because snow was hiding it), but the L-series
+# is concurrently testing a moss/organic layer on types 4 and 9. Including tundra
+# here would put two boreal-summer levers on the same tile competing for the same
+# kelvin. Excluding it makes K purely NON-BOREAL and orthogonal to both J and L.
+#
+# WHY BY TYPE AND FRACTION, NOT BY GRIDPOINT. Correcting the soil-albedo ancillary
+# directly, or setting LRDALB=.true. to use MODIS, would fit present-day vegetation
+# geography. Under LPJ-GUESS the biomes move, so such a correction is right today and
+# wrong at PI, in paleo, and under forcing. Attaching it to the TYPE and letting the
+# prognostic fractions weight it stays correct as vegetation migrates. (LRDALB=.true.
+# is independently dead: it bypasses the blend entirely, so LPJG's vegetation would
+# no longer affect albedo at all. It was also already tried, coupled, as 06F -- 2 m
+# RMSD 1.717 -> 1.962.)
+#
+# THE NUMBERS. RVVEGALB entries are scaled uniformly across all four spectral
+# components (UV/VIS direct, UV/VIS diffuse, NIR direct, NIR diffuse) so the
+# spectral shape is preserved -- CERES constrains broadband only, so the UV/NIR
+# split is NOT observationally determined and must not be invented. Scale chosen to
+# deliver the measured broadband deficit via PALBF = 0.45976*UVD + 0.54024*NID:
+#     Crops        x0.8868   (bb 0.1891 -> 0.1677, -0.0214)
+#     Irrig Crops  x0.9099   (bb 0.1643 -> 0.1495, -0.0148)
+#     Semidesert   x0.9063   (bb 0.1964 -> 0.1780, -0.0184)
+# ECE_TUNE_SOILALB is a multiplicative SCALE rather than an offset: across
+# Sahara/Arabia/Gobi the model/CERES RATIO varies by 3.5 % of its mean while the
+# additive offset varies by 20 %, so the scale generalises better, and it cannot
+# drive an albedo negative. 0.95 delivers the measured -0.0163 on bare-soil cells.
+#
+# PREDICTION: ~1.1 W/m2 more absorbed SW over land, and at the campaign's own
+# vegetation-route sensitivity (0.12 K per W/m2) that is ~0.1-0.2 K of LAND warming.
+# This will NOT close the 0.7 K universal bias on its own and is not expected to.
+#
+# HOW TO SCORE IT -- THIS IS NOT A SIBERIAN LEVER. The mass of it is crops,
+# semidesert and desert at low and mid latitudes. Judge it on bias_by_tile.py and
+# global T2m RMSE vs ERA5, with the Siberian box as a GUARDRAIL, not the target.
+# Scoring it the campaign's habitual Siberian-box way would make a working lever
+# look like noise.
+#
+# WATCH: (i) global net TOA must stay near the control's +0.64 -- this adds absorbed
+# SW; (ii) 60-90N must not drift, the reason tundra is excluded; (iii) the forest
+# types must not move, since they are already correct and nothing here touches them.
+#
+# FALSIFIER ON RECORD: if global land T2m does not warm, the snow-free albedo excess
+# is not converting to temperature, and the universal bias is not a surface-albedo
+# problem at all.
+#
+# BASE: G4 (= F4 + D2b + tundra RVRSMIN), the ADOPTED configuration -- deliberately
+# not I1 or I3, both of which remain unadopted (I3 on Arctic guardrails, I1 on DJF
+# -2.759 and a degraded global T2m RMSE). K is orthogonal to the snow scheme by
+# construction: it acts on snow-FREE sunlit cells.
+#
+# FORCING: historical, as for every other lever run, so deltas stay comparable.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare. Adding the tune entries to NAMECECFG kills the arpifs
+            # read at su0yoma.F90:152. Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K1: vegetation albedo, types 1 / 10 / 11 only ---
+                # Components are (1) UV/VIS direct, (2) UV/VIS diffuse,
+                # (3) NIR direct, (4) NIR diffuse. Forests (3,4,5,6,18,19) and
+                # tundra (9) are deliberately untouched -- see header.
+                # Crops, x0.8868 of as-released 0.0265/0.0341/0.2848/0.3210
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                # Irrigated Crops, x0.9099 of 0.0250/0.0296/0.2572/0.2790
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                # Semidesert, x0.9063 of 0.0529/0.0865/0.2045/0.2900
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

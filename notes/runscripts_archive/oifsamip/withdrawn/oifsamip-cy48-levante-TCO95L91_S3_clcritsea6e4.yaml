@@ -1,0 +1,153 @@
+# ROUND 23 -- the Southern Ocean cloud AMOUNT deficit.
+#
+# WHY THIS ROUND EXISTS.  Period-clean, the SO band (65-45S) absorbs +7.46 W/m2 too
+# much energy and contributes +0.74 to the global imbalance on its own -- the largest
+# single regional term, and it GREW when the reference period was corrected.  The
+# cause was split for the first time in round 22, at the OBSERVED CRE per unit area:
+#     AMOUNT  (missing cloud area) +4.87 W/m2   65.5 %
+#     OPACITY (residual)           +2.57 W/m2   34.5 %
+# and the area deficit is 6.43 pp (model 83.06 % vs CERES 89.49 %).
+#
+# WHY NOT MORE ICE NUCLEATION.  Scored on AREA rather than CRE, D2a moves +0.63 pp and
+# D2b +0.43 pp of that 6.43 -- against +0.48 and +0.45 pp from G4 and K1, which are
+# boreal-LAND levers that cannot physically act on Southern Ocean cloud.  That is the
+# noise floor of the diagnostic and every INP run sits inside it.  The INP branch buys
+# OPACITY.  Two thirds of the error needs a different knob, and this round tests three.
+#
+# WHAT THE DIAGNOSIS CONSTRAINS.  The deficit is zonally uniform (1.42 pp spread across
+# four sectors), which points at microphysics rather than circulation or the ice edge;
+# it is worst in austral spring and summer (SON -7.03, DJF -6.94 pp), when there is
+# shortwave to reflect; and SO relative humidity is +5.8 to +6.6 % too high through the
+# mixed-phase layer WHILE reflecting too little -- humidity present, liquid absent.
+#
+# BASE.  P5 = G4 + K1 + D2b + the fitted snow depletion at SWEMIN=15.  Note D2b is
+# already in this base (via G1 -> G4 -> K1), so these are deltas ON TOP of the adopted
+# ice-nucleation setting, not alternatives to it.
+#
+# GUARDRAIL, stated in advance for all three.  The SO error is regional; a lever that
+# also moves the tropics is a global cloud knob in disguise and must be rejected the way
+# A1a was.  Tropical net TOA is now known to be only -0.67 W/m2 from CERES period-clean,
+# so there is very little room there.  Score on cloud AREA, not CRE.
+#
+# S3 -- RCLCRIT_SEA 2.5E-4 -> 6.0E-4.  DELAYING WARM RAIN OVER THE OCEAN.
+#
+# RCLCRIT_SEA is the critical cloud water content for autoconversion to rain over sea
+# (cloudsc.F90:2067, selected against RCLCRIT_LAND by PLSM > 0.5).  Raising it means
+# cloud water has to build further before it rains out, so cloud both holds more water
+# and survives longer -- opacity AND area, unlike the INP branch which gives only the
+# first.
+#
+# WHY IT NEEDED A SOURCE CHANGE.  RCLCRIT_SEA was not in NAMCLDP.  It was bound only by
+# the ASSOCIATE block in sucldp.F90 that sets defaults, which cannot be reached from a
+# namelist.  It has been moved onto the POINTER mechanism every other NAMCLDP variable
+# uses (declaration, association before the defaults are assigned, and the namelist
+# entry) -- so the default still applies when the namelist is silent, and every earlier
+# run reproduces bit-for-bit.
+#
+# WHY 6.0E-4.  That is slightly above RCLCRIT_LAND (5.5E-4), i.e. it removes the
+# land/sea contrast and then some.  The contrast exists because maritime cloud has fewer,
+# larger droplets and rains out sooner; if the model's SO cloud is dissipating too fast,
+# an over-efficient maritime warm-rain path is a natural suspect and this is the direct
+# test of it.
+#
+# THE GEOGRAPHIC WEAKNESS, stated up front.  "Sea" includes the tropical ocean, so this
+# is less well targeted than S2's mixed-phase selectivity.  The tropical guardrail
+# therefore matters most for this run of the three.
+#
+# PREDICTION.  Area gain between S1's and S2's, with a tropical cost between theirs too.
+# FALSIFIER.  Tropical net TOA beyond ~0.5 W/m2, or an SO area response inside the
+# +-0.5 pp noise floor -- the latter would mean warm-rain efficiency is not what is
+# limiting SO cloud lifetime.
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1916-01-01"   # 46 yr; evaluate 1872-1915 = 44 yr, campaign standard
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 8
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+                RCLCRIT_SEA: 6.0E-4      # S3: delay warm-rain autoconversion over ocean              # match the coupled tuning runs explicitly
+                RCL_INPSEA: 0.2          # D2b: ocean INP -> 20% (marine biogenic floor)
+                RCL_INPPMIN: 70000.0     # D2b: only below ~700 hPa, sparing tropical anvils
+            # NAMSURFTUNE, not NAMECECFG: NAMECECFG is read twice from the same
+            # fort.4 -- by ECE_CONFIG in arpifs/ecearth.F90 and by SURFECE_CONFIG
+            # in surf/surfece.F90 -- and a Fortran namelist read dies with
+            # "invalid reference to variable" on any name the reading module does
+            # not declare.  Verified the hard way, 2026-08-02.
+            NAMSURFTUNE:
+                # --- G4 base ---
+                "ECE_TUNE_RVRSMIN(3)": 1000.0
+                "ECE_TUNE_RVRSMIN(4)": 1000.0
+                "ECE_TUNE_RVRSMIN(9)": 225.0
+                # --- K1: vegetation albedo, types 1 / 10 / 11 only ---
+                "ECE_TUNE_RVVEGALB(1,1)": 0.023500
+                "ECE_TUNE_RVVEGALB(1,2)": 0.030240
+                "ECE_TUNE_RVVEGALB(1,3)": 0.252561
+                "ECE_TUNE_RVVEGALB(1,4)": 0.284663
+                "ECE_TUNE_RVVEGALB(10,1)": 0.022748
+                "ECE_TUNE_RVVEGALB(10,2)": 0.026933
+                "ECE_TUNE_RVVEGALB(10,3)": 0.234026
+                "ECE_TUNE_RVVEGALB(10,4)": 0.253862
+                "ECE_TUNE_RVVEGALB(11,1)": 0.047943
+                "ECE_TUNE_RVVEGALB(11,2)": 0.078395
+                "ECE_TUNE_RVVEGALB(11,3)": 0.185338
+                "ECE_TUNE_RVVEGALB(11,4)": 0.262827
+                # --- K1: bare-soil background scale, all four components ---
+                "ECE_TUNE_SOILALB(1)": 0.95
+                "ECE_TUNE_SOILALB(2)": 0.95
+                "ECE_TUNE_SOILALB(3)": 0.95
+                "ECE_TUNE_SOILALB(4)": 0.95
+                # --- P3: the fitted depletion, taken literally at course scale ---
+                ECE_SNOW_SCF: 3
+                ECE_SNOW_SCF_RHOREF: 200.0
+                ECE_SNOW_SCF_DCL: 0.014     # field / low veg, d_c at rho=200
+                ECE_SNOW_SCF_DCH: 0.026     # forest / high veg
+                ECE_SNOW_SCF_MD: 4.70
+                ECE_SNOW_SCF_BL: 1.46
+                ECE_SNOW_SCF_BH: 0.40
+                ECE_SNOW_SCF_DCMAX: 0.30
+                ECE_SNOW_SCF_SCALE: 1.0
+                ECE_SNOW_SCF_SWEMIN: 15.0
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # Per-run override so the shared template is untouched: adds daily
+    # sd/rsn/tsn/asn/stl1/stl2.  Retained from N/O because f_full -- the fraction
+    # of the box at cover >= 0.999 -- is the diagnostic that exposed the defect and
+    # is the one that has to come back.
+    add_config_sources:
+        file_def: ${xml_dir}/file_def_snowdiag.xml.j2

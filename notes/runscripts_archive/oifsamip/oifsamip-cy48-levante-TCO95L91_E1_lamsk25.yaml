@@ -1,0 +1,58 @@
+# Round 10 -- E1: RVLAMSK/RVLAMSKS(3,4) 5 -> 2.5 (SOURCE, susveg_mod.F90:176-177,201-202)
+#
+#   B8 halved skin-layer conductivity for needleleaf trees (10->5) and gave the
+#   single best boreal response of the whole campaign: Siberia JJA T2m +0.502 K,
+#   cloud -1.98 pp, surface SW +6.38 W/m2. That a *surface* parameter moved cloud
+#   that much is the evidence that boreal cloud here is moisture-supply-limited,
+#   not microphysics-limited -- which is also why A2 did nothing.
+#
+#   E1 halves it again. The question is linearity: if +0.5 K -> ~+1.0 K the lever
+#   still has room and we push further; if it saturates, the remaining bias needs
+#   a different axis and we stop spending runs here.
+#
+#   Built on libsurf.SP.so md5 4b1f678bc051 (B8 was e41a8d4acdb3), verified changed
+#   after esm_master recomp-oifsamip-cy48/oifs-48r1.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "02:00:00"
+    initial_date: "1870-01-01"
+    final_date: "1876-01-01"
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 6
+    use_venv: false
+computer:
+    taskset: true
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16
+oasis3mct:
+    lresume: false
+    time_step: 86400
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32

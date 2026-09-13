@@ -1,0 +1,117 @@
+# M1 -- amip_presentday WITHOUT the MACv2-SP anthropogenic aerosol plumes.
+# Round 18. THIS IS A DIAGNOSTIC, NOT A TUNING CANDIDATE.
+#
+# WHY. The campaign's remaining bias is now known to be atmospheric, not surface:
+#   * prescribed-SST ocean is -0.72 K -- the surface there is correct BY CONSTRUCTION,
+#     so at least 0.7 K cannot be a surface problem;
+#   * the cold maximises at the TROPOPAUSE at every latitude (-4.2 to -5.6 K);
+#   * land surface albedo is now closed out -- a PERFECT fix buys ~0.12 K, one sixth
+#     of the universal bias (round 17, K1).
+# Splitting TOA reflected SW against CERES by band gives the sharpest handle yet
+# [W/m2, positive = model reflects MORE]:
+#
+#            band          clear-sky   cloud
+#     60-90N                  +4.42    +1.36
+#     30-60N                  +4.22    -4.22
+#     tropics 30S-30N         +1.55    +0.41
+#     30-60S                  +3.69    -0.78
+#     SO 45-65S               +5.10    -7.65
+#     60-90S                  +2.34    -8.19
+#     GLOBAL                  +2.68    -1.17
+#
+# TWO INDEPENDENT ERRORS THAT HIDE EACH OTHER. Clear-sky over-scattering is positive
+# in EVERY band; cloud under-reflection is concentrated in the Southern Ocean. In the
+# SO they nearly cancel (+5.10 clear-sky, -7.65 cloud, only -2.54 all-sky), which is
+# why the SO looks nearly right in the all-sky total while both components are badly
+# wrong -- and probably why the campaign's two targets have fought each other for four
+# weeks (A1a bought 82% of the SO cloud gap and cost -0.75 K in Siberia).
+#
+# WHAT THIS RUN ASKS. Is the clear-sky excess ANTHROPOGENIC or the NATURAL background?
+# The aerosol in this configuration is two separate things:
+#   * anthropogenic: MACv2-SP simple plumes, TRANSIENT 1850-2023
+#     (LMACV2SP=.true., SPv2.1_1850-2023_CMIP7.nc)
+#   * natural background: CAMS/MACC monthly climatology (NAERMACC=1) -- sea salt,
+#     dust, background OM/BC/SO4. FIXED, no year dependence.
+# Setting LMACV2SP=.false. removes the anthropogenic half and leaves the CAMS
+# background untouched (NAERMACC stays 1: its default is already 1 whenever LEPHYS
+# is on, so it does not fall back with LMACV2SP). M1 minus presentday is therefore
+# the model's own anthropogenic aerosol radiative effect, clear-sky AND cloud.
+#
+# PRESENT-DAY PERIOD, DELIBERATELY. MACv2-SP is transient, so at the campaign's usual
+# 1872-1915 the plumes are already near zero and this test would show nothing. It has
+# to run on 1990-2014, which is also the period the +2.68 W/m2 was measured over and
+# the only one comparable to CERES.
+#
+# EXPECTED, AND THE FALSIFIER. If the anthropogenic plumes carry most of the +4.22
+# clear-sky excess at 30-60N, removing them should recover most of it there while
+# leaving the Southern Ocean's +5.10 largely intact -- anthropogenic aerosol is a NH
+# continental-outflow signal, not a Southern Ocean one. IF THE SOUTHERN OCEAN EXCESS
+# DOES NOT MOVE, the residual is the CAMS sea-salt background, which is the species
+# with NO tuning knob in the entire radiation tree (only dust has RDUMULF/RWGHTDU*,
+# and those are not even namelist-settable -- they are hardcoded in suecrad.F90).
+# That outcome would justify exposing a sea-salt scale factor, copying the dust block
+# at radact.F90:661-670.
+#
+# NOT A CLEAN CLEAR-SKY LEVER, AND THIS MUST BE SCORED ACCORDINGLY.
+# LMACV2SP_CCNF=.true. feeds the plumes into cloud droplet number, so removing them
+# changes the CLOUD column too. Score M1 on BOTH columns of the table above, by band.
+# The all-sky total is exactly where the cancellation hides the signal.
+#
+# DO NOT ADOPT THIS. Removing anthropogenic aerosol from a present-day run is
+# physically wrong -- it is a sensitivity test to attribute a residual, nothing more.
+#
+# BASE: amip_presentday (the period-clean pair for ERA5/CERES). Everything else
+# identical to it, so M1 minus presentday isolates the aerosol term alone.
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "08:00:00"
+    initial_date: "1989-01-01"
+    final_date: "2015-01-01"   # evaluate 1990-2014 against ERA5/CERES
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 13
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+            # THE ONE CHANGE. Removes the MACv2-SP anthropogenic plumes and their
+            # CCN effect; the CAMS natural background (NAERMACC=1) is untouched.
+            NAMECECMIP:
+                LMACV2SP: false
+                LMACV2SP_CCNF: false
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.

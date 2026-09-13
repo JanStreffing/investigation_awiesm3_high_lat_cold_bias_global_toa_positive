@@ -1,0 +1,117 @@
+# =============================================================================
+# OpenIFS-AMIP TCO95 BASELINE  --  the feedback-free atmosphere reference
+# =============================================================================
+# Purpose
+# -------
+# Establish what the AWI-ESM3 atmosphere does on its own, with NO coupled ocean
+# and NO interactive vegetation:
+#   * SST / sea-ice are PRESCRIBED (observed AMIP boundary conditions), so the
+#     ocean cannot supply or absorb a bias, and
+#   * vegetation is the prescribed HTESSEL climatology (no LPJ-GUESS), so the
+#     boreal forest-cover collapse cannot act either.
+#
+# This is the decisive attribution test for the campaign's two open questions:
+#   1. TOA IMBALANCE. With SST prescribed, ANY net TOA imbalance is a pure
+#      atmospheric radiative error -- it cannot be ocean heat uptake. If this
+#      run shows ~+1.5 W/m2 (the coupled PI-control value), the imbalance is
+#      atmospheric and the ocean-mixing levers of Tuning_test_06T/06V are
+#      compensating errors. If it shows ~0, the coupled imbalance is genuine
+#      ocean heat uptake.
+#   2. BOREAL COLD BIAS. Any boreal cold bias here is OpenIFS's own -- neither
+#      LPJ-GUESS nor the coupled ocean can be blamed. A SUMMER (JJA) cold bias
+#      is especially consequential: GDD5/AGDD5 are summer quantities, and the
+#      080a 50-yr follow-up showed East-Siberian AGDD5 collapsing by -133,
+#      which is exactly what suppresses tree establishment in LPJ-GUESS.
+#
+# Configuration provenance
+# ------------------------
+# GHG/ozone/aerosol forcing fixed at 1850 (NCMIPFIXYR=1850), driven by the
+# earliest available observed AMIP SST decade 1870-1879 (tosbcs starts 1870;
+# 1870-1880 avoids Krakatoa 1883). That is a self-consistent ~PI atmosphere,
+# directly comparable to the PI-control coupled runs. It is deliberately NOT
+# a present-day (1990/2000s) configuration.
+#
+# The namelist is matched field-for-field to the coupled tuning runs
+# (Tuning_test_08*/09*): LEVGEN=T, LELAIV=F, NALBEDOSCHEME=3, LRDALB=F,
+# RVICE=0.16, NCMIPFIXYR=1850.
+#
+# DELIBERATE DEVIATION from the earlier _lpjgforcing runscript: the
+# TMPRALBSEAD = 0.075 override is REMOVED, so RALBSEAD falls back to the source
+# default 0.06 (susrad_mod.F90:107) -- which is what the coupled runs use, since
+# they never override it (OASIS exchanges the ICE albedo, sia_feom/A_Ice_albedo,
+# but NOT the open-water albedo, so OpenIFS computes open-water albedo itself in
+# coupled mode too). The 0.015 albedo difference is worth order 1 W/m2 of
+# reflected SW globally -- i.e. comparable to the imbalance being attributed --
+# so it must not differ between the AMIP and coupled configurations.
+#
+# Output
+# ------
+# The default XIOS file_def/field_def are used (NO add_config_sources override).
+# That yields the full atm_remapped_1m_<var> set consumed by the reval toolchain
+# -- crucially tsr/ttr/tsrc/ttrc (part2 net TOA), 2t (part8 vs ERA5), plus
+# ssr/str/ssrd/strd/skt/tcc/lcc/asn/fal/sd/stl1 -- and atm_remapped_1m_pl /
+# _6h_pl pressure-level temperature for the T925-T2m inversion diagnostic
+# (djf_second_driver.py). The earlier _lpjgforcing runscript swapped in
+# file_def_lpjg_spinup + field_def_lpjg_safe, which emit ONLY the daily LPJG
+# forcing fields and NO TOA radiation at all -- which is why the imbalance
+# attribution could not be done from that run.
+#
+# Cost: ~8 min/model-year on 384 cores -> a 10-yr decade in one job.
+# =============================================================================
+
+general:
+    user: !ENV ${USER}
+    setup_name: "oifsamip"
+    version: "cy48"
+    compute_time: "03:00:00"   # single job for the whole decade + margin
+    initial_date: "1870-01-01"
+    final_date: "1880-01-01"   # 10-yr clean ~PI decade
+    base_dir: "/work/bb1469/${user}/runtime/${general.setup_name}-${general.version}/"
+    account: "ab0246"
+    nday: 0
+    nmonth: 0
+    nyear: 10
+    use_venv: false
+
+computer:
+    taskset: true
+
+oifsamip:
+    postprocessing: false
+    model_dir: "/work/ab0246/${user}/model_codes/${general.setup_name}-${general.version}/"
+
+oifs:
+    # NOTE: the old hand-written NAMECECMIP6 block was REMOVED 2026-07-30.
+    # 48r1 renamed that namelist to NAMECECMIP, so the block was never read:
+    # LCMIP6/CMIP6DATADIR/NCMIPFIXYR/SSPNAME set there had NO effect and the
+    # runs silently used NCMIPFIXYR=-1 (transient). Forcing is configured by
+    # configs/components/oifs/oifs48.cmip.yaml via oifs.mip + oifs.scenario.
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    lresume: false
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    # CMIP6 forcing block: the pure-cmip7 path makes OIFS expect aerosol init
+    # fields 117-120 that the awi3 INIT lacks -> ABOR1 GRID_IN MISSING FIELD.
+    # NCMIPFIXYR=1850 pins GHG/ozone/aerosol to pre-industrial.
+    add_namelist_changes:
+        fort.4:
+            NAMCLDP:
+                RVICE: 0.16          # match the coupled tuning runs explicitly
+
+oasis3mct:
+    lresume: false   # generate the rst files for the first leg
+    time_step: 86400
+
+xios:
+    with_model: oifs
+    nproc: 4
+    omp_num_threads: 32
+    # NOTE: no add_config_sources -> default file_def.xml.j2 + field_def.xml,
+    # i.e. the full evaluation output including TOA radiation and pressure
+    # levels. Do NOT re-add the file_def_lpjg_spinup/field_def_lpjg_safe pair
+    # here; that pair is for generating LPJ-GUESS offline forcing only.
