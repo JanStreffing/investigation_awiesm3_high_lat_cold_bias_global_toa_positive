@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--09--11})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--09--25})}
 
 \begin{document}
 \maketitle
@@ -39,13 +39,17 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--09--12).} The coupled baseline is 15F, the new
-ice physics on the fixed single-precision ocean, and the TOA imbalance a run settles at follows
-how much heat it buries at 700--2000\,m ($r=+0.72$ across 20 runs). Stronger GM mixing is the
-lever that reaches that mid-depth uptake: 16E (\texttt{K\_GM\_max} 2500, Redi 1000) settles at
-$+0.70$\,W\,m$^{-2}$ in decade 4, the lowest plateau the campaign has kept, but cutting mid-depth
-uptake buys only about a third of the TOA the first fit promised, and the step from GM 1500
-to 2500 costs $1.7$\,Sv of AMOC at 40--60N (\S\ref{sec:round36}, \S\ref{sec:state}).
+\medskip\noindent\textbf{Where we are (2026--09--25).} Screening is over and the campaign is
+producing: \textbf{PICAL\_ccnice} has run 1940--2100 on the v3.5 defaults with
+\texttt{cvmix\_TKE+cvmix\_IDEMIX}. It is not converged. It cools 0.21\,K/decade at the surface
+while net TOA is positive, because total ocean heat content is flat and the upper 700\,m is
+losing heat to below 700\,m at 0.32\,W\,m$^{-2}$ equivalent (\S\ref{sub:r40drift}). The
+Antarctic sits at 62\,\% of observed winter volume, the ACC at 98.9\,Sv against
+$134\pm11.2$ observed, and the boreal forest is gone to grass competition
+(\S\ref{sec:round40}). Five Southern Ocean levers were tried and excluded
+(\S\ref{sec:round37}); the GM setting that improved the CDW cost 16.7\,Sv of Drake Passage
+(\S\ref{sub:r40drake}). Work is moving to albedo for queue time; see
+\texttt{HANDOFF\_albedo\_spinup\_continuation.md} and \S\ref{sec:state}.
 
 \medskip\noindent\textbf{What is left.} Three routes are closed by measurement rather than
 opinion: transpiration$\to$cloud (\S\ref{sub:routea}), snow-melt albedo
@@ -8303,6 +8307,324 @@ SW CRE and ice extent for any arm: \url{scripts/analysis/detection_threshold_4yr
 (\texttt{ARM=16E Y1=1389 SERIES=1}).
 \end{itemize}
 
+\section{Round 37 (2026--09--13$\to$17): five levers at the Southern Ocean, none of them moves it}\label{sec:round37}
+
+Round 33 split the Southern Ocean problem in two: a winter over-ice bias and a warm, shallow
+CDW. This round spends five 20-year branches of \textbf{PI200} on the second, and the result is
+uniformly negative. The value of the round is the exclusion, so the arms are recorded with what
+each was supposed to do.
+
+Four arms branch at 1560, control \textbf{PI200} 1560--1579, everything else identical (v3.5
+defaults, \texttt{INPSEA} 0.1 / \texttt{INPPMIN} 50000, FESOM and LPJ-GUESS from PI200's 1560
+restarts, atmosphere cold start):
+
+\begin{itemize}
+  \item \textbf{PI200\_spp} --- salt-plume parameterisation on. Brine rejection reaches deeper
+        than the mixed-layer scheme allows, which is the textbook route to dense shelf water.
+  \item \textbf{PI200\_h0} --- lead closing \texttt{h0min} $0.5\to0.25$\,m. The pack is
+        dispersive because FESOM closes leads at the thickness of the ice already there.
+  \item \textbf{PI200\_mle} --- Fox-Kemper mixed-layer eddies, settings as 16B.
+  \item \textbf{PI200\_all3} --- all three together, to catch a combination effect that the
+        single levers miss.
+\end{itemize}
+
+A fifth arm attacks the same loop from the ice shelves. One-year screens
+\textbf{PI200\_cav05/06/07} gave cavity basal melt of 1038 / 1190 / 1402\,Gt\,yr$^{-1}$ against
+1893 at \texttt{cavity\_gamma\_scale} 1.0 and 1100--1325 observed, so 0.6 was taken forward as
+\textbf{PI200\_cavg06} (1600--1619, control PI200 1600--1619). The hypothesis was a loop: warm
+CDW drives melt, meltwater freshens the shelf, no dense water forms, the CDW stays warm. Less
+meltwater should break it.
+
+\subsection{The result, and what it costs to state it}\label{sub:r37null}
+
+None of the five fixes the Southern Ocean in 20 years. The winter over-ice bias is a
+\emph{freshwater regime}, not a mixing deficiency: the model sits in one of two states, salty
+and venting or fresh with warm CDW, and none of these levers moves it between them. The
+basal-melt calibration is worth keeping for its own sake --- 1190\,Gt\,yr$^{-1}$ against 1893 is
+a defensible number where the uncalibrated one was not --- and it became the v3.5 CORE3 default
+\texttt{cavity\_gamma\_scale: 0.6} (FESOM PR \#1064, merged upstream 2026--09--17). But it is
+not a Southern Ocean fix.
+
+Recorded as an exclusion list, each with the observation that killed it, in
+\S\ref{sub:open}. \textbf{The SSS restoring lever stays excluded}: \texttt{surf\_relax\_s} is 0
+and remains 0, even for Weddell convection.
+
+\section{Round 38 (2026--09--18$\to$22): the PICAL production line, and the albedo that had to be computed}\label{sec:round38}
+
+With the lever search exhausted the campaign switches from screening to producing. The v3.5
+TCO95/CORE3 defaults go into \texttt{awiesm3.yaml} rather than living in runscripts
+(2026--09--21), and a single pre-industrial line is carried forward: \textbf{PICAL} (1850--1929)
+$\to$ \textbf{PICAL\_momixoff} (branched 1920, to 2049) $\to$ \textbf{PICAL\_ccnice} (branched
+1940).
+
+\textbf{PICAL\_v35def} and \textbf{PICAL\_v35def\_darkice} are the paired control for the two
+namelist values the campaign had retired but the production line still carried
+(\texttt{RCL\_INPPMIN} 50000 vs 70000) and for the ice albedos (\texttt{albi} $0.70\to0.66$,
+\texttt{albim} $0.68\to0.64$). Both are drawn in the campaign TOA figure as context: they are
+the counter-example, an Arctic volume runaway that fifty years of correction did not arrest.
+
+\subsection{Sea-ice albedo, computed rather than guessed}\label{sub:r38albedo}
+
+The ice was too dark and the first instinct --- darken the ponds --- was wrong: the four
+\texttt{ice\_therm} albedos are \emph{pond-free}, \texttt{ice\_thermo\_cpl.F90} builds
+\texttt{alb\_noponds} from them and only then applies \texttt{albpnd} over the pond fraction, so
+darkening them to stand in for ponds double-counts. Ponds stay dark; the ice and snow get
+brighter.
+
+The two snow albedos do different jobs, and the split was \emph{measured} on the model's own
+melt seasons rather than assumed:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+ & $\partial\alpha/\partial\,\texttt{albsn}$ & $\partial\alpha/\partial\,\texttt{albsnm}$ \\
+\hline
+NH JJA & 0.149 & 0.504 \\
+SH DJF & 0.908 & 0.051 \\
+\hline
+\end{tabular}
+\end{center}
+
+The Antarctic pack surface rarely reaches melting point, so \texttt{fmelt}$\,\approx0$ there and
+\texttt{albsn} carries the southern response; \texttt{albsnm} is the Arctic knob. Both stay
+global: the split is measured surface state, not a hemispheric parameter. \texttt{albsn} was
+raised to 0.80 (2026--09--22).
+
+\textbf{The sensitivities are state-dependent}, which is the part that generalises. As the
+Arctic cooled, NH $\partial\alpha/\partial\,\texttt{albsn}$ moved 0.149 $\to$ 0.504, a factor of
+three. A number measured in one state is not reusable in another, and albedo changes have to be
+priced in W\,m$^{-2}$ before they are made: the Arctic runs away above about $+5.5$\,W\,m$^{-2}$
+while the Antarctic is stable to at least $+10.4$.
+
+\subsection{Lead closing: the right flux response, the wrong state response}\label{sub:r38h0}
+
+\texttt{h0min} was tried once more on the production line, $0.5\to1.0$ from 2000. The flux
+response was exactly as designed --- the area-to-volume ratio of freezing fell 1.71 $\to$ 1.10
+--- and the state did not follow: mean thickness 0.61 $\to$ 0.62\,m, and the 60--90\,S bias went
+$+0.82$ to $+1.45$\,K. Reverted. The namelist exposure survives as FESOM branch
+\texttt{feat/leadclose-h0min} and is \emph{not} in \texttt{main}, which matters later
+(\S\ref{sub:r40albedo}).
+
+\section{Round 39 (2026--09--22$\to$24): vertical mixing, and two real bugs in the CVMix path}\label{sec:round39}
+
+Four vertical mixing schemes, 20 years each (2020--2039) from one restart, differing only in
+\texttt{mix\_scheme}:
+
+\begin{center}
+\begin{tabular}{llccc}
+\hline
+arm & scheme & SH Feb volume & SH Feb extent & cavity melt \\
+\hline
+\textbf{PICAL\_ccnice}     & KPP (control)          & ---  & ---  & 1255.6 \\
+\textbf{PICAL\_cvKPP}      & cvmix\_KPP             & ---  & ---  & 1283.5 \\
+\textbf{PICAL\_cvTKE}      & cvmix\_TKE             & 1.31 & 1.95 & 1174.5 \\
+\textbf{PICAL\_cvTKEIDEMIX}& cvmix\_TKE+cvmix\_IDEMIX & 1.62 & 2.26 & 1062.1 \\
+\hline
+\end{tabular}
+\end{center}
+
+Volumes in $10^3$\,km$^3$, melt in Gt\,yr$^{-1}$; observed SH Feb volume about 2.07, extent
+about 3.0. Both KPP variants lose Antarctic summer ice, both TKE variants grow it, and
+\texttt{cvmix\_KPP} reproduces the KPP control closely enough to serve as the null. TKE+IDEMIX
+comes closest to the observed summer pack and brings cavity melt from 1255.6 to
+1062.1\,Gt\,yr$^{-1}$, towards Adusumilli (2020) $\sim$1100 from Rignot (2013) $\sim$1500.
+
+Adopted: \texttt{cvmix\_TKE} from 2060, \texttt{cvmix\_TKE+cvmix\_IDEMIX} from 2080, and the
+pair became the v3.5 CORE3 default (esm\_tools \texttt{35a0524f7}). The cost was stated at
+adoption and is northern: NH April volume 38.04 rising $+2.46$/decade against about 31.2
+observed, where TKE alone sat at 35.17 and was flat.
+
+\subsection{Bugs VII and VIII: IDEMIX read garbage, and one bug hid the other}\label{sub:r39idemix}
+
+IDEMIX would not initialise. Four hypotheses were wrong before the right one
+(\S\ref{sec:falsified}); the two real defects are in the CVMix forcing path and are now FESOM
+PR \#1087.
+
+\textbf{Bug VII, the implicit netCDF fill value.} \texttt{read\_other\_NetCDF} reads
+\texttt{missing\_value} into \texttt{miss} and fills those points before interpolating. A
+variable with neither \texttt{missing\_value} nor \texttt{\_FillValue} leaves \texttt{miss} at
+whatever it held, in practice 0.0. Every genuine zero is then treated as missing while the real
+sentinel, netCDF's implicit float fill $9.96921\times10^{36}$, is left in; the nearby-point
+average pulls it in and the field is \texttt{Infinity} before it reaches
+\texttt{interp\_2d\_field}, which documents that it assumes no dummy values exist. On the IDEMIX
+near-inertial surface forcing this masked 146694 real zeros and gave min/max of
+$-7.6\times10^{-4}$ to Infinity.
+
+\textbf{Bug VIII, an MPI type mismatch.} \texttt{loc\_Etot} and \texttt{glb\_Etot} are
+\texttt{real(kind=WP)}, but five \texttt{MPI\_AllREDUCE} calls declared the buffer
+\texttt{MPI\_DOUBLE\_PRECISION}. In a single-precision build that reads 8 bytes from a 4-byte
+variable, so half of every energy total is whatever sits next to it in memory. It is not only a
+diagnostic: \texttt{idemix\_botforc\_Etot} rescales the field by \texttt{Etot/glb\_Etot}, so the
+corrupt total goes back into the physics.
+
+With both fixed, \texttt{Etot\_bot} reads 0.9135067\,TW against the forcing file's own
+\texttt{Etot\_in\_TW\_bin} attribute of 0.91798, and \texttt{Etot\_srf} 0.3211645\,TW. That pair
+is now the standing gate on any IDEMIX leg: the signature of an unfixed build is
+\texttt{Etot\_srf} $6.05\times10^{-4}$ with \texttt{Etot\_bot} $-1.54\times10^{16}$.
+
+\section{Round 40 (2026--09--24$\to$25): PICAL\_ccnice reaches 2100, and it is drifting cold}\label{sec:round40}
+
+\textbf{PICAL\_ccnice} completed 1940--2099 and stopped at its configured \texttt{final\_date}.
+Throughput was about 77\,SYPD on 47 nodes under TKE+IDEMIX (3:18:32 for 2080--89, 2:58:12 for
+2090--99), against about 86 for \texttt{cvmix\_TKE} alone and 75 for KPP.
+
+\subsection{Bug IX: the staged library was a symlink, and \texttt{md5sum} follows it}\label{sub:r40albedo}
+
+The 2080 leg --- the first with IDEMIX on --- aborted 100\,s in with
+\texttt{Etot\_bot} $=-1.54\times10^{16}$\,TW, the exact unfixed-build signature, and NaN'd the
+ocean. \texttt{bin\_sources} named the right file and the staged \texttt{fesom} executable
+matched the source md5. The defect was one level down:
+\texttt{<exp>/bin/fesom/lib/fesom/libfesom.so} is a \emph{symlink} into esm\_tools' own per-leg
+snapshots \texttt{libfesom.so\_<leg>}, and it pointed at a pre-fix one. \texttt{md5sum} follows
+symlinks, so every check passed while the wrong library loaded. The FESOM executable is a driver
+stub, byte-identical across all these builds, so a matching binary checksum proves nothing:
+\textbf{only the \texttt{.so} distinguishes them, and \texttt{ls -l} must come before
+\texttt{md5sum}}.
+
+\subsection{The drift: cooling at the surface, flat in the whole ocean}\label{sub:r40drift}
+
+Over 2060--2099, the whole cvmix era, every headline metric is outside its confidence interval:
+
+\begin{center}
+\begin{tabular}{lrrrr}
+\hline
+metric & 2060--64 & 2095--99 & trend/decade & 95\,\% CI \\
+\hline
+T2m global        & 14.439 & 13.645 & $-0.214$ & 0.025 \\
+T2m 60--90\,N     & $-8.143$ & $-9.842$ & $-0.511$ & 0.118 \\
+NH extent, March  & 16.262 & 18.188 & $+0.522$ & 0.103 \\
+net TOA           & $-0.775$ & $+0.236$ & $+0.272$ & 0.079 \\
+\hline
+\end{tabular}
+\end{center}
+
+The run cools 0.21\,K/decade globally while the Arctic grows ice, and net TOA over the last two
+decades is \emph{positive} at $+0.167$\,W\,m$^{-2}$. That is not a contradiction and it is not
+an energy leak. Total ocean heat content is flat, $+0.04$\,ZJ/decade, and the cooling is a
+redistribution inside the ocean:
+
+\begin{center}
+\begin{tabular}{lrr}
+\hline
+band & ZJ/decade & W\,m$^{-2}$ equivalent \\
+\hline
+0--100\,m     & $-17.8$ & $-0.110$ \\
+100--700\,m   & $-34.4$ & $-0.214$ \\
+700--2000\,m  & $+19.4$ & $+0.121$ \\
+$>$2000\,m    & $+32.7$ & $+0.203$ \\
+\hline
+\textbf{total} & $+0.04$ & $0.000$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The upper 700\,m loses heat to below 700\,m at about 0.32\,W\,m$^{-2}$ equivalent, almost
+exactly balanced. Split by mixing era the mechanism follows the scheme changes: under KPP
+(2040--59) the upper ocean was \emph{gaining} ($+0.061$); \texttt{cvmix\_TKE} flipped it hard
+negative ($-0.488$) and the whole system lost energy (net TOA $-0.468$); adding IDEMIX halved
+the upper-ocean loss ($-0.201$) and drove deep uptake up ($+0.176\to+0.452$), putting the total
+back positive. \textbf{IDEMIX did what internal-wave-driven diapycnal mixing should do --- it
+moved the burial deeper and stopped the net drain --- but the upper ocean is still losing heat,
+and that is what keeps the surface cooling.}
+
+\subsection{Where the state stands against observations}\label{sub:r40obs}
+
+Against GIOMAS 1989--1999 (the early record is the fairer anchor for a PI run; the Arctic
+thinned sharply across 1989--2014 while the Antarctic has no significant trend):
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+$10^3$\,km$^3$ & model 2090--99 & GIOMAS 1989--99 & bias \\
+\hline
+NH April volume     & 34.56 & 31.19 & $+3.37$ \\
+NH September volume & 13.97 & 11.96 & $+2.01$ \\
+SH September volume & 12.33 & 19.89 & $\mathbf{-7.56}$ \\
+SH February volume  & 0.73  & 2.07  & $\mathbf{-1.34}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The Antarctic sits at about 62\,\% of observed winter volume. NH April volume is still rising at
+$+1.145\pm0.968$ per decade over 2080--2099, which is roughly half the $+2.46$ priced at
+adoption but not flat.
+
+CMPI went 0.844 (1980--89) $\to$ 0.879 (2000--09) $\to$ 0.902 (2080--89) $\to$ 0.903
+(2090--99). \textbf{The degradation is tropical, not polar}: nino34 $+0.155$ and tropics
+$+0.134$ against arctic $+0.003$ and antarctic $+0.008$; by variable \texttt{tas} $+0.149$,
+\texttt{thetao} $+0.127$, \texttt{zg} $+0.111$.
+
+\subsection{Drake Passage, and the price of the GM tuning}\label{sub:r40drake}
+
+Computed with tripyview's model-accurate transect path, which resolves the 105 mesh edges the
+66\,W line crosses and integrates the flux FESOM's own discretisation carries. At 2090--99 the
+net transport is \textbf{98.9\,Sv} (128.1 eastward, $-29.2$ westward), against Cunningham
+(2003) $134\pm11.2$ and Donohue (2016) $173.3\pm10.7$. It has been declining slowly:
+105.1 (2040--49) $\to$ 98.9 (2090--99), with no step at either mixing-scheme switch, so the ACC
+weakness is structural rather than a cvmix artefact.
+
+The GM tuning of Round 36 is a different matter. On identical years 1580--1599 from identical
+restarts:
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+run & GM & resolved & \textbf{net} \\
+\hline
+\textbf{PI200}          & resolution scaling (before) & 110.0 & \textbf{110.0} \\
+\textbf{PI200\_gmR1500} & Rossby cutoff, $K_{GM}^{max}$ 1500 & 103.2 & \textbf{103.2} \\
+\textbf{PI200\_gmR2500} & Rossby cutoff, $K_{GM}^{max}$ 2500 & 93.3 & \textbf{93.3} \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{The GM tuning cost 16.7\,Sv of ACC transport}, 15\,\%, monotonic in $K_{GM}^{max}$, far
+outside the $\sim$1.5\,Sv decadal scatter. The bolus term responds cleanly and monotonically
+($\pm1.8\to\pm2.7\to\pm3.6$\,Sv) but its \emph{net} is zero in every arm, because the
+eddy-induced circulation across the passage is a closed overturning cell. GM 2500 was adopted
+for the CDW improvement; Drake Passage was not scored at the time, and it is a real cost that
+belongs on the ledger next to the benefit.
+
+\subsection{The boreal forest is gone, and the canopy work needs one}\label{sub:r40boreal}
+
+In the Siberian box 55--75\,N / 60--180\,E at 2099: BNS 0.001, BNE 0.024, TREEFPC 0.050,
+GRASSFPC 0.216, and grass beats tree on 84.9\,\% of cells. The reference points are the offline
+CRUNCEP state it descends from (BNS 0.227, TREE 0.415, grass$>$tree 29.2\,\%) and 11E after 50
+coupled years (0.017 / 0.083 / 69.6\,\%). The state is stable between 2090 and 2099, so this is
+settled, not transient. \textbf{The mechanism is competition with C3 grass, not a climate
+gate}: every BNS establishment gate stays open while the forest disappears, the only
+temperature gate is a warm one 34\,K away, and GDD5 clears on 91\,\% of cells.
+
+This matters for the LPJ-GUESS canopy work merged on 2026--09--25 (stem area index via
+\texttt{ltos}, shrubs routed to low IFS vegetation, \texttt{iftreefracca 1}). Laszlo Hajdu
+measured $+0.46$\,K global T2m from it, concentrated in the boreal zone, in a run that has a
+boreal forest --- and it improved his ERA5 comparison, bias $-0.46$ against $-0.92$\,K and RMSD
+1.38 against 1.77. \textbf{That result is not transferable here}: the change acts on the tree
+side of the tile and this configuration has 5\,\% tree cover. \textbf{PICAL\_crunveg} was built
+to answer it --- identical in every respect except that LPJ-GUESS starts from the CRUNCEP
+spin-up end state --- and was cancelled before starting when the campaign moved to albedo.
+
+\subsection{Bug X: the instruction file nothing reads}\label{sub:r40insfile}
+
+The canopy parameters were first put in \texttt{namelists/lpj\_guess/global.ins}, on the
+evidence that \texttt{run\_coupled\_4\_1\_2.ins} imports it and that the staged copy matched.
+That was wrong, and the correct chain has to be traced through the source:
+
+\begin{verbatim}
+framework.cpp:1063   xtring insfilename="guess.ins";        <- hard-wired
+awiesm3.yaml:1331    ecearth.ins.j2 -> runPROC_NUM/ecearth.ins   (one per rank)
+runN/guess.ins       import "ecearth.ins"
+\end{verbatim}
+
+\texttt{global.ins} and \texttt{run\_coupled\_4\_1\_2.ins} are staged into the top of the work
+directory and never reached; \texttt{run\_coupled\_4\_1\_2.ins} even imports a path that does
+not exist, which nothing noticed because nothing reads it. The two copies had drifted apart in
+exactly the way that catches you out: \texttt{global.ins} carried \texttt{iftreefracca 1} while
+the file actually read carried \texttt{0}. Corrected in esm\_tools \texttt{cf0a27943}.
+
+Both 50-year continuations queued on 2026--09--25 were cancelled before starting, partly for
+this: they would have run with the canopy work compiled and inert.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -8530,10 +8852,45 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--09--12)}\label{sec:state}
+\section{State of the campaign (2026--09--25)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--09--25 (rounds 37--40, \S\ref{sec:round37}--\S\ref{sec:round40}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{The Southern Ocean winter bias resists every lever tried.} Salt plumes, Fox-Kemper
+MLE, a deeper lead-closing floor, all three together, and a calibrated ice-shelf basal melt all
+fail to move it in 20 years (\S\ref{sub:r37null}). It is a freshwater regime, not a mixing
+deficiency.
+\item \textbf{Ice-shelf basal melt is calibrated.} \texttt{cavity\_gamma\_scale} 0.6 gives
+1190\,Gt\,yr$^{-1}$ against 1893 uncalibrated and 1100--1325 observed; upstream as FESOM
+PR \#1064.
+\item \textbf{The two snow albedos act in different hemispheres, by measured surface state.}
+$\partial\alpha/\partial\,\texttt{albsn}$ is 0.908 in SH DJF against 0.149 in NH JJA;
+\texttt{albsnm} is the reverse. Both stay global. The sensitivities are state-dependent and
+moved by a factor of three as the Arctic cooled (\S\ref{sub:r38albedo}).
+\item \textbf{\texttt{cvmix\_TKE+cvmix\_IDEMIX} is the adopted mixing scheme}, on a four-way
+20-year comparison from one restart. Both TKE variants grow the Antarctic summer pack where
+both KPP variants lose it; cavity melt falls 1255.6 $\to$ 1062.1\,Gt\,yr$^{-1}$ towards
+Adusumilli (2020). The cost is northern and was stated at adoption (\S\ref{sec:round39}).
+\item \textbf{Two real bugs in the CVMix forcing path}, an implicit netCDF fill value and an
+\texttt{MPI\_DOUBLE\_PRECISION} buffer on a \texttt{real(WP)} variable, both in FESOM PR
+\#1087. The gate on any IDEMIX leg is \texttt{Etot\_bot} $0.9135067\to0.9179869$\,TW
+(\S\ref{sub:r39idemix}).
+\item \textbf{The cold drift is an ocean redistribution, not an energy leak.} Total ocean heat
+content is flat at $+0.04$\,ZJ/decade while the upper 700\,m loses to below 700\,m at
+0.32\,W\,m$^{-2}$ equivalent, and the surface cools 0.21\,K/decade with net TOA positive
+(\S\ref{sub:r40drift}).
+\item \textbf{The GM tuning cost 16.7\,Sv of Drake Passage transport}, 110.0 $\to$ 93.3\,Sv on
+identical years, monotonic in $K_{GM}^{max}$ (\S\ref{sub:r40drake}).
+\item \textbf{The boreal forest is effectively gone} at 2099: BNS 0.001, TREEFPC 0.050, grass
+beating tree on 84.9\,\% of the Siberian box, stable across 2090--99. By competition with C3
+grass, with every establishment gate open (\S\ref{sub:r40boreal}).
+\item \textbf{The model skill degrades in the tropics, not the poles.} CMPI 0.844 $\to$ 0.903
+across 1980--2099, driven by nino34 $+0.155$ and tropics $+0.134$ against arctic $+0.003$
+(\S\ref{sub:r40obs}).
+\end{itemize}
+
 \textbf{Added 2026--09--11 (round 36, \S\ref{sec:round36}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The single-precision ocean heat leak is fixed.} 15F closes at $-0.069$\,W\,m$^{-2}$
@@ -8944,6 +9301,25 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Added 2026--09--25 (rounds 37--40).}
+\begin{enumerate}\itemsep2pt
+\item \textbf{The upper-ocean heat drain.} 0.32\,W\,m$^{-2}$ equivalent out of the top 700\,m is
+the mechanism behind the cold drift and nobody has tried to stop it. Whether it is the mixing
+scheme, the Southern Ocean freshwater regime, or both, is open.
+\item \textbf{NH April volume} decides whether \texttt{cvmix\_TKE+cvmix\_IDEMIX} keeps its
+place: $+1.145\pm0.968$ per decade over 2080--2099, sitting 3.37 above the early GIOMAS record.
+\item \textbf{The Antarctic at 62\,\% of observed winter volume}, unchanged in character by any
+Round 37 lever and not a vertical-mixing problem.
+\item \textbf{The ACC is 30\,\% weak} and slowly weakening, and the GM setting that improved the
+CDW made it worse. The two constraints have not been reconciled.
+\item \textbf{Does the canopy work do anything without trees?} \textbf{PICAL\_crunveg} was built
+to answer it and cancelled before starting.
+\item \textbf{Will the CRUNCEP state load on \texttt{TCO95-land}?} It was written on an
+11538-cell \texttt{L096} gridlist; the old respin handoff recorded a missing-cell case as fatal
+with peatland on, and the code has changed substantially since. Untested.
+\item \textbf{The tropical CMPI degradation} has no mechanism attached to it yet.
+\end{enumerate}
+
 \textbf{Re-ranked 2026--09--11 after round 36 (\S\ref{sec:round36}).} \textbf{The goal is now
 to use the relation between mid-depth heat storage and TOA to bring TOA close to zero without
 degrading the rest of the climate; then retune the melt-pond albedo for NH sea ice.}
@@ -9477,6 +9853,74 @@ deficit rests on ERA5 SWE (forest-biased), and mode~2's scale-awareness carries 
 ${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
 
 \appendix
+
+
+\subsection{Round 37--40 (2026--09--13$\to$25)}\label{sub:fals3740}
+
+\begin{itemize}
+
+\item \dead{The Southern Ocean winter over-ice bias is a vertical mixing deficiency, fixable
+      with a salt-plume scheme, mixed-layer eddies, or a deeper lead-closing floor.}
+      \\ Killed by \textbf{PI200\_spp}, \textbf{PI200\_mle}, \textbf{PI200\_h0} and
+      \textbf{PI200\_all3}, four 20-year branches from one restart: none moves it. It is a
+      freshwater regime, salty-and-venting or fresh-with-warm-CDW, and these levers do not
+      cross between them (\S\ref{sub:r37null}).
+
+\item \dead{Reducing ice-shelf basal melt breaks the loop warm CDW $\to$ melt $\to$ fresh shelf
+      $\to$ no dense water $\to$ warmer CDW.} \\ Killed by \textbf{PI200\_cavg06}: the
+      calibration is right on its own terms (1190 against 1893\,Gt\,yr$^{-1}$, observed
+      1100--1325) and the Southern Ocean does not respond in 20 years.
+
+\item \dead{Raising the lead-closing floor \texttt{h0min} $0.5\to1.0$ thickens the Antarctic
+      pack.} \\ The flux response was exactly as designed, area-to-volume of freezing
+      $1.71\to1.10$, and the state did not follow: thickness $0.61\to0.62$\,m and the
+      60--90\,S bias $+0.82\to+1.45$\,K. Reverted (\S\ref{sub:r38h0}).
+
+\item \dead{The ice is too dark because the melt ponds are too bright; darken \texttt{albpnd}.}
+      \\ Wrong direction and double-counting: the four \texttt{ice\_therm} albedos are
+      pond-free and \texttt{albpnd} is applied over them afterwards. Ponds stayed dark and the
+      ice and snow were brightened instead (\S\ref{sub:r38albedo}).
+
+\item \dead{\texttt{albsn} 0.75 and \texttt{albsnm} 0.65 are FESOM's own defaults.} \\ They are
+      not: FESOM ships 0.81 and 0.77, so those values were deliberate darkenings, not
+      inherited. Corrected before the numbers were committed.
+
+\item \dead{The albedo sensitivities are fixed properties of the configuration.} \\ They are
+      state-dependent: NH $\partial\alpha/\partial\,\texttt{albsn}$ moved 0.149 $\to$ 0.504 as
+      the Arctic cooled. Re-measure rather than reuse.
+
+\item \dead{IDEMIX fails because the bottom forcing file is wrong, or unnormalised, or carries
+      NaNs that the 3-D interpolator mishandles, or NaNs that the 2-D reader mishandles.}
+      \\ Four wrong hypotheses in a row. The file has \emph{zero} NaNs, proven by a 30-line
+      offline Fortran harness. The real defects were an implicit netCDF fill value and an MPI
+      type mismatch (\S\ref{sub:r39idemix}, FESOM PR \#1087).
+
+\item \dead{A matching \texttt{fesom} executable checksum proves the right FESOM is running.}
+      \\ It proves nothing: the executable is a driver stub, byte-identical across these
+      builds. Only \texttt{libfesom.so} distinguishes them, and it can be a symlink that
+      \texttt{md5sum} silently follows (\S\ref{sub:r40albedo}).
+
+\item \dead{Net TOA is positive, so the run is warming.} \\ Net TOA is $+0.167$\,W\,m$^{-2}$
+      over 2080--2099 and the surface cools at 0.21\,K/decade. Total ocean heat content is
+      flat; the upper 700\,m is losing heat to below 700\,m at 0.32\,W\,m$^{-2}$ equivalent
+      (\S\ref{sub:r40drift}).
+
+\item \dead{GM tuning is free at the Southern Ocean.} \\ It cost 16.7\,Sv of Drake Passage
+      transport, 110.0 $\to$ 93.3\,Sv on identical years, monotonic in $K_{GM}^{max}$
+      (\S\ref{sub:r40drake}).
+
+\item \dead{The coupled run reads \texttt{namelists/lpj\_guess/global.ins}; \texttt{ecearth.ins.j2}
+      is unused by this setup.} \\ Exactly backwards. \texttt{guess.ins} is hard-wired in
+      \texttt{framework.cpp:1063}, rendered per rank, and imports \texttt{ecearth.ins};
+      \texttt{global.ins} is staged and never reached. The two had drifted apart,
+      \texttt{iftreefracca} 1 against 0 (\S\ref{sub:r40insfile}).
+
+\item \dead{tripyview is not installed on this system.} \\ It is, in
+      \texttt{\textasciitilde/.conda/envs/esm-tools\_auto\_tripyview}; its editable-install
+      \texttt{egg-link} points at a path that no longer exists, so the import fails
+      misleadingly. \texttt{PYTHONPATH=/work/ab0246/a270092/software/tripyview} fixes it.
+
+\end{itemize}
 
 \section{Parameter catalogue (distinguishing change per run)}\label{app:params}
 \begin{center}\footnotesize
