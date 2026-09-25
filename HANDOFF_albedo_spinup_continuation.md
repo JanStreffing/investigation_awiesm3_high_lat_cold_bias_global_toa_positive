@@ -1,6 +1,6 @@
 # Handoff: run the AWI-ESM3 pre-industrial spin-up on albedo
 
-Rewritten 2026-09-25 18:00 on levante, for whoever picks this up on albedo.
+Rewritten 2026-09-25 on levante, for whoever picks this up on albedo.
 
 `PICAL_ccnice` is the AWI-ESM3 v3.5 pre-industrial spin-up line: OpenIFS 48r1 TCO95L91 +
 FESOM2 CORE3 with Antarctic ice-shelf cavities + LPJ-GUESS + OASIS + XIOS. It has run its
@@ -22,21 +22,22 @@ same 2099-12-31 restarts:
 | `PICAL_ccnice` | its own, carried forward | the continuation |
 | `PICAL_crunveg` | `lpjg_state_3850`, the offline CRUNCEP spin-up end state | gives the canopy work a forest to act on |
 
-Both were submitted on 2026-09-25 with estimated starts around 02:30 the next morning, and
-**both are expected to be cancelled** in favour of moving the work here. Do not assume they
-produced anything. Check before relying on a restart later than 2100:
+Both were **cancelled on 2026-09-25 before either started**, for two reasons: the move here,
+and the fact that they would have run with the canopy work inert (the `ltos` port had gone
+into a file nothing reads, see killer 3). They produced nothing. The restart directories
+still end at 2100; check anyway before relying on anything later:
 
 ```
 ls /work/bb1469/a270092/runtime/awiesm3-v3.4/PICAL_ccnice/restart/fesom/
 ls /work/bb1469/a270092/runtime/awiesm3-v3.4/PICAL_crunveg/restart/fesom/ 2>/dev/null
 ```
 
-**So the branch point is 2100 unless those directories say otherwise.** That is the only
-point where a complete, consistent restart set exists, and if the levante runs are cancelled
-there is no duplication to weigh: albedo simply becomes the line.
+**So the branch point is 2100.** That is the only point where a complete, consistent restart
+set exists, and with the levante runs cancelled there is no duplication to weigh: albedo is
+the line.
 
-What does not go away if they are cancelled is the question they were asked to answer, since
-both are cheap to reproduce here and both are worth having. `PICAL_crunveg` in particular is
+What does not go away is the question they were asked to answer, and both are cheap to
+reproduce here. `PICAL_crunveg` in particular is
 the only test of whether the CRUNCEP state loads on `TCO95-land` at all, which is a
 prerequisite for any land experiment on this configuration. Its runscript is
 `awiesm3-develop-levante-TCO95L91-CORE3_PICAL_crunveg.yaml` and differs from the
@@ -86,7 +87,7 @@ answer a question about the boreal forest through thresholds.
 
 ## The software stack, which you should not improvise
 
-`esm_tools`: branch `feat/awiesm3-v3.4-co2`, at **`588cf7af7`**. It carries the v3.5 CORE3
+`esm_tools`: branch `feat/awiesm3-v3.4-co2`, at **`cf0a27943`**. It carries the v3.5 CORE3
 defaults this run depends on: `cavity_gamma_scale: 0.6`, sea-ice albedos (`albsn` 0.80,
 `albsnm` 0.65, `albi` 0.70, `albim` 0.68, `albpnd` 0.20), `use_momix: false`,
 `RCCNSEAICE: 15.0`, `RCL_INPPMIN: 70000.0`, `mix_scheme: cvmix_TKE+cvmix_IDEMIX` and the
@@ -144,12 +145,25 @@ with `fesom.pool_dir` = `${general.pool_dir}/fesom2/`, and `general.pool_dir` on
 stock FESOM 2.7 namelist ships are useless: its surface file is a DKRZ `/pool/data/` path and
 its bottom file an `/albedo/pool/FESOM/fesom2.0/` path, so neither machine resolves both.
 
-**3. `ltos` must be in the instruction file the run actually reads.** That file is
-`namelists/lpj_guess/global.ins`, reached via `run_coupled_4_1_2.ins`. It is **not**
-`ecearth.ins.j2`, which looks like the right file and is not used by this setup. `global.ins`
-needs `ltos 0.1` in `group "common"` and `ltos 0.05` in `group "grass"`; without them the
-canopy code is compiled and never exercised, silently. It is correct in `588cf7af7`; verify
-it survived into the staged copy in your run directory.
+**3. `ltos` must be in the instruction file the run actually reads**, which is
+`namelists/lpj_guess/ecearth.ins.j2`. Work the chain out rather than guessing, because the
+work directory contains several plausible-looking files that are never opened:
+
+```
+framework.cpp:1063   xtring insfilename="guess.ins";   <- hard-wired
+awiesm3.yaml:1331    ecearth.ins.j2 -> runPROC_NUM/ecearth.ins   (one per LPJ-GUESS rank)
+runN/guess.ins       import "ecearth.ins"
+```
+
+`global.ins` and `run_coupled_4_1_2.ins` are staged into the top of the work directory and
+never reached; `run_coupled_4_1_2.ins` even imports a path that does not exist. The two
+copies had drifted apart in exactly the way that catches you out: `global.ins` carried
+`iftreefracca 1` while the file actually being read carried `0`.
+
+`ecearth.ins.j2` needs `ltos 0.1` in `group "common"`, `ltos 0.05` in `group "grass"` and
+`iftreefracca 1`. Correct as of `cf0a27943`. Verify it reached `runN/ecearth.ins` in your own
+run directory, not the top-level copies: without `ltos` the canopy code is compiled and never
+exercised, silently.
 
 ## The gate: check this before you let a leg run
 
