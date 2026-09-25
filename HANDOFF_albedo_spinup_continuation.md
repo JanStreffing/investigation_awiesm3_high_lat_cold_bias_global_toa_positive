@@ -22,19 +22,25 @@ same 2099-12-31 restarts:
 | `PICAL_ccnice` | its own, carried forward | the continuation |
 | `PICAL_crunveg` | `lpjg_state_3850`, the offline CRUNCEP spin-up end state | gives the canopy work a forest to act on |
 
-**This is the decision you have to make first.** 2100 is the only point where a complete,
-consistent restart set exists, so it is the natural branch point, but if albedo also starts
-at 2100 it duplicates work levante is already doing. The options:
+Both were submitted on 2026-09-25 with estimated starts around 02:30 the next morning, and
+**both are expected to be cancelled** in favour of moving the work here. Do not assume they
+produced anything. Check before relying on a restart later than 2100:
 
-- **Take 2100 and accept the duplication.** Simplest. Sensible if levante's queue means
-  those two runs will not finish soon, or if you want a third land configuration.
-- **Wait for a levante leg to land and take a later restart.** Cleaner, but it makes albedo
-  wait on the machine you are trying to stop waiting on.
-- **Take 2100 and let the two machines diverge deliberately**, with albedo carrying the line
-  forward and levante's two runs treated as finite experiments.
+```
+ls /work/bb1469/a270092/runtime/awiesm3-v3.4/PICAL_ccnice/restart/fesom/
+ls /work/bb1469/a270092/runtime/awiesm3-v3.4/PICAL_crunveg/restart/fesom/ 2>/dev/null
+```
 
-Nothing in this document depends on which you pick except the restart year. Everything else
-is the same.
+**So the branch point is 2100 unless those directories say otherwise.** That is the only
+point where a complete, consistent restart set exists, and if the levante runs are cancelled
+there is no duplication to weigh: albedo simply becomes the line.
+
+What does not go away if they are cancelled is the question they were asked to answer, since
+both are cheap to reproduce here and both are worth having. `PICAL_crunveg` in particular is
+the only test of whether the CRUNCEP state loads on `TCO95-land` at all, which is a
+prerequisite for any land experiment on this configuration. Its runscript is
+`awiesm3-develop-levante-TCO95L91-CORE3_PICAL_crunveg.yaml` and differs from the
+continuation in exactly one thing, the LPJ-GUESS state it starts from.
 
 ## The state you are inheriting
 
