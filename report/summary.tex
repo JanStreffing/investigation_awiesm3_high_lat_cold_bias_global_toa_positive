@@ -8,6 +8,7 @@
 \usepackage{textcomp}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{array}
 \usepackage{float}
 \usepackage{xcolor}
@@ -16,747 +17,1106 @@
 \usepackage[normalem]{ulem}
 \newcommand{\dead}[1]{\textcolor{gray}{\sout{#1}}}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{3.5pt}
+\setlength{\parskip}{3pt}
 \captionsetup{font=small,labelfont=bf}
 \graphicspath{{plots/}{run_figures/}{./}}
 
 
-\title{\vspace{-1.4cm}\textbf{AWI--ESM3 v3.4 PI-control tuning campaign --- summary}\\[2pt]
-\large What to adopt, what reversed, and why the remaining error is a drift rather than
-an offset}
+\title{\vspace{-1.4cm}\textbf{AWI--ESM3 v3.5 PI-control tuning campaign --- summary}\\[2pt]
+\large Forty rounds, from a boreal forest that vanished to a production line that reaches
+year 2100, cools while gaining energy at the top, and still has no forest}
 \author{OpenIFS 48r1 / FESOM2 / LPJ-GUESS / OASIS / XIOS, TCO95L91 / CORE3\\[1pt]
-\normalsize supersedes the 2026--08--11 summary, whose headline recommendation this
-document reverses}
-\date{2026--08--24}
+\normalsize supersedes the 2026--08--24 summary}
+\date{2026--09--26}
 \begin{document}
 \maketitle
 \vspace{-0.7cm}
 
 \begin{abstract}\noindent
-The short reading of a campaign whose full record runs to 128 pages
+The short reading of a campaign whose full record runs to 148 pages
 (\texttt{report.tex}). Three objectives throughout: the \textbf{global radiative
 imbalance}, the \textbf{Southern Ocean}, and the \textbf{NH high-latitude cold bias /
-boreal forest}.
+boreal forest}. \S\ref{sec:timeline} is the whole campaign in the order it happened,
+rounds 1 to 40; the sections after it are the state now.
 
-\medskip\noindent\textbf{Adopt \texttt{RSBLB} 2.0.} Stable-boundary-layer mixing, exposed
-as a namelist parameter this round. Coupled, it warms the Arctic winter screen by
-$+0.67$\,K, all land by $+0.53$\,K in DJF, at \emph{zero} net TOA cost ($-0.027$) and
-\emph{zero} Siberian summer cost. It gives \textbf{11R the best \texttt{cmpitool} score in
-the campaign}, 0.7577 against the base's 0.8237, and it reverses the \texttt{tas}/\texttt{zg}
-regression that 11G introduced. It is the first lever here to move winter and summer
-targets in the same direction.
+\medskip\noindent\textbf{The founding finding still stands.} Every lever that lowers the
+TOA imbalance does it by cooling the model. The 29 early runs lie on a line, not in a
+cloud: about $0.6$\,K of global cold per W\,m$^{-2}$ of TOA. Underneath that line sits a
+structural floor that no atmospheric retune reaches --- a boreal forest that LPJ-GUESS
+does not deliver, worth $-3.1$\,K of Siberian DJF on a clean with/without pair.
 
-\medskip\noindent\textbf{Retire S4 --- reversing this summary's predecessor.} The
-2026--08--11 edition led with ``Adopt S4''. Measured properly, \texttt{RCL\_INPPMIN}
-$70000\to50000$ buys nothing at the pole, authored the sub-Antarctic overcorrection that
-blocks every remaining Southern Ocean lever, and its headline benefit \emph{reverses sign
-coupled}: Siberian JJA $+1.194$\,K in AMIP against $-0.365$\,K coupled. Removal is under
-test in 11V/11W; at 18 years it returns $+3.06$\,W\,m$^{-2}$ to the sub-Antarctic and
-$-2.52$ to the polar band, both improvements, for $+0.27$\,W\,m$^{-2}$ of energy.
+\medskip\noindent\textbf{The campaign has now left lever-screening behind} and produced a
+single 160-year pre-industrial line, \textbf{PICAL\_ccnice} (1940--2100), on the v3.5
+defaults. It is not converged, and the drift is cold: $0.214\pm0.025$\,K/decade globally
+over 2060--2099, $0.511\pm0.118$ at 60--90\,N, with March NH ice extent growing.
 
-\medskip\noindent\textbf{The energy problem is a drift, not an offset.} The PI controls
-start at net TOA $-0.06$ to $-0.08$\,W\,m$^{-2}$ and \emph{drift} to ${\sim}+1.0$ over 40
-years, in every arm, 1850 and 1990 alike. A TOA drifting positive while the system warms
-is backwards for a damped system; the cause is SH sea-ice loss of ${\sim}2\times10^6$\,km$^2$
-over the same period. \textbf{The Southern Ocean does not respond to the imbalance, it
-generates it.}
+\medskip\noindent\textbf{Positive TOA does not mean warming here.} Net TOA over 2080--2099
+is $+0.167$\,W\,m$^{-2}$ while the surface cools. Total ocean heat content is flat
+($+0.04$\,ZJ/decade): the upper 700\,m loses to below 700\,m at $0.32$\,W\,m$^{-2}$
+equivalent, almost exactly balanced. \textbf{The cold drift is an ocean redistribution,
+not an energy leak}, and nothing has yet been aimed at it.
 
-\medskip\noindent\textbf{The remaining land error is above the screen.} At 60--90N in DJF
-the air-side inversion bias is $+2.81$\,K while the skin-side bias is $+0.11$. Three
-surface levers scored null because they were adjusting a part of the column carrying no
-error. Of the $-2.23$\,K all-land DJF bias, ${\sim}1.0$\,K is excess inversion and
-${\sim}1.2$\,K is a deep tropospheric cold bias no mixing lever can reach.
+\medskip\noindent\textbf{The Southern Ocean has resisted the whole campaign.} It generates
+the imbalance rather than responding to it ($+0.383$ and $+0.353$\,W\,m$^{-2}$ from the two
+southern bands), 84\,\% of its cloud error is already present in AMIP over a correct ocean,
+and five more levers were excluded in round 37. It sits at 62\,\% of observed winter ice
+volume and the ACC at 98.9\,Sv against $134\pm11.2$ observed.
+
+\medskip\noindent\textbf{The boreal forest is gone.} BNS 0.001 and 5\,\% tree cover in the
+Siberian box at 2099, with grass beating tree on 84.9\,\% of cells, every establishment gate
+open. This is now a practical blocker: the LPJ-GUESS canopy work cannot be evaluated in a
+configuration with no trees.
 \end{abstract}
 
 \section{Scorecard against the three objectives}\label{sec:score}
+
 \begin{center}\small
-\begin{tabular}{p{0.20\textwidth} p{0.13\textwidth} p{0.13\textwidth} p{0.11\textwidth} p{0.33\textwidth}}
+\begin{tabular}{p{2.5cm}p{4.3cm}p{4.3cm}p{4.3cm}}
 \toprule
-objective & at 11E & at 11Q/11R & target & status \\
+objective & at the start & what the campaign did to it & where it stands \\
 \midrule
-\textbf{Global radiative imbalance} & $+0.778$ & $+0.877$ & $|{<}0.3|$ &
-\textbf{Not met, and reframed.} PI arms \emph{start} at $-0.06$ and drift to ${\sim}+1.0$
-over 40\,yr. It is a drift, and no lever addresses it \\
+Radiative imbalance &
+Coupled net TOA $+1.44$ to $+1.73$\,W\,m$^{-2}$, and every lever that lowered it cooled the
+model $0.6$\,K per W\,m$^{-2}$. &
+Measured that ${\approx}45\,\%$ is atmospheric (AMIP $+0.67$); re-based the target to $0$;
+found that decade-4 TOA follows mid-depth heat burial ($r=+0.72$) and that GM is the lever
+that reaches it. &
+\textbf{Partly understood, not fixed.} $+0.167$\,W\,m$^{-2}$ over 2080--99 --- but the
+surface cools, so the number no longer means what it did (\S\ref{sec:drift}). \\
 \addlinespace
-\textbf{Southern Ocean} polar DJF SW CRE & $+24.24$ & $+13.36$ & $0$ &
-45\,\% closed. But 60--45S went $+4.20\to-3.70$, i.e.\ past zero, and that overcorrection
-now blocks the remaining levers \\
+Southern Ocean &
+Largest single regional term, $+7.46$\,W\,m$^{-2}$ period-clean, and a winter over-ice warm
+bias. &
+Established it is cloud \emph{amount} at 60--45\,S and \emph{opacity} at 90--60\,S; that
+84\,\% is inherited from AMIP; traced and priced the marine CCN path; excluded nine levers
+in total. &
+\textbf{Open, and now two problems with a third constraint.} 62\,\% of observed winter
+volume, ACC 30\,\% weak, and the GM setting that helped the CDW costs 16.7\,Sv
+(\S\ref{sec:drake}). \\
 \addlinespace
-\textbf{NH cold bias} Siberia JJA & $-2.532$ & $-1.532$ & $0$ &
-A full kelvin gained, $+0.767$ of it from \texttt{RSBLB}. Best in the campaign \\
-\quad 60--90N DJF & $-6.149$ & $-4.913$ & $0$ & $+1.24$\,K \\
-\quad all land ANN & $-2.509$ & $-1.854$ & $0$ & 26\,\% closed \\
-\addlinespace
-\textbf{Boreal forest} & lost & lost & recovered &
-\textbf{Not met.} BNS is outcompeted by C3 grass, not gate-limited, so warming alone does
-not restore it \\
+NH cold bias / boreal forest &
+Siberian JJA $-2.58$\,K against ERA5; \texttt{cvh} $0.63\to0.02$ when LPJ-GUESS is switched
+on. &
+Split it into a universal part, an orographic part and a boreal-specific part; recovered
+${\approx}1.0$\,K of the last with G4/K1 and another $0.77$ with the stable-BL lever;
+closed land albedo and surface exchange as explanations. &
+\textbf{Atmospheric half improved, vegetation half worse.} Best coupled all-land bias
+$-2.79\to-2.11$\,K, but the forest is effectively gone and the Arctic over-grows ice
+(\S\ref{sec:boreal}). \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-All at 1850 forcing over 1360--1389, so the comparison is internally clean; absolute values
-against a present-day ERA5 carry a forcing offset of order a kelvin that is not model
-error.
+\section{Where the model stands}\label{sec:stands}
 
-\section{Where the model stands}
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.495\textwidth]{reval_11E_base/t2m_vs_ERA5.png}\hfill
-\includegraphics[width=0.495\textwidth]{reval_11R_sblb2_1990/t2m_vs_ERA5.png}
-\caption{Near-surface temperature against ERA5: \textbf{left} 11E, the campaign base;
-\textbf{right} 11R, the current best. The Siberian and Arctic blues retreat and the global
-cold bias roughly halves. Recomputed on a consistent window and reference, the global
-annual bias runs $-1.698$ (11E) $\to-1.619$ (11N) $\to-1.369$ (11Q) at 1850 forcing, and
-$-1.011$ (11P) $\to-0.778$ (11R) at 1990 --- monotone improvement in both families.
-\textbf{Two cautions.} 11E is 1850-forced and 11R is 1990-forced, so this pair mixes tuning
-with a forcing change; the clean same-forcing steps are the two sequences just quoted. And
-the \texttt{rmsd}/\texttt{bias} annotations printed on the panels come from reval's own
-window and regridding and do not match the recomputed values --- for 11N they even reverse
-the ordering against 11E, which is unexplained (\S\ref{sec:open}). Note the residual warm
-ring around Antarctica in both panels: that is the Southern Ocean problem of
-\S\ref{sec:so}, and it is the one feature the campaign has not moved.}
-\label{fig:t2m}
+\textbf{PICAL\_ccnice}, 2090--2099 unless stated. Observations as noted.
+
+{\small
+\begin{longtable}{lrrl}
+\toprule
+quantity & model & observed & source \\
+\midrule
+\endfirsthead
+\toprule
+quantity & model & observed & source \\
+\midrule
+\endhead
+net TOA (2080--99)            & $+0.167$\,W\,m$^{-2}$ & 0 for a control & --- \\
+net surface (2080--99)        & $+0.357$\,W\,m$^{-2}$ & 0 for a control & --- \\
+T2m global trend (2060--99)   & $-0.214$\,K/dec & 0 for a control & --- \\
+NH April ice volume           & 34.56 & 31.19 & GIOMAS 1989--99 \\
+NH September ice volume       & 13.97 & 11.96 & GIOMAS 1989--99 \\
+SH September ice volume       & 12.33 & 19.89 & GIOMAS 1989--99 \\
+SH February ice volume        & 0.73  & 2.07  & GIOMAS 1989--99 \\
+Drake Passage transport       & 98.9\,Sv & $134\pm11.2$ & Cunningham 2003 \\
+                              &          & $173.3\pm10.7$ & Donohue 2016 \\
+cavity basal melt             & 1062\,Gt\,yr$^{-1}$ & $\sim$1100 & Adusumilli 2020 \\
+                              &                     & $\sim$1500 & Rignot 2013 \\
+CMPI (global)                 & 0.903 & lower is better & --- \\
+Siberian tree cover (FPC)     & 0.050 & 0.415 & offline CRUNCEP \\
+\bottomrule
+\end{longtable}}
+
+Volumes in $10^3$\,km$^3$. The NH is expected \emph{above} a satellite-era record for a
+pre-industrial run; the SH is close to like-for-like because GIOMAS has no significant
+Antarctic trend across it.
+
+\section{What v3.5 carries, and where each number came from}\label{sec:config}
+
+The tuning now lives in \texttt{configs/setups/awiesm3/awiesm3.yaml} rather than in
+runscripts, so a fresh install reproduces the line. Everything below is namelist-only
+except where noted, which is what makes it mergeable with EC-Earth.
+
+{\small
+\begin{longtable}{p{4.0cm}p{2.3cm}p{9.4cm}}
+\toprule
+parameter & value & why, and which round decided it \\
+\midrule
+\endfirsthead
+\toprule
+parameter & value & why, and which round decided it \\
+\midrule
+\endhead
+\texttt{RCL\_INPSEA} & 0.1 & D2b, round 11. Reduced marine ice nuclei $\to$ brighter
+supercooled Southern Ocean cloud. \\
+\texttt{RCL\_INPPMIN} & 70000 & Round 28 adopted 50000 (S4) and round 38 retired it: the
+benefit reverses sign coupled. 70000 follows \texttt{sucldp.F90}'s own recommendation. \\
+\texttt{RSBLB} & 2.0 & Rounds 31--32. The winter land lever; Arctic DJF screen $+0.614$\,K
+coupled at net TOA $-0.001$. \\
+\texttt{RCCNSEAICE} & 15.0 & Round 38. Open-water weighting of the whitecap sea-salt source,
+which OpenIFS otherwise evaluates over sea ice. Gives the current line its name. \\
+\texttt{RVRSMIN(3,4)} & 1000 & Round 14 (G4). A cap set by winter damage, not a saturation
+knee. \\
+\texttt{ECE\_SNOW\_SCF} & 3 (+9 coeffs) & Round 20 (P3/P5), fitted to Russian snow-course
+observations after the \texttt{tanh} form was falsified against 174\,676 station soil
+records. \\
+\texttt{RVVEGALB} & 40 values & Round 17 (K1). Snow-free land albedo corrected against
+CERES; closed land albedo as an explanation. \\
+\texttt{cavity\_gamma\_scale} & 0.6 & Round 37. 1190\,Gt\,yr$^{-1}$ against 1893
+uncalibrated, 1100--1325 observed. FESOM PR \#1064, merged. \\
+\texttt{K\_GM\_max} / \texttt{Redi\_Kmax} & 2500 / 1000 & Round 36 (16E). Lowest TOA plateau
+kept. \S\ref{sec:drake} is the bill nobody scored. \\
+\texttt{mix\_scheme} & \texttt{cvmix\_TKE} \texttt{+cvmix\_IDEMIX} & Round 39, four-way
+20-year comparison from one restart. \\
+\texttt{use\_momix} & false & Round 38; the production line's first branch tests it. \\
+\texttt{albsn} / \texttt{albsnm} & 0.80 / 0.65 & Round 38, computed from the model's own
+melt seasons; FESOM ships 0.81/0.77, so these are deliberate. \texttt{albi}/\texttt{albim}
+stay at FESOM's 0.70/0.68 --- darkening them was falsified, they are pond-free. \\
+\bottomrule
+\end{longtable}}
+
+\textbf{Deliberately unset:} \texttt{RSNOWLIN2} stays at the code default 0.030. Raising it
+to 0.04 is the only lever in fifty arms that moves the tropical longwave deficit
+($+2.74$\,W\,m$^{-2}$, 120--127\,\% of it) and it warms the Southern Ocean too --- but it
+costs $+0.42$\,W\,m$^{-2}$ globally. It remains the campaign's most interesting unadopted
+parameter.
+
+\section{The campaign in the order it happened}\label{sec:timeline}
+
+One paragraph per phase, with the number that settled it. The full record of each is in
+\texttt{report.tex}, whose \S1 carries the same order.
+
+\subsection{The trade-off, and the floor underneath it (2026--07, rounds 1--8)}
+
+Twenty-nine coupled runs, screened on net TOA against the ERA5 temperature bias, produced
+the campaign's founding picture: \textbf{the runs lie on a line, not in a cloud}. Every
+W\,m$^{-2}$ of TOA improvement cost about $0.6$\,K of global cold, from 080a at
+$(1.73,+0.28)$ to 10A at $(0.57,-0.93)$; the coupling and ocean-mixing family cut the
+imbalance 30--57\,\% but pushed the planet $1.7$--$2.1$\,K too cold. Centred RMSD was
+$1.41$--$1.64$\,K across all 29 runs, a $\pm8\,\%$ spread against a raw-RMSD spread of
+64\,\%: \textbf{the runs differ by an offset, not by a pattern}. That identified a shared
+structural floor rather than a tuning deficiency, and sent the campaign looking for a
+warming lever instead of another retune.
+
+\subsection{The floor is LPJ-GUESS, on a clean pair (2026--07--14)}
+
+A purpose-built no-LPJG reference --- same CORE3 ocean, same TCO95 atmosphere, matched
+branches, HTESSEL with prescribed satellite vegetation, 30 years --- differs from the
+baseline in LPJ-GUESS alone. \textbf{Siberian high-vegetation cover \texttt{cvh} goes
+$0.63\to0.02$} when LPJ-GUESS is switched on (pan-boreal $0.49\to0.07$), and Siberia is
+$-3.1$\,K colder in DJF. The no-LPJG run also beats the baseline on global T2m RMSD (1.514
+against 1.717\,K) and on CMPI (0.738 against 0.745) at essentially unchanged imbalance, so
+the warming lever is real and nearly free. The cold effect is present in every month except
+high summer, which already ruled out snow-albedo masking as the whole mechanism: that is a
+sunlight effect and cannot explain an equally cold polar night.
+
+\subsection{The feedback-free AMIP reference (2026--07--27/28)}
+
+An AMIP testbed was built so the atmosphere could be scored with the vegetation--albedo
+feedback open but the coupled runaway severed. \textbf{(i) About 45\,\% of the imbalance is
+atmospheric}: AMIP net TOA is $+0.67$\,W\,m$^{-2}$ against a coupled $+1.44$, and with SST
+prescribed that cannot be ocean heat uptake --- the best branch at the time sat only
+$0.25$\,W\,m$^{-2}$ above that floor, so the Part-I lever family was nearly exhausted.
+\textbf{(ii) The boreal \emph{summer} cold bias is atmospheric too}: AMIP reproduces
+essentially all of the coupled Siberian JJA bias ($-2.16$ against $-2.19$\,K) while its
+\emph{annual} bias is only $-0.89$ against $-3.0$ coupled. Summer became an atmospheric
+problem and September--April stayed the coupled/vegetation one.
+
+\subsection{Rounds 10--12: a noise floor, a dead namelist, and the best boreal lever
+(2026--07--30$\to$08--02)}
+
+Three infrastructure findings changed how everything afterwards was measured. The
+\textbf{4-year window was resolving nothing} in the boreal, so arms went to 46 years and a
+detection threshold became mandatory. The \textbf{period offset} was measured rather than
+estimated ($+0.42$\,K for Siberian JJA, against a $1.12$\,K guess that had already been used
+to withdraw a conclusion). And \textbf{\texttt{NCMIPFIXYR} sat in a dead
+\texttt{\&NAMECECMIP6} block}: the AMIP runs were never at 1850 forcing, GHG ran
+1869$\to$1911, and Krakatoa is visible in 1883--86 in every arm. Deltas were unaffected, the
+absolute baseline was offset ${\approx}0.15$\,W\,m$^{-2}$, and the coupled runs were
+correctly pinned. On the science side D2b (ice nuclei) was adopted for the Southern Ocean
+and F4 --- boreal surface exchange --- became the best lever to that point, with
+G1 $=$ F4 $+$ D2b the best configuration.
+
+\subsection{Where the bias is not: the vertical structure (2026--08--02)}
+
+Before spending more levers, the column was decomposed. The Siberian cold bias is
+\textbf{confined below 850\,hPa}; \textbf{the soil and skin are the least-biased parts of
+the column}; and \textbf{all 20 surface types are cold in every season}, so it is not a
+vegetation-tile problem. That decomposition eventually retired the surface-side lever family
+as a class, and it split the boreal budget into ${\approx}0.7$\,K universal, ${\approx}0.3$
+orographic and $1.3$--$1.6$ boreal-specific --- with G4 taking ${\approx}0.95$ of the last,
+and the remainder not reachable by a boreal-indexed lever at all.
+
+\subsection{Rounds 13--17: land albedo, and half of it is the snow tile
+(2026--08--03$\to$05)}
+
+Half the Siberian shortwave deficit turned out not to be cloud. Of a $+0.0154$ land albedo
+excess against CERES, $+0.0074$ is the snow tile and $+0.0080$ the snow-free surface; every
+forest type is inside $+0.006$ once snow is masked per cell per month. The signature is
+\textbf{snow-melt timing} --- accumulation is right, the melt is a month late and 30\,\% too
+slow, and May is a runaway. Round 14's G4 was adopted (Siberian JJA $+0.952$\,K, $t=7.68$,
+SO SW RMSE $6.88\to4.80$) with \texttt{RVRSMIN} capped at 1000 by winter damage, and round
+17 adopted K1 $=$ G4 $+$ the snow-free albedo correction ($+1.036$\,K, global T2m RMSE
+$1.579\to1.524$, no Arctic energy penalty). Rounds 13 and 16 --- snow cover fraction and
+skin conductivity --- were both rejected on their own predictions.
+
+\textbf{And then land albedo was closed as an explanation.} Removing 74\,\% of a directly
+measured albedo bias bought $0.089$\,K of a ${\approx}0.7$\,K target; a perfect fix buys
+${\approx}0.12$\,K, one sixth. That is the shape of most of this campaign: the diagnosis was
+right, the leverage was not there.
+
+\subsection{Rounds 18--21: the snow scheme, falsified on observations and refitted
+(2026--08--05$\to$07)}
+
+The strongest summer lever built (I3, $+1.322$\,K Siberian JJA, closing the surface SW
+deficit to CERES exactly) was \emph{not} adopted, because it cost $+1.72$\,W\,m$^{-2}$ at
+60--90\,N. The sub-grid snow depletion scheme that HTESSEL lacks was implemented, validated
+offline, and it worked --- melt-out 12 May against a satellite 11 May --- and it cost
+$-16.2$\,K of coupled DJF soil for $+1.2$\,K of summer. The \texttt{tanh} functional form
+was then \textbf{falsified against observations rather than preference}: its range is open
+at 1, so complete cover is unrepresentable, while Russian snow courses report exactly
+$10/10$ in 99.74\,\% of 14\,369 Siberian DJF surveys, and the scheme costs $-20.2$\,K
+against 174\,676 station soil observations where the scheme \emph{off} is right to
+$+0.8$\,K. The damage was distributional, not a matter of mean cover: DJF cover is identical
+to 0.002 across the arms while the soil differs by 23\,K. P3, refitted to observations, was
+adopted; P5 followed. \textbf{Direct station data (RIHMI-WDC) entered the campaign here},
+and the campaign stopped depending on ERA5 --- an HTESSEL sibling --- for any soil claim.
+
+\subsection{The forest fails by two routes (2026--08--05)}
+
+BNE/BINE are \emph{gate-excluded}: 0.7\,\% of NE-Siberian cells clear
+\texttt{tcmin\_est}$=-30$ and their LAI is exactly 0.000. BNS (larch) has \emph{no} cold
+gate, clears its GDD gate on 84\,\% of cells, and is \emph{outcompeted} --- grass carries
+$5.8\times$ its LAI. Since NE Siberia is ${\approx}80\,\%$ larch, \textbf{the winter-gate
+mechanism does not explain the region that matters}. This distinction has been rediscovered
+several times since and is why \S\ref{sec:boreal} states it explicitly.
+
+Round 27 then measured the transfer function that the campaign's founding premise assumed:
+offline 2000-year LPJ-GUESS equilibria give TREE $0.202$ / BNS $0.034$ under AMIP forcing,
+$0.261/0.058$ at $+1$\,K, $0.327/0.099$ at $+2$\,K, against $0.415/0.227$ under observed
+forcing. Monotonic, not saturating, and $+2$\,K recovers 59\,\% of the gap ---
+\textbf{closing the cold bias should recover most of the forest}. A separate transfer test
+showed \textbf{forcing alone halves boreal tree cover}: same parameters, same 10\,043
+gridcells, \texttt{global.ins} byte-identical, Siberian TREEFPC $0.357\to0.163$ ($-54\,\%$)
+when the spin-up forcing is swapped from CRUNCEP to what the model delivers.
+
+\subsection{Rounds 22--23: the energy target re-based, and the Southern Ocean promoted
+(2026--08--09)}
+
+Comparing a PI run against a 2000s CERES window conflates the climate difference with the
+bias. Measured period-clean, \textbf{the radiative error is $+1.23$\,W\,m$^{-2}$, about
+twice what the PI framing reported}. The tropical deficit largely dissolved ($-2.51$
+PI-vs-CERES against $-0.67$ period-clean); the Southern Ocean got \emph{larger}
+($+7.46$\,W\,m$^{-2}$, $+0.735$ of the global mean) and became unambiguously the largest
+single regional term. Its deficit is \textbf{cloud amount, 65.5\,\% of it}, zonally uniform
+to $1.42$\,pp --- and no lever in the campaign moves cloud area, the best managing
+$+0.63$\,pp of a $6.43$\,pp gap. The reference question was settled too: CERES and MODIS put
+SO cloud area at 89.5 and 89.3\,\% against the model's 83.1, while \textbf{ERA5 reproduces
+the model's bias because ERA5 is IFS} and is therefore not an independent cloud reference.
+Meanwhile the global cold bias was located at the tropopause, peaking at 200\,hPa over both
+poles, with the atmosphere cold \emph{and} dry ($-1.62$\,K and $-10.1\,\%$ over
+700--300\,hPa) in a pair that cancels in OLR.
+
+\subsection{Rounds 24--26: marine biogenic CCN, traced end to end and priced out
+(2026--08--09$\to$10)}
+
+The one lever that reached the Southern Ocean in the right season. Droplet number there is
+\textbf{correct in the mean} ($N_d\approx73$\,cm$^{-3}$ against 60--120 observed) but
+\textbf{inverted in phase}: the model is lowest in DJF because it is wind-driven, where
+observations peak in DJF from biogenic sulphate, and the CRE error is worst in exactly those
+months. A DMS emission climatology already shipped at TCO95 and nothing read it; it was
+wired through \texttt{ocp-tool}, defaulted off, and screened. At $S=166$ it moves SO SW CRE
+$-7.25$\,W\,m$^{-2}$ in DJF, 67\,\% of the deficit in the worst season, from the bloom
+rather than a tuned constant. \textbf{It still cannot be adopted}: the tropical cost is
+$0.0129$\,W\,m$^{-2}$ per unit $S$, so the tolerance binds at $S\approx39$, below the
+published floor of 43, and scaling cannot separate the bands because tropical background CCN
+is \emph{lower} than the Southern Ocean's.
+
+\subsection{Rounds 27--28: a tuned stack nobody ran, and S4 (2026--08--10$\to$11)}
+
+A jointly-tuned eight-parameter cloud stack for TCO95L91 was found sitting unused in the
+v3.4.2 DARS2 runscripts, with no \texttt{fort.4} on disk setting any of it; it had been
+invisible because \texttt{preflight} looked in one place. Taken apart, it yielded
+\texttt{RSNOWLIN2}, still the only lever that moves the tropical longwave. The round also
+established that \textbf{Southern Ocean levers must be scored on net, not SW CRE} ---
+longwave cancels a consistent 25--29\,\% across the 44-year archive. Then S4
+(\texttt{RCL\_INPPMIN} $70000\to50000$), one namelist number that had sat unevaluated for
+two days, came out as the best configuration the campaign had: SO surface bias
+$+3.66\to-0.96$, global net TOA $+0.64\to+0.25$. \textbf{It was the headline of the
+2026--08--11 summary and is now retired} --- its benefit reverses sign coupled (Siberian JJA
+$+1.194$\,K AMIP against $-0.365$\,K coupled). The habit of striking falsified claims through
+rather than deleting them dates from this episode.
+
+\subsection{Rounds 29--30: the land-surface repair, Raupach, and an inherited bias
+(2026--08--13$\to$19)}
+
+\textbf{Raupach canopy roughness is dead structurally, not statistically.} Its winter
+mechanism needs a canopy, and the model's Siberian trees are $2.89$\,m tall with 2\,cm
+stems, giving $z_0=0.0132$\,m against IFS's $0.058$ --- it makes the winter surface
+$4.4\times$ smoother. \textbf{The lever cannot bootstrap the forest it requires.} The
+land-surface repair (107 new \texttt{fail()} calls classified, peat and LUH3 reconciled to
+one epoch) is a trade: $+0.308$\,K of Siberian DJF soil against a JJA bias moved from
+$-0.673$ to $-1.123$. Round 30 then produced the reframing
+that governs the Southern Ocean work since: \textbf{84\,\% of the coupled SO cloud error is
+already present in AMIP} over a prescribed, correct ocean. It is not a coupling problem.
+Round 30 also killed the ``$-1.0$\,W\,m$^{-2}$ structural leak'': it was the omitted
+snow-enthalpy term, and with it the column conserves to $0.02$--$0.04$\,W\,m$^{-2}$ and a
+TOA-zero run drifts $-0.02$\,K/century. \textbf{Tuning net TOA to zero does stop the ocean
+drift} --- which is what makes \S\ref{sec:drift} surprising.
+
+\subsection{Rounds 31--32: the stable boundary layer, and the campaign's best run
+(2026--08--21$\to$23)}
+
+The decomposition said the winter land bias sits between the screen and 925\,hPa: in the
+best arm the air-side inversion bias is $+2.81$\,K while the skin-side bias is $+0.11$\,K.
+That excluded every surface-side lever by construction and pointed at stable mixing, so
+\texttt{\&NAMVDFS} was created to expose it. \texttt{RSBLB 2.0} gives Arctic DJF screen
+$+0.614$/$+0.674$\,K coupled, and \textbf{it is free in energy terms coupled} --- global net
+TOA $-0.001$/$-0.027$, both null, against AMIP's $+0.175$: the tropical shortwave gain is
+absorbed as ocean warming and cancelled in the longwave. \textbf{Winter and summer moved
+together for the first time in the campaign.} 11R scored CMPI $0.7577$ against 11E's
+$0.8237$, the best in the campaign. The mixing-length route (SB3) was falsified: its
+tropical SW cost per K of inversion is $3.43$ against \texttt{RSBLB}'s $0.88$, so the trade
+is a property of the scheme, not of the knob. Only about half the residual land bias is
+reachable by any mixing lever --- of $-2.23$\,K, ${\approx}1.0$ is excess inversion and
+${\approx}1.2$ is a deep cold bias still present at 850\,hPa.
+
+\subsection{Round 33: the Southern Ocean is two problems (2026--08--23)}
+
+\textbf{It generates the imbalance rather than responding to it}: 90--60\,S and 60--45\,S
+contribute $+0.383$ and $+0.353$\,W\,m$^{-2}$, the two largest positive terms. The two bands
+need \emph{opposite} corrections --- at 90--60\,S cover is right to 2\,pp but each cloud is
+8\,\% too dim, at 60--45\,S there are 5\,pp too few clouds each 9\,\% too bright --- and
+every campaign lever raises opacity, which is why one band is now overcorrected while the
+other is not. Cloud phase flips sign at 60\,S, and the INP family had been retired on a
+measurement taken in the one band where the model is too liquid. The ice melts from above
+in summer and fails to refreeze from below in autumn, with a $+0.9$\,K anomaly at exactly
+100\,m that autumn mixing entrains. \textbf{The ice is not too dark} (compact-ice albedo
+$0.760$--$0.778$); it is too diffuse --- no cell exceeds 90\,\% concentration in
+January--March, so the area-mean albedo falls to $0.49$--$0.51$.
+
+\subsection{Rounds 34--36: where the heat goes (2026--09--06$\to$12)}
+
+Round 34 found four defects in the coupled ice skin (\S\ref{sec:traps}). Round 35 asked
+where the heat lands: \textbf{below 300\,m}, with the top
+100\,m gaining $+0.013$\,W\,m$^{-2}$ while 300--2000\,m gains $+1.388$; the tropical mixed
+layer is \emph{not} too deep (43.6 against WOA18's 51.6\,m); the tropical deep warming is
+\textbf{heave, not diapycnal flux}; and heat crosses density surfaces at the mid- and
+high-latitude winter outcrops where the mixed layer is $+48.9$ to $+155.7$\,m too deep. The
+Southern Ocean \emph{loses} heat rather than burying it, with 18.7\,\% of month-nodes mixing
+to the sea floor.
+
+Round 36 closed the loop: \textbf{decade-4 TOA follows mid-depth heat storage} across 20
+runs ($r=+0.72$), \textbf{stronger GM is the lever that reaches it} (GM 1500 cuts first-decade
+700--2000\,m uptake by ${\approx}30\,\%$), and 16E (\texttt{K\_GM\_max} 2500, Redi 1000)
+settles at the lowest TOA plateau the campaign kept, $+0.70$\,W\,m$^{-2}$. The costs were
+stated at adoption: NH March ice $+1.3$\,M\,km$^2$, global T2m $+0.21$\,K, and an AMOC that
+GM 1500 strengthens and GM 2500 gives back. \textbf{Drake Passage was not among the costs
+scored} (\S\ref{sec:drake}).
+
+\subsection{Rounds 37--40: the production line (2026--09--13$\to$25)}
+
+Round 37 spent five branches on the Southern Ocean winter bias --- salt plumes, Fox-Kemper
+MLE, a deeper lead-closing floor, all three together, and a calibrated basal melt --- and
+\textbf{excluded all of them}. It is a freshwater regime, not a mixing deficiency. Round 38
+moved the v3.5 defaults into \texttt{awiesm3.yaml}, started the line, and computed the
+sea-ice albedos from the model's own melt seasons rather than guessing: the four
+\texttt{ice\_therm} albedos are \emph{pond-free}, so darkening them to stand in for ponds
+double-counts, and the two snow albedos act in different hemispheres by measured surface
+state ($\partial\alpha/\partial\,\texttt{albsn}$ 0.908 in SH DJF against 0.149 in NH JJA).
+Round 39 scored four vertical mixing schemes and adopted \texttt{cvmix\_TKE+cvmix\_IDEMIX},
+finding two real FESOM bugs on the way. Round 40 carried the line to 2100 and measured what
+it had become --- which is the rest of this document.
+
+\section{The production line, and the cold drift}\label{sec:drift}
+
+\textbf{PICAL} (1850--1929) $\to$ \textbf{PICAL\_momixoff} (branched 1920, to 2049) $\to$
+\textbf{PICAL\_ccnice} (branched 1940, to 2100). Throughput on levante, 47 nodes, 10-year
+legs: about 77\,SYPD under TKE+IDEMIX, 86 under \texttt{cvmix\_TKE} alone, 75 under KPP,
+with $\pm15\,\%$ decade-to-decade scatter on identical configuration.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.72\textwidth]{toa_timeseries_campaign.png}
+\caption{Annual net TOA along the critical path, each run drawn to the branch point of its
+successor. The two vertical marks are the mixing-scheme changes. \texttt{cvmix\_TKE} at
+2060 drives TOA negative; adding IDEMIX at 2080 brings it back. The run is never far from
+zero and never settles on it.}
 \end{figure}
-\label{sec:stands}
-Best coupled arm: \textbf{11R} (1990 forcing) and \textbf{11Q} (1850), $=$ LX4 stack $+$
-\texttt{RSBLB} 2.0. Against 11E, at 1850 forcing so the comparison is clean:
-
-\begin{center}\small
-\begin{tabular}{lrrrrr}
-\toprule
-1360--1389 & 11E base & 11N LX4 & \textbf{11Q} & 11Q$-$11N & 11Q$-$11E \\
-\midrule
-DJF T2m 60--90N & $-6.149$ & $-5.528$ & $\mathbf{-4.913}$ & $+0.614$ & $+1.236$ \\
-DJF T2m all land & $-3.351$ & $-3.213$ & $\mathbf{-2.647}$ & $+0.566$ & $+0.704$ \\
-ANN T2m all land & $-2.509$ & $-2.370$ & $\mathbf{-1.854}$ & $+0.516$ & $+0.655$ \\
-JJA T2m Siberia & $-2.532$ & $-2.299$ & $\mathbf{-1.532}$ & $+0.767$ & $+1.000$ \\
-DJF inversion 60--90N & $+3.271$ & $+3.109$ & $\mathbf{+2.428}$ & $-0.681$ & $-0.843$ \\
-net TOA & $+0.778$ & $+0.878$ & $+0.877$ & $-0.001$ & $+0.099$ \\
-NH ice Mar [$10^6$km$^2$] & 14.142 & 13.862 & 13.697 & $-0.165$ & $-0.445$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-The annual land bias is down 26\,\% from base and Siberian JJA has improved by a full
-kelvin, at unchanged net TOA. \textbf{Caveat:} the 11E$\to$11N step spans an
-\texttt{lpj\_guess} binary change (\S\ref{sec:traps}), so part of that column is not
-attributable to LX4.
-
-\section{The campaign in one page}\label{sec:arc}
-Eight weeks, ${\sim}60$ atmosphere-only lever arms and ${\sim}35$ coupled arms, against
-three objectives that turned out to be more coupled to each other than expected.
-
-\begin{center}\footnotesize
-\begin{tabular}{p{0.07\textwidth} p{0.24\textwidth} p{0.62\textwidth}}
-\toprule
-rounds & phase & what it established \\
-\midrule
-09--13 & ocean/ice mixing, first levers &
-Aggressive coupling and KPP settings cut the imbalance hardest but cool the planet past
-ERA5; the cooling ``leaks well beyond where an ocean-mixing parameter has any business
-acting''. Milder settings retained \\
-14--18 & land surface, snow, aerosol &
-G4 adopted (\texttt{RVRSMIN} on needleleaf $+$ tundra). The 4-year window was resolving
-nothing in the boreal: B8 read $+0.502$ at 4\,yr and $-0.038$ at 44. Detection thresholds
-computed \emph{first} from that round on \\
-19--23 & snow-cover depletion &
-Melt-out 13 days late and June cover twice observed; \texttt{ECE\_SNOW\_SCF}$=3$ fitted to
-observations and adopted (P3). Exposed the Siberian winter cold bias the excessive cover
-had been masking \\
-24--28 & marine CCN, tropical longwave &
-DMS wired end-to-end and priced; the SO lever works and the tropical longwave gate stops
-it. \texttt{RSNOWLIN2} found: the only lever in ${\sim}52$ arms that moves tropical LW \\
-29--30 & land repair, SO cloud coupled &
-84\,\% of the coupled SO error is inherited from AMIP. Overlap transfers but costs
-$1.000$\,K of Siberian JJA. Ocean drift priced; the ``structural leak'' was omitted snow
-enthalpy \\
-31 & \textbf{the winter land bias relocated} &
-Resolved by height: the error is above the screen, not at it. Retires the surface-side
-lever class and explains three nulls \\
-32 & \textbf{\texttt{RSBLB} adopted} &
-Stable-BL mixing exposed and scored. Best \texttt{cmpitool} in the campaign; winter and
-summer move together for the first time \\
-33 & \textbf{the Southern Ocean reframed} &
-It generates the imbalance rather than responding to it. Two mechanisms, seasonally
-separated. S4 indicted \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\section{The coupled series}\label{sec:coupled}
-All branch from the same 1350 state, so differences are paired.
-
-\begin{center}\footnotesize
-\begin{tabular}{p{0.06\textwidth} p{0.26\textwidth} p{0.61\textwidth}}
-\toprule
-arm & content & outcome \\
-\midrule
-11E & campaign base & the reference \\
-11G & 11E $+$ S4 & adopted base for rounds 29--30; now indicted (\S\ref{sec:s4}) \\
-11I & 11G $+$ v2soil (LPJG repair) & the repair is a trade: Siberian DJF soil $+0.308$\,K
-but JJA against ERA5 worse than 11E \\
-11J & 11I $+$ Raupach $z_0$ & null; one binary, run-time gate \\
-11L/11M & 11G $+$ overlap 0.35 / 0.10 & first SO lever to transfer ($0.57$--$1.01\times$);
-both rejected on Siberia and TOA \\
-11N/11P & LX4 stack, 1850 / 1990 & largest single winter improvement before this round:
-60--90N DJF $-6.35\to-4.49$ \\
-\textbf{11Q/11R} & $+$ \texttt{RSBLB} 2.0, 1850 / 1990 & \textbf{current best.} 11R scores
-CMPI 0.7577 \\
-11V/11W & $-$S4, 1990 / 1850 & \emph{running}; decides S4 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\textbf{Read 11N$\to$11P as a change of comparison basis, not a gain.} 11N is 1850 forcing
-read against a present-day ERA5; 11P is period-matched. Only 11P/11R should be quoted as
-biases against observations.
-
-\section{The boreal forest: the founding problem, and where it stands}\label{sec:boreal}
-The campaign began because the coupled model loses the Siberian boreal forest. That is now
-partly understood and only partly fixed.
-
-\textbf{It is not a climate gate.} BNS (larch) is permitted everywhere in Siberia and is
-\emph{outcompeted by C3 grass} --- established 2026-07-14 and re-derived at least five
-times since. Establishment thresholds, GDD5 and the climate gates are not what excludes
-it, so no amount of warming the gate will restore it.
-
-\textbf{Two mechanisms, both measured.} A summer route --- over-transpiration $\to$ moist
-boundary layer $\to$ JJA cloud $+8.5$\,pp $\to$ $-7.0$\,W\,m$^{-2}$ surface SW --- and a
-winter route through roughness: when LPJ-GUESS loses the forest, thermal roughness
-collapses by three to four orders of magnitude (forest $z_{0h}=2.0$\,m against tundra
-$3.4\times10^{-4}$), the surface decouples and the inversion deepens by $+2.1$\,K.
-
-\textbf{What worked and what did not.} G4 (\texttt{RVRSMIN}) took ${\sim}0.95$ of the
-boreal budget and saturates: F5, combining four land levers, gives $+0.746$ against F4
-alone at $+0.749$. Raupach roughness cannot bootstrap the canopy it needs. The current
-state is Siberian JJA $-1.53$\,K against ERA5 in 11Q, improved a full kelvin from the
-base, with \texttt{RSBLB} contributing $+0.767$ of it --- the first winter lever that also
-helped summer.
-
-\section{Adopt \texttt{RSBLB}: the winter land lever}\label{sec:rsblb}
-Round 31 resolved the DJF land cold bias by height against ERA5. The bias decays to
-nothing by 850\,hPa, so it is surface-confined and a redistribution lever is the right
-class --- but the \emph{skin is already right}:
-
-\begin{center}\small
-\begin{tabular}{lrrrrrr}
-\toprule
-11P, DJF & T$_{2m}$ & T$_{1000}$ & T$_{925}$ & T$_{850}$ & lowinv bias & sfcinv bias \\
-\midrule
-60--90N & $-3.63$ & $-2.10$ & $-0.88$ & $-0.42$ & $\mathbf{+2.81}$ & $\mathbf{+0.11}$ \\
-ALL LAND & $-2.23$ & $-1.43$ & $-1.25$ & $-1.22$ & $+0.86$ & $-0.36$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-That retires the surface-side levers as a class and explains three measured nulls ---
-\texttt{ECE\_LAMSK\_SN}, Raupach $z_0$, F1 \texttt{RVZ0H} --- as the wrong layer rather
-than bad luck. The error sits between the screen and 925\,hPa, which is the stable branch
-of \texttt{VDFEXCU}, whose constants were hardcoded until this round.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.90\textwidth]{djf_bias_profile.png}
-\caption{Why three surface levers scored null. \textbf{(a)} The DJF land cold bias over
-60--90$^\circ$N decays from $-3.63$\,K at the screen to $-0.42$ at 850\,hPa, so it is
-surface-confined and a redistribution lever is the right class. \textbf{(b)} But the
-skin-side bias is $+0.11$\,K against an air-side $+2.81$: the skin is already right, and
-the entire excess inversion sits between the screen and 925\,hPa. Skin conductivity,
-Raupach $z_0$ and F1 \texttt{RVZ0H} were all adjusting a part of the column that carries
-no error.}
-\label{fig:profile}
-\end{figure}
-
-Coupled, the lever performs better than AMIP predicted, because AMIP prescribes sea ice
-and suppresses the amplifying feedback:
-
-\begin{center}\small
-\begin{tabular}{lrrr}
-\toprule
-1360--1389 & \textbf{11Q}$-$11N & \textbf{11R}$-$11P & AMIP SB2 \\
-\midrule
-DJF inversion 60--90N & $-0.680$\,* & $-0.809$\,* & $-0.713$\,* \\
-\textbf{DJF T2m 60--90N} & $\mathbf{+0.614}$\,* & $\mathbf{+0.674}$\,* & $+0.285$ \\
-DJF T925 60--90N & $-0.114$ & $-0.020$ & $-0.428$\,* \\
-\textbf{global net TOA} & $\mathbf{-0.001}$ & $\mathbf{-0.027}$ & $+0.175$\,* \\
-Siberia JJA & $+0.767$\,* & $+0.045$ & $+0.000$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Three things AMIP could not settle all came out favourably: the screen follows
-($2.2$--$2.4\times$ the AMIP response), the compensating cooling aloft disappears, and the
-$+0.175$\,W\,m$^{-2}$ TOA cost vanishes --- the tropical shortwave gain is absorbed as
-ocean warming and cancelled by the longwave response. \texttt{cmpitool} on 11R scores
-\textbf{0.7577}, the best in the campaign, with \texttt{tas} $-0.109$ and \texttt{zg}
-$-0.088$ against 11P and \texttt{nino34} the most improved region. The cost lands on
-\texttt{thetao} ($+0.018$), i.e.\ ocean heat.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.98\textwidth]{sb_exchange_rate.png}
-\caption{\textbf{(a)} What each arm pays (tropical SW CRE) against what it buys (Arctic
-DJF inversion removed). SB1 and SB2 lie on one line through the origin at
-$0.87$\,W\,m$^{-2}$ per K, so the trade is \emph{linear in dose} and cannot be dodged by
-tuning gentler; the mixing-length route sits far off it at $3.43$. The coupled arms land
-on the same frontier. \textbf{(b)} Why the coupled pair was necessary: in AMIP the
-inversion weakens mostly by cooling the air aloft and the screen response is not
-significant, whereas coupled --- sea ice free to respond --- it is essentially all screen.}
-\label{fig:exchange}
-\end{figure}
-
-\textbf{The one caveat.} The DJF Arctic screen gain carries a fitted trend of
-$-0.456$\,K/decade in 11Q and $-0.210$ in 11R over the 30 years, so the winter component
-may be decaying. The \emph{annual} land and global warming does not decay.
-
-\section{Retire S4: the reversal}\label{sec:s4}
-The predecessor to this document recommended adopting S4 on the strength of an AMIP
-result. Three measurements since say otherwise.
-
-\textbf{It buys nothing at the pole.} Ocean-masked, 30\,yr paired, 11G$-$11E: SW CRE at
-90--60S DJF is $+0.77$ and \emph{not significant}, against $-2.34$\,* at 60--45S. A ratio
-of $-0.33$: purely equatorward.
-
-\textbf{It authored the blocking constraint.} That $-2.34$ is the largest single
-contribution to the sub-Antarctic overcorrection, now $-3.70$\,W\,m$^{-2}$ DJF, which is
-what disqualifies DMS, \texttt{RCL\_KK\_CLOUD\_NUM\_SEA} and every other SH-wide
-brightening lever --- while the polar deficit stands at $+13.36$.
-
-\textbf{Its headline benefit reverses coupled.}
-
-\begin{center}\small
-\begin{tabular}{lrr}
-\toprule
-& AMIP S4$-$control (44\,yr) & coupled 11G$-$11E (30\,yr) \\
-\midrule
-\textbf{Siberia JJA T2m} & $\mathbf{+1.194}$\,* & $\mathbf{-0.365}$\,* \\
-Arctic land JJA & $+0.784$\,* & $-0.262$\,* \\
-all land ANN & $+0.160$\,* & $-0.372$\,* \\
-global ANN T2m & $+0.070$\,* & $\mathbf{-0.320}$\,* \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Every temperature metric flips sign. A $0.32$\,K global cooling is a straight cost in a
-model already ${\sim}0.7$\,K too cold. \textbf{Removal is under test} in 11V (1990) and
-11W (1850); at 18 years 11V$-$11R gives sub-Antarctic $+3.056$\,*, polar $-2.523$\,*,
-Siberia $+0.285$ (ns, right sign), net TOA $+0.265$\,*. Both Southern Ocean bands improve.
-The falsifier that would keep S4 --- Siberian JJA going backwards --- has not fired at any
-length.
-
-\section{The Southern Ocean has two problems, and it generates the imbalance}\label{sec:so}
-\textbf{Every arm drifts, including the 1850 controls}: $+0.8$\,K of SH surface air and
-$-2\times10^6$\,km$^2$ of September ice per 40 years, with the 1990 forcing adding only
-$+0.2$\,K on top. At the branch point the SH T2m bias was $-0.06$ to $-0.65$\,K, i.e.\ the
-air was \emph{not} warm --- so the ocean was not warmed by the atmosphere. Both warm
-together, and net TOA drifts from ${\sim}-0.07$ to ${\sim}+1.0$ over the same 40 years.
-
-Ocean-masked, the two Southern Ocean bands are the largest positive contributors to the
-global imbalance, $+0.32$ and $+0.36$\,W\,m$^{-2}$, against a tropical $-1.09$. The global
-figure is a small residual of large regional cancellations, so ``close the TOA imbalance
-and the Southern Ocean follows'' is circular.
-
-\textbf{Two mechanisms, seasonally separated.} In DJF the sea-ice zone absorbs
-$+7.99$\,W\,m$^{-2}$ too much shortwave at the surface, from cloud that is present but
-optically thin. In MAM the anomaly is $+4.48$\,W\,m$^{-2}$ of \emph{longwave} with almost
-no shortwave --- autumn mixed-layer deepening entrains a $+0.9$\,K warm anomaly sitting at
-exactly 100\,m, which is why March ice never regrows (model $1.30$ against $3.10$
-observed). The summer heat is stored and re-emerges in autumn; suppressing ocean mixing
-makes the 100\,m layer \emph{worse}, so it is fed from above, not below.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.98\textwidth]{so_two_problems.png}
-\caption{Two Southern Ocean problems in two different seasons. \textbf{(a)} The ice
-seasonal cycle is too large: September is $+0.78\times10^6$\,km$^2$ in area against
-OSI-SAF while February--May is far too low and the March regrowth is absent entirely
-(model $1.30$ against $3.10$). \textbf{(b)} The T2m warm anomaly peaks in \emph{MAM}, the
-refreeze season, which no shortwave mechanism explains. \textbf{(c)} A $+0.9$\,K anomaly
-at exactly 100\,m, under a neutral surface and above \emph{cold} water at 500--1000\,m ---
-the depth the autumn mixed layer reaches. Summer heat is stored and re-emerges to block
-the refreeze.}
-\label{fig:sotwo}
-\end{figure}
-
-\textbf{The cloud error is half amount and half opacity}, and the hemispheres need
-\emph{opposite} corrections: Antarctic summer SW CRE is $+13.36$ (reflects too little)
-while Arctic summer is $-18.22$ (reflects far too much). No lever tested is selective
-enough to treat them separately at a useful dose.
-
-\section{The Southern Ocean cloud error in detail}\label{sec:socloud}
-All ocean-masked. Band averages fold the Antarctic ice sheet into the polar band and halve
-the apparent signal, which is why earlier numbers in the report read smaller.
 
 \begin{center}\small
 \begin{tabular}{lrrrr}
 \toprule
-SW CRE bias vs CERES \texttt{clr\_t} & 90--60S DJF & 90--60S ANN & 60--45S DJF & 60--45S ANN \\
+metric & 2060--64 & 2095--99 & trend/decade & 95\,\% CI \\
 \midrule
-11E base & $+24.24$ & $+11.46$ & $+4.20$ & $+4.31$ \\
-11G $+$S4 & $+21.66$ & $+11.01$ & $+1.75$ & $+2.21$ \\
-11N LX4 & $+16.50$ & $+8.44$ & $-0.36$ & $+0.85$ \\
-11P LX4 1990 & $+16.91$ & $+8.48$ & $-2.91$ & $-0.29$ \\
-11Q $+$RSBLB & $+18.07$ & $+8.96$ & $-2.17$ & $-0.04$ \\
-\textbf{11R $+$RSBLB 1990} & $\mathbf{+13.36}$ & $\mathbf{+7.26}$ & $\mathbf{-3.70}$ & $\mathbf{-0.93}$ \\
+T2m global        & 14.439 & 13.645 & $-0.214$ & 0.025 \\
+T2m 60--90\,N     & $-8.143$ & $-9.842$ & $-0.511$ & 0.118 \\
+T2m 60--90\,S     & $-15.650$ & $-16.875$ & $-0.238$ & 0.104 \\
+NH extent, March  & 16.262 & 18.188 & $+0.522$ & 0.103 \\
+net TOA           & $-0.775$ & $+0.236$ & $+0.272$ & 0.079 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{A meridional gradient in lever effectiveness, not an untouched region.} The polar
-band has been more than halved, $+24.24\to+13.36$. But the same levers drove 60--45S from
-$+4.20$ through zero to $-3.70$ --- overcorrected --- while the pole still leaks. Pushing
-any of them harder buys the last of the pole by driving the sub-Antarctic further
-negative, and 60--45S sits inside the campaign's own 45--65S SO metric, which is part of
-why this looked solved.
-
-\textbf{Half amount, half opacity.} DJF, SW CRE per unit cloud cover isolates the two:
-
-\begin{center}\small
-\begin{tabular}{llrrr}
-\toprule
-band & & CRE & cover & CRE/cover \\
-\midrule
-60--90S & CERES & $-105.98$ & 0.916 & $-115.7$ \\
-60--90S & 11R & $-92.62$ & 0.858 & $\mathbf{-108.0}$ \\
-60--45S & CERES & $-120.75$ & 0.912 & $-132.5$ \\
-60--45S & 11R & $-116.34$ & 0.851 & $\mathbf{-136.7}$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-At the pole, cover is $5.8$\,pp low \emph{and} each cloud is $6.7\,\%$ too dim, about
-$6.5$\,W\,m$^{-2}$ each of the $13.36$. In the sub-Antarctic there are $6.1$\,pp too few
-clouds each $3\,\%$ too \emph{bright} --- they compensate, which is how the net CRE ended
-up overcorrected. \textbf{Every campaign lever raises opacity}, which is why the two bands
-diverged.
-
-\textbf{Cloud phase flips sign at 60S.} Low-level liquid fraction against CALIPSO-GOCCP:
-45--65S model $0.873$ vs $0.858$ (too liquid, $+0.015$); \textbf{60--90S $0.731$ vs
-$0.759$} (too icy, $-0.028$); Siberia $0.813$ vs $0.818$. Icier cloud precipitates out and
-carries less liquid water, which is how a cloud is present and optically thin. The INP
-family was retired on a phase measurement taken in the one band where the model is too
-liquid, and that conclusion does not extend poleward.
-
-\textbf{Where the deficit sits.} Split by ice cover, DJF: the pack ($1.2\times10^6$\,km$^2$)
-is nearly unbiased at $+1.47$; the deficit lives in the marginal ice zone
-($10.0\times10^6$\,km$^2$, $+14.49$) and the open water south of 60S
-($9.3\times10^6$\,km$^2$, $+15.86$). Any candidate must act on sunlit open water beside
-ice, which rules out anything keyed to ice cover.
-
-\section{Sea ice against observations}\label{sec:ice}
-SH sea ice area against OSI-SAF (1989--2014; the record contains no December):
-
-\begin{center}\small
-\begin{tabular}{lrrrrrr}
-\toprule
-$10^6$\,km$^2$ & Feb & Mar & Apr & Jun & Sep & Nov \\
-\midrule
-OSI-SAF area & 2.23 & \textbf{3.10} & 5.82 & 11.86 & \textbf{16.27} & 12.91 \\
-11R area & 1.31 & \textbf{1.30} & 3.37 & 10.66 & \textbf{17.05} & 13.30 \\
-OSI-SAF extent & 4.14 & 5.61 & 8.62 & 15.36 & \textbf{20.23} & 17.63 \\
-11R extent & 2.99 & --- & --- & --- & \textbf{22.24} & --- \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\textbf{The seasonal cycle is too large}: too much ice at the September maximum ($+0.78$
-area, $+2.01$ extent) and far too little through February--May, with the March regrowth
-absent entirely. The ice is \emph{not} too dark --- compact-ice September albedo is $0.760$
-at $ci\ge0.9$ and $0.778$ at $ci\ge0.95$ against a snow albedo of $0.850$, inside the
-observed range. But \textbf{in January--March no cell anywhere exceeds 90\,\%
-concentration}, so the area-mean albedo the sun sees falls to $0.49$--$0.51$. The pack is
-too diffuse: mean concentration inside the ice edge is $0.767$ in September against
-OSI-SAF's $0.804$, spread over $2\times10^6$\,km$^2$ more extent. Diffuse ice has less
-volume per unit area to lose and melts out rather than retreating to a compact core.
-
-\section{Forcing: what is pinned, and what is not}\label{sec:forcing}
-\texttt{NCMIPFIXYR} pins GHG, ozone, composition, stratospheric aerosol, SO$_4$, solar TSI
-\emph{and} MACv2SP. It does \textbf{not} pin LPJ-GUESS, which carries its own
-\texttt{fixed\_CO2}, \texttt{fixed\_ndep} and \texttt{fixed\_LU}. Both must be set, or a
-1990 arm runs present-day climate over pre-industrial CO$_2$ and land use.
-
-Three traps, all hit:
-\begin{itemize}\itemsep1pt
-\item The \texttt{\&NAMECECMIP6} block \emph{accepts} \texttt{NCMIPFIXYR} and is
-\textbf{never read}. Liveness must be checked as \texttt{Set JYEAR} in
-\texttt{NODE.001\_01}. 50 AMIP arms ran transient because of it.
-\item \texttt{SP\_SETUP: IYR} reports the MACv2SP \emph{file} that was opened, not the year
-the profile is evaluated at --- that is \texttt{YEAR\_FR}, which honours
-\texttt{NCMIPFIXYR}. A correct run was cancelled on this misreading and had to be
-resubmitted unchanged.
-\item \texttt{fixed\_LU} 1990 raises the peat-vs-LUH3 conflict count from 73 cells at 1850
-to ${\sim}493$ at 2000; arms running the default \texttt{guess} silently over-allocate
-those to peat.
-\end{itemize}
-
-\section{What the lever catalogue now says}\label{sec:levers}
-A full kept/discarded table is in \texttt{tuning\_summary.pdf}. The load-bearing points:
-
-\begin{itemize}\itemsep1pt
-\item \textbf{The stable-mixing trade is linear in dose.} Tropical SW CRE paid per K of
-Arctic inversion removed is $0.88$, $0.87$, $3.43$ for \texttt{RSBLB} $b{=}3$, $b{=}2$ and
-the mixing-length route. Constant across a factor-two dose change, so the cost cannot be
-dodged by tuning gentler; \texttt{RSBLB} is the efficient frontier.
-\item \textbf{Two verdicts were rendered against the wrong band and are reopened.} A1c
-(\texttt{RDEPLIQREFDEPTH}) reads $-1.30$ on the polar ocean band and is nearly free.
-\textbf{B2} (\texttt{RCLDIFF\_CONVI}) is the only arm in the catalogue that passes both
-polar vetoes: polar $-0.68$\,*, Arctic $+0.13$ (null), sub-Antarctic $+0.18$ (null, the
-helpful sign), and Siberia $+0.38$\,K as a bonus. It attacks the amount half that nothing
-else reaches.
-\item \textbf{DMS works at the pole but is not selective.} $-6.10$ at 90--60S DJF against
-$-6.55$ at 60--45S, so it deepens the overcorrection that blocks it. Tropics $-2.35$,
-global TOA $-1.61$. Shelved, not falsified.
-\item \textbf{Ocean surface albedo is not the problem.} Open-water albedo tracks CERES to
-within $0.007$ from 70S equatorward, including the elevated $0.101$ against $0.104$ at
-70--60S where the sun is lowest. The zenith-angle dependence works.
-\end{itemize}
-
-\section{Statistics: how long an arm must run}\label{sec:stats}
-Thresholds are computed \emph{before} scoring, and are paired
-($1.96\,\sigma/\sqrt{n}$) because arms branch from a shared state. Measured noise, from a
-44-year AMIP pair:
+Round 30 showed that tuning net TOA to zero \emph{does} stop the ocean drift, so a run with
+positive TOA and a cooling surface needs explaining. It resolves in the ocean: total heat
+content is flat at $+0.04$\,ZJ/decade over 2060--2099, while the bands are not
+($-17.8$, $-34.4$, $+19.4$, $+32.7$\,ZJ/decade for 0--100, 100--700, 700--2000 and
+$>$2000\,m). \textbf{The upper 700\,m is draining into the deep ocean at
+$0.32$\,W\,m$^{-2}$ equivalent.} Split by mixing era, the mechanism tracks the scheme:
 
 \begin{center}\small
 \begin{tabular}{lrrrrr}
 \toprule
-metric & $\sigma$ & $n{=}8$ & $n{=}14$ & $n{=}30$ & $n{=}44$ \\
+window & upper 0--700 & deep $>$700 & total & net TOA & net surface \\
 \midrule
-60--90N DJF T2m & 1.377 & 0.954 & 0.721 & 0.493 & 0.407 \\
-\textbf{60--90N DJF inversion} & \textbf{0.611} & 0.424 & 0.320 & 0.219 & 0.181 \\
-Siberia JJA T2m & 0.772 & 0.535 & 0.404 & 0.276 & 0.228 \\
-all-land DJF T2m & 0.359 & 0.249 & 0.188 & 0.128 & 0.106 \\
-global net TOA & 0.196 & 0.136 & 0.103 & 0.070 & 0.058 \\
+KPP 2040--2059            & $+0.061$ & $+0.164$ & $+0.225$ & $+0.136$ & $+0.318$ \\
+cvmix\_TKE 2060--2079     & $-0.488$ & $+0.176$ & $-0.312$ & $-0.468$ & $-0.251$ \\
+TKE+IDEMIX 2080--2099     & $-0.201$ & $+0.452$ & $+0.251$ & $+0.167$ & $+0.357$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{Score the inversion, not the screen.} Differencing two levels in one column
-cancels the synoptic variance that dominates Arctic winter T2m: $\sigma$ falls from
-$1.377$ to $0.611$, which is a factor ${\sim}5$ in years-to-decide. Resolving half the
-AMIP inversion bias takes 12.3 years on T2m and \textbf{2.4 on the inversion}.
+All in W\,m$^{-2}$ equivalent; the surface budget includes the snow-enthalpy term, about
+$0.9$\,W\,m$^{-2}$ globally, without which the budget is biased warm. \texttt{cvmix\_TKE}
+alone flipped the upper ocean hard negative and the whole system lost energy. Adding IDEMIX
+halved the upper-ocean loss and drove deep uptake up, which is what internal-wave-driven
+diapycnal mixing should do. But the upper ocean is \emph{still} losing heat, and that is
+what keeps the surface cooling. \textbf{This is the top open item.}
 
-Two consequences the campaign learned the hard way. A 4-year window resolves nothing in
-the boreal --- B8's $+0.502$ became $-0.038$ at 44 years. And \emph{proving a negative
-costs more than proving a positive}: bounding tropical SW CRE below $0.10$\,W\,m$^{-2}$
-needs 32 years where detecting $0.50$ needs 1.3.
+\section{Vertical mixing: the four-way comparison}\label{sec:mixing}
 
-\section{The energy budget: what closes, and what does not}\label{sec:energy}
-\textbf{Snow enthalpy closes the column.} An apparent ``$-1.0$\,W\,m$^{-2}$ structural
-leak, invariant across arms'' between TOA and surface was the omitted
-$sf\cdot\rho\cdot L_f$ term: it measures $0.962$--$1.073$ against residuals of $-0.996$ to
-$-1.088$. With it, the column conserves to $0.02$--$0.04$\,W\,m$^{-2}$. The convention is
-$\text{surface}=ssr+str+sshf+slhf-sf\rho L_f$, and omitting it inverted a conclusion:
-tuning net TOA to zero \emph{does} stop the drift.
+Four schemes, 20 years each (2020--2039) from one restart, differing only in
+\texttt{mix\_scheme}.
 
-\textbf{But the imbalance is not an offset.} The PI controls start at $-0.06$ to $-0.08$
-and drift to ${\sim}+1.0$ over 40 years. Regionally, ocean-masked, the two Southern Ocean
-bands contribute $+0.32$ and $+0.36$ against a tropical $-1.09$: the global number is a
-residual of large cancellations, and tuning it as a scalar treats a symptom.
-
-\textbf{Accumulated fluxes divide by 3600}, both for AMIP daily and coupled monthly means
---- verified empirically (global ASR $240.4$\,W\,m$^{-2}$), not assumed from the output
-frequency.
-
-\section{\texttt{cmpitool}: where 11R gains and where it pays}\label{sec:cmpi}
 \begin{center}\small
-\begin{tabular}{lr@{\qquad}lr}
+\begin{tabular}{llrrr}
 \toprule
-run & CMPI & 11R$-$11P by variable & $\Delta$ \\
+arm & scheme & SH Feb vol & SH Feb ext & cavity melt \\
 \midrule
-11E base & 0.8237 & \textbf{tas} & $\mathbf{-0.109}$ \\
-11G & 0.8446 & \textbf{zg} & $\mathbf{-0.088}$ \\
-11N LX4 1850 & 0.8198 & zos & $-0.044$ \\
-11P LX4 1990 & 0.7709 & vas & $-0.038$ \\
-\textbf{11R $+$RSBLB} & \textbf{0.7577} & siconc & $-0.024$ \\
- & & mlotst, pr, rlut, clt & $-0.011$ to $-0.004$ \\
- & & so, \textbf{thetao} & $+0.006$, $\mathbf{+0.018}$ \\
- & & \textbf{ua} & $\mathbf{+0.024}$ \\
+PICAL\_ccnice      & KPP (control)            & ---  & ---  & 1255.6 \\
+PICAL\_cvKPP       & cvmix\_KPP               & ---  & ---  & 1283.5 \\
+PICAL\_cvTKE       & cvmix\_TKE               & 1.31 & 1.95 & 1174.5 \\
+PICAL\_cvTKEIDEMIX & cvmix\_TKE+cvmix\_IDEMIX & 1.62 & 2.26 & 1062.1 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.495\textwidth]{reval_11E_base/cmpi.png}\hfill
-\includegraphics[width=0.495\textwidth]{reval_11R_sblb2_1990/cmpi.png}
-\caption{\texttt{cmpitool} fractional error by variable and region, \textbf{left} 11E
-base (CMPI 0.8237) and \textbf{right} 11R (\textbf{0.7577}, best in the campaign). Red is
-worse than the reference ensemble, blue better. The gain is concentrated in \texttt{tas}
-and \texttt{zg} --- precisely the two fields where 11G had regressed against the base
-($+0.160$, $+0.149$) --- and \texttt{nino34} is the most improved region, contradicting
-the prediction that tropical low-cloud loss would damage it. The cost is \texttt{thetao},
-ocean heat, which is a spin-up concern rather than a present-day skill one.}
-\label{fig:cmpi}
+Observed SH Feb volume about 2.07, extent about 3.0. Both KPP variants lose Antarctic
+summer ice, both TKE variants grow it, and \texttt{cvmix\_KPP} reproduces the KPP control
+closely enough to be the null. \textbf{Adopted}, with the cost stated at adoption: NH April
+volume 38.04 rising $+2.46$/decade in the test arm, where TKE alone was flat at 35.17. On
+the production line the realised rate is $+1.145\pm0.968$, about half.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.58\textwidth]{mixing_eval_volume.png}
+\caption{Hemispheric sea-ice volume across the four mixing arms, 2020--2039 from one
+restart. Both KPP variants lose Antarctic summer ice where both TKE variants grow it, and
+\texttt{cvmix\_KPP} tracks the KPP control closely enough to serve as the null that shows
+the comparison is measuring the scheme rather than the branch.}
 \end{figure}
 
-\texttt{tas} and \texttt{zg} are precisely the two fields where 11G regressed against the
-base ($+0.160$, $+0.149$); 11R reverses that and more. By region \texttt{nino34} is the
-\emph{most} improved at $-0.030$, contradicting the prediction that tropical low-cloud
-loss would damage it. The cost is \texttt{thetao} --- ocean heat, $+0.051$ in the tropics
---- which is a spin-up concern rather than a present-day skill one.
+\begin{figure}[H]\centering
+\includegraphics[width=0.74\textwidth]{cavity_melt_maps_mixing.png}
+\caption{Ice-shelf basal melt under the cavities, 2030--2039, per mixing scheme (top) and
+the change each makes against the KPP control (bottom). Both TKE arms cool the cavities
+almost everywhere around the coast, with the largest reductions on the East Antarctic
+fringe and in the Amundsen/Bellingshausen sector; Ross and Filchner-Ronne interiors barely
+move. Symmetric-log scale, so refreezing keeps its own sign.}
+\end{figure}
 
-\section{Levers tried and discarded}\label{sec:discarded}
-The full table with defaults is in \texttt{tuning\_summary.pdf}. Struck through where the
-\emph{mechanism} was falsified rather than the arm merely underperforming.
+\begin{figure}[H]\centering
+\includegraphics[width=0.68\textwidth]{pical_run_tree_gantt.png}
+\caption{The PICAL lineage and every branch taken off it, on the model calendar. The
+production line is the spine; the arms hang off it at the year each was branched. The arms
+are cheap and the spine is expensive, which is the intended shape --- but the spine has now
+run 160 years without converging.}
+\end{figure}
 
-\begin{center}\footnotesize
-\begin{tabular}{p{0.09\textwidth} p{0.21\textwidth} p{0.64\textwidth}}
+\section{The Southern Ocean now}\label{sec:so}
+
+\textbf{Five more levers, all excluded (round 37).} Four 20-year branches of \textbf{PI200}
+at 1560 against the PI200 control on identical years --- \textbf{spp} (salt plumes),
+\textbf{mle} (Fox-Kemper), \textbf{h0} (lead-closing floor $0.5\to0.25$\,m), \textbf{all3}
+--- plus \textbf{cavg06} attacking the same loop from the ice shelves. None moves the winter
+over-ice bias in 20 years. The model sits in one of two freshwater regimes,
+salty-and-venting or fresh-with-warm-CDW, and these levers do not cross between them. The
+basal-melt calibration is worth keeping on its own terms (1-year screens gave 1038 / 1190 /
+1402\,Gt\,yr$^{-1}$ at 0.5 / 0.6 / 0.7 against 1893 uncalibrated) and is upstream as FESOM
+PR \#1064, but it is not a Southern Ocean fix. \textbf{SSS restoring stays excluded};
+\texttt{surf\_relax\_s} is 0 and remains 0, even for Weddell convection.
+
+\textbf{The cloud shortwave deficit remains the other half.} Across the whole coupled
+campaign no lever moved it until the mixing schemes: SW CRE at 45--65\,S is $-64.44$ under
+KPP, $-65.73$ under \texttt{cvmix\_TKE}, against CERES $-68.02$\,W\,m$^{-2}$.
+\texttt{cvmix\_TKE} closes about a third of the gap, more than any atmospheric lever
+achieved, and does it from the ocean side. That is worth recording: it is the one result
+suggesting the cloud error is not purely atmospheric --- against round 30's finding that
+84\,\% of it is already present in AMIP.
+
+\section{Drake Passage, and the price of the GM tuning}\label{sec:drake}
+
+Computed with tripyview's model-accurate transect path, which resolves the 105 mesh edges
+the 66\,W line crosses and integrates the flux FESOM's own discretisation carries.
+
+\begin{center}\small
+\begin{tabular}{lrrr}
 \toprule
-arm & parameter & why \\
+run (1580--1599, identical restarts) & GM & resolved & \textbf{net} \\
 \midrule
-A1a/A1b & \texttt{RCL\_OVERLAPLIQICE} & Overshoots: SO CRE $-6.51$ but Siberian JJA
-$-1.15$\,K. Coupled as 11L/11M, both rejected on Siberia and net TOA \\
-A1c & \texttt{RDEPLIQREFDEPTH} & \textcolor{red}{Reopened.} ``Cloud-depth selectivity dead''
-was rendered on the 45--65S metric; on the polar band it is $-1.30$ and free \\
-A2 & \texttt{RCL\_KK\_CLOUD\_NUM\_LAND} & Nothing significant anywhere \\
-B1 & \texttt{DETRPEN} & More SW yet colder; worst tropics and global RMSE \\
-B2 & \texttt{RCLDIFF\_CONVI} & \textcolor{red}{Reopened.} Killed on a subpolar N.\ Atlantic
-RMSE; the only arm passing both polar vetoes \\
-B3 & \texttt{RCLDIFF} & Energy fails: surface flux $+1.14$, tropics $+1.72$ \\
-B4/B5/B6 & \texttt{ENTSHALP}, \texttt{RCAPDCYCL}, \texttt{RLCRITSNOW} & Boreal within noise \\
-expA/F2/F3 & \texttt{RVRSMIN}, \texttt{RVLAI}, \texttt{RVCOV} & Within noise; F5 shows the
-land levers saturate ($+0.746$ against F4's $+0.749$) \\
-F1 & \texttt{ECE\_TUNE\_RVZ0H} & Wrong side of the column: the skin bias is $+0.11$\,K \\
-B8/E1 & \texttt{ECE\_TUNE\_RVLAMSK} & $+0.502$ at 4\,yr was noise; $-0.038$ at 44 \\
-C1/C2 & \texttt{RLAM} & Null --- momentum mixing length, not heat \\
-N1/N2 & \texttt{RCL\_INPSEA} $\downarrow$ & Phase already more liquid than GOCCP at 45--65S \\
-26 & \texttt{ECE\_DMS\_CCN\_SENS} & Works at the pole ($-6.10$) but hits 60--45S equally
-($-6.55$); tropics $-2.35$, global TOA $-1.61$ \\
-SC2/SC3 & \texttt{RDEPLIQREFRATE} & SC3 breaks the Arctic; rate is what destroys
-selectivity, not depth \\
-06O/06T/06V & \texttt{kpp*}, \texttt{mospp}, aggressive & Improve the ocean interior but the
-cooling leaks to the tropics and \texttt{nino34} \\
+PI200          & resolution scaling (before) & 110.0 & \textbf{110.0} \\
+PI200\_gmR1500 & Rossby cutoff, $K_{GM}^{max}$ 1500 & 103.2 & \textbf{103.2} \\
+PI200\_gmR2500 & Rossby cutoff, $K_{GM}^{max}$ 2500 & 93.3 & \textbf{93.3} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{16.7\,Sv, 15\,\%, monotonic in $K_{GM}^{max}$}, far outside the $\sim$1.5\,Sv
+decadal scatter. The bolus term responds cleanly ($\pm1.8\to\pm2.7\to\pm3.6$\,Sv) but its
+\emph{net} is zero in every arm: the eddy-induced circulation across the passage is a
+closed overturning cell. On the production line the transport declines slowly, 105.1
+(2040--49) to 98.9 (2090--99), with no step at either mixing-scheme switch, so the ACC
+weakness is structural rather than a cvmix artefact.
+
+GM 2500 was adopted in round 36 for the mid-depth heat uptake, with the NH ice and AMOC
+costs priced. Drake Passage was not scored at the time. Both constraints are now on the
+ledger and they point opposite ways.
+
+\section{Sea ice: volume is the state variable}\label{sec:ice}
+
+Against GIOMAS 1989--99 the NH sits above observations in every month, which a
+pre-industrial run should, but by more than the epoch offset justifies in April; the SH is
+the observed cycle scaled down by about a third in every month, and that comparison is
+close to like-for-like because GIOMAS has no significant Antarctic trend across the window.
+Extent, scored against OSI-SAF, is reported beside volume throughout --- with the caveat
+that the record on disk has no December, 286 months rather than 312, and a December value
+must not be synthesised. Extent is geometrically saturated in this configuration and has
+hidden a real Arctic runaway before: across the 1950 albedo step it barely moved while volume climbed from 24 to
+48$\times10^3$\,km$^3$. \textbf{Volume is the state variable that says where the pack is
+going}; extent is the one that gets compared to satellites. An ice-affecting lever is
+scored on volume first, and a null result in extent is not evidence that nothing happened.
+
+\section{The boreal forest, and what it blocks}\label{sec:boreal}
+
+Siberian box 55--75\,N / 60--180\,E, year 2099, 684 cells:
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+state & BNS & TREEFPC & GRASSFPC & grass $>$ tree \\
 \midrule
-W1 & \dead{\texttt{RCLCRIT\_SEA}} & Dead parameter --- never read in the KK branch \\
-J1/J2 & \dead{\texttt{ECE\_LAMSK\_SN}} & $+0.125$ against a $0.41$ threshold at $3.6\times$
-the default \\
-11H/11J & \dead{\texttt{ifraupachz0}} & Cannot bootstrap the canopy it needs; measured null \\
-SB3 & \dead{\texttt{RSBLLMIN}} & Strips stratocumulus via the free-shear branch \\
-D1 & \dead{\texttt{RCAPDCYCL} mode 4} & Mechanism falsified \\
+offline CRUNCEP (the restart)   & 0.227 & 0.415 & --- & 29.2\,\% \\
+11E after 50 coupled years      & 0.017 & 0.083 & --- & 69.6\,\% \\
+\textbf{PICAL\_ccnice 2099}     & \textbf{0.001} & \textbf{0.050} & 0.216 & \textbf{84.9\,\%} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Stable between 2090 and 2099, so this is the settled state, and it is the end point of the
+transient round 27 identified: the coupled model dismantles an inherited forest, 92\,\% of
+the larch in 50 years. \textbf{The mechanism is competition with C3 grass, not a climate
+gate}: BNS has no cold limit at all, the only temperature gate is a warm one 34\,K away,
+and GDD5 clears on 91\,\% of cells in the very run where the larch dies. Questions about the
+boreal forest should be answered through the grass-versus-larch competition, not through
+thresholds.
+
+This is now a practical blocker. Laszlo Hajdu's LPJ-GUESS canopy work (stem area index via
+\texttt{ltos}, shrubs routed to low IFS vegetation, \texttt{iftreefracca 1}) measured
+$+0.46$\,K global T2m in a run that \emph{has} a boreal forest, and improved its ERA5
+comparison (bias $-0.46$ against $-0.92$\,K; RMSD 1.38 against 1.77). It acts on the tree
+side of the tile. With 5\,\% tree cover here, that result is not transferable, and a
+continuation would measure what the change does to a grassland.
+\textbf{PICAL\_crunveg} --- identical except that LPJ-GUESS starts from the CRUNCEP
+spin-up end state --- was built to answer this and cancelled before starting when the
+campaign moved to albedo.
+
+\section{Model skill: the degradation is tropical}\label{sec:cmpi}
+
+CMPI, lower is better, across four windows of the same run:
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+ & 1980--89 & 2000--09 & 2080--89 & 2090--99 \\
+\midrule
+\textbf{CMPI global} & 0.844 & 0.879 & 0.902 & 0.903 \\
+\midrule
+nino34    & 0.966 & 1.064 & 1.124 & 1.121 \\
+tropics   & 0.877 & 0.874 & 1.013 & 1.011 \\
+northmid  & 0.823 & 0.834 & 0.867 & 0.869 \\
+arctic    & 0.867 & 0.888 & 0.880 & 0.871 \\
+antarctic & 0.718 & 0.790 & 0.717 & 0.726 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The polar regions are flat ($+0.003$ arctic, $+0.008$ antarctic across 110 years). The
+tropics carry the whole degradation ($+0.155$ nino34, $+0.134$ tropics). By variable the
+worst movers are \texttt{tas} $+0.149$, \texttt{thetao} $+0.127$, \texttt{zg} $+0.111$.
+\textbf{No mechanism is attached to this yet}, and it is not where the campaign has been
+looking. For scale, the campaign's best-scoring run was 11R at 0.7577.
+
+\section{Levers, across the whole campaign}\label{sec:levers}
+
+{\small
+\begin{longtable}{p{3.4cm}p{1.5cm}p{10.9cm}}
+\toprule
+lever & verdict & the number \\
+\midrule
+\endfirsthead
+\toprule
+lever & verdict & the number \\
+\midrule
+\endhead
+G4 (\texttt{RVRSMIN} cap) & adopted & Siberian JJA $+0.952$\,K, $t=7.68$; SO SW RMSE
+$6.88\to4.80$. \\
+K1 (snow-free albedo) & adopted & $+1.036$\,K, RMSE $1.579\to1.524$, no Arctic penalty. \\
+P3/P5 (\texttt{ECE\_SNOW\_SCF} 3) & adopted & Refitted to snow courses; beats scheme-off on
+bias, RMSE and JJA against 105 RIHMI stations. \\
+\texttt{RSBLB} 2.0 & adopted & Arctic DJF screen $+0.614$\,K coupled, net TOA null. The
+first lever to move winter and summer the same way. \\
+GM 2500 / Redi 1000 & adopted & Lowest TOA plateau kept, $+0.70$\,W\,m$^{-2}$. Costs NH ice,
+AMOC, and 16.7\,Sv of Drake. \\
+\texttt{cvmix\_TKE+IDEMIX} & adopted & Closest to the observed Antarctic summer pack; costs
+NH April volume. \\
+\texttt{cavity\_gamma\_scale} 0.6 & adopted & 1190\,Gt\,yr$^{-1}$; upstream, FESOM \#1064. \\
+\midrule
+S4 \texttt{RCL\_INPPMIN} 50000 & \textbf{retired} & Headline of the 2026--08--11 summary.
+Siberian JJA $+1.194$\,K AMIP, $-0.365$\,K coupled. \\
+I3 & rejected & Strongest summer lever built ($+1.322$\,K) at $+1.72$\,W\,m$^{-2}$ at
+60--90\,N. \\
+\texttt{tanh} snow depletion & falsified & $-20.2$\,K against 174\,676 station soil
+observations; unrepresentable complete cover. \\
+\texttt{LAMSK}, moss proxy, D1 & falsified & Skin conductivity $+0.125$\,K against a
+$0.41$ threshold; the moss proxy moved monotonically the wrong way; \texttt{RCAPDCYCL} 4
+null. \\
+Raupach $z_0$ & dead structurally & Needs a canopy; makes the winter surface $4.4\times$
+smoother as the model stands. \\
+DMS / marine CCN & priced out & Best SO lever found ($-7.25$\,W\,m$^{-2}$ DJF) but the
+tropical tolerance binds below the published coefficient floor. \\
+\texttt{RSNOWLIN2} 0.04 & not adopted & Only lever that moves the tropical longwave
+($+2.74$); costs $+0.42$ globally. \\
+SB3 mixing length & falsified & $3.43$ tropical SW per K against \texttt{RSBLB}'s $0.88$. \\
+salt plumes, MLE, \texttt{h0min} $\downarrow$, all three & excluded & Round 37, no SH winter
+response in 20 years. \\
+\texttt{h0min} $0.5\to1.0$ & reverted & Flux response as designed (1.71$\to$1.10), state did
+not follow; 60--90\,S bias $+0.82\to+1.45$\,K. \\
+darkening \texttt{albpnd} & falsified & Wrong direction, and double-counts the ponds. \\
+SSS restoring & excluded by policy & Permanently. \\
+\bottomrule
+\end{longtable}}
+
+\section{Reversals on the record}\label{sec:reversals}
+
+Kept because a summary that only lists what survived misrepresents how the campaign
+learned.
+
+\begin{itemize}\itemsep1pt
+\item \dead{S4 is the best configuration the campaign has.} Its benefit reverses sign
+coupled. The 2026--08--11 summary led with it.
+\item \dead{The period offset is ${\approx}1.12$\,K, so the boreal bias is
+${\approx}-1.0$\,K.} Measured directly at $+0.42$\,K; the bias is ${\approx}-2.0$. The
+method error was applying an \emph{observed} epoch change to a model that does not reproduce
+it.
+\item \dead{There is a $-1.0$\,W\,m$^{-2}$ structural leak in the coupled column.} It was
+the omitted snow-enthalpy term.
+\item \dead{The boreal problem is competition, not climate.} Both, and the competition is
+driven by the forcing: warming recovers 59\,\% of the gap at $+2$\,K while
+\texttt{grass$>$tree} stays at 43--45\,\%.
+\item \dead{Cloud amount is unreachable, so the SO needs an opacity lever.} Round 33 showed
+opacity is the right correction for 90--60\,S and the \emph{wrong} one for 60--45\,S, which
+every campaign lever had been applying.
+\item \dead{The ice is too dark.} It is too diffuse: compact-ice albedo is
+$0.760$--$0.778$, but no cell exceeds 90\,\% concentration in January--March.
+\item \dead{Positive net TOA means the run is warming.} It cools at 0.21\,K/decade.
+\end{itemize}
+
+\section{Bugs and traps that cost this campaign}\label{sec:traps}
+
+\begin{center}\small
+\begin{tabular}{p{4.2cm}p{11.8cm}}
+\toprule
+what & the lesson \\
+\midrule
+A dead namelist block &
+\texttt{NCMIPFIXYR} sat in \texttt{\&NAMECECMIP6}, which the runtime does not read, so the
+AMIP runs were never at 1850 forcing. Krakatoa in 1883--86 is the fingerprint. \\
+\addlinespace
+Two OASIS traps &
+\texttt{oasis\_put} returns the waitgroup code for every field in a group but the last, so
+the ice-skin anchor was 0.0 in all 63\,923 logged events and the skin reached
+$-36\,470$\,K. And \texttt{GSMART} on a sign-changing field gave 9105 excursions above
+1\,kW\,m$^{-2}$ onto real ice in one coupled year, where \texttt{GSSMAR} and
+\texttt{GLOBAL} give none. \\
+\addlinespace
+Implicit netCDF fill value &
+\texttt{read\_other\_NetCDF} left \texttt{miss} at 0.0 when a variable declared no
+\texttt{missing\_value}, masking 146\,694 real zeros and admitting
+$9.96921\times10^{36}$. FESOM PR \#1087. \\
+\addlinespace
+\texttt{MPI\_DOUBLE\_PRECISION} on a \texttt{real(WP)} buffer &
+Five \texttt{MPI\_AllREDUCE} calls read 8 bytes from a 4-byte variable in a
+single-precision build. Not only a diagnostic: the corrupt total was fed back into the
+physics through \texttt{idemix\_botforc\_Etot}. Same PR. \\
+\addlinespace
+The staged library is a symlink &
+\texttt{<exp>/bin/fesom/lib/fesom/libfesom.so} points into esm\_tools' per-leg snapshots
+and \texttt{md5sum} follows it. The \texttt{fesom} executable is a driver stub,
+byte-identical across builds, so a matching binary checksum proves nothing. Use
+\texttt{ls -l} before \texttt{md5sum}. Cost a 47-node slot and a NaN'd ocean. \\
+\addlinespace
+The instruction file nothing reads &
+\texttt{guess.ins} is hard-wired in \texttt{framework.cpp:1063} and imports
+\texttt{ecearth.ins}; \texttt{global.ins} and \texttt{run\_coupled\_4\_1\_2.ins} are staged
+and never reached. The two had drifted apart, \texttt{iftreefracca} 1 against 0. A
+parameter put in the wrong one is silently inert. \\
+\addlinespace
+Chained legs and the date file &
+Legs read a per-leg archive, not the source runscript, so edits need \texttt{-U}; and the
+date file advances past a crashed leg, so it is not evidence of progress. \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \section{Closed by measurement}\label{sec:closed}
-Mechanisms falsified, not merely underperforming --- these should not be retried:
+
+Claims that were live at some point and are now settled, each with the observation that
+closed it.
+
+{\small
+\begin{longtable}{p{6.6cm}p{9.4cm}}
+\toprule
+claim & what closed it \\
+\midrule
+\endfirsthead
+\toprule
+claim & what closed it \\
+\midrule
+\endhead
+The cold bias is a tuning artefact &
+Centred RMSD is $1.41$--$1.64$\,K across all 29 early runs, a $\pm8\,\%$ spread. The runs
+differ by an offset. \\
+Land surface albedo explains the universal bias &
+Removing 74\,\% of a measured bias bought $0.089$\,K of ${\approx}0.7$\,K. \\
+Boreal needleleaf is excluded by a cold gate &
+True for BNE (0.7\,\% of cells clear it) and false for BNS, which is ${\approx}80\,\%$ of
+NE Siberia and is outcompeted instead. \\
+ERA5 is an adequate cloud reference for the Southern Ocean &
+ERA5 is IFS and reproduces the model's own bias; CERES and MODIS agree with each other
+against both. \\
+The tropical deep warming is diapycnal flux &
+It is heave: $0.42$ of the $+0.477$\,K at fixed depth is the isopycnal sinking $+42.4$\,m. \\
+The SH winter bias is a vertical-mixing deficiency &
+Four levers, four nulls, 20 years each from one restart. \\
+The ice is too dark because the ponds are too bright &
+The \texttt{ice\_therm} albedos are pond-free; darkening them double-counts. \\
+The albedo sensitivities are fixed properties &
+NH $\partial\alpha/\partial\,\texttt{albsn}$ moved 0.149 $\to$ 0.504 as the Arctic cooled. \\
+Positive net TOA means the run is warming &
+It cools at 0.21\,K/decade; the ocean redistributes rather than accumulates. \\
+GM tuning is free at the Southern Ocean &
+16.7\,Sv of Drake Passage transport. \\
+\bottomrule
+\end{longtable}}
+
+\section{Open, in priority order}\label{sec:open}
+
+\begin{enumerate}\itemsep2pt
+\item \textbf{The upper-ocean heat drain.} $0.32$\,W\,m$^{-2}$ equivalent out of the top
+700\,m is the mechanism behind the cold drift and nothing has been aimed at it. Mixing
+scheme, Southern Ocean freshwater regime, or both.
+\item \textbf{NH April volume} decides whether TKE+IDEMIX keeps its place:
+$+1.145\pm0.968$/decade, sitting $+3.37$ above the early GIOMAS record.
+\item \textbf{The Antarctic at 62\,\% of observed winter volume}, unmoved by any Round 37
+lever and not a vertical-mixing problem.
+\item \textbf{The ACC 30\,\% weak and slowly weakening}, with the GM setting that improved
+the mid-depth uptake making it worse. Unreconciled.
+\item \textbf{The Southern Ocean cloud amount deficit}, 84\,\% of it inherited from AMIP
+and unmoved by any lever in the campaign.
+\item \textbf{Does the canopy work do anything without trees?} \texttt{PICAL\_crunveg} was
+built to answer it and cancelled before starting.
+\item \textbf{Will the CRUNCEP state load on \texttt{TCO95-land}?} Written on an
+11538-cell \texttt{L096} gridlist; a missing-cell case was once fatal with peatland on and
+the code has changed substantially since. Untested.
+\item \textbf{The tropical CMPI degradation} has no mechanism attached.
+\item \textbf{The residual deep land cold bias}, ${\approx}1.2$\,K still present at
+850\,hPa, out of reach of any mixing lever.
+\end{enumerate}
+
+\section{What would change the picture}\label{sec:falsifiers}
+
+Stated in advance, so that a result which contradicts them is recognised as such.
+
+\begin{itemize}\itemsep2pt
+\item \textbf{If the upper-ocean heat drain stops without the surface warming}, then the
+cold drift is not driven by the redistribution and the diagnosis in \S\ref{sec:drift} is
+wrong.
+\item \textbf{If NH April volume flattens on its own} over the next 50 years, the cost
+priced against TKE+IDEMIX at adoption was an artefact of the 20-year test arm and the
+scheme is cheaper than believed.
+\item \textbf{If a Southern Ocean lever moves the winter bias in under 20 years}, then the
+two-regime picture is wrong, or the regime boundary is closer than the five excluded
+levers suggest.
+\item \textbf{If Drake Passage recovers without GM being reduced}, the 16.7\,Sv attribution
+is confounded with something else that changed between \texttt{PI200} and the arms.
+\item \textbf{If the canopy work produces $+0.46$\,K here}, with 5\,\% tree cover, then it
+is not acting through the tree canopy and the mechanism is misattributed.
+\item \textbf{If the tropical CMPI degradation appears in a run without the cold drift},
+the two are independent and the tropics need their own investigation.
+\item \textbf{If closing the remaining cold bias does not recover the forest}, the round-27
+transfer function does not transfer coupled, and the campaign's founding premise fails at
+the last step.
+\end{itemize}
+
+\section{The run inventory since the last summary}\label{sec:runs}
+
+Every coupled arm that produced a scoreable result since 2026--08--24. All are 20 years
+unless stated, all branch from one restart with the control on identical years. The
+campaign's earlier arms --- the 29 screening runs, the AMIP A/D/F/G/I/K/L/P/S series and
+the 11-series coupled roster --- are catalogued in \texttt{report.tex}, appendix
+\texttt{app:params}.
+
+{\small
+\begin{longtable}{p{3.3cm}p{2.3cm}p{10.2cm}}
+\toprule
+run & years & the one thing it changed, and what it showed \\
+\midrule
+\endfirsthead
+\toprule
+run & years & the one thing it changed, and what it showed \\
+\midrule
+\endhead
+\textbf{PI200\_spp / \_mle / \_h0 / \_all3} & 1560--79 & Salt plumes, Fox-Kemper MLE,
+lead closing \texttt{h0min} $0.5\to0.25$\,m, and all three together. No SH winter response
+in any, and no combination effect. \\
+\textbf{PI200\_cav05/06/07} & 1600 & One-year basal-melt screens: 1038 / 1190 /
+1402\,Gt\,yr$^{-1}$ against 1893 at 1.0. 0.6 taken forward. \\
+\textbf{PI200\_cavg06}   & 1600--19 & \texttt{cavity\_gamma\_scale} 0.6. Melt calibrated;
+no Southern Ocean response. \\
+\textbf{PI200\_gmR1500}  & 1580--99 & Rossby cutoff, $K_{GM}^{max}$ 1500. Drake 103.2\,Sv. \\
+\textbf{PI200\_gmR2500}  & 1580--99 & Rossby cutoff, $K_{GM}^{max}$ 2500. Drake 93.3\,Sv;
+the adopted setting, and the 16.7\,Sv cost. \\
+\addlinespace
+\textbf{PICAL\_v35def} & 2020--49 & \texttt{RCL\_INPPMIN} 50000 vs 70000, paired with
+momix-off. Context for the TOA figure. \\
+\textbf{PICAL\_v35def\_darkice} & 2050--99 & \texttt{albi}/\texttt{albim} darkened against
+its parent. An Arctic runaway fifty years did not arrest. \\
+\addlinespace
+\textbf{PICAL\_cvKPP}    & 2020--39 & \texttt{cvmix\_KPP}. The useful null: reproduces the
+KPP control. \\
+\textbf{PICAL\_cvTKE}    & 2020--39 & \texttt{cvmix\_TKE}. Grows the Antarctic summer pack;
+costs energy. \\
+\textbf{PICAL\_cvTKEIDEMIX} & 2020--39 & \texttt{cvmix\_TKE+cvmix\_IDEMIX}. Closest to the
+observed summer pack; adopted. \\
+\addlinespace
+\textbf{PICAL\_ccnice}   & 1940--2099 & The production line. \\
+\textbf{PICAL\_crunveg}  & --- & Built to test the canopy work on a forested land state;
+cancelled before starting. \\
+\bottomrule
+\end{longtable}}
+
+\section{The evaluation protocol, and which references are independent}\label{sec:eval}
+
+Every window is scored the same way, so results from different rounds are comparable.
+
+{\small
+\begin{longtable}{p{3.2cm}p{12.6cm}}
+\toprule
+target & reference, and its caveat \\
+\midrule
+\endfirsthead
+\toprule
+target & reference, and its caveat \\
+\midrule
+\endhead
+Sea-ice volume & \textbf{GIOMAS}. A model with assimilation, not a measurement: Arctic
+volume carries 10--20\,\% uncertainty and Antarctic more. \textbf{Use 1989--99} for a PI
+run --- the Arctic thinned sharply across the full record, the Antarctic has no trend. \\
+Sea-ice extent & \textbf{OSI-SAF}. The record on disk has \textbf{no December} --- 286
+months --- and a December value must not be synthesised. \\
+Radiation & \textbf{CERES}. Period offsets matter, and measuring one rather than estimating
+it once reversed a conclusion. \\
+Screen temperature & \textbf{ERA5}, except for anything the IFS land surface decides: ERA5
+is an HTESSEL sibling and reproduces the model's own cloud and snow biases. \\
+Soil temperature & \textbf{RIHMI-WDC} station data, 174\,676 observations. This is why the
+campaign no longer depends on ERA5 for a soil claim. \\
+Snow cover & \textbf{Rutgers} and Russian snow courses (14\,369 Siberian DJF surveys). \\
+Cloud amount & \textbf{CERES} and \textbf{MODIS}, which agree with each other, over dark
+ocean only --- over ice they disagree by 7.7\,pp. \\
+Ocean T/S & \textbf{PHC3} on the \emph{new} CORE3 mesh (220509 nodes). The 211567-node beta
+mesh climatology is a different file and mixing them fails silently. \\
+Drake Passage & \textbf{Cunningham 2003} $134\pm11.2$\,Sv and \textbf{Donohue 2016}
+$173.3\pm10.7$\,Sv. Donohue includes near-bottom flow a 47-level mesh cannot carry, so the
+gap to 134 is the real bias. \\
+Cavity basal melt & \textbf{Rignot 2013} $\sim$1500 and \textbf{Adusumilli 2020}
+$\sim$1100\,Gt\,yr$^{-1}$; the calibration target is 1100--1325. \\
+Composite skill & \textbf{cmpitool} against ERA5, thirteen variables by region and season.
+Useful for regressions, blunt for mechanisms. \\
+\bottomrule
+\end{longtable}}
+
+\textbf{How long an arm has to run.} The standing threshold is $2\sigma\sqrt{2/N}$ from the
+control's own scatter in the same window, with no autocorrelation correction, so it is a
+floor rather than a true confidence interval --- and branched arms are scored
+\emph{paired}, because they share a restart and the unpaired form discards that and once
+hid a resolved result. Measured on this configuration: Drake Passage scatter $\sim$1.5\,Sv;
+ice volume needs 20 years to resolve $\pm1\times10^3$\,km$^3$/decade; decadal TOA means are
+stable to $\sim\pm0.1$\,W\,m$^{-2}$; wallclock varies $\pm15\,\%$, so SYPD comparisons need
+more than one leg each. The per-band one-year thresholds from round 26 remain in use:
+SO SW CRE annual $\pm1.97$, SO DJF $\pm3.82$, tropics annual $\pm0.99$, global $\pm1.11$.
+
+The full per-window diagnostic set is \texttt{reval}
+(\texttt{release\_evaluation\_tool2}), driven by one config per window. Copying
+\texttt{configs/awiesm3\_v35\_pical\_ccnice\_2090s.py} and changing four fields
+(\texttt{model\_version}, \texttt{pi\_ctrl\_start}/\texttt{end}, \texttt{spinup\_end},
+\texttt{out\_path}) is the whole procedure; it submits 26 jobs and an HTML report.
+
+\section{Method notes}\label{sec:method}
+
+Techniques that earned their keep, recorded because they generalise.
+
+\textbf{Measure the reference-period offset, do not estimate it.} Applying an
+\emph{observed} epoch change to a model that does not reproduce that change put the boreal
+bias off by a factor of two and cost a withdrawn conclusion. The AMIP present-day run
+measures it directly.
+
+\textbf{Verify the artefact that executes, not the one that was edited.} A namelist
+parameter is live only if the \emph{staged} shared library carries it, and the file that is
+read may not be the one that looks live --- LPJ-GUESS reads a hard-wired \texttt{guess.ins}
+while several plausible instruction files are staged beside it and never opened. Both traps
+cost a run each.
+
+\textbf{Prove a physical diagnostic against the input file's own metadata.} The IDEMIX gate
+works because $0.9179869$\,TW is the forcing file's \texttt{Etot\_in\_TW\_bin} attribute,
+not a remembered number. A self-consistency check would have passed on the broken build.
+
+\textbf{Use the model's own integrals where they exist.} Hemispheric ice volume comes from
+FESOM's \texttt{sivoln}/\texttt{sivols}, computed on the native mesh inside the model, so it
+cannot pick up the wrong mesh. Likewise Drake Passage is computed on the model's own transect
+path rather than by interpolating to a straight line, which would not conserve.
+
+\textbf{Screen at one year, or offline, before spending forty.} The basal-melt calibration
+was settled by three one-year runs; the snow scheme was validated offline before
+implementation; the forcing-transfer test used two spin-ups that already existed.
+
+\textbf{Keep one store, append to it.} \texttt{data/coupled\_annual\_diag.nc} holds annual
+TOA, surface and four-band ocean heat content for 90 runs across 750 model years, and
+survives the deletion of the raw output it was built from. Several results here would be
+unrecoverable otherwise.
+
+\section{The software stack, and the move to albedo}\label{sec:stack}
 
 \begin{center}\small
-\begin{tabular}{p{0.26\textwidth} p{0.66\textwidth}}
+\begin{tabular}{p{2.6cm}p{4.4cm}p{8.4cm}}
 \toprule
-claim & what killed it \\
+component & branch & state \\
 \midrule
-\dead{\texttt{RCLCRIT\_SEA} tunes SO cloud} & Dead parameter: never read in the
-\texttt{IWARMRAIN==3} KK branch. 46\,yr identical to control \\
-\dead{Skin conductivity is the winter lever} & $+0.125$\,K at 60--90N DJF against a
-$0.41$ threshold, at $3.6\times$ the default. The skin-side bias is $+0.11$\,K \\
-\dead{Raupach roughness restores the boreal winter} & Needs a canopy the model has lost
-($h=2.89$\,m, $z_0=0.0132$ against IFS's $0.058$); and measured null, DJF land--ocean gap
-$-0.017$ and $-0.003$ \\
-\dead{\texttt{RSBLLMIN} spares the tropics} & It also sets the length in free-shear
-layers, so it strips stratocumulus: $4\times$ the tropical cost of \texttt{RSBLB} for the
-same Arctic gain, and $+1.67$\,W\,m$^{-2}$ net TOA \\
-\dead{The SO surface is too cold, so ice-albedo helps us} & Measured with SST, which is
-pinned near freezing under ice. T2m reads $+1.5$ to $+1.9$\,K at 70--80S \\
-\dead{Tropical cloud loss will degrade \texttt{nino34}} & \texttt{nino34} is the
-\emph{most improved} region in 11R, $-0.030$ \\
+esm\_tools & \texttt{feat/awiesm3-v3.4-co2} & \texttt{cf0a27943}. Carries the v3.5 CORE3
+defaults, the mixing scheme and the IDEMIX forcing paths. \\
+oifs-48r1 & \texttt{awiesm3-develop} & At its remote tip. \\
+FESOM & \texttt{main} + PR \#1060 + PR \#1087 & \textbf{Both PRs still open.} What
+\texttt{esm\_master} installs (\texttt{feat/cavity-gamma-scale}) is 53 commits behind
+\texttt{main} and lacks both IDEMIX fixes, so it cannot run this experiment. \\
+LPJ-GUESS & \texttt{lpj\_guess\_awiesm3} @ \texttt{1325440} & The AWI land-grid line merged
+with the canopy work, 2026--09--25. Built as
+\texttt{guess.4112\_awiesm3canopy\_1325440\_20260925}. \\
+XIOS, rnfmap, OASIS & \texttt{main}, \texttt{enthalpy\_on\_ocean\_side},
+\texttt{local\_combined\_fixes} & Fine as installed. \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\section{Traps that cost this campaign runs}\label{sec:traps}
-\begin{itemize}\itemsep1pt
-\item \textbf{Verify the staged artefact, not the source.} W1 ran 46 years identical to
-its control because the staged library predated the namelist exposure. \texttt{surf}
-parameters live in \texttt{libsurf.SP.so}, not \texttt{libarpifs.SP.so}.
-\item \textbf{Two \texttt{lpj\_guess} binary generations exist.}
-\texttt{production\_8c5ab467} for 11E/11G, \texttt{raupach\_junebase\_gated} for 11L--11R.
-Comparisons spanning them are confounded --- including the 11E$\to$11N step in
-\S\ref{sec:stands} and the \texttt{RSNOWLIN2} row of the meridional decomposition. All
-arms are now pinned via \texttt{lpj\_guess.executable}. The test built to prove the code
-change inert (\texttt{11H0\_codeonly}) never produced output.
-\item \textbf{AMIP$\to$coupled transfer has been wrong in sign}, not just magnitude ---
-S4's Siberian JJA. Transfer ratios across the campaign span $0.19$ to $1.01\times$.
-\item \textbf{Band averages fold the Antarctic ice sheet into the polar ocean}, halving the
-apparent signal: surface net SW bias reads $-0.57$ over the cap and $+7.99$ over ocean.
-\item \textbf{Sea-ice AREA and EXTENT are different numbers} and mixing them inverts the
-sign: September is $+0.78$ in area but $+2.01$ in extent.
-\item \textbf{\texttt{clr\_t}, not \texttt{clr\_c}}, is the model-comparable CERES clear
-sky. Worth $1.7$\,W\,m$^{-2}$ at the poles.
-\item \texttt{NODE.001\_01} is ${\sim}2$\,GB with NUL bytes --- \texttt{grep -a} or it
-silently reports nothing and looks like a failed gate.
-\end{itemize}
+Merged upstream during the campaign: FESOM PR \#1054 (the single-precision ocean heat
+leak), \#1064 (\texttt{cavity\_gamma\_scale}), and three CI fixes of our own that unblocked
+stacked pull requests in that repository (\#1088, \#1089, \#1091). Still open and needed:
+\#1060 (ice skin from the atmosphere) and \#1087 (the two CVMix bugs).
 
-\section{Open, in priority order}\label{sec:open}
-\begin{enumerate}\itemsep1pt
-\item \textbf{The drift.} $+1.0$\,W\,m$^{-2}$ and $-2\times10^6$\,km$^2$ of SH ice per 40
-years, in every arm, addressed by no lever. It is the single largest obstacle to a
-multi-millennial spin-up and it is what the S4 test is ultimately about.
-\item \textbf{11V/11W}, deciding S4. Read the drift rate, not the snapshot.
-\item \textbf{B2 at a stronger dose} on the current base --- the only untested candidate
-with the right meridional shape, and the only one addressing cloud amount.
-\item \textbf{The Arctic contradiction}: a $13$\,W\,m$^{-2}$ surface shortwave deficit
-under a surface that is $+0.84$\,K \emph{warm}. Unexplained, and it is the campaign's
-founding region.
-\item \textbf{The deep ocean}, $-0.33$ to $-0.42$\,K at 500--1000\,m in every arm, genuinely
-unaddressed. The \texttt{kpplow} family is the right tool but must follow the radiative fix,
-not precede it.
-\item \textbf{reval's printed \texttt{bias} annotations do not reproduce.}
-For 11N it reads $-1.723$ against 11E's $-1.57$, reversing an ordering that a
-consistent recomputation puts the other way ($-1.619$ against $-1.698$). Window,
-reference or masking --- unresolved, and it affects how every reval panel should be read.
-\item \textbf{reval's PHC3 ocean plots are empty for all five runs} --- byte-identical
-153\,687-byte files. The ocean interior has never been validated by the tool.
-\end{enumerate}
+\textbf{The campaign is moving to albedo} for queue time: a 47-node leg on levante has
+waited between 30 seconds and 10 hours to start. The branch point is 2100, the only year
+with a complete consistent restart set. Three one-liners kill a first run there, all in
+\texttt{HANDOFF\_albedo\_spinup\_continuation.md}: \texttt{h0min} in the runscript aborts
+FESOM at the namelist read on any branch except the abandoned
+\texttt{feat/leadclose-h0min}; both IDEMIX forcing files must exist under
+\texttt{\$\{fesom.pool\_dir\}/forcing/idemix/}; and \texttt{ltos} must go in
+\texttt{ecearth.ins.j2}, the file the run actually reads. The standing gate on any IDEMIX
+leg is \texttt{Etot\_srf} $0.3211645$ and \texttt{Etot\_bot}
+$0.9135067\to0.9179869$\,TW within the first minute of the compute log; the failure
+signature is $6.05\times10^{-4}$ with $-1.54\times10^{16}$, which NaN'd the ocean in 100
+seconds on 2026--09--24.
 
 \section{The path forward}\label{sec:forward}
-In order, with what each decides:
 
-\begin{enumerate}\itemsep2pt
-\item \textbf{Finish 11V/11W} (running). Decides S4. Read the \emph{drift rate} over 40
-years, not the snapshot: if removing S4 brightens the polar band by ${\sim}2.5$\,W\,m$^{-2}$
-and the drift slows, the $+0.27$ energy penalty is repaid. If the drift is unchanged, the
-penalty is just a penalty.
-\item \textbf{B2 at a stronger dose} against SB0, AMIP. The only untested candidate with
-the right meridional shape and the only one addressing cloud amount. Bracket it --- its
-costs (tropics $+0.60$, TOA $+0.39$ at \texttt{RCLDIFF\_CONVI} $10\to25$) presumably scale.
-\item \textbf{Adopt \texttt{RSBLB} into the spin-up configuration} unless the Arctic screen
-trend continues to zero. Everything else in the stack is unchanged by it.
-\item \textbf{Explain the Arctic contradiction} --- $13$\,W\,m$^{-2}$ of surface shortwave
-deficit under a surface $+0.84$\,K warm. Analysis only; the runs exist.
-\item \textbf{Then, and only then, the deep ocean.} $-0.33$ to $-0.42$\,K at
-500--1000\,m in every arm. The \texttt{kpplow} family is the right tool, but applied before
-the radiative fix it compensates for an error that is still present --- which is exactly
-how the 06T/06V arms ended up too cold globally.
-\end{enumerate}
+In the order that would resolve the most with the least compute.
 
-\textbf{What is not worth another arm.} The mixed-phase opacity family (selectivity is
-dose-dependent and dies at useful doses), DMS at any dose (not polar-selective), ocean
-surface albedo (measured correct), and anything keyed to sea-ice cover (the deficit is
-beside the ice, not on it).
+\textbf{1. Attack the upper-ocean heat drain.} It is the mechanism behind the cold drift,
+it is quantified ($0.32$\,W\,m$^{-2}$ equivalent), and nothing has been aimed at it. The
+first question is whether it is the mixing scheme or the Southern Ocean freshwater regime,
+and that is answerable by comparing the drain between the four mixing arms, which already
+exist. \textbf{No new compute required for the first step.}
 
-\section{What would change the picture}\label{sec:falsifiers}
-\begin{itemize}\itemsep1pt
-\item \textbf{\texttt{RSBLB} retired} if the Arctic DJF screen gain continues decaying at
-$-0.46$\,K/decade and reaches zero, or if a longer coupled arm shows the sea-ice cost
-resolving (SH September $-1.0\times10^6$\,km$^2$ in 11R is currently the one significant
-ice change).
-\item \textbf{S4 kept} if 11V/11W show Siberian JJA going backwards on removal.
-\item \textbf{The whole cloud route closed} if B2 at a stronger dose loses its
-selectivity the way \texttt{RDEPLIQREFRATE} did --- selectivity has been dose-dependent
-every time it has been tested.
-\item \textbf{The drift attributed elsewhere} if 11W shows the drift rate unchanged by a
-$-2.5$\,W\,m$^{-2}$ polar brightening, which would mean SH ice-albedo is not what sustains
-it.
-\end{itemize}
+\textbf{2. Settle whether the canopy work does anything here.} \texttt{PICAL\_crunveg} is
+built and costs 50 years. It also answers, as a by-product, whether the CRUNCEP state loads
+on \texttt{TCO95-land} at all, which gates every future land experiment on this
+configuration.
+
+\textbf{3. Reconcile the ACC against the mid-depth uptake.} GM 2500 improved one and cost
+16.7\,Sv of the other. The cheap version is to score Drake Passage on the arms that already
+exist before proposing a new GM setting, so the next choice answers to both constraints.
+
+\textbf{4. Give the tropical CMPI degradation a mechanism.} The largest unexplained skill
+loss in the run, and the campaign has never looked there. It may be a symptom of the
+upper-ocean drain rather than an independent problem.
+
+\textbf{5. Decide what the Arctic is for.} NH April volume is $+3.37$ above the early
+GIOMAS record and rising. Either that is a bias to tune out, or the run is being asked to
+match a satellite-era record it should legitimately exceed --- and until that is fixed, the
+cost side of every ice-affecting lever is priced against a target nobody has agreed.
+
+\medskip
+Note what is \emph{not} on this list. The atmospheric lever families are, by measurement,
+nearly exhausted: land albedo is closed, surface exchange is retired as a class, the snow
+scheme is refitted, cloud amount is unreachable and the one tropical longwave lever costs
+more globally than it buys. The remaining leverage is in the ocean and in the vegetation,
+which is where both open items sit.
 
 \section{Assets}\label{sec:assets}
-Analysis scripts in \texttt{scripts/analysis/}: \texttt{djf\_bias\_vertical\_structure.py}
-(the inversion decomposition), \texttt{coupled\_sb\_eval.py} (paired coupled scoring incl.\
-sea ice), \texttt{so\_subsurface\_vs\_phc3.py} (the 100\,m anomaly; mesh-independent),
-\texttt{so\_polar\_ocean\_recompute.py} (ocean-masked TOA), \texttt{polar\_rescore\_amip\_arms.py}
-(the re-score that reopened A1c and B2), \texttt{stack\_meridional\_shape.py} (which lever
-is poleward-weighted), \texttt{sb\_run\_length.py} (how long an arm must run).
-Source patch: \texttt{scripts/patches/expose\_sbl\_mixing.py}. Build on a compute node with
-\texttt{scripts/build/build\_oifs\_compute.sh}. Parameter tables in
-\texttt{report/tuning\_summary/tuning\_summary.pdf}.
+
+{\small
+\begin{longtable}{p{5.2cm}p{10.8cm}}
+\toprule
+what & where \\
+\midrule
+\endfirsthead
+\toprule
+what & where \\
+\midrule
+\endhead
+Full record, 148 pages & \texttt{report/report.tex} \\
+Previous summary (2026--08--24) & \texttt{report/summary\_superseded\_20260926.tex} \\
+Albedo handoff & \texttt{HANDOFF\_albedo\_spinup\_continuation.md} \\
+Annual TOA / surface / OHC store & \texttt{data/coupled\_annual\_diag.nc}, built by
+\texttt{scripts/analysis/coupled\_annual\_store.py} \\
+Drift, ice volume, GIOMAS & \texttt{scripts/analysis/ccnice\_regional\_drift.py},
+\texttt{ice\_volume\_series.py}, \texttt{giomas\_volume\_targets.py} (takes
+\texttt{OBS\_Y0}/\texttt{OBS\_Y1}) \\
+Drake Passage, cavity melt & \texttt{scripts/analysis/drake\_passage\_transport.py} and
+\texttt{scripts/figures/cavity\_melt\_maps\_mixing.py}; both need the conda env
+\texttt{esm-tools\_auto\_tripyview}, and the transport needs
+\texttt{PYTHONPATH=/work/ab0246/a270092/software/tripyview} \\
+Run and parameter notes & \texttt{notes/RUNS\_AND\_PARAMETERS.md} \\
+Full \texttt{reval} diagnostics & \texttt{/work/ab0246/a270092/software/release\_evaluation\_tool2},
+per-window configs under \texttt{configs/} \\
+Configuration & esm\_tools \texttt{feat/awiesm3-v3.4-co2} at \texttt{cf0a27943} \\
+\bottomrule
+\end{longtable}}
+
 \end{document}
