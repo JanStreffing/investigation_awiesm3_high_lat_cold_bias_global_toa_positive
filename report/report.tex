@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--09--25})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--10--03})}
 
 \begin{document}
 \maketitle
@@ -39,7 +39,22 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--09--25).} Screening is over and the campaign is
+\medskip\noindent\textbf{Where we are (2026--10--03).} The campaign runs on albedo, on a line
+that carries a boreal forest: \textbf{PICAL\_crunveg} restarts LPJ-GUESS from the CRUNCEP state
+and keeps 81\,\% of its larch after 19 years, at a cost of about $2\times10^3$\,km$^3$ of NH ice
+(\S\ref{sec:round41}). The Labrador Sea ice-capped regime was traced across 61 runs to Round 36's
+GM 2500 (\S\ref{sec:round42}), whose heat-uptake benefit turned out to be Southern Ocean
+ventilation at 34--55\,S (\S\ref{sec:round43}); of four 20-year GM arms at the production step,
+\textbf{hemispheric GM} (2500 south, 1000 north) restores Labrador convection and changes nothing
+else significantly, and is adopted, with an overshoot to correct. Against a pre-industrial
+reference the model is \textbf{$+0.46$\,K too warm}, in summer mid-latitudes, while its Arctic winter
+is cold (\S\ref{sub:r44pibias}): too warm and a positive imbalance now point the same way. The
+Antarctic winter warm ring sits over a too-diffuse pack whose drift over-responds to correct winds
+(\S\ref{sec:round45}). Put on one axis for the first time, the 290-year line shows a mid-depth
+warm layer that has built throughout and that IDEMIX, not TKE, feeds (\S\ref{sec:round46}); a
+TKE-only continuation is running, and the carbon-cycle configuration is paused for performance work.
+
+\medskip\noindent\textbf{As of 2026--09--25.} Screening is over and the campaign is
 producing: \textbf{PICAL\_ccnice} has run 1940--2100 on the v3.5 defaults with
 \texttt{cvmix\_TKE+cvmix\_IDEMIX}. It is not converged. It cools 0.21\,K/decade at the surface
 while net TOA is positive, because total ocean heat content is flat and the upper 700\,m is
@@ -8625,6 +8640,847 @@ the file actually read carried \texttt{0}. Corrected in esm\_tools \texttt{cf0a2
 Both 50-year continuations queued on 2026--09--25 were cancelled before starting, partly for
 this: they would have run with the canopy work compiled and inert.
 
+\section{Round 41 (2026--09--26$\to$30): albedo, the crunveg line, and what a forest costs in ice}\label{sec:round41}
+
+The campaign moved to albedo for queue time. Runs live under
+\path{/albedo/work/projects/p_awiesm3_cmip7/jstreffi/runtime/awiesm3-v3.4/}; year 2100 of every
+continuation is a cold-started OpenIFS and is discarded. The production layout at the 1800\,s
+ocean step is 768 FESOM ranks at 96 per node on \textbf{25 nodes}; the 1200\,s step needs
+\textbf{33 nodes} for comparable throughput, which is why 1800\,s is the production step and
+1200\,s is not.
+
+\textbf{PICAL\_crunveg} ran 2100--2119: PICAL\_ccnice's ocean and atmosphere at 2100, LPJ-GUESS
+restarted from the CRUNCEP spin-up end state, with the canopy work merged on 2026--09--25
+(\S\ref{sub:r40boreal}). \textbf{PICAL\_ccnice} was continued alongside to 2129 as the unforested
+control, so 2101--2119 is a pair in which only the land state differs.
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+question & measured & on \\
+\midrule
+does the forest regrow on ccnice? & Siberian tree FPC 0.062--0.067 per decade after 2100 & ccnice 2100--2129 \\
+ & against 0.061--0.065 before; BNS ${\approx}0.0015$. \textbf{No.} & \\
+does it survive in crunveg? & BNS retained \textbf{81\,\%} after 19 years & crunveg 2100--2119 \\
+ & against 34\,\% (080a) and 20\,\% (11G), same CRUNCEP start & pre-merge pair \\
+what does the forest do? & global T2m $+0.24$\,K, 60--90\,N $+0.91$\,K & crunveg $-$ ccnice \\
+ & NH April / September volume $-2.0$ / $-2.35\times10^3$\,km$^3$ & 2101--2119 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Retention is higher in crunveg also at matched GDD5 and at matched grass PAR, so the merged canopy
+code is not only surviving in a warmer climate. It is \emph{not} yet separated from state
+migration or from non-GDD climate; a clean attribution needs an offline pair of old and new
+LPJ-GUESS binaries on identical forcing (\path{scripts/analysis/bns_retention_vs_climate.py},
+\path{data/veg_traj/}). \textbf{A boreal forest costs about $2\times10^3$\,km$^3$ of NH ice}, and
+the forested NH sits at or below GIOMAS 1989--99, so carrying a forest in the production line
+means the sea ice no longer has to be tuned against an unforested Arctic.
+
+From crunveg's 2120 restart a family of ten-year branches followed: \textbf{ob1200} and
+\textbf{ob1800} (the old FESOM build at 1200 and 1800\,s), \textbf{ts1200} (the new build at
+1200\,s) and \textbf{ihf0}/\textbf{ihf1} (the new build at 1800\,s, McPhee ocean-to-ice heat flux
+off/on, \S\ref{sub:r45mcphee}). Both new-build 1800\,s arms lost Labrador Sea convection, which
+opened Round 42.
+
+\section{Round 42 (2026--10--01): the Labrador Sea --- a time-step artefact, a noise floor, and the GM regime}\label{sec:round42}
+
+\subsection{IDEMIX smooths once per step, so 1800\,s mixes less}\label{sub:r42idemix}
+
+Two-month screens (\texttt{TEST\_dt*}) showed a Kv/Av deficit at 1800\,s against 1200\,s below
+100\,m of $-0.017$ to $-0.025$ in $\log_{10}$. It \textbf{disappears with
+\texttt{idemix\_n\_hor\_iwe\_prop\_iter} 0} and is unchanged with 8 sub-iterations. The cause is
+numerical: with horizontal propagation on, the IDEMIX internal-wave energy goes element $\to$
+node $\to$ element once per step, an un-$\Delta t$-scaled grid-scale smoother applied 72 times a
+day at 1200\,s and 48 times at 1800\,s. Its strength per day scales as $1/\Delta t$.
+
+The fix is a namelist reference step, \texttt{idemix\_hor\_smooth\_dtref} (s), that applies the
+smoothing per unit time rather than per step. At 1800\,s with \texttt{dtref} 1200 it removes about
+85\,\% of the deficit at no cost. Removing the round trip altogether cuts Kv by 12--19\,\%
+($\log_{10}$ $-0.055$ to $-0.090$, \path{data/clim/step_screens_xd.txt}), so \textbf{the tuned
+state leans on this numerical smoothing}. Upstream as FESOM PR \#1103 (open, not merged).
+
+\textbf{It does not bring the Labrador Sea back.} \textbf{PICAL\_crunveg\_nx1800} (ihf0 plus the
+fix, \texttt{dtref} 1200) restored the deep Kv and reached a March mixed layer of 414\,m over its
+first eight winters against ihf0's 370 (Table below). The second leg was cancelled on
+2026--10--01; the 2130 restarts are kept.
+
+\subsection{The noise floor: the 2120s attribution rests on one run}\label{sub:r42noise}
+
+March MLD in the convection box 56--62\,N, 60--50\,W along the whole lineage, as nine-winter
+windows (\path{scripts/analysis/labrador_mld_noise_floor.py},
+\path{data/clim/labrador_mld_noise_floor.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrl}
+\toprule
+null / arm & mean MLD (m) & percentile & collapse winters \\
+\midrule
+KPP 1900--2059                         & 1331 & --- & 4 of 160 (2\,\%) \\
+TKE 2060--2079                         & 1429 & --- & 0 of 20 \\
+TKE+IDEMIX, ccnice 2080--2129          & 1053 & --- & 7 of 50 (14\,\%) \\
+TKE+IDEMIX, crunveg 2101--2119         & 1164 & --- & 0 of 19 \\
+\midrule
+ccnice continuation, old 1200\,s       & 556 & 1.9 & 3 \\
+\textbf{ob1200}, old build 1200\,s     & \textbf{979} & \textbf{28.3} & 0 \\
+ts1200, new build 1200\,s              & 520 & 0.0 & 1 \\
+ob1800, old build 1800\,s              & 344 & 0.0 & 5 \\
+ihf0, new build 1800\,s                & 370 & 0.0 & 2 \\
+ihf1, new build 1800\,s + McPhee       & 308 & 0.0 & 4 \\
+nx1800, new 1800\,s + IDEMIX fix (8 yr)& 414 & 0.0 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Arms are 2121--2129; the percentile is the share of the 53 pooled IDEMIX-era null windows at or
+below the arm mean. \textbf{Every arm except ob1200 sits at the bottom of the null, and so does the
+unbranched ccnice continuation.} The build and step effects inferred earlier were differences
+against ob1200, a single realisation. The phenomenon is the slow weakening of ccnice in the IDEMIX
+era --- 1469, 1053, 1207, 870, 668\,m for the 2080s to the 2120s, with 3 collapses in the 2120s
+(\path{data/clim/labrador_mld_decades.txt}) --- not a step change at the branch.
+
+\subsection{The Labrador ice is a GM 2500 regime}\label{sub:r42gm}
+
+Sea ice, not mixing, was then taken as the primary symptom and controlled for global temperature.
+Every coupled run with at least ten years on levante and albedo was searched: \textbf{61 runs, 468
+run-decades} (\path{scripts/analysis/labrador_any_mesh.py},
+\path{scripts/analysis/labrador_ice_vs_global_sst.py},
+\path{data/clim/labrador_ice_vs_global_sst.txt}). The metric is March ice fraction in the
+convection box against decade-mean global SST; HadISST2 March 1979--2008 is 0.16 in the box and
+0.37 over the basin.
+
+\begin{itemize}\itemsep1pt
+\item AWI-CM3/CORE2, AWIESM700/720, HR and Tuning\_test\_06 to 11V (\texttt{K\_GM\_max} 1000,
+      Redi 0) stay at 0.05--0.3 at every global SST from 17 to 20\,$^\circ$C, with only a short
+      first-decade shock.
+\item The shock grows with GM at matched global SST: 15F (1000/0) 0.37, 16C/16D (1500/1000)
+      0.54--0.59, 16E (2500/1000) 0.70--0.79 for about three decades.
+\item One clean pair: PI200\_gmR2500 \textbf{0.684} against PI200\_gmR1500 \textbf{0.280} on
+      identical years 1580--1599 from one branch, at global SST 18.41 and 18.30\,$^\circ$C.
+\item The persistent capped state exists \emph{only} under 2500/1000: the momixoff continuation
+      sits near 0.9 for 90 years, v35def and v35def\_darkice at 0.885 and 0.922. \textbf{Every
+      PICAL run uses 2500/1000.}
+\end{itemize}
+
+\textbf{The capped Labrador regime appeared with Round 36's \texttt{K\_GM\_max} 2500 /
+\texttt{Redi\_Kmax} 1000} (\S\ref{sec:round36}), which was adopted for the lowest TOA plateau. Its
+costs already on the ledger were the AMOC at 40--60\,N, 1.7\,Sv weaker than GM 1500, and 16.7\,Sv
+of Drake Passage (\S\ref{sub:r40drake}); the Labrador Sea is a third.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/labrador_ice_lineage.png}
+\caption{Labrador Sea ice along the PICAL lineage (1 = 1850), basin 52--66\,N 65--45\,W (top) and
+convection box 56--62\,N 60--50\,W (bottom); thick annual mean, thin March. The 2120 segment is
+nx1800.}
+\label{fig:r42lineage}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/labrador_ice_gm_history.png}
+\caption{Labrador March ice across the run history, by GM/Redi setting. (A) every run-decade
+against global SST: beyond start-up, high ice only with GM 2500. (B) the start-up shock grows
+1000 $<$ 1500 $<$ 2500. (C) one change on identical years: gmR2500 0.68 against gmR1500 0.28. (D)
+long runs: GM 1000 never caps in 500 years; the GM 2500 lines do.}
+\label{fig:r42gmhist}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.9\textwidth]{plots/labrador_ice_vs_global_sst.png}
+\caption{Labrador March ice against decade-mean global SST, one dot per run-decade, coloured by
+model family; convection box (left) and basin (right). The PICAL family is the cluster near 0.9 at
+17.8--18.1\,$^\circ$C.}
+\label{fig:r42gsst}
+\end{figure}
+
+\section{Round 43 (2026--10--01$\to$02): where the GM benefit comes from, and four ways to split it}\label{sec:round43}
+
+\subsection{Why CORE2 never capped}\label{sub:r43core2}
+
+AWI-CM3 v3.3 on CORE2 ran \texttt{K\_GM\_max} 3000 with linear resolution scaling and a ramp that
+switches GM off below 30\,km and fully on above 40\,km. On CORE2 that gave a top-level K of about
+113\,m$^2$\,s$^{-1}$ in the Labrador Sea and about 2000 at 55--65\,S (2563 at 40--55\,S), because
+CORE2's Southern Ocean was coarse and its North Atlantic fine: resolution-based GM separated the
+two for free. CORE3 refined the Southern Ocean margin to the Labrador Sea's spacing, and production
+GM gives \textbf{983 in the Labrador Sea and 981 at 55--65\,S} (Fig.~\ref{fig:r43kmaps},
+\path{scripts/figures/gm_k_maps.py}). On CORE3 the v3.3 ramp would switch GM off in both.
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.62\textwidth]{plots/gm_k_maps_core2_core3.png}
+\caption{Top-level GM coefficient before depth scaling and slope tapering. CORE2/AWI-CM3 v3.3
+(top): Labrador 113, SO 55--65\,S 1995\,m$^2$\,s$^{-1}$. CORE3 production (middle): 983 and 981.
+CORE3 gmhemi (bottom, Round 43 arms): 393 and 981.}
+\label{fig:r43kmaps}
+\end{figure}
+
+\subsection{The 1200\,s test: both arms open the Labrador Sea and give the benefit back}\label{sub:r43gm1500}
+
+Two 1200\,s branches from crunveg 2119, paired against \textbf{gm2500} (run directory
+\texttt{PICAL\_crunveg\_ob1200}; same branch, build, step and years, only GM differs):
+\textbf{gm1500} (\texttt{K\_GM\_max} 1500) and \textbf{gmramp} (2500 with the v3.3 ramp, off below
+30\,km, full above 40\,km). 2121--2129, differences against gm2500, ``$*$'' beyond the paired
+$2\sigma/\sqrt{N}$ (\path{scripts/analysis/gm_arms_global.py},
+\path{data/clim/gm_arms_global_2121-2129.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+ & gm2500 & gm1500 $-$ gm2500 & gmramp $-$ gm2500 \\
+\midrule
+net TOA (W\,m$^{-2}$)            & 0.487 & $+0.384^*$ & $+0.442^*$ \\
+heat 700--2000\,m (W\,m$^{-2}$)  & 0.240 & $+0.250^*$ & $+0.286^*$ \\
+heat $>$2000\,m (W\,m$^{-2}$)    & 0.214 & $+0.137^*$ & $+0.213^*$ \\
+T2m global (K)                   & 14.096 & $-0.197^*$ & $-0.077$ \\
+T2m 60--90\,S (K)                & $-16.557$ & $+0.040$ & $+0.881^*$ \\
+SH September volume ($10^3$\,km$^3$) & 11.842 & $-1.673^*$ & $-4.721^*$ \\
+SH September extent (M\,km$^2$)  & 18.141 & $-1.129^*$ & $-4.202^*$ \\
+NH September volume ($10^3$\,km$^3$) & 10.726 & $+0.414$ & $+1.238^*$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Both arms open the Labrador Sea (March MLD 2121--2128: gm1500 1489\,m, gmramp 1968\,m with ice
+0.06, gm2500 979\,m) and \textbf{both give back the heat-uptake benefit}, all of it into the ocean
+below 700\,m. Switching GM off on the fine mesh costs the Antarctic most: gmramp loses 40\,\% of
+SH September volume. The second decades were cancelled; both keep their 2120--2129 output and 2130
+restarts. This revised the storage-based conclusion of 2026--10--01 that the uptake benefit was
+separable from the Labrador Sea (\S\ref{sub:fals4145}).
+
+\subsection{Heat pathways: the benefit is Southern Ocean ventilation}\label{sub:r43paths}
+
+Three GM 1500 versus 2500 pairs, region by region (\path{scripts/analysis/heat_pathways.py},
+\path{data/clim/heat_pathways_compare.txt}, \path{data/clim/so_sfc_entry_bands_compare.txt}),
+GM 1500 minus GM 2500 in W\,m$^{-2}$ of Earth surface:
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+ & 16C $-$ 16E & gmR1500 $-$ gmR2500 & gm1500 $-$ gm2500 \\
+ & 1351--1389 & 1581--1599 & 2121--2129 \\
+\midrule
+total surface entry                      & $+0.246$ & $+0.193$ & $+0.387$ \\
+SO surface entry ($<$34\,S)              & $+0.188^*$ & $+0.190^*$ & $+0.217^*$ \\
+\quad of which 34--55\,S                 & $+0.213$ & $+0.189$ & $+0.262$ \\
+\quad of which south of 65\,S            & $-0.039^*$ & $-0.024^*$ & $-0.048^*$ \\
+SO lateral (export north)                & $-0.252^*$ & $-0.369^*$ & $-0.324^*$ \\
+Indo-Pacific storage, all depths         & $+0.248^*$ & $+0.237^*$ & $+0.276^*$ \\
+\quad of which 700--2000\,m              & $+0.119^*$ & $+0.169^*$ & $+0.128^*$ \\
+subpolar N Atlantic surface entry        & $-0.163^*$ & $-0.082^*$ & $-0.079$ \\
+Atlantic heat transport at 55\,N (PW)    & $+0.306^*$ & $+0.348^*$ & $+0.225^*$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All three agree. \textbf{The extra uptake under GM 1500 enters through the Southern Ocean surface
+at 34--55\,S and is stored in the Indo-Pacific at 700--2000\,m}: the AAIW/SAMW route. South of
+60\,S the sign reverses. The subpolar North Atlantic goes the other way, releasing more heat to the
+atmosphere and importing more from the south. So the benefit GM 2500 buys is a Southern Ocean
+ventilation effect, and the Labrador capping is a separate North Atlantic side effect of the same
+parameter.
+
+\subsection{The Rossby radius cannot separate them either}\label{sub:r43rossby}
+
+From gm2500's own stratification (\path{scripts/analysis/gm_k_rossby.py},
+\path{data/clim/gm_k_rossby.txt}) the Rossby radius $R_d$ is 8.0\,km in the Labrador Sea,
+9.3\,km at 55--65\,S, 18.2\,km at 40--55\,S and 35.4\,km in the subtropics.
+$K=2500\min\big(1,(R_d/20\,\mathrm{km})^2\big)$ gives Labrador 405, 40--55\,S 1913 (production
+1661), 55--65\,S 606, south of 65\,S 191\,m$^2$\,s$^{-1}$. It would keep the 34--55\,S uptake
+benefit, but \textbf{$R_d$ does not distinguish the Labrador Sea from 55--65\,S}, and its risk is
+low K at the Antarctic margin --- gmramp's ice loss in another form.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/gm_k_rossby_maps.png}
+\caption{Rossby radius from gm2500, 2121--2129 (top left); CORE2/AWI-CM3 v3.3 GM interpolated to
+CORE3 (top right); two $R_d$-based K forms with a 20\,km reference, linear (bottom left) and
+quadratic (bottom right).}
+\label{fig:r43rossby}
+\end{figure}
+
+\subsection{The rule, and the one exception}\label{sub:r43rule}
+
+The campaign rule recorded on 2026--10--02 is that \textbf{tuning must be physical}: no arbitrary
+regional gates chosen to make the present or PI state look better. A parameter may differ by
+region only through a process that genuinely differs there. A hemisphere-gated INP lever was
+rejected under it the same day. The hemispheric GM gate below is the one exception: it was accepted
+explicitly, after consulting the FESOM core developers, and it is recorded as a gate, not as eddy
+physics.
+
+\subsection{Four arms at the production step}\label{sub:r43arms}
+
+All four branch from the same restart, run 2120--2139 at 1800\,s on the old build, and differ only
+in GM:
+
+\begin{itemize}\itemsep1pt
+\item \textbf{ob1800} --- the GM 2500 reference (called gm2500 in discussion at this step).
+\item \textbf{gmferr1800} --- Ferreira vertical scaling ($K\propto N^2$ below the mixed layer,
+      \texttt{bvref} 1) in place of the depth exponent, \texttt{K\_GM\_max} 2500.
+\item \textbf{gmhemi1800} --- \texttt{K\_GM\_max} 2500 in the SH and 1000 in the NH, linear over
+      10$^\circ$ centred on the equator. FESOM branch \texttt{feat/gm-hemispheric-kmax}, namelist
+      \texttt{K\_GM\_max\_NH} and \texttt{K\_GM\_hemi\_trans} in \texttt{oce\_dyn}.
+\item \textbf{gmrd1800} --- K from the local Rossby radius, \texttt{K\_GM\_rd\_ref} 20\,km,
+      \texttt{K\_GM\_rd\_pow} 2, resolution scaling off. \texttt{init\_Redi\_GM} runs every ocean
+      step, so K follows $N^2$ online.
+\end{itemize}
+
+2121--2139 means, differences against ob1800, ``$*$'' beyond the paired $2\sigma/\sqrt{N}$ of the
+two runs (\path{data/clim/gm_arms1800_global_2121-2139.txt}; volumes in $10^3$\,km$^3$, extents in
+M\,km$^2$, heat in W\,m$^{-2}$ of Earth surface):
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+ & ob1800 & gmferr1800 & \textbf{gmhemi1800} & gmrd1800 \\
+\midrule
+T2m global              & 13.927    & $-0.447^*$ & $+0.002$ & $+0.105^*$ \\
+T2m 60--90\,N           & $-8.693$  & $-1.002^*$ & $-0.153$ & $-0.265^*$ \\
+T2m 60--90\,S           & $-16.846$ & $-0.553^*$ & $+0.080$ & $+0.334^*$ \\
+T2m Siberia             & $-8.995$  & $-1.000^*$ & $-0.037$ & $-0.109$ \\
+net TOA                 & 0.526     & $+0.372^*$ & $+0.032$ & $-0.034$ \\
+ocean heat uptake       & 0.667     & $+0.379^*$ & $+0.049$ & $-0.033$ \\
+heat 0--700\,m          & 0.080     & $-0.223^*$ & $+0.016$ & $+0.051$ \\
+heat 700--2000\,m       & 0.267     & $+0.380^*$ & $+0.055^*$ & $-0.088^*$ \\
+heat $>$2000\,m         & 0.220     & $+0.197^*$ & $-0.032^*$ & $+0.017$ \\
+NH March volume         & 29.848    & $+2.459^*$ & $+0.000$ & $+0.150$ \\
+NH September volume     & 11.335    & $+2.173^*$ & $+0.572$ & $-0.770^*$ \\
+SH February volume      & 1.209     & $+0.011$   & $-0.064$ & $-0.253$ \\
+SH September volume     & 13.045    & $-0.023$   & $-0.066$ & $-1.669^*$ \\
+NH March extent         & 16.853    & $+0.325^*$ & $-0.657^*$ & $+0.300$ \\
+NH September extent     & 6.810     & $+0.683^*$ & $+0.043$ & $-0.066$ \\
+SH September extent     & 18.642    & $+1.380^*$ & $+0.114$ & $-0.725^*$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The second decade alone sharpens the verdicts (\path{data/clim/gm_arms1800_global_2130-2139.txt}):
+gmferr1800 net TOA $+0.456^*$ and global T2m $-0.499^*$; gmhemi1800 net TOA $-0.032$, NH March
+extent $-0.460^*$; gmrd1800 SH September volume $-2.056^*$ and extent $-1.070^*$.
+
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+Labrador, March & ob1800 & gmferr1800 & gmhemi1800 & gmrd1800 \\
+\midrule
+MLD 2121--29 (m), ice & 344, 0.32 & 1327, 0.17 & 2069, 0.13 & 1980, 0.10 \\
+MLD 2130--39 (m), ice & 111, 0.43 & 1723, 0.18 & 2026, 0.10 & 2487, 0.07 \\
+collapse winters      & 5 of 9, 9 of 10 & 0 of 19 & 0 of 19 & 0 of 19 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent HadISST2 1979--2008: 0.16 in the box (\path{data/clim/gm_arms1800_labrador.txt}; the
+ob1800 2130--39 values are from the campaign notes of 2026--10--02 and are not in that file).
+
+\textbf{Verdicts.}
+\begin{itemize}\itemsep1pt
+\item \textbf{gmhemi1800: adopted.} Labrador mixed layer near 2050\,m with no collapses, and every
+      global, heat and ice-volume difference is null except NH March extent and the small
+      700--2000\,m / $>$2000\,m shift. Global T2m, TOA, Siberia and ice volume are unchanged. It
+      \textbf{overshoots}: March Labrador ice 0.10--0.13 against 0.16 observed. Upstream as FESOM
+      PR \#1112 (open).
+\item \textbf{gmferr1800: rejected.} The most realistic Labrador ice (0.17--0.18), but net TOA
+      $+0.46^*$ in decade 2 with the heat carried below 700\,m, global $-0.5$\,K, and NH ice volume
+      $+2.2$ to $+2.5\times10^3$\,km$^3$.
+\item \textbf{gmrd1800: rejected.} Small $R_d$ at high latitude means low K there: SH September
+      volume $-1.67\times10^3$\,km$^3$ and extent $-0.73$\,M\,km$^2$ over 2121--2139, 60--90\,S
+      $+0.33$\,K.
+\end{itemize}
+Suggested follow-up: gmhemi with an NH value of 1500 to reduce the Labrador overshoot.
+
+\section{Round 44 (2026--10--02$\to$03): gmhemi1800 against observations, and against a pre-industrial reference}\label{sec:round44}
+
+\subsection{Release evaluation}\label{sub:r44reval}
+
+\texttt{reval} on gmhemi1800 2125--2139 (\path{plots/reval_gmhemi1800_2125-2139/}). CMPI is the
+model error over the CMIP6 ensemble-mean error (cmpitool default, 30 CMIP6 models; below 1 is
+better than CMIP6); a PI control scored against present-day observations carries the epoch offset
+in every number (\path{plots/reval_gmhemi1800_2125-2139/cmpi_vs_cmip6.txt}).
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+ & ccnice 2101--2129 & crunveg 2101--2119 & \textbf{gmhemi1800 2125--2139} \\
+\midrule
+\textbf{CMPI overall}       & 0.865 & 0.870 & \textbf{0.861} \\
+entries better than CMIP6   & 286/400 & 286/400 & \textbf{296/400} \\
+\midrule
+nino34    & 1.109 & 1.119 & 1.084 \\
+tropics   & 0.965 & 0.981 & 0.954 \\
+northmid  & 0.821 & 0.819 & 0.801 \\
+southmid  & 0.812 & 0.819 & 0.831 \\
+arctic    & 0.830 & 0.811 & 0.839 \\
+antarctic & 0.675 & 0.692 & 0.678 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Largest gains against crunveg: Ni\~no3.4 10\,m temperature and T2m ($-0.230$, $-0.228$), NH
+mid-latitude sea ice ($-0.176$), tropical 300\,hPa wind ($-0.118$), SH mid-latitude MLD
+($-0.080$), Antarctic sea ice ($-0.071$). Largest losses: NH mid-latitude MLD ($+0.179$, the
+Labrador overshoot), SH mid-latitude salinity at 10 and 100\,m ($+0.142$, $+0.155$), Arctic
+surface salinity ($+0.101$) and Arctic winds ($+0.114$ at 300\,hPa), NH mid-latitude 1000\,m
+temperature ($+0.071$). Note that crunveg and gmhemi1800 are not on the same years, so drift
+between the periods is included.
+
+\subsection{Bug XI: the Gregory plot dropped the snow enthalpy}\label{sub:r44gregory}
+
+The \texttt{reval} part20 Gregory plot read a surface imbalance of 1.51\,W\,m$^{-2}$ for this
+window. It used $L_f=334000$ (J\,kg$^{-1}$) to convert snowfall that is in metres of water
+equivalent, where $\rho_w L_f=3.3355\times10^8$\,J\,m$^{-3}$ is needed, so the snow-enthalpy term
+came out a thousand times too small, effectively zero. With the term restored the snow enthalpy is
+0.81--0.86\,W\,m$^{-2}$ and the surface imbalance \textbf{0.67}\,W\,m$^{-2}$ (2130--2139: 0.673),
+the same omission Round 30 found behind the ``$-1.0$\,W\,m$^{-2}$ structural leak''
+(\S\ref{sec:round30}). The ``net surface flux 1.47'' quoted for gm2500 in the GM discussion had
+the same omission; corrected, 0.641 (\path{data/clim/gm_arms_global_2121-2128.txt}). Fixed together
+with seven other albedo-port fixes in \texttt{release\_evaluation\_tool2} PR \#7
+(\url{https://github.com/AWI-ESM/release_evaluation_tool2/pull/7}, open).
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.72\textwidth]{plots/reval_gmhemi1800_2125-2139/pi_control_drift_analysis.png}
+\caption{Corrected Gregory plot, gmhemi1800 2125--2139: global T2m against surface energy
+imbalance, final 0.67\,W\,m$^{-2}$. The regression explains almost nothing ($R^2=0.075$, $n=15$),
+so its extrapolated equilibrium of 14.9\,$^\circ$C carries no weight.}
+\label{fig:r44gregory}
+\end{figure}
+
+\subsection{The bias against a pre-industrial reference}\label{sub:r44pibias}
+
+ERA5 1990--2014 is not a PI target. The PI bias is built per 5$^\circ$ box as
+(model $-$ ERA5 1990--2014) $+$ the HadCRUT5 warming from 1850--1900 to 1990--2014
+(\path{scripts/analysis/pi_t2m_bias_epoch_corrected.py},
+\path{scripts/analysis/pi_t2m_bias_land_ocean.py}, \path{scripts/figures/pi_t2m_bias_maps.py}).
+Globally, the model is $-0.36$\,K against ERA5 and the HadCRUT5 global series gives 0.817\,K of
+warming: \textbf{the model is $+0.46$\,K too warm for the pre-industrial}. The box-based estimates
+agree ($+0.48$ with uncovered boxes filled by the latitude-row mean, $+0.52$ over covered boxes
+only, 39\,\% of the area). ob1800 is within 0.1\,K of gmhemi1800 globally ($+0.49$ against $+0.52$
+over covered boxes) but not in the Arctic winter, where gmhemi1800 is colder by 0.48\,K at 60--90\,N
+and 0.69\,K at 70--90\,N (\path{data/clim/pi_t2m_bias_ob1800_2125-2139.txt}).
+
+\begin{center}\small
+\begin{tabular}{lrrrr|lrr}
+\toprule
+PI bias (K) & ANN & DJF & JJA & cover & by surface & land & ocean \\
+\midrule
+global      & $+0.52$ & $+0.37$ & $+0.49$ & 39\,\% & JJA 30--45\,N & $+2.21$ & $+1.42$ \\
+90--60\,S   & $+0.66$ & $+0.23$ & $-0.85$ & 2\,\%  & JJA 45--60\,N & $+2.08$ & $+1.37$ \\
+60--30\,S   & $+0.97$ & $+1.28$ & $+0.55$ & 53\,\% & DJF 60--30\,S & $+1.94$ & $+1.38$ \\
+30\,S--30\,N& $+0.03$ & $+0.09$ & $+0.03$ & 38\,\% & DJF 60--75\,N & $-0.81$ & $+0.43$ \\
+30--60\,N   & $+1.01$ & $+0.18$ & $+1.66$ & 70\,\% & DJF 75--90\,N & $-2.08$ & $-0.61$ \\
+60--90\,N   & $+0.60$ & $-1.01$ & $+0.53$ & 31\,\% & ANN 60--75\,N & $+0.17$ & $+1.36$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent gmhemi1800 2125--2139 (\path{data/clim/pi_t2m_bias_gmhemi1800_2125-2139.txt},
+\path{data/clim/pi_t2m_bias_land_ocean_gmhemi1800_2125-2139.txt}).
+
+The pattern: \textbf{the tropics are right}; the excess sits in \textbf{NH summer mid-latitudes}
+(land $+2.1$/$+2.2$, ocean $+1.4$) and in \textbf{SH summer mid-latitude ocean} ($+1.4$, the known
+Southern Ocean cloud deficit). \textbf{The Arctic winter is cold} (land 60--75\,N $-0.8$, 75--90\,N
+$-2.1$). The maps add an Antarctic winter warm ring at 60--70\,S, warm eastern-boundary upwelling
+coasts and a cold blob south of Greenland (Fig.~\ref{fig:r44pibias}).
+
+Two caveats bound this. HadCRUT5 1850--1900 coverage is thin at the poles (2\,\% of 90--60\,S, 31\,\%
+of 60--90\,N), so the polar numbers rest on few boxes. And the AMIP pair showed that the model
+under-warms Siberia between epochs (\S\ref{sub:perdirect}), so an observation-based PI target is not
+the model's own PI.
+
+\textbf{The line still cools.} Over crunveg 2101--2119 followed by ob1800 2120--2139, global T2m
+trends $-0.059\pm0.025$\,K/decade and 60--90\,N $-0.141\pm0.115$ (2$\sigma$;
+\path{data/clim/crunveg.csv}, \path{data/clim/series_ob1800.csv}); with gmhemi1800 as the
+continuation, $-0.053\pm0.025$ and $-0.203\pm0.099$ (\path{data/clim/series_gmhemi1800.csv}). Over
+2130--2139 gmhemi1800 has net TOA 0.52, net surface 0.67 and ocean uptake 0.69\,W\,m$^{-2}$, most of
+it below 700\,m (0--700\,m 0.084, 700--2000\,m 0.332, $>$2000\,m 0.167). \textbf{This reframes the
+campaign's founding trade-off}: against ERA5 the model was too cold with a positive imbalance, two
+faults pulling against each other; against a PI reference it is too warm with a positive imbalance,
+and the two point the same way.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/pi_t2m_bias_gmhemi1800_2125-2139.png}
+\caption{T2m bias of gmhemi1800 2125--2139 against a PI reference, (model $-$ ERA5 1990--2014) $+$
+HadCRUT5 warming 1850--1900 $\to$ 1990--2014. Stippled: no HadCRUT5 1850--1900 coverage,
+latitude-row mean warming used. Right: zonal means for land, ocean and all, with the uncorrected
+model $-$ ERA5 dashed and the HadCRUT5 warming in orange.}
+\label{fig:r44pibias}
+\end{figure}
+
+\subsection{The warm NH summer land is dry and sunny}\label{sub:r44warm}
+
+JJA, gmhemi1800 2125--2139 against ERA5 T2m and GPCP precipitation 1990--2014 and CERES surface
+SW 2000--2021 (\path{scripts/analysis/warm_regions_diag.py},
+\path{data/clim/warm_regions_diag_gmhemi1800_2125-2139.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+box & T2m $-$ ERA5 & precip / GPCP & SW$\downarrow$ $-$ CERES & evap.\ & soil water \\
+ & (K) & (mm\,d$^{-1}$) & (W\,m$^{-2}$) & fraction & top layer \\
+\midrule
+C Asia 40--55\,N 50--110\,E   & $\mathbf{+2.9}$ & 0.7 / 1.3 & $+20.1$ & \textbf{0.25} & \textbf{0.09} \\
+Europe 45--60\,N 0--40\,E     & $+1.3$ & 2.1 / 2.7 & $+27.8$ & 0.65 & 0.21 \\
+N America 40--55\,N 115--85\,W& $+1.6$ & 2.2 / 2.5 & $+10.8$ & 0.63 & 0.23 \\
+Siberia 55--75\,N 60--180\,E  & $-1.1$ & 2.3 / 2.0 & $-7.9$  & 0.64 & 0.34 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Central Asia is the clearest case: half the observed rain, 20\,W\,m$^{-2}$ too much sun, a quarter
+of the available energy going into evaporation, and a dry top soil layer.
+
+\textbf{Vegetation cover.} LPJ-GUESS sends daily foliage projective cover,
+$\mathrm{FPC}=1-e^{-k(\mathrm{LAI}+\mathrm{SAI})}$, as \texttt{cvl}/\texttt{cvh}
+(\path{lpj_guess/framework/framework.cpp}, lines ${\sim}$1331--1477), and when LPJ-GUESS is coupled
+OpenIFS uses those fields directly (\path{ifs-source/surf/module/surfbc_ctl_mod.F90},
+${\sim}$285--320); uncoupled OpenIFS multiplies climatological cover by \texttt{RVCOV} per type
+(\path{susveg_mod.F90}). \dead{The coupled cover is double-counted: LPJ-GUESS already applies a
+Lambert--Beer cover and OpenIFS multiplies it by \texttt{RVCOV} again.} The \texttt{RVCOV} branch is
+taken only when LPJ-GUESS is \emph{not} coupled; raised and falsified the same day. Like-for-like
+effective JJA cover, IFS default against LPJ-GUESS: central Asia 0.57 against 0.31, Europe 0.87
+against 0.69, N America 0.79 against 0.65. \textbf{LPJ-GUESS vegetation is sparser, most of all over
+central Asia.} Whether the sparse vegetation causes the dry, warm summer or follows from it cannot be
+separated from this run; a dry-feedback loop is possible. \dead{The steppe LAI of 4.9 is too
+high.} Those are per-tile LAI values; the cover-weighted LAI over the central Asian box is 0.82.
+
+\subsection{Marine biogenic CCN, reconsidered and declined}\label{sub:r44dms}
+
+With the global PI bias now warm, the DMS lever of Rounds 24--26 was reconsidered as a global
+cooling lever. Its record: $S=166$ gives global SW CRE $-1.72$\,W\,m$^{-2}$ in AMIP and SO DJF
+$-7.25$ (\S\ref{sec:r24}); the tropical cost binds below the published coefficient floor
+(\S\ref{sub:r26verdict}); the coupled probe 11F was cancelled at 20 of 50 years and never scored
+(\S\ref{sub:r27coupled}). \textbf{Declined for the last round.}
+
+\section{Round 45 (2026--10--03): the Antarctic pack is diffuse, not missing, and drives too freely}\label{sec:round45}
+
+\subsection{Where the warm ring sits}\label{sub:r45class}
+
+T2m against ERA5 by ice class, ice threshold 0.15, observed ice HadISST 2.2 1990--2014
+(\path{data/clim/warm_regions_diag_gmhemi1800_2125-2139.txt}):
+
+\begin{center}\small
+\begin{tabular}{llrrrr}
+\toprule
+case & class & area & model $-$ ERA5 & conc.\ model & conc.\ obs \\
+\midrule
+SH JJA & both ice (pack)        & 37.7\,\% & $\mathbf{+1.77}$ & \textbf{0.74} & \textbf{0.84} \\
+       & obs ice, model open    & 2.4\,\%  & $+1.35$ & 0.10 & 0.28 \\
+       & model ice, obs open    & 1.6\,\%  & $-0.91$ & 0.27 & 0.07 \\
+       & both open              & 58.3\,\% & $+0.34$ & 0.01 & 0.01 \\
+NH DJF & both ice (pack)        & 43.2\,\% & $-2.30$ & 0.83 & 0.89 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The Antarctic winter warm ring sits over a too-diffuse pack, not over a missing edge}: the
+pack where both agree there is ice is 1.8\,K too warm with concentration 0.74 against 0.84, and the
+missing-ice class is only 2.4\,\% of the area. The NH winter pack is cold.
+
+\subsection{McPhee ocean-to-ice heat flux: wrong in both hemispheres}\label{sub:r45mcphee}
+
+In the coupled build FESOM grows ice from $A(Q_{atm,ice}-Q_{oc,ice})$ with
+$Q_{oc,ice}=(T-T_f)\,\gamma_t\,\rho c_p$ and $\gamma_t$ a constant 10\,m\,d$^{-1}$. The McPhee form
+replaces it with $St^*u^*$ ($St^*=0.0057$, $u^*$ from the ice--ocean velocity difference,
+$u^*_{min}=0.005$\,m\,s$^{-1}$), which exchanges at 0.31--0.56 of the old constant over the pack in 2127--2129
+(\path{data/clim/ice_ocean_ustar_ihf1.txt}). FESOM branch \texttt{feat/ice-ocean-heat-ustar}
+(\texttt{1e6cb53a}); \textbf{PICAL\_crunveg\_ihf1} (on) against \textbf{ihf0} (off), new build,
+1800\,s, 2120--2129. ihf1 $-$ ihf0 (\path{data/clim/ihf0.csv}, \path{data/clim/ihf1.csv}):
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+$10^3$\,km$^3$ & ihf1 $-$ ihf0 & paired $2\sigma/\sqrt{N}$ \\
+\midrule
+SH September volume & $-1.25^*$ & 1.22 \\
+NH September volume & $+1.04^*$ & 0.49 \\
+NH April volume     & $+0.62^*$ & 0.54 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Wrong direction in both hemispheres}: the Antarctic needs more ice and loses it, the Arctic
+has too much and gains it. Rejected (\path{data/clim/ice_ocean_heat_ihf0.txt},
+\path{data/clim/ice_ocean_heat_ihf1.txt}, \path{data/clim/marginal_ice_budget.txt}).
+
+\subsection{Bug XII: lead closing is hard-coded in the coupled build}\label{sub:r45h0}
+
+In the OASIS-coupled build FESOM uses \texttt{ice\_thermo\_cpl.F90}, which declares
+\texttt{h0min = 0.5, h0max = 1.5} as local constants (line 62 on \texttt{main} \texttt{82c67a4a}).
+The namelist \texttt{h0} and \texttt{h0\_s} are read only by \texttt{ice\_thermo\_oce.F90}, which is
+compiled out when coupled: \textbf{they are inert in AWI-ESM3}. Separately, the \texttt{/ice\_therm/}
+namelist read (\texttt{ice\_init.F90:123}) passes \texttt{iostat} and never checks it, so an unknown
+name silently stops the read and every later name in the group falls back to its default. The
+hemispheric lead closing (SH \texttt{h0min} 1.0) was removed from the coupled code in 2022
+(\texttt{a06d3ff0}, \texttt{d0556ef7}). Round 38's \texttt{h0min} experiment ran on the separate
+\texttt{feat/leadclose-h0min} branch that exposes it (\S\ref{sub:r38h0}). \textbf{\texttt{h0min} is
+ruled out as a lever.}
+
+\subsection{The winter deficit opens in autumn}\label{sub:r45budget}
+
+SH 50--90\,S monthly area budget, gmhemi1800 2130--2139, M\,km$^2$ per month
+(\path{scripts/analysis/ice_winter_budget_hemispheres.py}, made machine-portable through the
+environment variable \texttt{SIC};
+\path{data/clim/ice_winter_budget_hemispheres_gmhemi1800_2130-2139.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrrrrrrr}
+\toprule
+month & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\midrule
+thermodynamic & $+1.44$ & $+3.60$ & $+5.24$ & $+5.07$ & $+4.32$ & $+3.32$ & $+2.21$ & $+0.24$ \\
+dynamic       & $-0.40$ & $-1.17$ & $-1.69$ & $-2.09$ & $-2.45$ & $-2.54$ & $-2.41$ & $-1.58$ \\
+area model    & 1.21 & 3.66 & 7.64 & 11.43 & 14.24 & 15.99 & 16.38 & 15.51 \\
+area HadISST  & 2.20 & 6.23 & 10.57 & 13.92 & 16.89 & 18.43 & 19.23 & 18.84 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The area deficit opens in April--May} ($-2.6$ to $-2.9$\,M\,km$^2$) and then stays flat
+through June--September while the dynamic loss peaks. That is consistent with Round 33's autumn
+entrainment of the $+0.9$\,K layer at 100\,m (\S\ref{sub:r33subsurface}), not with a winter
+dynamics deficit.
+
+\subsection{Ice drift against observations}\label{sub:r45drift}
+
+OSI-455 v1.0 daily 24-hour drift, 2005--2014, satellite vectors only
+(\path{/albedo/work/user/jstreffi/obs/osisaf_drift}); NCEP-2 daily 10\,m winds over the same years
+(\path{/albedo/work/user/jstreffi/obs/NCEP2/drift_compare}). Model gmhemi1800 2130--2139, JJA in the
+SH (\path{scripts/analysis/ice_drift_vs_osisaf.py}, \path{scripts/analysis/ice_wind_response.py},
+\path{data/clim/ice_drift_vs_osisaf_gmhemi1800_sh.txt}, \path{data/clim/ice_wind_response_gmhemi1800.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{speed (cm\,s$^{-1}$)} & \multicolumn{2}{c}{divergence (\%\,d$^{-1}$)} & $|$div$|$ & wind factor (\%) & turning ($^\circ$) \\
+sector & obs & model & obs & model & ratio & obs / model & obs / model \\
+\midrule
+all             & 15.17 & 19.64 & $+0.265$ & $+0.306$ & 0.95 & 1.43 / 2.43 & $+23.6$ / $+22.7$ \\
+Weddell         & 14.82 & 18.30 & $+0.250$ & $+0.042$ & \textbf{0.61} & 1.55 / 2.65 & $+23.4$ / $+11.8$ \\
+Indian          & 15.78 & 20.64 & $+0.358$ & $-1.371$ & 1.09 & 1.35 / 2.88 & $+22.5$ / $-13.0$ \\
+Pacific         & 12.31 & 22.75 & $+0.637$ & $-0.828$ & 1.00 & 0.86 / 2.82 & $+23.7$ / $+5.4$ \\
+Ross            & 16.19 & 19.76 & $+0.262$ & $\mathbf{+1.678}$ & 1.27 & 1.57 / 2.76 & $+24.1$ / $\mathbf{+62.7}$ \\
+Amundsen-Bell.  & 15.23 & 19.93 & $-0.074$ & $\mathbf{+1.255}$ & 0.90 & 1.47 / 2.75 & $+25.0$ / $\mathbf{+45.4}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The SH ice moves 1.29 times too fast (19.6 against 15.2\,cm\,s$^{-1}$); the NH winter ice 1.19 times
+(11.4 against 9.6, \path{data/clim/ice_drift_vs_osisaf_gmhemi1800_nh.txt}). \textbf{Antarctic-wide
+the deformation is about right} --- net divergence $+0.31$ against $+0.27$\,\%\,d$^{-1}$, total
+deformation ratio 0.95 --- \textbf{but by sector it is wrong}: Ross and Amundsen--Bellingshausen
+diverge where observations are near neutral, the Indian and Pacific sectors converge where
+observations diverge, and the Weddell deforms at 0.61 of observed. The concentration deficit is
+near-uniform at 0.03--0.06 by sector except Amundsen--Bellingshausen, 0.63 against 0.79, which holds
+0.69 of the 2.45\,M\,km$^2$ of loose ice.
+
+\textbf{The winds are not the cause.} Model 10\,m wind over the ice is 7.2 against NCEP-2's
+8.0\,m\,s$^{-1}$. The JJA Amundsen Sea Low is 977.4\,hPa at 138\,W against 980.5 at 152\,W, with the
+same relative depth ($-6.1$ against $-6.2$\,hPa below the sector mean). The model wind field over
+the ice is less convergent than observed ($-19.0$ against $-32.1$\,\%\,d$^{-1}$). \textbf{The ice
+over-responds}: wind factor 2.4\,\% (2.7--2.9 by sector) against an observed 1.4\,\% (0.9--1.6); the
+observed turning angle is about $+24^\circ$ everywhere, the model's $+23^\circ$ overall but
+$+63^\circ$ in the Ross, $+45^\circ$ in Amundsen--Bellingshausen, $-13^\circ$ in the Indian and
+$+12^\circ$ in the Weddell sector. The linear wind-to-drift fit has $R^2=0.70$ overall and
+0.91--0.94 in four of five sectors, close to free drift, against 0.53 observed (0.31--0.59 by
+sector).
+
+The effective air--ice drag, from FESOM's \texttt{atmice} stress and OpenIFS daily 10\,m wind over
+the pack ($a\geq0.8$, 55--80\,S; \path{scripts/analysis/ice_drag_effective.py},
+\path{data/clim/ice_drag_effective_gmhemi1800.txt}), is $C_{d,ai}=2.0$--$2.2\times10^{-3}$; with
+\texttt{Cd\_oce\_ice} 0.0055 the implied free-drift factor is 2.2\,\%, and the ice--ocean turning
+angle $\theta_{io}$ is 0.
+
+\textbf{Conclusion: the winds are fine; the ice over-responds and turns the wrong way in the Ross
+and Amundsen--Bellingshausen sectors.} Slowing the ice would tighten the A--B/Ross pack, but would
+likely reduce SH extent and add Arctic volume, so this is \textbf{documented as a known bias and
+not tuned}. Caveats: the observation years 2005--2014 had a positive SAM, and satellite drift misses
+fast marginal-ice-zone ice.
+
+\subsection{The stack, the pull requests, and the last round}\label{sub:r45stack}
+
+\textbf{Pull requests.} FESOM \#1060 (ice skin from the atmosphere) merged as \texttt{57c433e5},
+\#1087 (the two CVMix bugs) as \texttt{18926b72}, \#1064 (\texttt{cavity\_gamma\_scale}) as
+\texttt{f3c3d3fa}. Open: \#1103 (IDEMIX smoothing per unit time) and \#1112 (hemispheric GM), and
+\texttt{release\_evaluation\_tool2} \#7.
+
+\textbf{A fresh install.} \texttt{awiesm3-develop-cc} was installed on 2026--10--02/03 at
+\path{/albedo/work/user/jstreffi/model_codes/awiesm3-develop-cc} with \texttt{esm\_master
+comp-awiesm3-develop-cc}:
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+component & branch & commit \\
+\midrule
+fesom-2.8   & \texttt{main} & \texttt{82c67a4a} (contains \#1060, \#1064, \#1087) \\
+lpj\_guess  & \texttt{lpj\_guess\_awiesm3} & \texttt{179fb0d} \\
+oasis       & \texttt{local\_combined\_fixes} & \texttt{898c8b2} \\
+oifs-48r1   & \texttt{awiesm3-develop} (fork) & \texttt{f6d1860}, 5 commits past \texttt{872c4d2}: 2\,m T to the ice sheet, SP fixer \\
+rnfmap      & \texttt{enthalpy\_on\_ocean\_side} & \texttt{a635cc6} \\
+xios        & \texttt{main} & \texttt{9c33506d} (re-cloned) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+FESOM is built coupled, in double precision, with \texttt{RECOM\_COUPLED=ON} and XIOS on.
+
+\textbf{The last round, as agreed.}
+\begin{enumerate}\itemsep1pt
+\item gmhemi with NH \texttt{K\_GM\_max} 1500, against the Labrador overshoot.
+\item Continue the current tuning on the \texttt{-cc} configuration: FESOM and LPJ-GUESS warm start,
+      REcoM on in concentration-driven PI mode, OpenIFS cold start.
+\item Document as structural biases of v3.5: the Southern Ocean cloud deficit, the diffuse Antarctic
+      pack, the stratocumulus coasts, and the warm NH summer land.
+\end{enumerate}
+
+\section{Round 46 (2026--10--03): the critical path as one record, and vertical mixing re-scored on heat}\label{sec:round46}
+
+Two things happened on the same day and belong together: the adopted tuning was taken to the
+carbon-cycle configuration, and the whole production line was put on one axis for the first time.
+The second changed how Round 39 reads.
+
+\subsection{The line as one record, 1850--2139}\label{sub:r46path}
+
+The critical path is five experiments: \textbf{PICAL} 1850--1919, \textbf{PICAL\_momixoff}
+1920--1939, \textbf{PICAL\_ccnice} 1940--2099, \textbf{PICAL\_crunveg} 2100--2119 and
+\textbf{PICAL\_crunveg\_gmhemi1800} 2120--2139. \texttt{release\_evaluation\_tool2} branch
+\texttt{feat/critical-path-spinup} stitches them: a per-year cache for the diagnostics that read 3D
+ocean fields (so the 250 years on levante were reduced there and only the cache shipped), a new AMOC
+time series (\texttt{part27}), and annotations for the eleven changes along the line. The evaluation
+window is gmhemi1800 2125--2139. Output: \path{plots/reval_critical_path_1850-2139/}. OpenIFS was
+cold-started at 1920, 1940, 2100 and 2120, so the first year of each segment is not a response.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/reval_critical_path_1850-2139/Hovmoeller_temp.png}
+\caption{Global-mean ocean temperature against PHC3 along the critical path. The warm layer at
+300--1000\,m builds through all 290 years and no change along the line reverses it; the cold layer
+at 50--100\,m weakens under KPP and returns with \texttt{cvmix\_TKE} at 2060.}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/reval_critical_path_1850-2139/radiation_budget.png}
+\caption{Net TOA and net surface flux along the critical path (smoothed; thin lines annual). TOA
+starts near $+0.7$\,W\,m$^{-2}$, reaches zero in the \texttt{albsn} 0.83 decade, goes negative under
+\texttt{cvmix\_TKE} alone and returns to $+0.5$ to $+0.6$ with IDEMIX and the forested land. The
+surface-minus-TOA offset stays at $-0.15$ to $-0.2$ throughout: the atmosphere's own closure error
+does not drift.}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/reval_critical_path_1850-2139/amoc_timeseries.png}
+\caption{Atlantic overturning along the critical path: annual maximum below 500\,m at 26.5\,N and
+over 20--60\,N. It spins up over the first 50 years, holds 15--16.5\,Sv at 26.5\,N for two centuries
+through every atmospheric and sea-ice change, and drops at the 2120 branch.}
+\end{figure}
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+window & AMOC 26.5\,N (Sv) & maximum 20--60\,N (Sv) \\
+\midrule
+1850--1869 & 11.8 & 13.1 \\
+1900--1919 & 15.8 & 17.1 \\
+1940--2059 & 15.8 & 17.2 \\
+2080--2099 & 16.3 & 17.1 \\
+2101--2119 (crunveg) & 16.3 & 17.3 \\
+2121--2139, ob1800 (GM 2500) & $15.0\pm0.3$ & 16.0 \\
+2121--2139, gmhemi1800       & $13.9\pm0.2$ & 16.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The drop at 2120 has two parts. About half is common to the branch: ob1800, which keeps
+GM 2500 at the same 1800\,s step, falls to 15.0\,Sv and is still falling (14.4 over 2130--2139), in
+step with its Labrador collapses. The other 1.1\,Sv is the hemispheric GM, which moves the cell
+north rather than weakening it: the 20--60\,N maximum holds at 16.3\,Sv near 36\,N. RAPID is about
+$17\pm1.5$\,Sv at 26.5\,N, a present-day reference.
+
+\subsection{Heat by depth: IDEMIX is what warms the mid-depth ocean}\label{sub:r46heat}
+
+Trends of the global-mean temperature per depth band, from the yearly profiles behind the
+Hovm\"oller (\texttt{cdo fldmean} per level, averaged by layer thickness; mK/decade, $\pm2$\,s.e.):
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+segment of the line & 100--300\,m & 300--700\,m & 700--1500\,m & 1500--2500\,m \\
+\midrule
+KPP 2021--2059              & $+20$  & $+7$  & $+8.5\pm0.9$  & $+2$ \\
+\texttt{cvmix\_TKE} 2061--2079 & $-142$ & $-27$ & $+0.3\pm1.3$  & $+6$ \\
+TKE+IDEMIX 2081--2099       & $-39$  & $-19$ & $+26.9\pm1.0$ & $+10$ \\
+crunveg 2101--2119          & $+50$  & $+17$ & $+28.3\pm2.4$ & $+11$ \\
+gmhemi1800 2121--2139       & $0$    & $+42$ & $+42.0\pm1.0$ & $+7$ \\
+ob1800 2121--2139           & $+1$   & $+39$ & $+31.6\pm1.4$ & $+12$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The 700--1500\,m layer is flat under TKE alone and warms from the leg IDEMIX came in.
+The segments are confounded by everything else that changed, so the same quantity was computed for
+the four arms of Round 39 (\S\ref{sec:round39}), which share one restart and one period
+(\path{data/clim/mixing_arms_temp_trend_by_depth.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+arm, 2021--2039 & 0--100\,m & 100--300\,m & 300--700\,m & 700--1500\,m & 1500--2500\,m \\
+\midrule
+KPP (control)              & $+28$  & $+38$  & $+25$ & $+11.3\pm1.7$ & $-2$ \\
+\texttt{cvmix\_KPP}        & $-91$  & $-52$  & $+4$  & $+15.0\pm0.9$ & $+3$ \\
+\texttt{cvmix\_TKE}        & $-214$ & $-148$ & $-18$ & $+8.9\pm1.8$  & $+4$ \\
+\texttt{cvmix\_TKE+IDEMIX} & $-307$ & $-128$ & $+3$  & $+31.4\pm1.1$ & $+9$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}\itemsep1pt
+\item \textbf{IDEMIX, not TKE, drives the mid-depth warming}: $+31$\,mK/decade at 700--1500\,m
+      against $+9$ for TKE alone and $+11$ for KPP.
+\item \textbf{Both TKE arms drain the upper ocean}: by 2030--2039 the top 300\,m is 0.26--0.34\,K
+      colder than under KPP. This is the upper-ocean heat drain of \S\ref{sec:round40}, seen at its
+      source.
+\item \textbf{\texttt{cvmix\_KPP} is a null for sea ice and not for heat}: its top 100\,m is
+      0.17\,K colder than native KPP by 2030--2039, its 100--300\,m 0.15\,K. Part of ``TKE minus
+      KPP'' may therefore belong to the CVMix code path rather than to the scheme
+      (\S\ref{sub:fals46}).
+\item \textbf{The 2120 branch adds to it}: 700--1500\,m warms at $+42$ in gmhemi1800 against $+32$
+      in ob1800, so about $+10$ is the hemispheric GM, taken from the 1500--2500\,m layer ($+7$
+      against $+12$). The doubling at 300--700\,m ($+17\to{+40}$) is in both arms and is not the GM.
+\end{itemize}
+
+Round 39 adopted TKE+IDEMIX on Antarctic summer ice, cavity melt and the Southern Ocean cloud term,
+and stated a northern cost. It did not score heat by depth. On that measure KPP was the best of the
+four and IDEMIX the worst, while KPP held the heat at the surface (the line was at 14.4\,\textdegree C in
+2060--2064) and lost Antarctic summer ice.
+
+\textbf{In flight: PICAL\_crunveg\_gmhemi\_tke}, 2140--2159 from gmhemi1800's 2139 restart, one
+variable changed (\texttt{mix\_scheme} \texttt{cvmix\_TKE}, IDEMIX off), same FESOM library. It
+replaces the NH-1500 arm as the next run of the last round. There is no same-years control.
+
+\subsection{The carbon-cycle configuration: PICAL\_cc}\label{sub:r46cc}
+
+The gmhemi1800 tuning on \texttt{awiesm3-develop-cc}, 2140 onward: FESOM physics and LPJ-GUESS warm
+from gmhemi1800 2139--12--31, REcoM (2p3z2d) cold from climatology, OpenIFS cold. FESOM is
+\texttt{main} \texttt{82c67a4a} plus PR \#1112 (\texttt{90074f13}), double precision.
+
+\begin{itemize}\itemsep1pt
+\item \textbf{Pre-industrial, concentration-driven, no emissions}: \texttt{with\_co2\_concdriven}.
+      Radiation uses the CMIP 1850 concentration, OpenIFS sends REcoM the same uniform value
+      (\path{ece_recom_set_state.F90}), and LPJ-GUESS uses its fixed 1850 CO$_2$; the coupled value
+      it receives is only checksummed. The prognostic CO$_2$ tracer is diagnostic, started at 284\,ppm.
+\item \textbf{REcoM cold under a physics restart}: with \texttt{recom\_restart = .false.} the tracers
+      are optional on the restart read and keep the climatology (GLODAP PI DIC and alkalinity, WOA
+      nutrients and oxygen, PISCES iron).
+\item \textbf{Cost}: 0.674\,s per model hour on 25 nodes, 6.7 times the physics-only line. A 5-year
+      leg takes 8\,h\,20.
+\item \textbf{Stopped at 2145--01--01} with a complete restart including REcoM, pending performance
+      work on the configuration.
+\end{itemize}
+
+\noindent Three traps, all silent. The REcoM \texttt{bin\_2p3z2d/namelist.tra} switches surface salinity restoring on
+(\texttt{surf\_relax\_S} $1.929\times10^{-6}$), which this campaign excludes. Its
+\texttt{namelist.io} drops 37 production outputs, among them the ice budget tendencies. And with
+\texttt{cmip7\_cmor\_output} the FESOM XIOS templates (\path{xios_xml_cmip7}) define no BGC field at
+all, so \textbf{the 2140--2144 leg has no REcoM diagnostics}. The first two are overridden in the
+runscript. The third is patched in the experiment's own copy of the templates, is not yet in
+\texttt{esm\_tools}, and is untested because no second leg ran.
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -8852,10 +9708,48 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--09--25)}\label{sec:state}
+\section{State of the campaign (2026--10--03)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--10--03 (round 46, \S\ref{sec:round46}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{IDEMIX is what warms the mid-depth ocean}: $+31$\,mK/decade at 700--1500\,m against
+$+9$ for \texttt{cvmix\_TKE} alone and $+11$ for KPP, four arms from one restart; on the production
+line that layer is flat under TKE alone and warms from the leg IDEMIX came in (\S\ref{sub:r46heat}).
+\item \textbf{Both TKE schemes drain the upper ocean}: the top 300\,m is 0.26--0.34\,K colder than
+under KPP after a decade (\S\ref{sub:r46heat}).
+\item \textbf{The AMOC held 15--16.5\,Sv at 26.5\,N for two centuries} through every atmospheric and
+sea-ice change, and dropped at the 2120 branch: about half common to the branch, 1.1\,Sv a northward
+shift under hemispheric GM (\S\ref{sub:r46path}).
+\item \textbf{The tuning runs on the carbon-cycle configuration} in concentration-driven PI mode, at
+6.7 times the cost of the physics-only line (\S\ref{sub:r46cc}).
+\end{itemize}
+
+\textbf{Added 2026--10--03 (rounds 41--45, \S\ref{sec:round41}--\S\ref{sec:round45}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{A boreal forest is affordable and survives on the merged LPJ-GUESS}: crunveg keeps
+81\,\% of its BNS after 19 years against 34 and 20\,\% for the pre-merge runs, and costs about
+$2\times10^3$\,km$^3$ of NH ice and $+0.24$\,K globally (\S\ref{sec:round41}).
+\item \textbf{The Labrador ice-capped regime is a GM 2500 / Redi 1000 regime}, not a time-step or
+build effect: 61 runs, one clean pair (0.684 against 0.280), and the persistent capped state only
+under 2500/1000 (\S\ref{sub:r42gm}). The IDEMIX per-step smoothing is real and fixed
+(FESOM \#1103) but does not restore convection (\S\ref{sub:r42idemix}).
+\item \textbf{The GM heat-uptake benefit is Southern Ocean ventilation}: three pairs agree that the
+extra GM-1500 uptake enters at 34--55\,S and is stored in the Indo-Pacific at 700--2000\,m
+(\S\ref{sub:r43paths}).
+\item \textbf{Hemispheric GM is adopted}: Labrador mixed layer near 2050\,m with no collapses,
+global T2m, TOA, Siberia and ice volume unchanged; it overshoots, March Labrador ice 0.10--0.13
+against 0.16 (\S\ref{sub:r43arms}). FESOM PR \#1112.
+\item \textbf{Against a PI reference the model is $+0.46$\,K too warm}, the excess in NH summer
+land and SH summer ocean, with the Arctic winter cold (\S\ref{sub:r44pibias}).
+\item \textbf{The Antarctic winter warm ring is a diffuse pack, not a missing edge}, and the winter
+area deficit opens in April--May; the drift over-responds to correct winds and turns wrong in the
+Ross and Amundsen--Bellingshausen sectors (\S\ref{sec:round45}).
+\item \textbf{\texttt{h0min} and \texttt{h0}/\texttt{h0\_s} are not levers in AWI-ESM3}: hard-coded
+in \texttt{ice\_thermo\_cpl.F90}, inert in the namelist (\S\ref{sub:r45h0}).
+\end{itemize}
+
 \textbf{Added 2026--09--25 (rounds 37--40, \S\ref{sec:round37}--\S\ref{sec:round40}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{The Southern Ocean winter bias resists every lever tried.} Salt plumes, Fox-Kemper
@@ -9301,6 +10195,33 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Added 2026--10--03 (round 46).}
+\begin{enumerate}\itemsep2pt
+\item \textbf{Does TKE without IDEMIX keep the Antarctic ice and stop the mid-depth warming on
+today's configuration?} \textbf{PICAL\_crunveg\_gmhemi\_tke}, 2140--2159, in flight. Its known cost
+on the old line was a system losing energy (net TOA $-0.47$\,W\,m$^{-2}$ over 2060--2079).
+\item \textbf{\texttt{cvmix\_KPP} against native KPP}: 0.17\,K in the top 100\,m between two
+implementations of one scheme is unexplained.
+\item \textbf{PICAL\_cc is paused at 2145} for performance work; its BGC output definition is patched
+locally and untested, and the fix is not in \texttt{esm\_tools}.
+\item \textbf{The AMOC of ob1800 is still falling} (14.4\,Sv over 2130--2139); gmhemi1800's is
+steady but 2.5\,Sv below the pre-2120 line at 26.5\,N.
+\end{enumerate}
+
+\textbf{Added 2026--10--03 (rounds 41--45).}
+\begin{enumerate}\itemsep2pt
+\item \textbf{The Labrador overshoot under hemispheric GM}: March ice 0.10--0.13 against 0.16 and
+NH mid-latitude MLD the largest CMPI loss. Next: NH \texttt{K\_GM\_max} 1500.
+\item \textbf{The line still cools}: $-0.059\pm0.025$\,K/decade over 2101--2139 with ocean uptake
+0.69\,W\,m$^{-2}$, mostly below 700\,m (\S\ref{sub:r44pibias}).
+\item \textbf{NH summer land is warm and dry}, central Asia $+2.9$\,K with half the observed rain and
+LPJ-GUESS cover 0.31 against IFS's 0.57; cause and effect not separable (\S\ref{sub:r44warm}).
+\item \textbf{The diffuse Antarctic pack and its over-responsive drift}, documented as a known bias,
+not tuned (\S\ref{sub:r45drift}).
+\item \textbf{Structural biases of v3.5 to document}: Southern Ocean cloud, the Antarctic pack, the
+stratocumulus coasts, NH summer land.
+\end{enumerate}
+
 \textbf{Added 2026--09--25 (rounds 37--40).}
 \begin{enumerate}\itemsep2pt
 \item \textbf{The upper-ocean heat drain.} 0.32\,W\,m$^{-2}$ equivalent out of the top 700\,m is
@@ -9919,6 +10840,81 @@ ${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
       \texttt{\textasciitilde/.conda/envs/esm-tools\_auto\_tripyview}; its editable-install
       \texttt{egg-link} points at a path that no longer exists, so the import fails
       misleadingly. \texttt{PYTHONPATH=/work/ab0246/a270092/software/tripyview} fixes it.
+
+\end{itemize}
+
+\subsection{Round 46 (2026--10--03)}\label{sub:fals46}
+
+\begin{itemize}
+
+\item \dead{\texttt{cvmix\_KPP} reproduces the KPP control closely enough to serve as the null.} \\
+      For sea ice it does. For heat it does not: its top 100\,m is 0.17\,K and its 100--300\,m
+      0.15\,K colder than native KPP by 2030--2039 (\S\ref{sub:r46heat}).
+
+\item \dead{The ocean starts gaining heat near 1000\,m in the last run, under hemispheric GM.} \\
+      That layer has warmed since IDEMIX came in at 2080 ($+27$\,mK/decade); gmhemi1800 is the
+      fastest ($+42$), not the first, and ob1800 without the GM change warms at $+32$
+      (\S\ref{sub:r46heat}). The eye was caught by a contour level being crossed.
+
+\item \dead{The 2120 drop of the AMOC at 26.5\,N is the hemispheric GM.} \\
+      Half of it is in ob1800 as well; the GM part is a northward shift of 1.1\,Sv with the
+      20--60\,N maximum unchanged (\S\ref{sub:r46path}).
+
+\end{itemize}
+
+\subsection{Round 41--45 (2026--09--26$\to$10--03)}\label{sub:fals4145}
+
+\begin{itemize}
+
+\item \dead{The Labrador Sea stops convecting at 1800\,s because IDEMIX mixes less at the longer
+      step; fixing the smoothing brings convection back.} \\ The deficit is real and the fix removes
+      about 85\,\% of it, but \textbf{PICAL\_crunveg\_nx1800} still sat at 414\,m against ihf0's 370
+      (\S\ref{sub:r42idemix}).
+
+\item \dead{The 2120s Labrador weakening is caused by the new FESOM build and the 1800\,s step.}
+      \\ Every such difference was taken against ob1200, a single realisation at the 28th
+      percentile of the null; every other arm, and the unbranched ccnice continuation, sit at the
+      bottom of it. The weakening begins in ccnice in the IDEMIX era (\S\ref{sub:r42noise}).
+
+\item \dead{The GM 2500 heat-uptake benefit is separable from the Labrador capping: switch GM off on
+      the fine mesh and keep the rest.} \\ gmramp (v3.3 ramp, off below 30\,km) opened the Labrador
+      Sea and gave back the whole benefit, TOA $+0.442^*$, while losing 40\,\% of SH September volume.
+      The benefit is Southern Ocean ventilation at 34--55\,S, and the Southern Ocean margin sits on the
+      same mesh spacing as the Labrador Sea (\S\ref{sub:r43gm1500}, \S\ref{sub:r43paths}).
+
+\item \dead{A Rossby-radius GM separates the Labrador Sea from the Southern Ocean.} \\ $R_d$ is
+      8.0\,km in the Labrador Sea and 9.3\,km at 55--65\,S. The online arm gmrd1800 lost
+      $1.67\times10^3$\,km$^3$ of SH September volume (\S\ref{sub:r43rossby}, \S\ref{sub:r43arms}).
+
+\item \dead{The coupled surface imbalance of gmhemi1800 is 1.51\,W\,m$^{-2}$} (and
+      \dead{gm2500's net surface flux is 1.47}). \\ Both omitted the snow-enthalpy term through
+      $L_f$ in J\,kg$^{-1}$ applied to snowfall in metres; corrected 0.67 and 0.641
+      (\S\ref{sub:r44gregory}).
+
+\item \dead{OpenIFS double-counts the LPJ-GUESS vegetation cover by applying \texttt{RVCOV} on top of
+      the Lambert--Beer FPC.} \\ \texttt{RVCOV} is applied only when LPJ-GUESS is not coupled
+      (\texttt{surfbc\_ctl\_mod.F90} ${\sim}$285--320). Raised and falsified the same day
+      (\S\ref{sub:r44warm}).
+
+\item \dead{The central Asian steppe LAI of 4.9 is too high.} \\ Per-tile LAI; the cover-weighted
+      value is 0.82 (\S\ref{sub:r44warm}).
+
+\item \dead{The Antarctic winter warm ring is a missing ice edge.} \\ 37.7\,\% of the area is pack
+      in both model and HadISST and is $+1.77$\,K at concentration 0.74 against 0.84; the
+      missing-ice class is 2.4\,\% (\S\ref{sub:r45class}).
+
+\item \dead{A McPhee $St^*u^*$ ocean-to-ice heat flux thickens the Antarctic pack.} \\ ihf1 $-$
+      ihf0: SH September volume $-1.25^*$, NH September $+1.04^*\times10^3$\,km$^3$ --- the wrong
+      direction in both hemispheres (\S\ref{sub:r45mcphee}).
+
+\item \dead{The namelist \texttt{h0}/\texttt{h0\_s} set lead closing in AWI-ESM3.} \\ They are read
+      only by \texttt{ice\_thermo\_oce.F90}, compiled out when coupled; \texttt{ice\_thermo\_cpl.F90}
+      hard-codes \texttt{h0min} 0.5, \texttt{h0max} 1.5 (\S\ref{sub:r45h0}).
+
+\item \dead{The Antarctic drift and deformation errors come from the winds.} \\ Wind speed, the
+      Amundsen Sea Low's relative depth and the wind divergence are close to or weaker than NCEP-2;
+      the ice over-responds (wind factor 2.4 against 1.4\,\%) and turns $+63^\circ$ in the Ross
+      against $+24^\circ$ observed (\S\ref{sub:r45drift}).
 
 \end{itemize}
 

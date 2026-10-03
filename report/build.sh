@@ -28,6 +28,11 @@ cd "$(dirname "$0")"
 
 export PATH=/sw/spack-levante/texlive-live2025-3r2myy/bin/x86_64-linux:$PATH
 GS=/sw/spack-levante/ghostscript-9.54.0-ed7q6u/bin/gs
+# albedo: no levante texlive/ghostscript paths; use the module and the system gs
+if ! command -v pdflatex >/dev/null 2>&1; then
+  module load texlive/20210325 >/dev/null 2>&1 || true
+fi
+[ -x "$GS" ] || GS=$(command -v gs)
 DPI=200
 
 DOCS=${*:-"report summary"}
