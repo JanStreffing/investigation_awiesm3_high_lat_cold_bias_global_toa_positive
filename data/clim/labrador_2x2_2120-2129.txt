@@ -1,0 +1,56 @@
+PICAL_crunveg_ob1200   2120  MLD    294 m  >1000m  10 %  SSS 33.904  ice 0.52
+PICAL_crunveg_ob1200   2121  MLD    590 m  >1000m  20 %  SSS 34.112  ice 0.32
+PICAL_crunveg_ob1200   2122  MLD   1578 m  >1000m  50 %  SSS 34.548  ice 0.18
+PICAL_crunveg_ob1200   2123  MLD   1062 m  >1000m  35 %  SSS 34.290  ice 0.29
+PICAL_crunveg_ob1200   2124  MLD    880 m  >1000m  31 %  SSS 34.310  ice 0.33
+PICAL_crunveg_ob1200   2125  MLD    603 m  >1000m  20 %  SSS 34.395  ice 0.16
+PICAL_crunveg_ob1200   2126  MLD    623 m  >1000m  19 %  SSS 33.963  ice 0.21
+PICAL_crunveg_ob1200   2127  MLD    577 m  >1000m  28 %  SSS 34.185  ice 0.29
+PICAL_crunveg_ob1200   2128  MLD   1277 m  >1000m  39 %  SSS 34.402  ice 0.39
+PICAL_crunveg_ob1200   2129  MLD   1539 m  >1000m  52 %  SSS 34.433  ice 0.23
+PICAL_crunveg_ts1200   2120  MLD    769 m  >1000m  25 %  SSS 34.099  ice 0.35
+PICAL_crunveg_ts1200   2121  MLD    281 m  >1000m   0 %  SSS 34.311  ice 0.20
+PICAL_crunveg_ts1200   2122  MLD   1157 m  >1000m  38 %  SSS 34.314  ice 0.22
+PICAL_crunveg_ts1200   2123  MLD    385 m  >1000m  11 %  SSS 34.063  ice 0.58
+PICAL_crunveg_ts1200   2124  MLD     64 m  >1000m   0 %  SSS 33.715  ice 0.56
+PICAL_crunveg_ts1200   2125  MLD    304 m  >1000m   6 %  SSS 34.104  ice 0.20
+PICAL_crunveg_ts1200   2126  MLD    781 m  >1000m  28 %  SSS 34.389  ice 0.34
+PICAL_crunveg_ts1200   2127  MLD    920 m  >1000m  28 %  SSS 34.157  ice 0.29
+PICAL_crunveg_ts1200   2128  MLD    373 m  >1000m  14 %  SSS 34.048  ice 0.30
+PICAL_crunveg_ts1200   2129  MLD    373 m  >1000m   9 %  SSS 34.223  ice 0.35
+PICAL_crunveg_ob1800   2120  MLD    943 m  >1000m  32 %  SSS 34.137  ice 0.43
+PICAL_crunveg_ob1800   2121  MLD    320 m  >1000m   8 %  SSS 34.166  ice 0.26
+PICAL_crunveg_ob1800   2122  MLD    123 m  >1000m   0 %  SSS 34.054  ice 0.18
+PICAL_crunveg_ob1800   2123  MLD    151 m  >1000m   0 %  SSS 33.958  ice 0.35
+PICAL_crunveg_ob1800   2124  MLD     66 m  >1000m   0 %  SSS 33.639  ice 0.63
+PICAL_crunveg_ob1800   2125  MLD    181 m  >1000m   0 %  SSS 34.093  ice 0.27
+PICAL_crunveg_ob1800   2126  MLD    660 m  >1000m  21 %  SSS 34.022  ice 0.31
+PICAL_crunveg_ob1800   2127  MLD    194 m  >1000m   3 %  SSS 33.884  ice 0.41
+PICAL_crunveg_ob1800   2128  MLD    859 m  >1000m  29 %  SSS 34.266  ice 0.29
+PICAL_crunveg_ob1800   2129  MLD    518 m  >1000m  17 %  SSS 33.964  ice 0.39
+PICAL_crunveg_ihf0     2120  MLD    542 m  >1000m  17 %  SSS 34.087  ice 0.36
+PICAL_crunveg_ihf0     2121  MLD    376 m  >1000m  12 %  SSS 34.134  ice 0.43
+PICAL_crunveg_ihf0     2122  MLD    639 m  >1000m  22 %  SSS 34.510  ice 0.26
+PICAL_crunveg_ihf0     2123  MLD    445 m  >1000m  16 %  SSS 34.249  ice 0.32
+PICAL_crunveg_ihf0     2124  MLD    254 m  >1000m   5 %  SSS 33.913  ice 0.33
+PICAL_crunveg_ihf0     2125  MLD    412 m  >1000m   9 %  SSS 34.124  ice 0.26
+PICAL_crunveg_ihf0     2126  MLD    514 m  >1000m  15 %  SSS 34.112  ice 0.31
+PICAL_crunveg_ihf0     2127  MLD    538 m  >1000m  19 %  SSS 34.021  ice 0.53
+PICAL_crunveg_ihf0     2128  MLD     64 m  >1000m   0 %  SSS 33.751  ice 0.71
+PICAL_crunveg_ihf0     2129  MLD     56 m  >1000m   0 %  SSS 33.692  ice 0.60
+PICAL_crunveg_ihf1     2120  MLD    380 m  >1000m  12 %  SSS 34.009  ice 0.40
+PICAL_crunveg_ihf1     2121  MLD    162 m  >1000m   0 %  SSS 34.017  ice 0.28
+PICAL_crunveg_ihf1     2122  MLD    368 m  >1000m   8 %  SSS 34.202  ice 0.31
+PICAL_crunveg_ihf1     2123  MLD    397 m  >1000m  14 %  SSS 34.065  ice 0.28
+PICAL_crunveg_ihf1     2124  MLD    920 m  >1000m  32 %  SSS 34.198  ice 0.38
+PICAL_crunveg_ihf1     2125  MLD    210 m  >1000m   0 %  SSS 34.191  ice 0.22
+PICAL_crunveg_ihf1     2126  MLD    306 m  >1000m   5 %  SSS 34.182  ice 0.21
+PICAL_crunveg_ihf1     2127  MLD     73 m  >1000m   0 %  SSS 33.821  ice 0.65
+PICAL_crunveg_ihf1     2128  MLD    118 m  >1000m   0 %  SSS 33.913  ice 0.42
+PICAL_crunveg_ihf1     2129  MLD    197 m  >1000m   0 %  SSS 34.108  ice 0.24
+
+old build 1200 s       years 10  mean MLD   902 m  collapsed winters 0  longest run 0  ends convecting: yes
+new build 1200 s       years 10  mean MLD   541 m  collapsed winters 1  longest run 1  ends convecting: no
+old build 1800 s       years 10  mean MLD   401 m  collapsed winters 5  longest run 4  ends convecting: yes
+new build 1800 s       years 10  mean MLD   384 m  collapsed winters 2  longest run 2  ends convecting: no
+new 1800 s + McPhee    years 10  mean MLD   313 m  collapsed winters 4  longest run 3  ends convecting: no

@@ -1,0 +1,12 @@
+gmhemi1800 2130-2139 vs OSI-455 (10 winters, satellite vectors only), SH months [6, 7, 8]
+speed cm/s; divergence in %/day (1e-2 per day = fractional area change per day); |div| = mean absolute
+sector      month  spd obs  spd mod  ratio  div obs  div mod |div| obs |div| mod  ratio
+all             6    14.09    18.26   1.30   +0.309   +0.453     2.662     2.568   0.96
+all             7    15.26    19.45   1.27   +0.261   +0.332     2.731     2.616   0.96
+all             8    15.85    20.75   1.31   +0.239   +0.190     2.757     2.560   0.93
+all           win    15.17    19.64   1.29   +0.265   +0.306     2.723     2.581   0.95
+Weddell       win    14.82    18.30   1.23   +0.250   +0.042     2.284     1.382   0.61
+Indian        win    15.78    20.64   1.31   +0.358   -1.371     3.296     3.586   1.09
+Pacific       win    12.31    22.75   1.85   +0.637   -0.828     3.609     3.602   1.00
+Ross          win    16.19    19.76   1.22   +0.262   +1.678     2.722     3.455   1.27
+Amund-Bell    win    15.23    19.93   1.31   -0.074   +1.255     3.073     2.779   0.90

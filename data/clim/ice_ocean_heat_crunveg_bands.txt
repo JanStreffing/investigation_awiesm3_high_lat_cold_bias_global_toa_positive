@@ -1,0 +1,74 @@
+Would gamma_t (ice-ocean heat transfer) act mostly on the Southern Ocean pack?
+
+In the OpenIFS-coupled build FESOM grows ice from dhice = A*(Qatmice - Qocnice)
+(ice_thermo_cpl.F90, coupled-slab convention): the atmosphere owns the surface balance and
+the conduction, so FESOM's con/consn do not set growth, but the ocean-to-ice heat flux
+    Qocnice = (sst - Tf(sss)) * gamma_t * rho*cp,   gamma_t = 10 m/day (a Fortran parameter)
+does, linearly.  A global change of gamma_t is hemispherically selective by physics if the
+water under the ice is further above freezing in one hemisphere.  This measures, per
+hemisphere and month, over the pack (a_ice >= 0.15): the thermal forcing sst - Tf, the
+implied Qocnice (W/m2 of ice area), the ice-area-weighted atmospheric growth it opposes
+(thdgrice as growth rate), and the pack area.
+
+FESOM regular 0.5-degree output (*.fesom.gr.*).  Daily or monthly fields are both reduced
+to monthly means.
+
+
+PICAL_crunveg 2115-2119 (5 years); pack = a_ice >= 0.15; ice-area weighted
+
+NH  mon  pack[Mkm2]  sst-Tf[K]  Qocnice[W/m2 ice]  thdgrice[cm/mon grid-mean]
+    J      15.42      0.067              33.1           28.17
+    F      16.23      0.066              32.6           24.16
+    M      16.46      0.066              32.8           16.91
+    A      15.96      0.062              30.9            7.07
+    M      14.52      0.143              71.0           -8.92
+    J      11.93      0.389             193.6          -41.17
+    J       8.34      0.733             364.2          -61.44
+    A       5.61      0.423             210.3          -35.62
+    S       4.99      0.163              81.1           -0.77
+    O       6.69      0.102              50.5           23.22
+    N      10.25      0.081              40.1           29.93
+    D      13.48      0.087              43.1           30.55
+
+NH>80N  mon  pack[Mkm2]  sst-Tf[K]  Qocnice[W/m2 ice]  thdgrice[cm/mon grid-mean]
+    J       3.53      0.013               6.4           20.46
+    F       3.53      0.012               6.1           20.33
+    M       3.54      0.009               4.7           19.36
+    A       3.53      0.008               3.9           15.92
+    M       3.49      0.007               3.5            5.94
+    J       3.43      0.024              11.7          -15.05
+    J       3.03      0.084              41.9          -58.68
+    A       2.64      0.136              67.4          -30.24
+    S       2.57      0.057              28.3            4.16
+    O       3.05      0.013               6.3           20.46
+    N       3.41      0.017               8.5           21.23
+    D       3.52      0.014               6.8           20.41
+
+SH  mon  pack[Mkm2]  sst-Tf[K]  Qocnice[W/m2 ice]  thdgrice[cm/mon grid-mean]
+    J       2.01      1.516             753.6          -27.18
+    F       0.57      1.332             662.1          -13.09
+    M       0.92      0.479             237.9           23.03
+    A       3.30      0.201              99.9           31.82
+    M       7.28      0.137              68.0           28.03
+    J      10.96      0.120              59.7           20.23
+    J      13.68      0.118              58.8           13.19
+    A      15.50      0.118              58.7            8.78
+    S      15.92      0.114              56.7            1.02
+    O      14.79      0.110              54.7           -6.23
+    N      11.72      0.164              81.5          -17.65
+    D       6.43      0.656             326.3          -24.98
+
+SH<65S  mon  pack[Mkm2]  sst-Tf[K]  Qocnice[W/m2 ice]  thdgrice[cm/mon grid-mean]
+    J       1.93      1.498             744.7          -27.16
+    F       0.57      1.324             658.2          -13.04
+    M       0.92      0.478             237.6           23.06
+    A       3.14      0.190              94.7           33.38
+    M       6.11      0.106              52.9           33.30
+    J       7.93      0.086              42.8           26.67
+    J       8.63      0.085              42.1           20.10
+    A       9.07      0.086              42.6           16.44
+    S       8.95      0.085              42.1            8.66
+    O       8.46      0.074              37.0            1.89
+    N       7.46      0.117              58.2          -11.94
+    D       5.11      0.569             283.1          -28.61
+

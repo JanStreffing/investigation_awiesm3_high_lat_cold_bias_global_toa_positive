@@ -1,0 +1,16 @@
+NULL: 9-winter means of March MLD (m), 1200 s old build
+  KPP (1900-2059)                  n=160 yr  mean  1331  collapse winters  4 (2 %)  longest run 1  9-yr window min  604  5th pct  874  median 1321
+  TKE (2060-2079)                  n= 20 yr  mean  1429  collapse winters  0 (0 %)  longest run 0  9-yr window min 1360  5th pct 1380  median 1462
+  TKE+IDEMIX, ccnice (2080-2129)   n= 50 yr  mean  1053  collapse winters  7 (14 %)  longest run 1  9-yr window min  556  5th pct  774  median 1076
+  TKE+IDEMIX, crunveg (2101-2119)  n= 19 yr  mean  1164  collapse winters  0  longest run 0  9-yr window min 1041  median 1243
+
+Pooled IDEMIX-era null (ccnice 2080-2129 + crunveg 2101-2119): 53 windows, min 556, 5th pct 788, median 1148
+
+ARMS, 2121-2129 March MLD; percentile = share of null windows at or below the arm mean
+  ccnice cont., old 1200 s   PICAL_ccnice           n=9  mean   556  pct   1.9  collapses 3  longest 1   116  760 1257  460  769   75  366 1120   78
+  old build 1200 s           PICAL_crunveg_ob1200   n=9  mean   979  pct  28.3  collapses 0  longest 0   597 1593 1073  886  610  631  583 1288 1553
+  new build 1200 s           PICAL_crunveg_ts1200   n=9  mean   520  pct   0.0  collapses 1  longest 1   282 1169  389   64  306  783  930  377  375
+  old build 1800 s           PICAL_crunveg_ob1800   n=9  mean   344  pct   0.0  collapses 5  longest 4   323  124  152   66  181  667  195  868  524
+  new build 1800 s           PICAL_crunveg_ihf0     n=9  mean   370  pct   0.0  collapses 2  longest 2   380  645  450  257  416  520  544   65   56
+  new 1800 s + McPhee        PICAL_crunveg_ihf1     n=9  mean   308  pct   0.0  collapses 4  longest 3   164  370  401  929  211  307   73  118  198
+  new 1800 s + IDEMIX fix    PICAL_crunveg_nx1800   n=8  mean   414  pct   0.0  collapses 3  longest 1   124  655 1401  452  146  229   95  211

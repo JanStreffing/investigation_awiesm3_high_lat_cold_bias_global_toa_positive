@@ -1,0 +1,30 @@
+noise: same new build 1800 s, 1 vs 4 threads
+   Kv    0-100m rel  0.131 log10(b/a) -0.0071   100-500m rel  0.165 log10(b/a) -0.0017   500-1500m rel  0.142 log10(b/a) +0.0000   1500-7000m rel  0.041 log10(b/a) +0.0002
+   Av    0-100m rel  0.122 log10(b/a) -0.0079   100-500m rel  0.141 log10(b/a) -0.0018   500-1500m rel  0.126 log10(b/a) +0.0000   1500-7000m rel  0.033 log10(b/a) +0.0003
+   temp  0-100m mean|d|  0.07337 mean d  -0.00079   100-500m mean|d|  0.01530 mean d  +0.00065   500-1500m mean|d|  0.00285 mean d  -0.00001   1500-7000m mean|d|  0.00060 mean d  -0.00003
+   salt  0-100m mean|d|  0.01941 mean d  +0.00049   100-500m mean|d|  0.00244 mean d  +0.00006   500-1500m mean|d|  0.00035 mean d  +0.00001   1500-7000m mean|d|  0.00005 mean d  +0.00000
+STEP, old build: perfE 1200 s vs perfF 1800 s
+   Kv    0-100m rel  0.108 log10(b/a) -0.0018   100-500m rel  0.161 log10(b/a) -0.0212   500-1500m rel  0.233 log10(b/a) -0.0169   1500-7000m rel  0.086 log10(b/a) -0.0171
+   Av    0-100m rel  0.100 log10(b/a) +0.0007   100-500m rel  0.144 log10(b/a) -0.0195   500-1500m rel  0.217 log10(b/a) -0.0178   1500-7000m rel  0.073 log10(b/a) -0.0174
+   temp  0-100m mean|d|  0.06024 mean d  +0.00419   100-500m mean|d|  0.01149 mean d  +0.00055   500-1500m mean|d|  0.00231 mean d  -0.00009   1500-7000m mean|d|  0.00049 mean d  -0.00002
+   salt  0-100m mean|d|  0.01496 mean d  -0.00077   100-500m mean|d|  0.00189 mean d  +0.00019   500-1500m mean|d|  0.00031 mean d  -0.00000   1500-7000m mean|d|  0.00007 mean d  +0.00000
+STEP, old build: ob1200 vs ob1800
+   Kv    0-100m rel  0.137 log10(b/a) +0.0009   100-500m rel  0.235 log10(b/a) -0.0176   500-1500m rel  0.277 log10(b/a) -0.0154   1500-7000m rel  0.087 log10(b/a) -0.0159
+   Av    0-100m rel  0.125 log10(b/a) -0.0001   100-500m rel  0.207 log10(b/a) -0.0171   500-1500m rel  0.255 log10(b/a) -0.0165   1500-7000m rel  0.073 log10(b/a) -0.0163
+   temp  0-100m mean|d|  0.06711 mean d  -0.00097   100-500m mean|d|  0.01590 mean d  -0.00028   500-1500m mean|d|  0.00269 mean d  -0.00006   1500-7000m mean|d|  0.00054 mean d  +0.00001
+   salt  0-100m mean|d|  0.01623 mean d  -0.00048   100-500m mean|d|  0.00251 mean d  -0.00013   500-1500m mean|d|  0.00036 mean d  -0.00002   1500-7000m mean|d|  0.00008 mean d  +0.00000
+STEP, new build: ts1200 vs ihf0
+   Kv    0-100m rel  0.128 log10(b/a) -0.0126   100-500m rel  0.230 log10(b/a) -0.0191   500-1500m rel  0.269 log10(b/a) -0.0160   1500-7000m rel  0.090 log10(b/a) -0.0168
+   Av    0-100m rel  0.119 log10(b/a) -0.0078   100-500m rel  0.199 log10(b/a) -0.0193   500-1500m rel  0.248 log10(b/a) -0.0170   1500-7000m rel  0.076 log10(b/a) -0.0173
+   temp  0-100m mean|d|  0.06915 mean d  -0.00078   100-500m mean|d|  0.01645 mean d  -0.00035   500-1500m mean|d|  0.00287 mean d  +0.00007   1500-7000m mean|d|  0.00058 mean d  -0.00003
+   salt  0-100m mean|d|  0.01632 mean d  -0.00095   100-500m mean|d|  0.00260 mean d  +0.00022   500-1500m mean|d|  0.00038 mean d  +0.00001   1500-7000m mean|d|  0.00008 mean d  -0.00000
+build at 1800 s: old perfF vs new nolockB1
+   Kv    0-100m rel  0.133 log10(b/a) +0.0167   100-500m rel  0.168 log10(b/a) +0.0052   500-1500m rel  0.139 log10(b/a) -0.0010   1500-7000m rel  0.044 log10(b/a) -0.0014
+   Av    0-100m rel  0.122 log10(b/a) +0.0150   100-500m rel  0.152 log10(b/a) +0.0053   500-1500m rel  0.129 log10(b/a) -0.0009   1500-7000m rel  0.035 log10(b/a) -0.0014
+   temp  0-100m mean|d|  0.07246 mean d  -0.00332   100-500m mean|d|  0.01484 mean d  -0.00037   500-1500m mean|d|  0.00279 mean d  +0.00015   1500-7000m mean|d|  0.00059 mean d  +0.00004
+   salt  0-100m mean|d|  0.01820 mean d  -0.00007   100-500m mean|d|  0.00237 mean d  -0.00033   500-1500m mean|d|  0.00034 mean d  -0.00002   1500-7000m mean|d|  0.00005 mean d  -0.00000
+build at 1200 s: old ob1200 vs new ts1200
+   Kv    0-100m rel  0.130 log10(b/a) +0.0157   100-500m rel  0.196 log10(b/a) -0.0003   500-1500m rel  0.124 log10(b/a) +0.0003   1500-7000m rel  0.033 log10(b/a) +0.0003
+   Av    0-100m rel  0.119 log10(b/a) +0.0120   100-500m rel  0.158 log10(b/a) -0.0014   500-1500m rel  0.113 log10(b/a) +0.0003   1500-7000m rel  0.027 log10(b/a) +0.0003
+   temp  0-100m mean|d|  0.06802 mean d  -0.00101   100-500m mean|d|  0.01444 mean d  -0.00008   500-1500m mean|d|  0.00247 mean d  -0.00008   1500-7000m mean|d|  0.00052 mean d  +0.00002
+   salt  0-100m mean|d|  0.01687 mean d  +0.00032   100-500m mean|d|  0.00238 mean d  -0.00023   500-1500m mean|d|  0.00030 mean d  -0.00003   1500-7000m mean|d|  0.00005 mean d  +0.00000

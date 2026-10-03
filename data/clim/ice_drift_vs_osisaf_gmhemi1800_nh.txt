@@ -1,0 +1,7 @@
+gmhemi1800 2130-2139 vs OSI-455 (11 winters, satellite vectors only), NH months [12, 1, 2]
+speed cm/s; divergence in %/day (1e-2 per day = fractional area change per day); |div| = mean absolute
+sector      month  spd obs  spd mod  ratio  div obs  div mod |div| obs |div| mod  ratio
+all            12    10.24    12.06   1.18   +0.088   -0.096     1.702     1.907   1.12
+all             1     9.79    11.32   1.16   +0.080   -0.076     1.652     1.711   1.04
+all             2     8.85    10.86   1.23   +0.095   -0.084     1.559     1.644   1.05
+all           win     9.62    11.41   1.19   +0.087   -0.085     1.638     1.754   1.07

@@ -1,0 +1,18 @@
+PICAL_crunveg 2110-2119 (old build 1200 s)
+   Labrador interior      Nov-Apr thermo   -71.6 cm  dyn    86.5 cm   Feb-Mar conc  0.16   Mar ice speed  28.9 cm/s
+   Labrador+Newfoundland  Nov-Apr thermo     7.7 cm  dyn    11.4 cm   Feb-Mar conc  0.17   Mar ice speed  16.7 cm/s
+   Bering <66N            Nov-Apr thermo    27.7 cm  dyn   -14.2 cm   Feb-Mar conc  0.19   Mar ice speed  10.6 cm/s
+   central Arctic >80N    Nov-Apr thermo   107.2 cm  dyn   -14.8 cm   Feb-Mar conc  0.91   Mar ice speed   6.3 cm/s
+
+PICAL_crunveg_ihf0 2121-2129 (new build 1800 s)
+   Labrador interior      Nov-Apr thermo   -52.5 cm  dyn    70.4 cm   Feb-Mar conc  0.26   Mar ice speed  24.6 cm/s
+   Labrador+Newfoundland  Nov-Apr thermo    11.7 cm  dyn     8.7 cm   Feb-Mar conc  0.21   Mar ice speed  16.4 cm/s
+   Bering <66N            Nov-Apr thermo    35.0 cm  dyn   -17.0 cm   Feb-Mar conc  0.27   Mar ice speed  12.4 cm/s
+   central Arctic >80N    Nov-Apr thermo   108.3 cm  dyn   -24.4 cm   Feb-Mar conc  0.91   Mar ice speed   4.1 cm/s
+
+PICAL_crunveg_ihf1 2121-2129 (new build 1800 s + McPhee)
+   Labrador interior      Nov-Apr thermo   -53.5 cm  dyn    82.1 cm   Feb-Mar conc  0.28   Mar ice speed  23.0 cm/s
+   Labrador+Newfoundland  Nov-Apr thermo    12.0 cm  dyn    11.4 cm   Feb-Mar conc  0.21   Mar ice speed  16.3 cm/s
+   Bering <66N            Nov-Apr thermo    36.0 cm  dyn   -17.7 cm   Feb-Mar conc  0.27   Mar ice speed  14.4 cm/s
+   central Arctic >80N    Nov-Apr thermo   106.1 cm  dyn   -24.8 cm   Feb-Mar conc  0.91   Mar ice speed   4.5 cm/s
+

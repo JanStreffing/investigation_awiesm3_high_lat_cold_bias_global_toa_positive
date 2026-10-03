@@ -1,0 +1,12 @@
+gmhemi1800 2130-2139 JJA.  Model: FESOM drift vs OpenIFS 10 m wind.  Obs: OSI-455 2005-2014 vs NCEP-2 10 m wind
+sector      | wind m/s drift cm/s factor % turn deg    R2 | obs   wind  drift  factor   turn    R2 | mean wind E/N model  obs     | wind div %/day mod obs
+all         |     7.17      19.46     2.43    +22.7  0.70 |       8.05  15.03    1.43  +23.6  0.53 |  +0.4/ +1.1  +0.3/ +1.1 |   -19.0   -32.1
+Weddell     |     6.95      18.06     2.65    +11.8  0.92 |       7.75  14.68    1.55  +23.4  0.59 |  +1.0/ +1.0  +1.5/ +0.5 |   -10.4   -19.0
+Indian      |     7.31      20.41     2.88    -13.0  0.94 |       8.28  15.54    1.35  +22.5  0.48 |  -1.6/ +1.4  -2.4/ +1.7 |   -28.9   -53.7
+Pacific     |     7.64      22.65     2.82     +5.4  0.75 |       9.28  12.19    0.86  +23.7  0.31 |  -2.9/ +1.8  -4.5/ +4.1 |   -51.8   -64.2
+Ross        |     7.21      19.66     2.76    +62.7  0.91 |       7.95  16.10    1.57  +24.1  0.53 |  +1.7/ +1.3  +1.8/ +0.9 |   -15.5   -31.2
+Amund-Bell  |     7.25      19.69     2.75    +45.4  0.91 |       8.04  15.02    1.47  +25.0  0.55 |  +0.7/ -0.4  +0.1/ -0.2 |   -25.9   -30.8
+
+JJA Amundsen Sea Low (60-75S, 170E-62W): central hPa, lat, lon, relative central pressure (min - sector mean), zonal-mean 60S
+  model              977.4  -72.7  -138.1   -6.1   60S mean   985.6
+  NCEP-2 2005-14     980.5  -72.5  -152.5   -6.2   60S mean   989.3

@@ -9473,13 +9473,17 @@ from gmhemi1800 2139--12--31, REcoM (2p3z2d) cold from climatology, OpenIFS cold
       work on the configuration.
 \end{itemize}
 
-\noindent Three traps, all silent. The REcoM \texttt{bin\_2p3z2d/namelist.tra} switches surface salinity restoring on
-(\texttt{surf\_relax\_S} $1.929\times10^{-6}$), which this campaign excludes. Its
-\texttt{namelist.io} drops 37 production outputs, among them the ice budget tendencies. And with
-\texttt{cmip7\_cmor\_output} the FESOM XIOS templates (\path{xios_xml_cmip7}) define no BGC field at
-all, so \textbf{the 2140--2144 leg has no REcoM diagnostics}. The first two are overridden in the
-runscript. The third is patched in the experiment's own copy of the templates, is not yet in
-\texttt{esm\_tools}, and is untested because no second leg ran.
+\noindent Two traps, both silent, and one that was not a trap. The REcoM
+\texttt{bin\_2p3z2d/namelist.io} is a different output list: it drops 37 outputs of the physics run,
+among them the ice budget tendencies. And with \texttt{cmip7\_cmor\_output} the FESOM XIOS templates
+(\path{xios_xml_cmip7}) defined no BGC field at all, so \textbf{the 2140--2144 leg has no REcoM
+diagnostics}. Both are fixed in \texttt{esm\_tools} (\texttt{fdde4730e}: a \texttt{namelist.io.recom}
+that is the physics list plus the REcoM streams, and a gated BGC file group in the CMIP7 templates),
+checked by resolving a runscript without any override; no leg has yet written through the new file
+group. \texttt{recom\_input\_path} is now set per machine. The third suspicion, that
+\texttt{bin\_2p3z2d/namelist.tra} brings surface salinity restoring back
+(\texttt{surf\_relax\_S} $1.929\times10^{-6}$), was wrong: \texttt{awiesm3.yaml} forces it to 0 for
+every v3.5 variant, and the resolved namelist has 0 without any runscript entry.
 
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
@@ -10202,8 +10206,8 @@ today's configuration?} \textbf{PICAL\_crunveg\_gmhemi\_tke}, 2140--2159, in fli
 on the old line was a system losing energy (net TOA $-0.47$\,W\,m$^{-2}$ over 2060--2079).
 \item \textbf{\texttt{cvmix\_KPP} against native KPP}: 0.17\,K in the top 100\,m between two
 implementations of one scheme is unexplained.
-\item \textbf{PICAL\_cc is paused at 2145} for performance work; its BGC output definition is patched
-locally and untested, and the fix is not in \texttt{esm\_tools}.
+\item \textbf{PICAL\_cc is paused at 2145} for performance work; its BGC output definition is fixed in
+\texttt{esm\_tools} (\texttt{fdde4730e}) and not yet exercised by a leg.
 \item \textbf{The AMOC of ob1800 is still falling} (14.4\,Sv over 2130--2139); gmhemi1800's is
 steady but 2.5\,Sv below the pre-2120 line at 26.5\,N.
 \end{enumerate}

@@ -1,0 +1,69 @@
+Effective ocean-to-ice exchange velocity under McPhee St*u*, against the old constant.
+
+u* is recomputed exactly as ice_thermo_cpl.F90 does it, from DAILY ice and ocean surface
+velocity: u* = sqrt(Cd_oce_ice) * |u_ice - u_oc|, Cd_oce_ice = 0.0055 (namelist.ice).
+The McPhee arm then exchanges at St* * max(u*, u*_min), St* = 0.0057, u*_min = 0.005 m/s,
+against gamma_t = 10 m/day before.  Reported per hemisphere and month over the pack
+(a_ice >= 0.15), daily values weighted by daily ice area, with the ratio to 10 m/day and
+the actual McPhee flux St* u* (sst - Tf) rho cp computed daily, so the u* dT correlation
+is kept.
+
+
+PICAL_crunveg_ihf1 2127-2129
+
+NH      mon   u*[mm/s]  St*u*[m/day]  ratio to 10  McPhee Qocnice[W/m2 ice]  sst-Tf[K]
+        J       6.57          3.86         0.39                     20.3      0.072
+        F       6.12          3.73         0.37                     19.9      0.072
+        M       5.94          3.65         0.37                     16.9      0.065
+        A       5.36          3.42         0.34                     14.4      0.063
+        M       5.31          3.36         0.34                     17.3      0.093
+        J       4.66          3.08         0.31                     32.8      0.210
+        J       5.00          3.11         0.31                     48.5      0.320
+        A       5.38          3.22         0.32                     39.1      0.248
+        S       6.08          3.46         0.35                     12.4      0.071
+        O       7.53          4.09         0.41                      8.1      0.034
+        N       6.49          3.73         0.37                     11.2      0.048
+        D       6.35          3.74         0.37                     15.6      0.062
+
+NH>80N  mon   u*[mm/s]  St*u*[m/day]  ratio to 10  McPhee Qocnice[W/m2 ice]  sst-Tf[K]
+        J       6.76          3.83         0.38                      7.1      0.024
+        F       5.23          3.28         0.33                      5.2      0.021
+        M       5.54          3.37         0.34                      4.8      0.022
+        A       4.83          3.12         0.31                      4.3      0.021
+        M       5.36          3.26         0.33                      4.0      0.022
+        J       5.06          3.15         0.32                      6.6      0.040
+        J       5.32          3.15         0.32                     15.0      0.098
+        A       5.18          3.13         0.31                     20.3      0.132
+        S       6.36          3.53         0.35                      6.4      0.035
+        O       7.78          4.15         0.42                      2.9      0.012
+        N       6.51          3.66         0.37                      3.0      0.014
+        D       6.34          3.65         0.37                      4.3      0.017
+
+SH      mon   u*[mm/s]  St*u*[m/day]  ratio to 10  McPhee Qocnice[W/m2 ice]  sst-Tf[K]
+        J       6.03          3.48         0.35                     95.7      0.584
+        F       6.66          3.76         0.38                     74.2      0.410
+        M       9.44          4.92         0.49                     35.6      0.149
+        A       9.45          4.91         0.49                     29.2      0.117
+        M       9.59          4.96         0.50                     29.8      0.116
+        J       9.87          5.09         0.51                     32.2      0.125
+        J       9.96          5.13         0.51                     37.4      0.140
+        A      10.87          5.55         0.56                     44.3      0.156
+        S      10.56          5.38         0.54                     40.5      0.148
+        O       9.58          4.95         0.49                     31.7      0.127
+        N       8.79          4.61         0.46                     33.2      0.147
+        D       6.79          3.76         0.38                     58.7      0.332
+
+SH<65S  mon   u*[mm/s]  St*u*[m/day]  ratio to 10  McPhee Qocnice[W/m2 ice]  sst-Tf[K]
+        J       5.96          3.46         0.35                     92.0      0.567
+        F       6.66          3.76         0.38                     74.2      0.410
+        M       9.44          4.92         0.49                     34.9      0.147
+        A       9.36          4.87         0.49                     26.5      0.109
+        M       9.21          4.80         0.48                     24.6      0.102
+        J       9.40          4.89         0.49                     25.6      0.105
+        J       8.86          4.66         0.47                     27.5      0.119
+        A       9.84          5.12         0.51                     37.0      0.144
+        S       9.36          4.87         0.49                     33.4      0.139
+        O       8.75          4.61         0.46                     25.7      0.112
+        N       8.11          4.34         0.43                     24.5      0.118
+        D       6.40          3.62         0.36                     50.7      0.302
+

@@ -1057,10 +1057,11 @@ Legs read a per-leg archive, not the source runscript, so edits need \texttt{-U}
 date file advances past a crashed leg, so it is not evidence of progress. \\
 \addlinespace
 REcoM brings its own namelists &
-\texttt{bin\_2p3z2d} replaces \texttt{namelist.tra} and \texttt{namelist.io}: surface salinity
-restoring comes back on and 37 production outputs disappear. And the CMIP7 XIOS templates define no
-BGC field, so a carbon-cycle leg with \texttt{cmip7\_cmor\_output} writes no REcoM diagnostics. Diff
-the resolved namelists against the physics run before submitting. \\
+\texttt{bin\_2p3z2d/namelist.io} is a different output list (37 outputs of the physics run gone), and
+the CMIP7 XIOS templates defined no BGC field, so PICAL\_cc's first leg wrote no REcoM diagnostics.
+Both fixed in \texttt{esm\_tools} \texttt{fdde4730e}. Diff the resolved namelists against the physics
+run before submitting; that diff also showed the suspected return of salinity restoring was not
+real. \\
 \bottomrule
 \end{tabular}
 \end{center}

@@ -1,0 +1,104 @@
+srun: job 47771634 queued and waiting for resources
+srun: job 47771634 has been allocated resources
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:55: RuntimeWarning: Mean of empty slice
+  h = np.nanmean(h, 0); h = h if h.shape[0] == 47 else h.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:55: RuntimeWarning: Mean of empty slice
+  h = np.nanmean(h, 0); h = h if h.shape[0] == 47 else h.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:55: RuntimeWarning: Mean of empty slice
+  h = np.nanmean(h, 0); h = h if h.shape[0] == 47 else h.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:55: RuntimeWarning: Mean of empty slice
+  h = np.nanmean(h, 0); h = h if h.shape[0] == 47 else h.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+/albedo/work/user/jstreffi/postprocessing/investigation_awiesm3_high_lat_cold_bias_global_toa_positive/scripts/analysis/gm_arms_global.py:61: RuntimeWarning: Mean of empty slice
+  t = np.nanmean(np.where(np.abs(t) > 1e5, np.nan, t), 0); t = t if t.shape[0] == 47 else t.T
+
+2121-2128 means; differences vs ob1200; "*" = beyond the paired 2 sigma/sqrt(N) of the two runs
+                              ob1200        gm1500        gmramp        ccnice         gm1500-ob1200         gmramp-ob1200         ccnice-ob1200
+t2m_glob                      14.096        13.890        14.014        13.720               -0.206*               -0.081                -0.376*
+t2m_nh                        14.738        14.523        14.579        14.171               -0.215*               -0.158*               -0.567*
+t2m_sh                        13.454        13.258        13.449        13.269               -0.196*               -0.005                -0.185*
+t2m_6090n                     -8.398        -8.612        -9.056        -9.806               -0.214                -0.658*               -1.408*
+t2m_6090s                    -16.568       -16.530       -15.732       -16.817                0.038                 0.836*               -0.250 
+t2m_land                       8.486         8.191         8.312         7.863               -0.294*               -0.174                -0.622*
+t2m_sib                       -8.475        -8.632        -8.824       -10.577               -0.156                -0.349                -2.102*
+t2m_sib_djf                  -28.149       -28.286       -28.986       -30.706               -0.137                -0.837                -2.557*
+t2m_sib_jja                   11.819        11.812        11.453         9.648               -0.006                -0.365                -2.170*
+toa_net                        0.511         0.832         0.883         0.356                0.321*                0.372*               -0.155 
+sfc_net (corrected below)      1.470         1.808         1.835         1.334                0.338*                0.365*               -0.136   [omits Lf*snowfall 0.83 W/m2; corrected: 0.641 0.979 1.014]
+ocean_in_Wm2_earth             0.644         0.987         1.017         0.488                0.343*                0.373*               -0.156 
+heat_0-700                     0.153         0.029        -0.056         0.036               -0.124                -0.210                -0.117 
+heat_700-2000                  0.230         0.504         0.543         0.142                0.274*                0.313*               -0.088*
+heat_2000+                     0.215         0.360         0.446         0.219                0.145*                0.231*                0.004 
+heat_SO                        0.111         0.014        -0.022        -0.119               -0.097                -0.133                -0.231 
+heat_SPNA                     -0.008        -0.029         0.077        -0.018               -0.022                 0.085                -0.010 
+heat_NORDARC                   0.025         0.016        -0.055         0.002               -0.010                -0.081*               -0.024 
+heat_REST                      0.469         0.893         0.933         0.532                0.424*                0.463*                0.063 
+sivoln_m03                 29194.197     29369.705     30034.484     33325.709              175.508               840.287              4131.512*
+sivoln_m09                 10633.718     11044.581     12035.551     15590.469              410.864              1401.833*             4956.752*
+sivols_m02                   688.350       572.292       424.046      1032.431             -116.058              -264.304               344.081 
+sivols_m09                 11736.711     10134.689      7248.338     13464.267            -1602.022*            -4488.372*             1727.557*
+siextentn_m03                 16.865        16.621        16.346        17.213               -0.244                -0.518*                0.348 
+siextentn_m09                  6.373         6.570         7.190         7.078                0.197                 0.817*                0.705*
+siextents_m02                  1.104         0.861         0.653         1.563               -0.243                -0.451                 0.459 
+siextents_m09                 18.124        16.973        14.116        19.235               -1.152*               -4.008*                1.110*

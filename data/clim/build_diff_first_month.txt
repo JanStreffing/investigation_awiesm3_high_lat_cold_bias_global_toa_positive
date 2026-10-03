@@ -1,0 +1,12 @@
+noise: same new build 1800 s, 1 vs 4 threads
+   Kv    0-100m rel  0.131 log10(b/a) -0.0071   100-1000m rel  0.165 log10(b/a) -0.0012   1000-7000m rel  0.043 log10(b/a) +0.0002
+   temp  0-100m mean|d|  0.07337 mean d  -0.00079   100-1000m mean|d|  0.01149 mean d  +0.00044   1000-7000m mean|d|  0.00084 mean d  -0.00002
+   salt  0-100m mean|d|  0.01941 mean d  +0.00049   100-1000m mean|d|  0.00179 mean d  +0.00004   1000-7000m mean|d|  0.00010 mean d  +0.00001
+build at 1800 s: old perfF vs new nolockB1
+   Kv    0-100m rel  0.133 log10(b/a) +0.0167   100-1000m rel  0.167 log10(b/a) +0.0036   1000-7000m rel  0.046 log10(b/a) -0.0013
+   temp  0-100m mean|d|  0.07246 mean d  -0.00332   100-1000m mean|d|  0.01115 mean d  -0.00018   1000-7000m mean|d|  0.00082 mean d  +0.00003
+   salt  0-100m mean|d|  0.01820 mean d  -0.00007   100-1000m mean|d|  0.00173 mean d  -0.00023   1000-7000m mean|d|  0.00010 mean d  -0.00001
+build at 1200 s: old ob1200 vs new ts1200
+   Kv    0-100m rel  0.130 log10(b/a) +0.0157   100-1000m rel  0.189 log10(b/a) -0.0002   1000-7000m rel  0.036 log10(b/a) +0.0003
+   temp  0-100m mean|d|  0.06802 mean d  -0.00101   100-1000m mean|d|  0.01076 mean d  -0.00010   1000-7000m mean|d|  0.00072 mean d  +0.00002
+   salt  0-100m mean|d|  0.01687 mean d  +0.00032   100-1000m mean|d|  0.00173 mean d  -0.00017   1000-7000m mean|d|  0.00009 mean d  -0.00000

@@ -1,0 +1,40 @@
+noise 1v4 thr      Kv  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.02  F: 0.91
+     50- 200 m  J: 1.03  F: 1.06
+    200- 600 m  J: 1.20  F: 2.78
+    600-1500 m  J: 1.00  F:27.86
+noise 1v4 thr      Av  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.01  F: 0.91
+     50- 200 m  J: 1.00  F: 1.04
+    200- 600 m  J: 1.10  F: 2.44
+    600-1500 m  J: 1.00  F:20.60
+perfE/perfF old    Kv  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.00  F: 1.06
+     50- 200 m  J: 1.00  F: 1.03
+    200- 600 m  J: 0.74  F: 1.10
+    600-1500 m  J: 0.95  F: 1.19
+perfE/perfF old    Av  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.01  F: 1.06
+     50- 200 m  J: 1.03  F: 1.00
+    200- 600 m  J: 0.92  F: 1.06
+    600-1500 m  J: 0.93  F: 1.15
+ob1200/ob1800 old  Kv  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.02  F: 1.12  M: 2.09  A: 1.07  M: 0.73  J: 0.83  J: 0.95  A: 1.16  S: 0.66  O: 0.66  N: 0.81  D: 1.02
+     50- 200 m  J: 1.03  F: 1.24  M: 4.55  A: 8.00  M: 3.02  J: 0.96  J: 0.50  A: 1.08  S: 0.67  O: 1.85  N: 0.07  D: 0.32
+    200- 600 m  J: 1.11  F: 1.50  M:10.36  A:51.59  M: 1.56  J: 0.98  J: 1.03  A: 1.07  S: 1.05  O: 0.95  N: 0.92  D: 0.95
+    600-1500 m  J: 0.53  F: 0.42  M: 6.42  A: 6.11  M: 1.20  J: 0.92  J: 1.29  A: 1.37  S: 1.01  O: 1.17  N: 1.04  D: 1.37
+ob1200/ob1800 old  Av  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.01  F: 1.10  M: 1.86  A: 1.07  M: 0.71  J: 0.83  J: 0.96  A: 1.17  S: 0.67  O: 0.67  N: 0.82  D: 1.01
+     50- 200 m  J: 1.03  F: 1.30  M: 3.69  A: 6.44  M: 4.95  J: 1.14  J: 0.52  A: 1.07  S: 0.67  O: 2.09  N: 0.09  D: 0.34
+    200- 600 m  J: 1.39  F: 1.63  M: 8.66  A:36.60  M: 1.49  J: 1.03  J: 1.03  A: 1.08  S: 1.06  O: 0.95  N: 0.94  D: 0.96
+    600-1500 m  J: 0.57  F: 0.46  M: 4.18  A: 3.89  M: 1.09  J: 0.88  J: 1.04  A: 1.04  S: 0.87  O: 1.05  N: 0.99  D: 1.19
+ts1200/ihf0 new    Kv  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.00  F: 0.91  M: 0.97  A: 0.71  M: 0.58  J: 0.55  J: 0.86  A: 1.26  S: 1.05  O: 0.64  N: 0.86  D: 1.19
+     50- 200 m  J: 1.00  F: 0.89  M: 0.58  A: 0.12  M: 1.09  J: 1.21  J: 1.72  A: 1.18  S: 0.53  O: 0.53  N: 0.08  D: 0.38
+    200- 600 m  J: 1.06  F: 1.20  M: 0.53  A: 0.03  M: 0.79  J: 0.92  J: 1.05  A: 0.99  S: 0.88  O: 0.91  N: 0.80  D: 0.96
+    600-1500 m  J: 0.57  F: 0.43  M: 1.07  A: 0.25  M: 0.39  J: 0.34  J: 0.32  A: 0.29  S: 0.15  O: 0.15  N: 0.17  D: 0.20
+ts1200/ihf0 new    Av  ratio 1800/1200 (noise: 4thr/1thr) of Labrador-interior mean, by month
+      0-  50 m  J: 1.00  F: 0.93  M: 0.99  A: 0.74  M: 0.60  J: 0.53  J: 0.87  A: 1.21  S: 1.00  O: 0.66  N: 0.85  D: 1.17
+     50- 200 m  J: 1.01  F: 0.87  M: 0.61  A: 0.20  M: 0.96  J: 1.04  J: 1.62  A: 1.18  S: 0.42  O: 0.71  N: 0.09  D: 0.46
+    200- 600 m  J: 1.08  F: 1.09  M: 0.53  A: 0.06  M: 0.72  J: 0.89  J: 1.00  A: 0.99  S: 0.89  O: 0.90  N: 0.83  D: 0.94
+    600-1500 m  J: 0.60  F: 0.44  M: 0.82  A: 0.29  M: 0.45  J: 0.39  J: 0.39  A: 0.36  S: 0.22  O: 0.22  N: 0.23  D: 0.26

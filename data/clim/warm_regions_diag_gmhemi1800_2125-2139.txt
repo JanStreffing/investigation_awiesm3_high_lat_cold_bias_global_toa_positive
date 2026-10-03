@@ -1,0 +1,17 @@
+gmhemi1800 2125-2139  A. JJA land, model / obs / model-obs (obs: ERA5 T2m 90-14, GPCP 90-14, CERES 00-21)
+box                                        T2m              precip             SW down                 tcc     SSR      LH      SH      EF   swvl1     LAI
+C Asia 40-55N 50-110E        23.2/ 20.3/  +2.9    0.7/  1.3/  -0.6  281.1/261.0/ +20.1   36.6/ 48.5/ -11.9  233.54   28.43   73.99    0.25    0.09    4.93
+Europe 45-60N 0-40E          19.6/ 18.3/  +1.3    2.1/  2.7/  -0.7  251.0/223.1/ +27.8   51.0/ 58.1/  -7.1  219.98   86.37   47.54    0.65    0.21    6.95
+N America 40-55N 115-85W     20.1/ 18.5/  +1.6    2.2/  2.5/  -0.3  261.7/251.0/ +10.8   54.5/ 52.5/  +2.0  226.02   85.29   49.76    0.63    0.23    6.47
+Siberia 55-75N 60-180E       11.4/ 12.5/  -1.1    2.3/  2.0/  +0.4  189.3/197.2/  -7.9   75.6/ 68.3/  +7.3  158.68   52.76   30.76    0.64    0.34    3.74
+
+B. marginal ice zones: model-ERA5 T2m by ice class (threshold 0.15; obs ice = HadISST 2.2 1990-2014)
+case               class                       area %  mod-ERA5  ci mod  ci obs
+SH JJA             both ice (pack)               37.7     +1.77    0.74    0.84
+SH JJA             obs ice, model open            2.4     +1.35    0.10    0.28
+SH JJA             model ice, obs open            1.6     -0.91    0.27    0.07
+SH JJA             both open                     58.3     +0.34    0.01    0.01
+NH DJF             both ice (pack)               43.2     -2.30    0.83    0.89
+NH DJF             obs ice, model open            2.2     +1.10    0.07    0.35
+NH DJF             model ice, obs open            1.5     -2.94    0.27    0.07
+NH DJF             both open                     53.0     -0.98    0.01    0.01

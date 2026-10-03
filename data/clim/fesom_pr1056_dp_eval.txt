@@ -1,0 +1,41 @@
+FESOM PR #1056, double precision, CORE2/JRA55 1958-1967, f28dpflux - f28dpmain
+
+1. RMS difference, against sqrt(2) x sigma of the main run's monthly anomalies (free variability;
+   forced runs share the forced part of it and cannot reach this level)
+   field       month 1     year 1    year 10   sqrt2 sig  yr10/ref
+   sst       1.479e-04  3.348e-03  6.207e-02   6.204e-01      0.10
+   sss       6.448e-05  1.214e-03  2.039e-02   1.771e-01      0.12
+   ssh       1.784e-06  1.063e-04  3.850e-03   3.400e-02      0.11
+   a_ice     7.294e-05  2.592e-04  1.014e-03   4.791e-02      0.02
+   100m      1.824e-04  5.120e-03  1.227e-01   6.340e-01      0.19
+   1000m     8.476e-07  3.842e-04  2.061e-02   6.295e-02      0.33
+   3000m     4.302e-08  4.340e-05  2.113e-03   1.335e-02      0.16
+   temp3d    4.540e-05  1.458e-03  3.027e-02  (volume-weighted, no saturation reference)
+
+2. Global and regional integrals: mean difference 1963-67 and trend of the monthly difference
+   quantity    main 1958-67 drift/dec  diff 63-67  diff trend/dec       2 se  n_eff
+   T_vol                   -2.812e-03  +3.578e-05      +8.029e-05  1.445e-04      3  K
+   T_0-700                 -3.123e-02  +1.732e-04      +3.826e-04  6.522e-04      3  K
+   T_700-2000              +3.108e-03  +2.071e-05      +4.763e-05  3.009e-05     10  K  *
+   T_2000-bot              +3.160e-03  -6.663e-07      -1.409e-07  5.623e-06     10  K
+   S_vol                   -2.686e-05  -1.035e-08      -2.906e-08  3.353e-08     23  psu
+   sst                     -2.674e-01  -2.871e-04      -4.758e-04  1.264e-03     22  K
+   sss                     -5.564e-02  -9.381e-05      -3.696e-04  7.672e-04      8  psu
+   ssh                     +1.137e-11  +1.347e-11      +1.748e-11  4.312e-11    152  m
+   fh                      -3.773e+00  -1.506e-02      -2.564e-02  6.005e-02     20  W/m2
+   iceA_nh                 +2.665e-01  +9.402e-04      +2.491e-03  3.584e-03     13  1e6km2
+   iceA_sh                 -6.149e-01  +4.583e-04      +1.700e-03  2.118e-03     16  1e6km2
+   iceV_nh                 +1.558e+01  +2.351e-03      +5.191e-03  5.789e-03      7  1e3km3
+   iceV_sh                 -5.827e+00  +4.052e-04      +2.608e-03  6.868e-03      5  1e3km3
+   mld_lab                 -1.529e+02  -1.578e+00      -2.045e+00  4.724e+00     20  m
+   mld_wed                 +7.922e+01  +2.537e-02      -8.024e-02  3.979e-01     10  m
+   (* = trend of the difference exceeds 2 standard errors)
+
+3. Heat budget over 10 years (W/m2 over the ocean area)
+   main  dHC/dt = -0.4465   mean fh = +0.1623   dHC/dt - fh = -0.6088   dHC/dt + fh = -0.2842
+   flux  dHC/dt = -0.4408   mean fh = +0.1567   dHC/dt - fh = -0.5975   dHC/dt + fh = -0.2841
+   difference flux - main: dHC/dt +0.00568, fh -0.00562
+   (nominal layer thicknesses; zstar volume changes are ignored, the same in both runs)
+
+4. 1963-67 mean difference fields
+   SST difference map: area-weighted mean -0.0003 K, RMS 0.0079 K
