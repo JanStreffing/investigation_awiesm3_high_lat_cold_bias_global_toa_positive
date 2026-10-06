@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--10--03})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--10--06})}
 
 \begin{document}
 \maketitle
@@ -39,7 +39,19 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--10--03).} The campaign runs on albedo, on a line
+\medskip\noindent\textbf{Where we are (2026--10--06).} AWI-ESM3 v3.5.0 is tagged in every
+component (\S\ref{sec:round48}) and the line has two stable candidates on hemispheric GM:
+\texttt{cvmix\_TKE} alone, with a nearly still deep ocean and a slowly eroding Antarctic summer pack,
+and TKE + IDEMIX, which holds the Antarctic and buries heat at 700--1500\,m (\S\ref{sec:round47}). An
+attempt to return to KPP with a uniform GM of 1000 quieted the abyss and opened the Southern Ocean
+(\S\ref{sec:round50}). The diagnosis that followed is the present basis of the work: the Southern
+Ocean surface cap is too weak in every run, 78\,\% of observed and 31\,\% in the Weddell region,
+because the applied GM coefficient is half the CORE2 value, the westerlies are 16--18\,\% too fast and
+the iceberg freshwater enters too far north (\S\ref{sec:round51}). The plan is \S\ref{sec:round52}.
+The carbon-cycle configuration had been exchanging gases against zero pressure and is fixed
+(\S\ref{sec:round49}).
+
+\medskip\noindent\textbf{As of 2026--10--03.} The campaign runs on albedo, on a line
 that carries a boreal forest: \textbf{PICAL\_crunveg} restarts LPJ-GUESS from the CRUNCEP state
 and keeps 81\,\% of its larch after 19 years, at a cost of about $2\times10^3$\,km$^3$ of NH ice
 (\S\ref{sec:round41}). The Labrador Sea ice-capped regime was traced across 61 runs to Round 36's
@@ -9485,6 +9497,406 @@ group. \texttt{recom\_input\_path} is now set per machine. The third suspicion, 
 (\texttt{surf\_relax\_S} $1.929\times10^{-6}$), was wrong: \texttt{awiesm3.yaml} forces it to 0 for
 every v3.5 variant, and the resolved namelist has 0 without any runscript entry.
 
+\section{Round 47 (2026--10--03$\to$05): TKE alone, snow albedo 0.82, and the IDEMIX control arm}\label{sec:round47}
+
+Round 46 left one question in flight: does \texttt{cvmix\_TKE} without IDEMIX keep the Antarctic ice
+and stop the mid-depth warming on today's configuration? Three runs answer it, each one change from
+its parent, all on hemispheric GM at 1800\,s.
+
+\subsection{PICAL\_crunveg\_gmhemi\_tke, 2140--2159: the mid-depth warming stops, the surface warms}\label{sub:r47tke}
+
+Against its parent gmhemi1800 (last 15 years of each): net TOA $+0.53\to+0.21$\,W\,m$^{-2}$, the
+700--1500\,m trend $+42\to+9$\,mK/decade and 300--700\,m $+43\to0$. The price is at the surface:
+global T2m rises $+0.19\pm0.06$\,K/decade, April Arctic volume falls $-1.5\times10^3$\,km$^3$/decade and
+February Antarctic extent goes 1.81 to 1.34 (\path{data/clim/tke_vs_idemix_branch_score.txt}).
+
+\subsection{PICAL\_crunveg\_tke\_albsn082, 2160--2209: the surface warming stops}\label{sub:r47albsn}
+
+\texttt{albsn} $0.80\to0.82$, the bracket left open in Round 38 (0.83 ran away in the Arctic). Over
+50 years global T2m is flat ($+0.008\pm0.020$\,K/decade), the Arctic is stable (melt-season snow-free
+fraction 3.3--5.0\,\%, against 1.2\,\% in the runaway), and the pre-industrial bias is $+0.55$\,K.
+The overturning is not collapsing: 13.5--14.0\,Sv at 26.5\,N in density space for all five decades,
+18.6--20.1 at 55\,N (\path{data/clim/dmoc_atlantic_index.txt}). What does not hold is the Antarctic
+summer pack: February extent 1.88 in the 2160s, 1.13 in the 2200s, most of it after 2190, with the
+clear-sky absorbed solar south of 60\,S rising alongside.
+
+\subsection{PICAL\_crunveg\_idemix\_albsn082, 2170--2209: IDEMIX is what holds the Antarctic}\label{sub:r47idemix}
+
+A control arm with one change, IDEMIX back on, over the same years.
+
+\begin{center}\small
+\begin{tabular}{lrrl}
+\toprule
+trend 2180--2209, per decade & TKE only & TKE + IDEMIX & \\
+\midrule
+Antarctic extent, February ($10^6$\,km$^2$) & $-0.33\pm0.20$ & $-0.01\pm0.24$ & \\
+Antarctic volume, September ($10^3$\,km$^3$) & $-0.75\pm0.38$ & $-0.10\pm0.39$ & \\
+clear-sky absorbed solar, 60--90\,S (W\,m$^{-2}$) & $+0.67\pm0.53$ & $-0.11\pm0.50$ & \\
+T2m global (K) & $+0.04\pm0.04$ & $-0.03\pm0.05$ & \\
+ocean 700--1500\,m (mK) & $+8\pm1$ & $+29\pm1$ & \\
+ocean 300--700\,m (mK) & $-1\pm2$ & $+16\pm2$ & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+In 2200--2209 the IDEMIX arm is 0.27\,K colder globally (13.69 against 13.97\,$^\circ$C), has
+$0.69\times10^6$\,km$^2$ more February ice in the south and $1.5\times10^3$\,km$^3$ more April ice in
+the north, and 0.4\,Sv less overturning at 26.5\,N. Its net TOA is \emph{not} lower ($+0.36$ against
+$+0.31$; $+0.50$ against $+0.16$ the decade before): it is colder at the surface because it buries
+the heat, not because it is closer to balance (\path{data/clim/idemix_arm_pairs.txt}).
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/reval_critical_path_idemix_1850-2209/Hovmoeller_temp.png}
+\caption{Global-mean ocean temperature against PHC3 along the critical path continued on the IDEMIX
+arm, 1850--2209. The mid-depth warm layer pauses over 2140--2169 (TKE only) and resumes when IDEMIX
+returns at 2170. The TKE-only continuation is \texttt{plots/reval\_critical\_path\_tke\_1850-2209/}.}
+\end{figure}
+
+So the two candidates trade the same heat: TKE alone leaves it at the surface and the Antarctic
+erodes; IDEMIX takes it down and the deep ocean drifts. Three critical-path evaluations now exist
+on albedo (to 2119, to 2139 and to 2209 on either line) and one on levante for the KPP era
+(1850--2059); all are under \path{plots/reval_critical_path_*}.
+
+\section{Round 48 (2026--10--05): AWI-ESM3 v3.5.0, every component on a tag}\label{sec:round48}
+
+The release is pinned to tags only; \texttt{esm\_tools} never points at a branch
+(\texttt{d4aafd571}). One set for the physics-only, carbon-cycle and ice-sheet variants.
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+component & tag & commit \\
+\midrule
+FESOM & \texttt{2.8.1} & \texttt{44e4f9c0} (main, with \#1112 hemispheric GM) \\
+OpenIFS & \texttt{48r1v5} & \texttt{f6d1860d} \\
+LPJ-GUESS & \texttt{4.1.13} & \texttt{179fb0d6} \\
+OASIS3-MCT & \texttt{5.3} & \texttt{898c8b2e} \\
+XIOS & \texttt{2.5.4} & \texttt{9c33506d} \\
+runoff mapper & \texttt{1.4} & \texttt{36c888f7} \\
+PISM, dEBM, ismm (ice-sheet variant) & \texttt{1.2.0-awi.1}, \texttt{1.0-awi.1}, \texttt{4.1.8-awi.1} & forks \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Validation.} A tree built from exactly these commits repeats 2190--2199 of the tuning line
+from the same restart (\textbf{PICAL\_v350val}): every score is inside the noise of the pair except
+NH ice volume ($+1.3$ and $+1.6\times10^3$\,km$^3$, within the parent's decadal range) and
+300--700\,m ($+12$\,mK) (\path{data/clim/v350_validation_pairs.txt}). The carbon-cycle build
+(\textbf{PICAL\_cc\_v350val}) is identical to PICAL\_cc in ocean and ice and writes its 70 BGC files.
+The ice-sheet variant builds on albedo and has not run there. The tuned settings (mixing, GM values,
+\texttt{albsn}, 1800\,s) are still in runscripts, not in \texttt{awiesm3.yaml}, because the ocean
+configuration is not settled (\S\ref{sec:round50}). Details: \path{notes/awiesm3_v3.5.0_component_tags.md}.
+
+\section{Round 49 (2026--10--05$\to$06): Bug XIII, REcoM exchanged gases against a vacuum}\label{sec:round49}
+
+The first carbon-cycle leg with BGC output showed global-mean surface pCO$_2$ falling from 253 to
+151\,$\mu$atm in 24 months, surface DIC from 2006 to 1882\,mmol\,m$^{-3}$ with alkalinity unchanged, and
+a CO$_2$ flux out of the ocean at every node. The giveaway was that \texttt{dpCO2s} equalled
+\texttt{pCO2s}\,$+\,6.7$ in every month: the flux saw an atmospheric pCO$_2$ of $-6.7\,\mu$atm, which is
+$x\mathrm{CO_2}\,(P_\mathrm{atm}-p\mathrm{H_2O})$ at $P_\mathrm{atm}=0$ (recomputed from the model SST:
+$-6.6$, node by node $r=0.996$).
+
+\textbf{Cause.} \texttt{recom\_main.F90} takes one atmosphere under \texttt{\_\_oasis} and FESOM's
+\texttt{press\_air} otherwise. FESOM proper is compiled with \texttt{\_\_oasis}; the REcoM library has
+its own \texttt{CMakeLists.txt} and gets \texttt{\_\_oifs \_\_recom \_\_usetp} only. \texttt{press\_air}
+is filled on the standalone forcing path and stays zero in a coupled run. Every OpenIFS-coupled REcoM
+run since the CO$_2$ coupling went in is affected, including the tagged v3.5.0-cc; the physics is not,
+because nothing feeds back in concentration-driven mode.
+
+\textbf{Fix, in two steps} (one-month tests from the same start, January 2140):
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+& tag 2.8.1 & one atmosphere & OpenIFS pressure \\
+\midrule
+atmospheric pCO$_2$ seen by the flux ($\mu$atm) & $-6.7$ & 277.6 & 276.8 \\
+surface ocean pCO$_2$ ($\mu$atm) & 253.4 & 271.4 & 271.3 \\
+CO$_2$ flux into the ocean (mmol\,C\,m$^{-2}$\,d$^{-1}$) & $-32.2$ & $+1.6$ & $+1.4$ \\
+O$_2$ flux into the ocean (mmol\,m$^{-2}$\,d$^{-1}$) & $-325$ & $-5.7$ & $-7.1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A constant atmosphere is 2\,\% too high over the Southern Ocean all year, so the second step couples
+the real field: OpenIFS sends \texttt{A\_MSLP} to FESOM (\texttt{ECE\_CPL\_MSLP}), FESOM receives
+\texttt{mslp\_oce} into \texttt{press\_air} (\texttt{use\_atm\_mslp}), and REcoM uses it where it is
+positive. The pressure REcoM used, recovered from the output, follows the OpenIFS monthly mean
+(0.979\,atm at 78--60\,S, $r=0.997$ node by node), giving 5.9\,$\mu$atm less atmospheric pCO$_2$
+south of 60\,S. SST and SSS are identical in all three runs.
+
+Status: REcoM \#34 merged; FESOM \#1115 open (the field and the submodule bump); OpenIFS on
+\texttt{awiesm3-develop} and as draft merge request !25 against the consortium's \texttt{ecearth};
+\texttt{esm\_tools} switch \texttt{with\_mslp\_oce\_coupling} written, default on for the moving
+carbon-cycle versions, not committed until FESOM \#1115 is in. The fix needs FESOM 2.8.2 and a v3.5.1
+for the carbon-cycle variant. Existing REcoM states have lost carbon and oxygen and must not be used
+as BGC restarts. Write-up: \path{notes/recom_zero_sea_level_pressure.md}.
+
+\section{Round 50 (2026--10--06): back to KPP with uniform GM 1000, and the Southern Ocean opens}\label{sec:round50}
+
+\subsection{Why it was tried}\label{sub:r50why}
+
+Put on one axis by mixing era, the deep ocean drifted least under FESOM's own KPP, and the difference
+is in the abyss (\path{data/clim/mixing_eras_temp_drift_by_depth.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+trend, mK/decade & 300--700\,m & 700--1500\,m & 1500--2500\,m & below 2500\,m \\
+\midrule
+KPP, 2020--2059 & $+8$ & $+9$ & $+2$ & $+5.9$ \\
+TKE + IDEMIX, 2100--2139 & $+34$ & $+36$ & $+9$ & $+11.8$ \\
+TKE, 2160--2209 & $-4$ & $+8$ & $+2$ & $+12.6$ \\
+TKE + IDEMIX arm, 2170--2209 & $+15$ & $+29$ & $+5$ & $+13.4$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Between 700 and 2500\,m TKE alone is as quiet as KPP was; below 2500\,m every CVMix scheme,
+\texttt{cvmix\_KPP} included, warms about twice as fast. KPP's upper-ocean warming is acceptable
+because it can be countered in the atmosphere. The hemispheric GM was also to go: the 26.5\,N
+overturning stepped down by about 1\,Sv when it came in at 2120, and a uniform 2500 caps the Labrador
+Sea.
+
+\subsection{PICAL\_crunveg\_kpp\_gm1000, 2170--2189}\label{sub:r50arm}
+
+Two changes against the TKE-only line from the 2169 restart: \texttt{mix\_scheme} KPP and
+\texttt{K\_GM\_max} 1000 everywhere.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/kpp_gm1000_collapse.png}
+\caption{KPP with uniform GM 1000 against the TKE-only line and the IDEMIX arm from one restart.
+(a) Antarctic winter extent falls by 40\,\% in eight years and stays there. (b) Net TOA sits at
+$+1.3$\,W\,m$^{-2}$. (c) The area south of 55\,S with a September mixed layer deeper than 1000\,m
+doubles within three years, before the ice responds: the convection leads.}
+\end{figure}
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+2180--2189 & TKE only & TKE + IDEMIX & KPP + GM 1000 \\
+\midrule
+net TOA (W\,m$^{-2}$) & $+0.33$ & $+0.47$ & $+1.33$ \\
+T2m 60--90\,S ($^\circ$C) & $-16.8$ & $-17.2$ & $-14.4$ \\
+Antarctic extent, September / February ($10^6$\,km$^2$) & 19.0 / 1.77 & 19.8 / 1.67 & 11.4 / 0.21 \\
+AMOC 26.5\,N (Sv) & 13.3 & 12.4 & 14.3 \\
+Labrador March mixed layer (m) & 1750 & 1690 & 1820 \\
+trend 300--700\,m (mK/decade) & 0 & $+5$ & $+96$ \\
+trend 700--1500\,m & $+5$ & $+35$ & $+34$ \\
+trend below 2500\,m & $+13.0$ & $+14.8$ & $+5.2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two of the aims are met: the abyss falls to the KPP-era $+5$\,mK/decade, and the North Atlantic
+convects without the hemispheric setting, with 1\,Sv more overturning. The Southern Ocean fails. The
+absorbed solar is 1.3\,W\,m$^{-2}$ above the TKE-only line, so the imbalance is now held up by lost
+ice. The second leg was not run (\path{data/clim/kpp_gm1000_2180-2189.txt}).
+
+\section{Round 51 (2026--10--06): the Southern Ocean cap, what holds it and what it lacks}\label{sec:round51}
+
+\subsection{Why the column destabilised}\label{sub:r51why}
+
+In the region that convects in the arm and not in the TKE-only line ($5.9\times10^6$\,km$^2$ of open
+ocean south of 55\,S), winter water is cold and fresh over warm and salty: temperature destabilises
+and only salt holds the column. The margin is 0.25\,kg\,m$^{-3}$.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/so_cap_mechanism.png}
+\caption{(a) September density step between 0--50\,m and 200--300\,m in the newly convecting region,
+split into its salt and temperature parts. In the arm the salt part collapses from 0.42 to 0.10 in
+seven years. (b) The same step at the end of every run with 3D output: it orders by the effective GM
+south of 55\,S, and no run reaches the PHC3 value.}
+\end{figure}
+
+The salt comes from below, not from the surface (the arm receives slightly \emph{more} surface
+freshwater): the upper 150\,m gains 0.03--0.04 per year while 200--500\,m freshens and cools by
+0.57\,K. Two measured mechanisms (\path{data/clim/so_destabilisation.txt},
+\path{data/clim/so_residual_upwelling.txt}):
+
+\begin{itemize}\itemsep2pt
+\item \textbf{GM.} The westerlies drive $+50$ to $+56$\,m\,yr$^{-1}$ of upwelling at 200\,m. The
+eddy-induced velocity opposes $-28$ with the southern GM 2500 and $-15$ with GM 1000, so net upwelling
+rises from 23--26 to 34--42\,m\,yr$^{-1}$. A budget of that extra upwelling across the salinity
+contrast gives $+0.02$ to $+0.04$ per year for the top 150\,m, the observed rate.
+\item \textbf{KPP.} The March mixed layer is 21--26\,m against 38--46\,m with TKE and $K_v$ at 30\,m
+is 10--90 times lower, so the summer meltwater stays in half the depth. The 50--150\,m layer is
+already 0.07 saltier and 0.5\,K warmer in the first winter. (2170 is also the arm's atmosphere
+spin-up year, so the size of this term is less certain.)
+\end{itemize}
+
+\subsection{``2500'' is 980: the coefficient the model applies}\label{sub:r51keff}
+
+\texttt{K\_GM\_max} is the value for a 100\,km cell; \texttt{scaling\_resolution} reduces it with
+cell size. CORE3 is about 28\,km in both the Southern Ocean and the Labrador Sea, where the Rossby
+radius is 5--9\,km and nothing is resolved (\path{data/clim/gm_k_rossby.txt}).
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+effective surface $K$ (m$^2$\,s$^{-1}$) & AWI-CM3 v3.3, CORE2 & CORE3, \texttt{K\_GM\_max} 2500 & CORE3, 1000 \\
+\midrule
+Southern Ocean 40--55\,S & 2560 & 1660 & $\approx660$ \\
+Southern Ocean 55--65\,S & 1960 & 980 & $\approx390$ \\
+Antarctic margin, south of 65\,S & 1170 & 870 & $\approx350$ \\
+Labrador Sea & 100 & 980 & $\approx390$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The production line runs half the Southern Ocean GM of the released CORE2 model, and the arm ran a
+fifth. In effective terms the hemispheric setting is 980 in the south against 390 in the Labrador
+Sea.
+
+\subsection{The cap against observations}\label{sub:r51phc}
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+September, TKE-only line 2200--2209 & PHC3 & model & \\
+\midrule
+density step, newly convecting region (kg\,m$^{-3}$) & 0.32 & 0.25 & 78\,\% \\
+density step, Weddell region (convecting in every run) & 0.24 & 0.075 & 31\,\% \\
+surface salinity 0--50\,m & 34.04 & 34.20 & $+0.16$ \\
+winter water 50--150\,m: salinity / temperature ($^\circ$C) & 34.24 / $-1.12$ & 34.45 / $+0.15$ & $+0.21$ / $+1.3$\,K \\
+deep water 200--500\,m: salinity / temperature ($^\circ$C) & 34.62 / 0.97 & 34.72 / 1.45 & $+0.10$ / $+0.5$\,K \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The cold, fresh winter-water layer is largely missing: warm deep water sits directly under the
+surface layer. March surface salinity matches (33.89 against 33.88); by September it has risen twice
+as much as observed. The Weddell region, at a third of the observed cap, overturns every winter in
+every run, which is the Weddell warm patch of the T2m maps ($+3.6$\,K in the annual mean against
+ERA5, $+7$\,K in autumn; $+2.9$ and $+5$ with IDEMIX). Winter observations under the ice are sparse,
+so the second decimal is not to be trusted (\path{data/clim/so_cap_vs_phc.txt}).
+
+Across the thirteen runs with 3D output the cap gains about 0.05\,kg\,m$^{-3}$ per 400\,m$^2$\,s$^{-1}$
+of effective coefficient, so GM alone would need about 1600--1800 at 55--65\,S, near the CORE2 value.
+The deep water was already 1.34\,$^\circ$C in 2101: a standing bias, with $+0.1$\,K added in the IDEMIX
+years. The smallest deep-water drift of any run is the TKE-only line, $-0.004$\,K/decade over 50
+years; a \emph{cooling} of 200--500\,m marks the runs that convect
+(\path{data/clim/so_cap_drift_by_run.txt}).
+
+\subsection{Two more contributors: the wind and where the icebergs melt}\label{sub:r51wind}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.55\textwidth]{plots/so_westerlies_u10.png}
+\caption{Zonal-mean 10\,m zonal wind over the ocean. The jet is at the observed latitude (52\,S) and
+18\,\% too fast; over 50--65\,S (shaded) the mean is 6.15 against 5.29\,m\,s$^{-1}$, $+35$\,\% in
+$u^2$, in every season. ERA5 is present day; the pre-industrial jet was weaker.}
+\end{figure}
+
+With ERA5-like winds the 50\,m\,yr$^{-1}$ of upwelling would be about 37: the wind excess is as large
+as the whole GM difference that broke the cap in the arm. (Round 45 found the winds over the pack
+close to NCEP-2; that was wind speed south of the ice edge, this is the zonal wind of the open-ocean
+jet.)
+
+\textbf{Levers for the wind} (source survey, 2026--10--06; nothing run yet). Relative-wind stress is
+already on: FESOM surface currents reach OpenIFS (\texttt{LNEMOLIMCUR}, \texttt{LECURR}) and enter the
+momentum boundary condition, so that explanation is closed. The wave model does not run in its source
+default: \texttt{wam\_namelist} has \texttt{LLGCBZ0} and \texttt{LLNORMAGAM} off where ECWAM's default
+has both on, which selects a different constant set (background Charnock 0.0065 against 0.0055,
+\texttt{TAUWSHELTER} 0.25 against 0). That is the only sea-drag lever reachable from a namelist and
+its sign at Southern Ocean wind speeds is not known from the source. \texttt{RSBLB} (2.0 against a
+default of 5.0, adopted in the 11-series) acts on momentum too and was never scored for wind.
+Orographic and non-orographic drag are poorly targeted. Two caveats on the diagnosis itself: the
+$u^2$ proxy assumes the model and ERA5 share a drag coefficient, so the stress has to be compared
+directly; and no atmosphere-only run has been scored, so whether the excess is the atmosphere's or
+comes from the coupled state is open. If the jet is too strong aloft by the same fraction, surface
+roughness would only mask it.
+
+The land-ice freshwater is not too small but misplaced. OpenIFS removes all snow above 10\,m water
+equivalent as ``calving'': 2475\,Gt\,yr$^{-1}$ from Antarctica, which closes against the surface mass
+balance on land south of 60\,S to 1\,\%. The runoff mapper has a single Antarctic basin and delivers
+all of it, at a uniform 530\,mm\,yr$^{-1}$, into three patches of together $4.7\times10^6$\,km$^2$: the
+north-west Weddell Sea, the Scotia Sea at 50--60\,S and a strip in the Ross Sea. Two thirds therefore
+enter north of 60\,S, and the Indian and Pacific sectors receive nothing. The ice-shelf cavities melt
+another 1378\,Gt\,yr$^{-1}$ (2200--2209; \texttt{fw} at cavity nodes, area at the top wet level) on
+top, so the land-ice total exceeds the accumulation. Under \texttt{linfs} the global balance absorbs
+the excess as a uniform open-ocean correction, so this is an error of placement, not a salt drift
+(\path{data/clim/so_westerlies_and_freshwater.txt}).
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+Gt\,yr$^{-1}$ & basal melt & calving delivered & calving by origin & origin $-$ melt \\
+\midrule
+Weddell 60\,W--20\,E & 335 & 2212 & 310 & $-25$ \\
+Indian 20--90\,E & 133 & 0 & 407 & $+274$ \\
+Pacific 90--160\,E & 167 & 0 & 599 & $+432$ \\
+Ross 160\,E--130\,W & 166 & 213 & 241 & $+75$ \\
+Amundsen--Bellingshausen & 577 & 55 & 900 & $+323$ \\
+total & 1378 & 2480 & 2457 & $+1079$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+``By origin'' is the OpenIFS surface mass balance on land per sector, an estimate: the model itself
+carries no sector information.
+
+\subsection{What does not help}\label{sub:r51not}
+
+\begin{itemize}\itemsep2pt
+\item \textbf{A GEOMETRIC eddy-energy closure.} Its energy growth rate, computable offline from the
+density field, is 1.4--1.6 times the dissipation rate in the Labrador and Nordic Seas and 0.6--0.9 in
+the Southern Ocean; the ranking does not depend on its two parameters. At switch-on it would add
+restratification in the north and remove GM in the south (\path{data/clim/geometric_growth_rate.txt}).
+A first-tendency diagnostic, not a simulation of the scheme.
+\item \textbf{Scalings already run.} Rossby-radius scaling gives low $K$ at high latitude in both
+hemispheres (cap 0.19); Ferreira scaling 0.16.
+\item \textbf{Dynamic backscatter} (\texttt{opt\_visc} 8). Stable for two months at 1800\,s, no change
+in the resolved flow, and a sub-grid energy between $-0.44$ and $+2.4$\,m$^2$\,s$^{-2}$ with default
+parameters. CORE3 has a mean cell-size to Rossby-radius ratio of 3.7. Dropped.
+\item \textbf{\texttt{use\_momix}.} A second wind-mixing term south of 50\,S only, inherited from a
+regional Weddell model; no physical reason for the latitude limit. A diagnostic at most.
+\item \textbf{Counter-tuning the imbalance in the atmosphere.} In every comparison on this line a
+colder surface goes with a \emph{larger} imbalance, at 1.0--1.3\,W\,m$^{-2}$\,K$^{-1}$; over 20--50
+years the ocean uptake does not fall when the surface cools. The atmosphere sets the surface
+temperature and is a slow lever on the deep drift.
+\end{itemize}
+
+\section{Round 52 (2026--10--06): the working hypothesis and the plan}\label{sec:round52}
+
+\textbf{Working hypothesis.} The Southern Ocean surface cap is too weak in every run of the line
+(78\,\% of observed in the open ocean, 31\,\% in the Weddell region), and three measured errors push
+the same way: (i) too little eddy compensation, because the cell-size scaling halves the GM
+coefficient on a mesh that resolves no eddies there; (ii) westerlies 16--18\,\% too fast; (iii)
+iceberg freshwater delivered mostly north of 60\,S. The deep water under the cap is 0.5\,K too warm,
+a standing bias that IDEMIX made worse. The hemispheric GM does nothing for the south: it keeps the
+effective 980 the line always had there, and lowers the north to 390 so the Labrador Sea convects.
+In the north it is very likely compensating for something else (the GEOMETRIC measure says the
+Labrador Sea should get \emph{more} eddy restratification, not less).
+
+\textbf{Target.} A September density step of about 0.3\,kg\,m$^{-3}$ in the open Southern Ocean and
+0.24 in the Weddell region, with the 50--150\,m layer near $-1\,^\circ$C. This can be read after five
+years of a test, long before the sea ice answers.
+
+\textbf{Plan}, each from the 2169 restart on the TKE-only line unless stated:
+\begin{enumerate}\itemsep2pt
+\item \textbf{More effective GM in the south.} First with the existing hemispheric option (southern
+\texttt{K\_GM\_max} 4000, about 1570 at 55--65\,S). Then a coefficient read from a map (about 50
+lines in \texttt{oce\_fer\_gm.F90}, off by default), so the Southern Ocean can be raised without
+doubling the subtropics and the latitude step goes away. The map is static and is prescription, not
+physics; the rule behind it has to be physical and written down.
+\item \textbf{The westerlies.} Before any lever: compare the actual stress, score the jet aloft, and
+score an AMIP run. Then, if it is a surface-drag problem, a one-year AMIP screen of the ECWAM
+switches.
+\item \textbf{Icebergs.} Deliver (mapper calving $-$ cavity basal melt) as icebergs and switch the
+patch calving off, so that accumulation = basal melt + icebergs and the freshwater lands where
+icebergs melt: $2475-1378\approx1100$\,Gt\,yr$^{-1}$. No Fortran is needed for a first version: the
+runoff mapper 1.4 can drop the Antarctic basin (\texttt{IgnoreCalvingBasins: 66}, already an
+\texttt{esm\_tools} switch), and FESOM's iceberg module is seeded from files. To build: a generator
+for the seed files and the per-leg bookkeeping that today exists only in the ice-sheet coupling. A
+cavity-and-iceberg piControl without an ice-sheet model exists on a colleague's HR branch; its seed
+files should be asked for first. The fully online version (a reservoir in FESOM) is a second step.
+\item \textbf{Mixing.} KPP is kept as a candidate for its quiet abyss ($+5$ against
+$+13$\,mK/decade below 2500\,m), to be tested on a Southern Ocean that holds; not before. Why every
+CVMix scheme warms the abyss twice as fast is open.
+\item \textbf{The release} is not at risk: TKE-only and TKE + IDEMIX on the hemispheric GM are both
+stable, evaluated configurations (\S\ref{sec:round47}).
+\end{enumerate}
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -9712,10 +10124,40 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--10--03)}\label{sec:state}
+\section{State of the campaign (2026--10--06)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--10--06 (rounds 47--52, \S\ref{sec:round47}--\S\ref{sec:round52}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Dropping IDEMIX is what erodes the Antarctic summer pack}: February extent
+$-0.33\pm0.20\times10^6$\,km$^2$/decade under TKE alone, $-0.01\pm0.24$ with IDEMIX back on, same
+years, same restart. IDEMIX costs $+29$ against $+8$\,mK/decade at 700--1500\,m and does not lower the
+imbalance (\S\ref{sub:r47idemix}).
+\item \textbf{\texttt{albsn} 0.82 stops the surface warming of the TKE-only line} without an Arctic
+runaway; pre-industrial bias $+0.55$\,K (\S\ref{sub:r47albsn}).
+\item \textbf{The overturning is not collapsing}: one step at 2120, then 13.5--14.0\,Sv at 26.5\,N
+for 90 years; the subpolar collapse belongs to uniform GM 2500 at 1800\,s (\S\ref{sub:r47albsn}).
+\item \textbf{v3.5.0 is tagged in every component} and the tagged build reproduces the tuning line
+within noise (\S\ref{sec:round48}).
+\item \textbf{REcoM coupled to OpenIFS exchanged gases against zero pressure} (Bug XIII); fixed, and
+sea-level pressure is now coupled (\S\ref{sec:round49}).
+\item \textbf{KPP quiets the abyss} ($+5$ against $+13$\,mK/decade below 2500\,m) \textbf{and uniform
+GM 1000 opens the Southern Ocean}: 40\,\% of the winter ice gone in eight years, net TOA
+$+1.3$\,W\,m$^{-2}$ (\S\ref{sub:r50arm}).
+\item \textbf{The Southern Ocean column is held by salt alone, with a margin of
+0.25\,kg\,m$^{-3}$}, and the eddy-induced velocity compensates half of 50\,m\,yr$^{-1}$ of wind-driven
+upwelling with GM 2500 and a quarter with GM 1000 (\S\ref{sub:r51why}).
+\item \textbf{\texttt{K\_GM\_max} 2500 is an effective 980 at 55--65\,S}, half the CORE2 value
+(\S\ref{sub:r51keff}).
+\item \textbf{The cap is too weak in every run}: 78\,\% of PHC3 in the open ocean, 31\,\% in the
+Weddell region, with the winter-water layer 1.3\,K too warm; it orders by effective GM across thirteen
+runs (\S\ref{sub:r51phc}).
+\item \textbf{The Southern Ocean westerlies are 16--18\,\% too fast} at the right latitude, and
+\textbf{two thirds of the Antarctic calving freshwater enters north of 60\,S}
+(\S\ref{sub:r51wind}).
+\end{itemize}
+
 \textbf{Added 2026--10--03 (round 46, \S\ref{sec:round46}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{IDEMIX is what warms the mid-depth ocean}: $+31$\,mK/decade at 700--1500\,m against
@@ -10199,6 +10641,24 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Added 2026--10--06 (rounds 47--52).} The plan is \S\ref{sec:round52}.
+\begin{enumerate}\itemsep2pt
+\item \textbf{How much of the missing cap is GM, how much wind, how much freshwater placement?} Three
+measured contributors, none yet tested in a run.
+\item \textbf{Is the wind excess the atmosphere's own?} No AMIP run has been scored for 10\,m wind,
+the stress itself has not been compared, and the jet aloft has not been looked at.
+\item \textbf{Why does the Labrador Sea need an effective 390 when a physical measure asks for
+more?} Probably a too fresh or too ice-prone Labrador Sea; not tested.
+\item \textbf{Why does every CVMix scheme warm the abyss twice as fast as FESOM's KPP?}
+\texttt{cvmix\_KPP} does it too, so it is the code path, not TKE.
+\item \textbf{TKE-only or TKE + IDEMIX for the release}, if the Southern Ocean work does not land
+first.
+\item \textbf{Carbon cycle}: FESOM \#1115 and OpenIFS !25 open; a control with the corrected gas
+exchange has not started.
+\item \textbf{Housekeeping}: the tuned settings are not in \texttt{awiesm3.yaml}; the ice-sheet
+variant has not run on albedo; the AMIP inputs are not in the albedo pool.
+\end{enumerate}
+
 \textbf{Added 2026--10--03 (round 46).}
 \begin{enumerate}\itemsep2pt
 \item \textbf{Does TKE without IDEMIX keep the Antarctic ice and stop the mid-depth warming on
@@ -10919,6 +11379,32 @@ ${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
       Amundsen Sea Low's relative depth and the wind divergence are close to or weaker than NCEP-2;
       the ice over-responds (wind factor 2.4 against 1.4\,\%) and turns $+63^\circ$ in the Ross
       against $+24^\circ$ observed (\S\ref{sub:r45drift}).
+
+\item \dead{Going back to KPP with a uniform GM of 1000 gives a quiet deep ocean, a healthy
+      overturning and a surface the atmosphere can correct; expected net TOA $+0.6$ to $+0.8$.} \\
+      The abyss and the overturning behaved as expected, but the Southern Ocean convected over twice
+      the area, 40\,\% of the winter ice went in eight years and net TOA was $+1.3$
+      (\S\ref{sub:r50arm}).
+
+\item \dead{The hemispheric GM is where the AMOC started to collapse.} \\ The 2120 branch changed GM
+      and the time step together. 26.5\,N stepped down about 1.5\,Sv and has been flat for 90 years;
+      the subpolar collapse is in ob1800, which kept the uniform GM (\S\ref{sub:r47albsn}).
+
+\item \dead{A GEOMETRIC eddy-energy closure would produce the north--south GM contrast by itself.} \\
+      Its energy growth rate is 1.4--1.6 times the dissipation in the Labrador and Nordic Seas and
+      0.6--0.9 in the Southern Ocean, independent of its parameters (\S\ref{sub:r51not}).
+
+\item \dead{A $-0.7$\,W\,m$^{-2}$ retune of the atmosphere removes about a third of the imbalance, and
+      $-2$ all of it.} \\ That assumed a CMIP-typical ocean uptake efficiency. On this line a colder
+      surface goes with a larger imbalance in every comparison (\S\ref{sub:r51not}).
+
+\item \dead{The convection in the KPP arm taps heat left in the upper Southern Ocean by 320 years of
+      GM 2500.} \\ Not needed: deep-water temperature and salinity were identical in both runs at the
+      branch, and the salt budget closes with the change in upwelling (\S\ref{sub:r51why}).
+
+\item \dead{Dynamic backscatter dramatically lowers the stable time step.} \\ Not at two months: it
+      ran at 1800\,s. Not tested longer, and the sub-grid energy was not well behaved
+      (\S\ref{sub:r51not}).
 
 \end{itemize}
 

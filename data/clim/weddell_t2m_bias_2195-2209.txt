@@ -1,0 +1,20 @@
+T2m minus ERA5 (1990-2014) in the Weddell Sea, -60..0E, -78..-60N; model 2195-2209.
+box = area mean; core = mean over the warmest 25 % of the box area; peak = warmest grid point (with its position);
+>3K, >5K = share of the box area warmer than that.
+
+TKE only  (PICAL_crunveg_tke_albsn082)
+season    box   core   peak             at    >3K    >5K
+ANN      2.13   3.62   7.08  -64.2N  -59.9E    29%     0%
+DJF      1.15   2.08   6.33  -64.2N  -59.9E     1%     0%
+MAM      3.87   7.06   9.01  -75.5N  -32.9E    66%    37%
+JJA      2.59   4.49   8.87  -75.5N  -59.0E    66%     2%
+SON      0.93   2.17   5.95  -64.2N  -59.9E     0%     0%
+
+TKE + IDEMIX  (PICAL_crunveg_idemix_albsn082)
+season    box   core   peak             at    >3K    >5K
+ANN      1.38   2.90   6.63  -64.2N  -59.9E     9%     0%
+DJF      0.39   1.52   5.82  -64.2N  -59.9E     0%     0%
+MAM      2.12   5.13   8.29  -64.2N  -59.9E    39%    12%
+JJA      1.61   3.70   7.87  -75.5N  -59.0E    24%     1%
+SON      1.42   2.55   5.93  -64.2N  -59.9E     2%     0%
+

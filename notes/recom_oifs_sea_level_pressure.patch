@@ -1,0 +1,102 @@
+From 941d65bcb4a99c8e27be8ecfd0caa44866453396 Mon Sep 17 00:00:00 2001
+From: Jan Streffing <jan.streffing@awi.de>
+Date: Mon, 5 Oct 2026 20:28:07 +0200
+Subject: [PATCH 1/2] Use one atmosphere of sea-level pressure in the
+ OpenIFS-coupled build too
+
+In a run coupled to OpenIFS the air-sea gas exchange saw a sea-level
+pressure of zero. The constant-pressure fallback in recom_main.F90 is
+guarded by __oasis, but this library is compiled with __oifs only
+(CMakeLists.txt), so the other branch was taken: press_air, which FESOM
+fills from the standalone forcing and leaves at zero when it is coupled.
+
+With Patm = 0 the atmospheric pCO2 is xCO2 * (0 - pH2O), about -7 uatm for
+284 ppm, and the O2 saturation is zero. The ocean then outgasses CO2 and O2
+without limit: in AWI-ESM3 (concentration-driven, 284.25 ppm) the global
+mean surface pCO2 fell from 253 to 151 uatm in 24 months and surface DIC
+from 2006 to 1882 mmol/m3, with alkalinity unchanged. The field dpCO2s was
+pCO2s + 6.7 uatm in every month, and recomputing xCO2 * (0 - pH2O) from the
+model SST reproduces it node by node (r = 0.996).
+
+Test __oifs next to __oasis, and import pa2atm into recom_main: that branch
+had never been compiled in this configuration, and with __oasis defined it
+would not have compiled either. The wind branch below is left as it is:
+OpenIFS sends 10 m winds, so the wind-from-stress fallback is not wanted
+there.
+---
+ recom_main.F90 | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/recom_main.F90 b/recom_main.F90
+index c00cc7e..7749191 100755
+--- a/recom_main.F90
++++ b/recom_main.F90
+@@ -127,7 +127,7 @@ contains
+ 
+         use recom_config, only: benthos_num, bgc_num, ciso, diags, dust_sol, enable_3zoo2det, &
+                 enable_coccos, ialk, parfrac, recom_debug, restore_alkalinity, secondsperday, &
+-                use_atbox, tiny
++                use_atbox, tiny, pa2atm
+ 
+         use recom_locvar, only: LocBenthos, locatmco2, fedust, hplus, loc_ice_conc, ndust, uloc, &
+                 ph, kw660, k0, pco2surf, dpco2surf, dflux, co2flux_seaicemask, o2flux_seaicemask, &
+@@ -325,9 +325,15 @@ contains
+             Loc_ice_conc = ice_data_values(n)
+ 
+             !!---- Mean sea level pressure
+-#if defined(__oasis)
++#if defined(__oasis) || defined(__oifs)
+             !!      MB: This is an ad-hoc patch for AWIESM-2.1 and needs to be improved:
+             !!      We should consider air pressure provided by ECHAM.
++            !!      The OpenIFS-coupled build needs it as well, and has to be named here:
++            !!      this library is compiled with __oifs but without __oasis
++            !!      (CMakeLists.txt), and FESOM fills press_air only from the standalone
++            !!      forcing, so in a coupled run it stays zero. A zero pressure makes the
++            !!      atmospheric pCO2 slightly negative and the O2 saturation zero, and
++            !!      the ocean outgasses both without limit.
+             Loc_slp = pa2atm
+ #else
+             Loc_slp = press_air(n)
+-- 
+2.35.2
+
+
+From 64aaa47e57a41f4f9fbb4bbbca7ebda6561e39f5 Mon Sep 17 00:00:00 2001
+From: Jan Streffing <jan.streffing@awi.de>
+Date: Mon, 5 Oct 2026 21:22:39 +0200
+Subject: [PATCH 2/2] Use the sea-level pressure of OpenIFS where FESOM
+ receives it
+
+FESOM can now receive mean sea-level pressure from OpenIFS into press_air
+(use_atm_mslp, coupling field mslp_oce). Take it for the gas exchange when
+it is there, and keep one atmosphere when it is not: press_air is zero
+before the first coupling step and whenever the field is not coupled.
+
+A constant atmosphere is 0.2 % too high in the global ocean mean, but 1 %
+too high over 40-60S and 2.8 % over 60-78S (984.5 hPa annual mean in
+AWI-ESM3). South of 60S that is 8 uatm too much atmospheric pCO2 at 284 ppm
+and 2.8 % too much O2 saturation, all year.
+---
+ recom_main.F90 | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/recom_main.F90 b/recom_main.F90
+index 7749191..8878bda 100755
+--- a/recom_main.F90
++++ b/recom_main.F90
+@@ -335,6 +335,12 @@ contains
+             !!      atmospheric pCO2 slightly negative and the O2 saturation zero, and
+             !!      the ocean outgasses both without limit.
+             Loc_slp = pa2atm
++#if defined(__oifs)
++            !!      With use_atm_mslp FESOM receives the mean sea-level pressure of
++            !!      OpenIFS in press_air. It is zero until the first coupling step and
++            !!      whenever the field is not coupled; keep one atmosphere then.
++            if (press_air(n) > 0.0_wp) Loc_slp = press_air(n)
++#endif
+ #else
+             Loc_slp = press_air(n)
+ #endif
+-- 
+2.35.2
+

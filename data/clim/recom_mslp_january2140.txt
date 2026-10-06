@@ -1,0 +1,42 @@
+January 2140, same start. Pressure REcoM used for gas exchange, recovered from pCO2s, dpCO2s, xCO2atm and SST.
+zero = PICAL_cc_v350val (tag 2.8.1), constant = PICAL_cc_slpfix (one atmosphere), coupled = PICAL_cc_mslp (OpenIFS msl).
+
+Recovered pressure [atm], area-weighted, with the OpenIFS January-mean msl of the coupled run:
+band           zero  constant  coupled      msl  coupled-msl
+global      -0.0001    0.9999   0.9972   0.9973      -0.0001
+78-60S      -0.0005    0.9995   0.9788   0.9793      -0.0004
+60-40S      -0.0000    1.0000   0.9908   0.9908      +0.0000
+40S-40N     -0.0000    1.0000   1.0005   1.0005      -0.0000
+40-60N      -0.0002    0.9998   0.9948   0.9951      -0.0003
+60-90N      -0.0012    0.9988   0.9962   0.9974      -0.0012
+node-by-node, coupled run: correlation of recovered pressure with msl 0.9973; rms difference 0.0009 atm; range of recovered pressure 0.9686 to 1.0170
+
+Atmospheric pCO2 seen by the flux [uatm] and what follows from it:
+band       quantity                          zero  constant   coupled  cpl-const
+global     atmospheric pCO2 [uatm]         -6.679   277.575   276.805     -0.771
+global     surface ocean pCO2 [uatm]      253.378   271.426   271.318     -0.109
+global     CO2 flux in [mmolC/m2/d]       -32.236     1.595     1.439     -0.157
+global     O2 flux in [mmolO/m2/d]       -325.082    -5.719    -7.107     -1.388
+78-60S     atmospheric pCO2 [uatm]         -2.136   282.118   276.248     -5.871
+78-60S     surface ocean pCO2 [uatm]      252.400   282.326   281.584     -0.742
+78-60S     CO2 flux in [mmolC/m2/d]       -22.689    -0.878    -1.371     -0.493
+78-60S     O2 flux in [mmolO/m2/d]       -203.395   -10.633   -15.147     -4.514
+60-40S     atmospheric pCO2 [uatm]         -3.415   280.839   278.223     -2.617
+60-40S     surface ocean pCO2 [uatm]      247.465   275.750   275.398     -0.351
+60-40S     CO2 flux in [mmolC/m2/d]       -47.483     1.171     0.630     -0.542
+60-40S     O2 flux in [mmolO/m2/d]       -422.586   -30.410   -35.034     -4.624
+40S-40N    atmospheric pCO2 [uatm]         -8.546   275.708   275.843     +0.135
+40S-40N    surface ocean pCO2 [uatm]      256.519   272.302   272.304     +0.003
+40S-40N    CO2 flux in [mmolC/m2/d]       -27.567     1.225     1.247     +0.022
+40S-40N    O2 flux in [mmolO/m2/d]       -277.851    -4.640    -4.323     +0.317
+40-60N     atmospheric pCO2 [uatm]         -2.808   281.447   280.048     -1.399
+40-60N     surface ocean pCO2 [uatm]      229.476   246.576   246.395     -0.182
+40-60N     CO2 flux in [mmolC/m2/d]       -59.964     8.103     7.492     -0.611
+40-60N     O2 flux in [mmolO/m2/d]       -680.572    36.555    31.157     -5.399
+60-90N     atmospheric pCO2 [uatm]         -2.092   282.163   281.431     -0.732
+60-90N     surface ocean pCO2 [uatm]      265.742   270.697   270.638     -0.060
+60-90N     CO2 flux in [mmolC/m2/d]       -17.907     1.093     0.736     -0.357
+60-90N     O2 flux in [mmolO/m2/d]       -275.442    -0.720    -5.954     -5.233
+
+physics, coupled against constant: sst max |diff| 0.000e+00
+physics, coupled against constant: sss max |diff| 0.000e+00

@@ -1,0 +1,14 @@
+How much brighter must the sea ice be, and on WHICH namelist knob?
+PICAL_v350val, melt seasons of 2191-2199
+
+          SWdn  snow-free    pond  d/dalbsnm  d/dalbim  d/dalbsn  d/dalbi  pack Mkm2
+NH       177.8       3.9%   24.5%      0.384     0.021     0.338    0.012       8.57
+SH       214.9       0.0%    1.5%      0.012     0.000     0.973    0.000       3.27
+
+energy requirement (lower bound, no feedback credit):
+         target dV          dE        dF  d(alb) needed
+NH           4.0e3km3    1.23e+21     17.98          0.101
+SH           2.0e3km3    6.13e+20     23.55          0.110
+
+  dF is W/m2 of melt-season shortwave to be reflected instead of absorbed.
+  Feedback amplifies, so the applied change should be BELOW these numbers.

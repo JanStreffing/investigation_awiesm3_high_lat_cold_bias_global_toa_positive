@@ -1,0 +1,134 @@
+PICAL_crunveg_idemix_albsn082 (TKE + IDEMIX) against PICAL_crunveg_tke_albsn082 (TKE only), branch point end of 2169, albsn 0.82 in both.
+Decadal means of each run, diff = IDEMIX minus TKE-only, +- 2 s.e. of the difference; * marks |diff| > 2 s.e.
+
+2180-2189
+quantity                   unit            TKE     IDEMIX      diff  +- 2 s.e.
+net TOA                    W/m2          0.333      0.471    +0.139      0.225 
+net surface                W/m2          0.456      0.606    +0.150      0.172 
+absorbed solar             W/m2        240.505    240.378    -0.127      0.226 
+outgoing longwave          W/m2        240.172    239.907    -0.266      0.219 *
+absorbed solar 60-90S      W/m2         86.170     85.799    -0.371      0.550 
+  clear-sky 60-90S         W/m2        111.591    110.728    -0.863      0.885 
+net surface 60-90S         W/m2        -10.222    -10.640    -0.417      0.629 
+T2m global                 C            13.882     13.729    -0.152      0.094 *
+T2m NH                     C            14.448     14.229    -0.219      0.108 *
+T2m SH                     C            13.315     13.229    -0.086      0.110 
+T2m 60-90N                 C            -8.840     -9.297    -0.457      0.360 *
+T2m 60-90S                 C           -16.828    -17.150    -0.321      0.313 *
+T2m land                   C             8.162      7.872    -0.291      0.121 *
+T2m ocean                  C            16.138     16.040    -0.098      0.092 *
+NH ice volume April        1e3 km3      31.532     32.885    +1.353      0.782 *
+NH ice volume September    1e3 km3      11.892     13.637    +1.745      1.071 *
+SH ice volume September    1e3 km3      13.375     13.493    +0.118      0.846 
+SH ice volume February     1e3 km3       1.176      1.092    -0.084      0.306 
+NH ice extent March        1e6 km2      16.488     16.519    +0.030      0.226 
+NH ice extent September    1e6 km2       6.711      7.133    +0.422      0.354 *
+SH ice extent September    1e6 km2      19.022     19.798    +0.776      0.433 *
+SH ice extent February     1e6 km2       1.767      1.670    -0.096      0.412 
+AMOC 26.5N                 Sv           13.293     12.434    -0.859      0.426 *
+AMOC max 20-60N            Sv           16.880     15.086    -1.793      0.721 *
+T 0-100 m                  C            16.302     16.320    +0.018      0.059 
+T 100-300 m                C            12.023     12.047    +0.024      0.017 *
+T 300-700 m                C             8.575      8.606    +0.031      0.004 *
+T 700-1500 m               C             4.618      4.648    +0.030      0.007 *
+T 1500-2500 m              C             2.489      2.499    +0.009      0.001 *
+T 2500-6000 m              C             1.436      1.437    +0.002      0.004 
+
+2190-2199
+quantity                   unit            TKE     IDEMIX      diff  +- 2 s.e.
+net TOA                    W/m2          0.155      0.496    +0.341      0.302 *
+net surface                W/m2          0.299      0.634    +0.335      0.273 *
+absorbed solar             W/m2        240.539    240.365    -0.174      0.204 
+outgoing longwave          W/m2        240.384    239.868    -0.515      0.286 *
+absorbed solar 60-90S      W/m2         86.393     84.953    -1.440      0.917 *
+  clear-sky 60-90S         W/m2        112.181    109.543    -2.637      1.254 *
+net surface 60-90S         W/m2        -10.481    -10.550    -0.068      0.697 
+T2m global                 C            13.965     13.684    -0.281      0.129 *
+T2m NH                     C            14.536     14.212    -0.324      0.138 *
+T2m SH                     C            13.394     13.156    -0.238      0.136 *
+T2m 60-90N                 C            -8.812     -9.615    -0.803      0.280 *
+T2m 60-90S                 C           -16.723    -17.181    -0.458      0.289 *
+T2m land                   C             8.215      7.908    -0.306      0.170 *
+T2m ocean                  C            16.233     15.962    -0.271      0.121 *
+NH ice volume April        1e3 km3      31.372     34.353    +2.981      0.849 *
+NH ice volume September    1e3 km3      12.207     15.546    +3.339      0.738 *
+SH ice volume September    1e3 km3      12.506     13.972    +1.466      0.925 *
+SH ice volume February     1e3 km3       1.168      1.509    +0.341      0.394 
+NH ice extent March        1e6 km2      16.515     16.687    +0.172      0.366 
+NH ice extent September    1e6 km2       6.744      7.399    +0.654      0.289 *
+SH ice extent September    1e6 km2      18.810     19.954    +1.144      0.507 *
+SH ice extent February     1e6 km2       1.536      2.120    +0.584      0.556 *
+AMOC 26.5N                 Sv           13.244     12.481    -0.763      0.793 
+AMOC max 20-60N            Sv           16.028     14.937    -1.091      0.607 *
+T 0-100 m                  C            16.346     16.280    -0.066      0.075 
+T 100-300 m                C            12.005     12.075    +0.069      0.038 *
+T 300-700 m                C             8.567      8.616    +0.049      0.006 *
+T 700-1500 m               C             4.624      4.679    +0.055      0.007 *
+T 1500-2500 m              C             2.490      2.503    +0.013      0.001 *
+T 2500-6000 m              C             1.448      1.451    +0.003      0.004 
+
+2200-2209
+quantity                   unit            TKE     IDEMIX      diff  +- 2 s.e.
+net TOA                    W/m2          0.308      0.364    +0.056      0.249 
+net surface                W/m2          0.411      0.488    +0.077      0.202 
+absorbed solar             W/m2        240.646    240.210    -0.437      0.233 *
+outgoing longwave          W/m2        240.338    239.846    -0.493      0.132 *
+absorbed solar 60-90S      W/m2         86.822     85.220    -1.602      0.671 *
+  clear-sky 60-90S         W/m2        112.894    110.082    -2.812      1.057 *
+net surface 60-90S         W/m2        -10.399    -10.200    +0.199      0.952 
+T2m global                 C            13.965     13.692    -0.273      0.082 *
+T2m NH                     C            14.486     14.184    -0.302      0.116 *
+T2m SH                     C            13.444     13.200    -0.243      0.072 *
+T2m 60-90N                 C            -9.122     -9.656    -0.534      0.458 *
+T2m 60-90S                 C           -16.564    -17.040    -0.476      0.260 *
+T2m land                   C             8.258      7.924    -0.334      0.116 *
+T2m ocean                  C            16.216     15.968    -0.248      0.085 *
+NH ice volume April        1e3 km3      33.122     34.614    +1.492      1.054 *
+NH ice volume September    1e3 km3      14.501     15.384    +0.883      0.931 
+SH ice volume September    1e3 km3      11.946     13.560    +1.615      0.723 *
+SH ice volume February     1e3 km3       0.810      1.302    +0.492      0.369 *
+NH ice extent March        1e6 km2      16.336     16.878    +0.542      0.514 *
+NH ice extent September    1e6 km2       6.865      7.411    +0.546      0.520 *
+SH ice extent September    1e6 km2      18.497     19.676    +1.179      0.434 *
+SH ice extent February     1e6 km2       1.128      1.816    +0.688      0.410 *
+AMOC 26.5N                 Sv           13.236     12.811    -0.425      0.363 *
+AMOC max 20-60N            Sv           16.186     15.762    -0.424      0.743 
+T 0-100 m                  C            16.345     16.292    -0.053      0.044 *
+T 100-300 m                C            11.994     12.077    +0.084      0.019 *
+T 300-700 m                C             8.573      8.638    +0.064      0.006 *
+T 700-1500 m               C             4.634      4.705    +0.071      0.006 *
+T 1500-2500 m              C             2.493      2.506    +0.013      0.001 *
+T 2500-6000 m              C             1.461      1.463    +0.003      0.003 
+
+Linear trends over 2180-2209, per decade, +- 2 s.e.; * marks a trend larger than its 2 s.e.
+quantity                   unit                      TKE               IDEMIX
+net TOA                    W/m2        +0.009 +- 0.124      -0.001 +- 0.125  
+net surface                W/m2        -0.006 +- 0.100      -0.009 +- 0.111  
+absorbed solar             W/m2        +0.096 +- 0.112      -0.060 +- 0.092  
+outgoing longwave          W/m2        +0.087 +- 0.099      -0.059 +- 0.106  
+absorbed solar 60-90S      W/m2        +0.354 +- 0.362      -0.131 +- 0.338  
+  clear-sky 60-90S         W/m2        +0.666 +- 0.526 *    -0.111 +- 0.504  
+net surface 60-90S         W/m2        -0.157 +- 0.347      +0.234 +- 0.365  
+T2m global                 C           +0.041 +- 0.043      -0.031 +- 0.052  
+T2m NH                     C           +0.025 +- 0.050      -0.030 +- 0.062  
+T2m SH                     C           +0.058 +- 0.049 *    -0.031 +- 0.053  
+T2m 60-90N                 C           -0.165 +- 0.159 *    -0.158 +- 0.189  
+T2m 60-90S                 C           +0.080 +- 0.152      +0.047 +- 0.120  
+T2m land                   C           +0.036 +- 0.062      +0.014 +- 0.067  
+T2m ocean                  C           +0.044 +- 0.043 *    -0.048 +- 0.050  
+NH ice volume April        1e3 km3     +0.703 +- 0.443 *    +0.723 +- 0.487 *
+NH ice volume September    1e3 km3     +1.135 +- 0.543 *    +0.722 +- 0.461 *
+SH ice volume September    1e3 km3     -0.749 +- 0.380 *    -0.099 +- 0.385  
+SH ice volume February     1e3 km3     -0.191 +- 0.171 *    +0.050 +- 0.177  
+NH ice extent March        1e6 km2     -0.101 +- 0.137      +0.171 +- 0.213  
+NH ice extent September    1e6 km2     +0.081 +- 0.178      +0.104 +- 0.196  
+SH ice extent September    1e6 km2     -0.273 +- 0.208 *    -0.109 +- 0.215  
+SH ice extent February     1e6 km2     -0.327 +- 0.199 *    -0.006 +- 0.240  
+AMOC 26.5N                 Sv          -0.185 +- 0.287      +0.150 +- 0.224  
+AMOC max 20-60N            Sv          -0.328 +- 0.353      +0.199 +- 0.333  
+T 0-100 m                  C           +0.024 +- 0.028      -0.024 +- 0.027  
+T 100-300 m                C           -0.014 +- 0.008 *    +0.017 +- 0.015 *
+T 300-700 m                C           -0.001 +- 0.002      +0.016 +- 0.002 *
+T 700-1500 m               C           +0.008 +- 0.001 *    +0.029 +- 0.001 *
+T 1500-2500 m              C           +0.002 +- 0.000 *    +0.004 +- 0.000 *
+T 2500-6000 m              C           +0.013 +- 0.000 *    +0.013 +- 0.000 *

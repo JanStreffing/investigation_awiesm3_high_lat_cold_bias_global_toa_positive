@@ -1,0 +1,19 @@
+region NEW, annual mean vertical velocity [m/yr], positive up: resolved w, GM bolus w, sum
+ 100 m arm 2170: w   44.2  bolus  -12.5  residual   31.7
+ 100 m arm 2171: w   50.6  bolus  -15.0  residual   35.6
+ 100 m arm 2173: w   56.4  bolus  -15.0  residual   41.3
+ 100 m tke 2170: w   55.3  bolus  -21.1  residual   34.2
+ 100 m tke 2171: w   51.9  bolus  -22.2  residual   29.8
+ 100 m tke 2173: w   55.1  bolus  -21.0  residual   34.1
+ 200 m arm 2170: w   43.8  bolus  -14.9  residual   28.9
+ 200 m arm 2171: w   50.3  bolus  -16.1  residual   34.2
+ 200 m arm 2173: w   56.4  bolus  -14.3  residual   42.1
+ 200 m tke 2170: w   54.5  bolus  -26.8  residual   27.6
+ 200 m tke 2171: w   51.3  bolus  -28.1  residual   23.2
+ 200 m tke 2173: w   54.4  bolus  -28.2  residual   26.1
+ 300 m arm 2170: w   43.5  bolus  -15.3  residual   28.2
+ 300 m arm 2171: w   50.1  bolus  -15.0  residual   35.0
+ 300 m arm 2173: w   56.3  bolus  -11.1  residual   45.2
+ 300 m tke 2170: w   54.1  bolus  -28.0  residual   26.1
+ 300 m tke 2171: w   51.0  bolus  -28.3  residual   22.7
+ 300 m tke 2173: w   54.0  bolus  -28.8  residual   25.3

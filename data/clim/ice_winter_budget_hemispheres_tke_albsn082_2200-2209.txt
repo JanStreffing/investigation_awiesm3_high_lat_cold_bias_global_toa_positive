@@ -1,0 +1,25 @@
+PICAL_crunveg_tke_albsn082 2200-2209, local winter.  Area tendencies frac/month, volume tendencies cm/month (grid mean),
+dT = sst - Tf [K], Qoi = dT*gamma_t*cc [W/m2], MLD2 [m], ice speed [cm/s], floe thickness [m]
+
+SH JJA
+  class             Mkm2     A   dA thm   dA dyn  dV thm  dV dyn      dT     Qoi    MLD    spd      h
+  ice >= 0.15      19.04  0.71   +0.225   -0.096   +12.6    -2.6   0.282   140.1   -506   20.6   0.75
+  pack >= 0.8       9.47  0.92   +0.169   -0.120   +13.9    -4.1   0.070    35.0   -761   17.8   0.87
+  0.15-0.8          9.57  0.51   +0.282   -0.072   +11.3    -1.0   0.491   244.1   -253   23.4   0.62
+  loose vs HadISST  5.28  0.62   +0.455   -0.257   +20.7    -9.3   0.258   128.3   -381   20.5   0.66
+
+NH DJF
+  class             Mkm2     A   dA thm   dA dyn  dV thm  dV dyn      dT     Qoi    MLD    spd      h
+  ice >= 0.15      17.14  0.86   +0.226   -0.155   +27.7    -5.1   0.258   128.3    -39   12.1   1.86
+  pack >= 0.8      12.70  0.96   +0.137   -0.105   +28.8    -5.2   0.025    12.2    -28    8.8   2.17
+  0.15-0.8          4.45  0.57   +0.497   -0.309   +24.5    -4.9   0.925   459.9    -69   21.3   0.92
+
+SH 50-90S monthly area budget [M km2/month]: thermodynamic, dynamic, and model/HadISST area
+  month  3  thm  +0.93  dyn  -0.23  area model  0.67  HadISST  1.44
+  month  4  thm  +3.11  dyn  -0.90  area model  2.71  HadISST  5.09
+  month  5  thm  +4.87  dyn  -1.46  area model  6.56  HadISST  9.95
+  month  6  thm  +4.99  dyn  -1.97  area model 10.44  HadISST 13.31
+  month  7  thm  +4.20  dyn  -2.24  area model 13.36  HadISST 16.36
+  month  8  thm  +3.24  dyn  -2.21  area model 15.08  HadISST 18.06
+  month  9  thm  +1.79  dyn  -2.09  area model 15.90  HadISST 19.28
+  month 10  thm  +0.09  dyn  -1.63  area model 14.68  HadISST 18.73

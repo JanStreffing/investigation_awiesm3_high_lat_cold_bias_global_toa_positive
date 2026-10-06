@@ -1,0 +1,16 @@
+Southern Ocean surface cap: PICAL_crunveg_tke_albsn082 (2200-2209) against PHC3 monthly climatology.
+step = sigma0(200-300 m) - sigma0(0-50 m) [kg/m3], with its salinity and temperature parts.
+
+Region NEW (5.93e6 km2)
+                   S 0-50 S 50-150 S 200-500  T 0-50 T 50-150 T 200-500    step    salt    temp
+March     model    33.889   34.469    34.721    1.29     0.63      1.44   0.640   0.655  -0.018
+March     PHC3     33.880   34.239    34.638    0.59    -0.30      1.05   0.549   0.569  -0.022
+September model    34.198   34.454    34.721   -1.62     0.15      1.45   0.250   0.411  -0.177
+September PHC3     34.035   34.243    34.619   -1.54    -1.12      0.97   0.320   0.429  -0.121
+
+Region OLD (3.33e6 km2)
+                   S 0-50 S 50-150 S 200-500  T 0-50 T 50-150 T 200-500    step    salt    temp
+March     model    34.005   34.568    34.670    0.26    -0.14      0.77   0.501   0.529  -0.031
+March     PHC3     34.034   34.417    34.665   -0.29    -0.67      0.69   0.439   0.489  -0.055
+September model    34.432   34.559    34.670   -1.75    -0.42      0.76   0.075   0.188  -0.125
+September PHC3     34.221   34.410    34.662   -1.71    -1.10      0.58   0.238   0.336  -0.110

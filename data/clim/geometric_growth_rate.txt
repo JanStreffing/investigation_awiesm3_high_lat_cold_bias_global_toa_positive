@@ -1,0 +1,16 @@
+GEOMETRIC growth rate of eddy energy, sigma = alpha int(M4/N2)dz / int(M2/N)dz, from PICAL_crunveg_tke_albsn082 2205.
+alpha = 0.06, slope capped at 0.01, N2 floored at 1e-08, integrals below 100 m, elements deeper than 1000 m, no cavities.
+sigma in 1/(100 days): > 1 means eddy energy grows against a 100-day dissipation, < 1 means it decays.
+frac>1 = area fraction with sigma > lambda; slope = depth-mean isopycnal slope below 100 m (1e-4).
+
+region                        annual sigma  frac>1     March sigma  frac>1 September sigma  frac>1  slope ann
+Labrador 56-62N 60-50W                1.55    0.73            1.61    0.64            1.54    0.76      34.69
+SPNA 45-66N                           1.38    0.54            1.56    0.61            1.42    0.56      21.32
+Nordic Seas 66-80N                    1.64    0.71            1.79    0.69            1.49    0.65      25.31
+N Pacific 45-66N                      0.60    0.11            0.69    0.16            0.64    0.12       5.91
+tropics 10S-10N                       0.26    0.01            0.34    0.02            0.31    0.02       2.98
+subtropics 20-40                      0.43    0.04            0.46    0.06            0.48    0.06       5.58
+SO 40-55S                             0.86    0.29            0.88    0.30            0.93    0.33      14.63
+SO 55-65S                             0.80    0.23            0.82    0.23            0.84    0.26      23.81
+Antarctic <65S                        0.63    0.14            0.64    0.14            0.67    0.16      24.35
+Weddell 55-75S 60W-20E                0.73    0.21            0.74    0.20            0.75    0.22      26.93

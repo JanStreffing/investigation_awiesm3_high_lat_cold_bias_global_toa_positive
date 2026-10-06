@@ -1,0 +1,30 @@
+REcoM surface diagnostics, PICAL_cc_v350val, area-weighted annual means (NaN nodes excluded)
+xCO2atm  2140  mean       284.25  min       284.3 max       284.3  NaN nodes  10047  units mole fraction
+xCO2atm  2141  mean       284.25  min       284.3 max       284.3  NaN nodes  10047  units mole fraction
+pCO2s    2140  mean       202.53  min       83.36 max        1108  NaN nodes  10047  units uatm
+pCO2s    2141  mean       162.29  min        41.3 max       837.1  NaN nodes  10047  units uatm
+dpCO2s   2140  mean       209.26  min       86.28 max        1110  NaN nodes  10047  units uatm
+dpCO2s   2141  mean          169  min       43.25 max         839  NaN nodes  10047  units uatm
+CO2f     2140  mean      -26.161  min      -73.81 max   -0.007167  NaN nodes  10047  units mmolC/m2/d
+CO2f     2141  mean      -20.631  min      -63.24 max   -0.005806  NaN nodes  10047  units mmolC/m2/d
+O2f      2140  mean      -91.069  min      -599.4 max     -0.1602  NaN nodes  10047  units mmolO/m2/d
+O2f      2141  mean      -25.762  min      -405.8 max    -0.07516  NaN nodes  10047  units mmolO/m2/d
+NPPn     2140  mean       14.536  min    1.71e-06 max       56.34  NaN nodes  10047  units mmolC/m2/d
+NPPn     2141  mean       14.889  min   1.894e-06 max       110.7  NaN nodes  10047  units mmolC/m2/d
+NPPd     2140  mean       14.323  min   3.109e-06 max       136.4  NaN nodes  10047  units mmolC/m2/d
+NPPd     2141  mean         11.1  min   2.284e-05 max       127.1  NaN nodes  10047  units mmolC/m2/d
+pH       2140  mean       8.2899  min       7.728 max       8.636  NaN nodes  10047  units total_scale
+pH       2141  mean       8.3676  min       7.644 max       8.873  NaN nodes  10047  units total_scale
+sst      2140  mean       18.265  min      -1.862 max       31.64  NaN nodes  10047  units degC
+sst      2141  mean       18.252  min      -1.864 max       31.07  NaN nodes  10047  units degC
+a_ice    2140  mean      0.58128  min   3.851e-08 max       0.998  NaN nodes 129385  units 1
+a_ice    2141  mean      0.59877  min   6.445e-08 max      0.9977  NaN nodes 130165  units 1
+
+sst    2141 PICAL_cc  mean   18.25188  NaN nodes 10047  zero nodes 0
+sst    2141 v350val   mean   18.25188  NaN nodes 10047  zero nodes 0
+a_ice  2141 PICAL_cc  mean    0.59877  NaN nodes 130165  zero nodes 0
+a_ice  2141 v350val   mean    0.59877  NaN nodes 130165  zero nodes 0
+sss    2141 PICAL_cc  mean   34.34457  NaN nodes 10047  zero nodes 0
+sss    2141 v350val   mean   34.34457  NaN nodes 10047  zero nodes 0
+m_ice  2141 PICAL_cc  mean    0.85483  NaN nodes 132946  zero nodes 0
+m_ice  2141 v350val   mean    0.85483  NaN nodes 132946  zero nodes 0

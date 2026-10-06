@@ -1,0 +1,21 @@
+1. Zonal-mean 10 m zonal wind over the ocean, model 2195-2209 against ERA5 (1989-11 to 2014-11).
+season  jet max model    ERA5  jet lat model    ERA5  mean 50-65S model    ERA5  ratio u^2
+ANN              8.09    6.87          -52.0   -52.0               6.15    5.29       1.35
+DJF              8.11    7.01          -52.0   -52.0               5.88    5.01       1.38
+MAM              8.47    7.11          -53.0   -52.1               6.70    5.60       1.43
+JJA              7.19    6.17          -51.1   -52.0               5.30    4.87       1.18
+SON              8.68    7.18          -52.0   -52.1               6.71    5.68       1.39
+
+2. Freshwater from land ice south of 60S, 2200-2209 mean [Gt/yr].
+   runoff field (calving of the Antarctic snow accumulation + rivers):      896
+   melt in the ice-shelf cavities (fw at cavity nodes):                      0
+   runoff by latitude band [Gt/yr] and share of the total south of 50S:
+      -90 to  -75:        3    0.1 %
+      -75 to  -70:      106    4.0 %
+      -70 to  -65:      382   14.6 %
+      -65 to  -60:      406   15.5 %
+      -60 to  -55:      830   31.7 %
+      -55 to  -50:      893   34.1 %
+   runoff into region NEW (5.93e6 km2):    213 Gt/yr = 36 mm/yr of freshwater
+   runoff into region OLD (3.33e6 km2):    105 Gt/yr = 32 mm/yr of freshwater
+   nodes receiving runoff south of 50S: 34644 of 75455; area 21.61e6 km2; 90 % of it enters over 5893 nodes

@@ -1,0 +1,16 @@
+January 2140 means, same start. broken = PICAL_cc_v350val (tag 2.8.1), fixed = PICAL_cc_slpfix (tag 2.8.1 + REcoM fix)
+quantity                               broken      fixed
+atmospheric CO2 [ppm]                 284.255    284.255
+surface ocean pCO2 [uatm]             253.378    271.426
+ocean minus atm pCO2 [uatm]           260.057     -6.149
+CO2 flux into ocean [mmolC/m2/d]      -32.236      1.595
+O2 flux into ocean [mmolO/m2/d]      -325.082     -5.719
+surface DIC [mmol/m3]                2005.541   2019.463
+surface alkalinity [mmol/m3]         2354.966   2354.964
+surface pH                              8.205      8.187
+SST [C]                                18.043     18.043
+implied atmospheric pCO2 [uatm]         -6.68     277.58   (fixed: min 271.2, max 282.3)
+fixed CO2 flux: 59 % of the ocean area takes up CO2, 41 % outgasses; range -38.3 to 49.7
+broken CO2 flux: 0 % uptake, 100 % outgassing
+physics unchanged? SST max |diff| 0.00e+00
+global CO2 flux, fixed: +2.56 PgC/yr equivalent; broken: -51.63

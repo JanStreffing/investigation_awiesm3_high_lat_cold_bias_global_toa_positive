@@ -1,0 +1,30 @@
+PICAL_v350val (v3.5.0 candidate build) against PICAL_crunveg_tke_albsn082 (tuning build), same restart, 2191-2199.
+Means of the 9 years; diff = candidate minus tuning build; +- is 2 standard errors of the difference; * marks |diff| > 2 s.e.
+quantity                       unit         tuning  candidate      diff  +- 2 s.e.
+net TOA                        W/m2          0.151      0.156    +0.005      0.307 
+net surface                    W/m2          0.296      0.315    +0.019      0.261 
+absorbed solar                 W/m2        240.491    240.458    -0.033      0.280 
+outgoing longwave              W/m2        240.340    240.302    -0.037      0.196 
+T2m global                     C            13.947     13.928    -0.019      0.084 
+T2m NH                         C            14.527     14.482    -0.045      0.118 
+T2m SH                         C            13.367     13.374    +0.007      0.074 
+T2m 60-90N                     C            -8.836     -9.030    -0.194      0.302 
+T2m 60-90S                     C           -16.775    -16.778    -0.003      0.300 
+T2m land                       C             8.206      8.197    -0.008      0.146 
+T2m ocean                      C            16.212     16.189    -0.023      0.071 
+NH ice volume April            1e3 km3      31.277     32.544    +1.267      0.703 *
+NH ice volume September        1e3 km3      12.071     13.694    +1.624      1.170 *
+SH ice volume September        1e3 km3      12.361     12.940    +0.580      0.932 
+SH ice volume February         1e3 km3       1.106      1.250    +0.143      0.413 
+NH ice extent March            1e6 km2      16.510     16.436    -0.074      0.313 
+NH ice extent September        1e6 km2       6.705      6.815    +0.110      0.374 
+SH ice extent September        1e6 km2      18.771     19.178    +0.407      0.523 
+SH ice extent February         1e6 km2       1.497      1.861    +0.365      0.612 
+AMOC 26.5N                     Sv           13.019     13.326    +0.307      0.713 
+AMOC max 20-60N                Sv           15.860     16.162    +0.302      0.676 
+T 0-100 m                      C            16.331     16.335    +0.004      0.048 
+T 100-300 m                    C            12.007     12.017    +0.010      0.019 
+T 300-700 m                    C             8.567      8.579    +0.012      0.005 *
+T 700-1500 m                   C             4.625      4.623    -0.002      0.003 
+T 1500-2500 m                  C             2.490      2.490    -0.000      0.001 
+T 2500-6000 m                  C             1.449      1.449    -0.000      0.003 
