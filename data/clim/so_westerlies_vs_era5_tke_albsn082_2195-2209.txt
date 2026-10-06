@@ -1,0 +1,27 @@
+
+ANN PICAL_crunveg_tke_albsn082 2195-2209 against ERA5 1990-2014, zonal mean
+  10 m zonal wind: jet max model 8.04 m/s at -52.0, ERA5 6.84 at -53.0
+    -65..-50: model   6.35  ERA5   5.49  diff +0.86
+    -70..-60: model   1.44  ERA5   0.97  diff +0.47
+    -50..-40: model   6.23  ERA5   5.34  diff +0.89
+    850 hPa: jet max model 13.8 at -52.0, ERA5 nan at -89.5;  50-65S diff +0.90 m/s
+    500 hPa: jet max model 21.3 at -50.2, ERA5 nan at -89.5;  50-65S diff +0.60 m/s
+    200 hPa: jet max model 32.6 at -49.2, ERA5 nan at -89.5;  50-65S diff +2.48 m/s
+
+JJA PICAL_crunveg_tke_albsn082 2195-2209 against ERA5 1990-2014, zonal mean
+  10 m zonal wind: jet max model 7.11 m/s at -51.1, ERA5 6.15 at -53.0
+    -65..-50: model   5.49  ERA5   5.04  diff +0.45
+    -70..-60: model   1.02  ERA5   0.93  diff +0.09
+    -50..-40: model   6.61  ERA5   5.37  diff +1.23
+    850 hPa: jet max model 12.4 at -49.2, ERA5 nan at -89.5;  50-65S diff +0.40 m/s
+    500 hPa: jet max model 18.7 at -44.5, ERA5 nan at -89.5;  50-65S diff +0.01 m/s
+    200 hPa: jet max model 42.3 at -31.4, ERA5 nan at -89.5;  50-65S diff +0.11 m/s
+
+DJF PICAL_crunveg_tke_albsn082 2195-2209 against ERA5 1990-2014, zonal mean
+  10 m zonal wind: jet max model 8.06 m/s at -52.0, ERA5 7.01 at -52.0
+    -65..-50: model   6.11  ERA5   5.27  diff +0.85
+    -70..-60: model   1.10  ERA5   0.51  diff +0.59
+    -50..-40: model   5.52  ERA5   5.25  diff +0.28
+    850 hPa: jet max model 13.9 at -51.1, ERA5 nan at -89.5;  50-65S diff +0.77 m/s
+    500 hPa: jet max model 23.2 at -50.2, ERA5 nan at -89.5;  50-65S diff +0.65 m/s
+    200 hPa: jet max model 35.5 at -49.2, ERA5 nan at -89.5;  50-65S diff +4.17 m/s

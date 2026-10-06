@@ -46,8 +46,8 @@ and TKE + IDEMIX, which holds the Antarctic and buries heat at 700--1500\,m (\S\
 attempt to return to KPP with a uniform GM of 1000 quieted the abyss and opened the Southern Ocean
 (\S\ref{sec:round50}). The diagnosis that followed is the present basis of the work: the Southern
 Ocean surface cap is too weak in every run, 78\,\% of observed and 31\,\% in the Weddell region,
-because the applied GM coefficient is half the CORE2 value, the westerlies are 16--18\,\% too fast and
-the iceberg freshwater enters too far north (\S\ref{sec:round51}). The plan is \S\ref{sec:round52}.
+because the applied GM coefficient is half the CORE2 value, the wind stress is about 10\,\% too strong
+and the iceberg freshwater enters too far north (\S\ref{sec:round51}). The plan is \S\ref{sec:round52}.
 The carbon-cycle configuration had been exchanging gases against zero pressure and is fixed
 (\S\ref{sec:round49}).
 
@@ -9783,12 +9783,20 @@ years; a \emph{cooling} of 200--500\,m marks the runs that convect
 \begin{figure}[H]\centering
 \includegraphics[width=0.55\textwidth]{plots/so_westerlies_u10.png}
 \caption{Zonal-mean 10\,m zonal wind over the ocean. The jet is at the observed latitude (52\,S) and
-18\,\% too fast; over 50--65\,S (shaded) the mean is 6.15 against 5.29\,m\,s$^{-1}$, $+35$\,\% in
-$u^2$, in every season. ERA5 is present day; the pre-industrial jet was weaker.}
+18\,\% too fast; over 50--65\,S (shaded) the mean is 6.15 against 5.29\,m\,s$^{-1}$ in every
+season. The stress is only 10\,\% above ERA5 (see text). ERA5 is present day; the pre-industrial
+jet was weaker.}
 \end{figure}
 
-With ERA5-like winds the 50\,m\,yr$^{-1}$ of upwelling would be about 37: the wind excess is as large
-as the whole GM difference that broke the cap in the arm. (Round 45 found the winds over the pack
+\dead{With ERA5-like winds the 50\,m\,yr$^{-1}$ of upwelling would be about 37: the wind excess is as
+large as the whole GM difference that broke the cap in the arm.} That used $u^2$ as a proxy for the
+stress and was wrong. Compared directly, the eastward stress over 50--65\,S is 0.159\,N\,m$^{-2}$
+against 0.145 in ERA5, $+10$\,\%: the model's bulk drag ($\tau/u_{10}^2$) is 16\,\% lower, so the 10\,m
+wind is faster for nearly the same stress. Aloft the excess shrinks ($+0.9$\,m\,s$^{-1}$ at 850\,hPa,
+$+0.6$ at 500). An atmosphere-only run with observed SST over the ERA5 years shows the same
+(\texttt{amip\_PD1\_v35}: wind $+11$\,\%, stress $+9$\,\%), so the bias is the atmosphere's own and not a
+product of the coupled state. The wind is therefore a minor contributor to the upwelling, a few
+m\,yr$^{-1}$ (\path{data/clim/so_wind_stress_amip_levante.txt}). (Round 45 found the winds over the pack
 close to NCEP-2; that was wind speed south of the ice edge, this is the zonal wind of the open-ocean
 jet.)
 
@@ -9800,11 +9808,9 @@ has both on, which selects a different constant set (background Charnock 0.0065 
 \texttt{TAUWSHELTER} 0.25 against 0). That is the only sea-drag lever reachable from a namelist and
 its sign at Southern Ocean wind speeds is not known from the source. \texttt{RSBLB} (2.0 against a
 default of 5.0, adopted in the 11-series) acts on momentum too and was never scored for wind.
-Orographic and non-orographic drag are poorly targeted. Two caveats on the diagnosis itself: the
-$u^2$ proxy assumes the model and ERA5 share a drag coefficient, so the stress has to be compared
-directly; and no atmosphere-only run has been scored, so whether the excess is the atmosphere's or
-comes from the coupled state is open. If the jet is too strong aloft by the same fraction, surface
-roughness would only mask it.
+Orographic and non-orographic drag are poorly targeted. Since the stress is only 10\,\% high and the
+low drag is what makes the 10\,m wind fast, a roughness lever would mainly correct the wind speed, not
+the ocean forcing; it is no longer a priority for the cap.
 
 The land-ice freshwater is not too small but misplaced. OpenIFS removes all snow above 10\,m water
 equivalent as ``calving'': 2475\,Gt\,yr$^{-1}$ from Antarctica, which closes against the surface mass
@@ -9861,7 +9867,8 @@ temperature and is a slow lever on the deep drift.
 \textbf{Working hypothesis.} The Southern Ocean surface cap is too weak in every run of the line
 (78\,\% of observed in the open ocean, 31\,\% in the Weddell region), and three measured errors push
 the same way: (i) too little eddy compensation, because the cell-size scaling halves the GM
-coefficient on a mesh that resolves no eddies there; (ii) westerlies 16--18\,\% too fast; (iii)
+coefficient on a mesh that resolves no eddies there; (ii) a wind stress about 10\,\% too strong (a
+minor term); (iii)
 iceberg freshwater delivered mostly north of 60\,S. The deep water under the cap is 0.5\,K too warm,
 a standing bias that IDEMIX made worse. The hemispheric GM does nothing for the south: it keeps the
 effective 980 the line always had there, and lowers the north to 390 so the Labrador Sea convects.
@@ -9879,9 +9886,8 @@ years of a test, long before the sea ice answers.
 lines in \texttt{oce\_fer\_gm.F90}, off by default), so the Southern Ocean can be raised without
 doubling the subtropics and the latitude step goes away. The map is static and is prescription, not
 physics; the rule behind it has to be physical and written down.
-\item \textbf{The westerlies.} Before any lever: compare the actual stress, score the jet aloft, and
-score an AMIP run. Then, if it is a surface-drag problem, a one-year AMIP screen of the ECWAM
-switches.
+\item \textbf{The westerlies.} Checked and set aside: the stress is 10\,\% high, in AMIP as in the
+coupled runs. No tuning run planned; the low sea-surface drag is noted as an atmospheric bias.
 \item \textbf{Icebergs.} Deliver (mapper calving $-$ cavity basal melt) as icebergs and switch the
 patch calving off, so that accumulation = basal melt + icebergs and the freshwater lands where
 icebergs melt: $2475-1378\approx1100$\,Gt\,yr$^{-1}$. No Fortran is needed for a first version: the
@@ -10153,8 +10159,9 @@ upwelling with GM 2500 and a quarter with GM 1000 (\S\ref{sub:r51why}).
 \item \textbf{The cap is too weak in every run}: 78\,\% of PHC3 in the open ocean, 31\,\% in the
 Weddell region, with the winter-water layer 1.3\,K too warm; it orders by effective GM across thirteen
 runs (\S\ref{sub:r51phc}).
-\item \textbf{The Southern Ocean westerlies are 16--18\,\% too fast} at the right latitude, and
-\textbf{two thirds of the Antarctic calving freshwater enters north of 60\,S}
+\item \textbf{The Southern Ocean 10\,m westerlies are 16\,\% too fast but the stress only 10\,\% too
+strong}, in AMIP as in the coupled runs, at the right latitude; and \textbf{two thirds of the
+Antarctic calving freshwater enters north of 60\,S}
 (\S\ref{sub:r51wind}).
 \end{itemize}
 
@@ -10643,10 +10650,8 @@ measured rather than inferred, and the two reflection columns are not separable
 \subsection{Open, in priority order}\label{sub:open}
 \textbf{Added 2026--10--06 (rounds 47--52).} The plan is \S\ref{sec:round52}.
 \begin{enumerate}\itemsep2pt
-\item \textbf{How much of the missing cap is GM, how much wind, how much freshwater placement?} Three
-measured contributors, none yet tested in a run.
-\item \textbf{Is the wind excess the atmosphere's own?} No AMIP run has been scored for 10\,m wind,
-the stress itself has not been compared, and the jet aloft has not been looked at.
+\item \textbf{How much of the missing cap is GM and how much freshwater placement?} Two measured
+contributors, neither yet tested in a run; the wind is a minor third.
 \item \textbf{Why does the Labrador Sea need an effective 390 when a physical measure asks for
 more?} Probably a too fresh or too ice-prone Labrador Sea; not tested.
 \item \textbf{Why does every CVMix scheme warm the abyss twice as fast as FESOM's KPP?}
@@ -11401,6 +11406,11 @@ ${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
 \item \dead{The convection in the KPP arm taps heat left in the upper Southern Ocean by 320 years of
       GM 2500.} \\ Not needed: deep-water temperature and salinity were identical in both runs at the
       branch, and the salt budget closes with the change in upwelling (\S\ref{sub:r51why}).
+
+\item \dead{The Southern Ocean wind stress is 35\,\% too strong, as large a contributor to the upwelling
+      as the GM change.} \\ That was $u_{10}^2$. The stress itself is $+10$\,\% against ERA5 (0.159
+      against 0.145\,N\,m$^{-2}$ over 50--65\,S), in AMIP too; the bulk drag is 16\,\% lower
+      (\S\ref{sub:r51wind}).
 
 \item \dead{Dynamic backscatter dramatically lowers the stable time step.} \\ Not at two months: it
       ran at 1800\,s. Not tested longer, and the sub-grid energy was not well behaved

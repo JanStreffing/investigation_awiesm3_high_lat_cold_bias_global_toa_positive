@@ -1,0 +1,12 @@
+Zonal mean over the ocean, annual. ERA5 1990-2014 (stress file divided by 86400).
+                                               u10 max    lat u10 50-65S  tau max    lat tau 50-65S  tau/u10^2 years
+ERA5                                              6.88  -52.0       5.51    0.189  -53.0      0.145       4.78
+AMIP present day, v3.5 (amip_PD1_v35)             7.85  -52.0       6.10    0.209  -52.0      0.158       4.26    25
+   ratio to ERA5                                  1.14              1.11     1.11              1.09       0.89
+AMIP present day, control (amip_PD0_ctl)          7.76  -52.0       6.06    0.204  -53.0      0.156       4.23    25
+   ratio to ERA5                                  1.13              1.10     1.08              1.07       0.88
+AMIP pre-industrial SST (amip_picontrol)          7.59  -51.1       5.71    0.199  -52.0      0.146       4.48    38
+   ratio to ERA5                                  1.10              1.04     1.05              1.01       0.94
+coupled PI, PICAL_ccnice 2085-2099                7.89  -52.0       6.17    0.202  -52.0      0.153       4.03    15
+   ratio to ERA5                                  1.15              1.12     1.07              1.06       0.84
+coupled PI on albedo, PICAL_crunveg_tke_albsn082 2195-2209 (computed on albedo, same method): u10 max 8.10, u10 50-65S 6.37, tau max 0.208, tau 50-65S 0.159, tau/u10^2 3.92; ratio to ERA5 (5.51, 0.145): u10 1.16, tau 1.10
