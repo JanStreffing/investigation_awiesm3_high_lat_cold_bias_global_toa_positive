@@ -1,0 +1,26 @@
+Pack ice (concentration >= 0.8): drift speed and northward drift [cm/s], air-ice and ice-ocean stress magnitude [mN/m2];
+SH south of 55S in JJA, NH north of 70N in JFM. conv area: open ocean south of 55S with September MLD2 > 1000 m [1e6 km2].
+In brackets: standard deviation of the annual values of z0def.
+
+2171-2179
+run           SH speed   SH vnorth   SH tau_ai   SH tau_io    NH speed   NH tau_ai   NH tau_io   conv area
+z0def            19.39        4.88       98.53       89.95        8.58       50.13       33.07        4.10
+                (0.50)      (0.33)      (4.14)      (3.74)      (0.61)      (3.87)      (3.13)      (0.41)
+z0floor          18.62        4.33       91.44       83.37        7.61       47.30       28.94        4.26
+z0form           18.33        4.28       93.22       84.80        7.83       46.09       29.03        3.38
+ctl2             19.03        4.11       91.66       83.29        8.18       44.14       28.81        3.78
+control          18.94        4.51       94.87       86.26        8.82       55.01       35.24        4.02
+cdoi10           15.79        3.46       97.31       88.24        6.42       48.21       30.60        3.85
+icb              19.08        4.63       96.89       87.88        8.77       51.38       34.31        3.94
+
+2180-2189
+run           SH speed   SH vnorth   SH tau_ai   SH tau_io    NH speed   NH tau_ai   NH tau_io   conv area
+z0def            18.93        4.82       93.72       85.12        8.60       47.08       31.21        3.97
+                (0.47)      (0.53)      (5.15)      (4.67)      (0.61)      (6.56)      (4.05)      (0.41)
+z0floor          18.61        4.46       92.91       84.39        8.33       48.42       30.68        4.85
+z0form           18.44        4.65       92.60       83.86        7.92       47.66       29.88        3.88
+ctl2             19.14        5.25       99.37       90.66        8.48       51.86       32.56        4.03
+control          18.88        4.34       94.98       86.22        8.49       50.81       33.62        3.90
+cdoi10           15.34        3.64       93.08       84.44        6.43       52.36       32.16        4.73
+icb              18.97        4.36       93.09       84.46        8.23       52.03       31.90        4.21
+

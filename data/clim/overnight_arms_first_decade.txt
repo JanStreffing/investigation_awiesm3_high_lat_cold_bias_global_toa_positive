@@ -1,0 +1,24 @@
+Arms from the 2169 restart against PICAL_crunveg_tke_albsn082 (control). Ice, fluxes, atmosphere: 2171-2179; cap: 2175-2179 September.
+PHC3 September: NEW step 0.320, S 0-50 34.04, T 50-150 -1.12; OLD (Weddell) step 0.238, S 34.22, T -1.10.
+
+cap, September                      SO55                     NEW                     OLD   years
+                   step   S0-50  T50-150   step   S0-50  T50-150   step   S0-50  T50-150
+control              0.245  33.948  1.17     0.253  34.196  0.16     0.075  34.427 -0.42   5
+icb                  0.225  33.970  1.04     0.245  34.203  0.09     0.083  34.416 -0.31   5
+wamz0                0.258  33.927  1.18     0.272  34.168  0.16     0.089  34.407 -0.42   5
+cdoi10               0.224  33.971  0.99     0.226  34.227 -0.05     0.079  34.420 -0.29   5
+cpres15              0.227  33.967  1.19     0.250  34.199  0.15     0.078  34.423 -0.31   5
+
+sea-ice area 1e6 km2    SH Sep  SH Feb  NH Mar  NH Sep  runoff S of 50S  iceberg melt  [Gt/yr]
+control                  16.65    1.19   15.18    5.57             2557             0
+icb                      16.37    1.34   15.27    5.40              188           417
+wamz0                    16.68    1.45   14.81    5.47             2562             0
+cdoi10                   17.06    2.48   15.13    5.92             2500             0
+cpres15                  16.07    1.02   15.04    5.34             2628             0
+
+atmosphere       u10 50-65S tau 50-65S tau/u2 e3 evap 50-65S u10 20S-20N T2m glob net TOA yrs   (ERA5: u10 5.51, tau 0.145, tau/u2 4.78)
+control                6.23      0.155      4.01        1.28       -3.33    13.93    0.11   9
+icb                    6.01      0.150      4.17        1.29       -3.35    13.91    0.10   9
+wamz0                  5.93      0.144      4.10        1.27       -3.35    13.94    0.06   9
+cdoi10                 6.11      0.153      4.09        1.27       -3.35    13.81    0.10   9
+cpres15                6.31      0.157      3.94        1.28       -3.32    14.01    0.09   9

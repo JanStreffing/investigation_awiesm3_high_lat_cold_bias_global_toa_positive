@@ -1,0 +1,624 @@
+# TEST_ccspin_1y: AWI-ESM3 develop-cc spin-up from PHC3, 2026-10-07. ONE-YEAR smoke test (the iceberg seeding needs legs of at least a year) of the combination.
+#
+# WHY A NEW START. The abyss of the 1850-2209 tuning line warms at +12.5 mK per decade without slowing
+# (deep Atlantic +1.2 K, deep Arctic +2 K against PHC3 after 360 years; data/clim/deep_warming_where.txt
+# in the investigation repo). No spin-up length ends that, so a longer spin-up only starts the piControl
+# further from the observed deep ocean. Decision (Jan, 2026-10-07): restart from PHC3 and spin up only as
+# long as the carbon fluxes need to meet the drift thresholds.
+#
+# STARTS
+#   FESOM        cold: PHC3 temperature and salinity, at rest, no sea ice (lresume false)
+#   REcoM        cold: GLODAP PI DIC/Alk, WOA13 nitrate/silicate, WOA18 oxygen, PISCES iron (ClimateDataPath)
+#   icebergs     none; seeding at 1105 Gt/yr (icb_init_rate_file), then from the measured calving minus
+#                basal melt of each leg
+#   LPJ-GUESS    offline spin-up LPJG-SPINUP_2000Y_TCO95_CORE3_PICALforcing_ndep1850, state of year 3901
+#   OpenIFS      initial conditions
+#   OASIS        input/oasis_ini/cc_mslp_coldstart_dist2688 (dist_2688 weights; start fields for one interval)
+#
+# SETTINGS = the evaluated tuning line PICAL_crunveg_tke_albsn082 plus icebergs:
+#   cvmix_TKE without IDEMIX; K_GM_max 2500 south / 1000 north, 10 degree transition; 1800 s; albsn 0.82;
+#   OpenIFS v3.5 tuning from awiesm3.yaml; sea-ice roughness at the released values.
+#   CO2 pre-industrial and concentration-driven (with_co2_concdriven), REcoM receives the OpenIFS mean
+#   sea-level pressure (with_mslp_oce_coupling).
+# BUILD: /albedo/scratch/user/jstreffi/model_codes_v350/awiesm3-develop-cc (FESOM feat/oifs-mslp-to-recom
+#   01182d69 = main with #1112 + PR #1115, double precision, REcoM 692f804); mapper v1.4 from the
+#   develop-is tree. The production spin-up is to be repeated on v3.5.0-cc once the tags are updated.
+# LAYOUT: 36 nodes (FESOM 2688, OpenIFS 192x4, XIOS 3 per OpenIFS node, LPJ-GUESS 64x2), 4.55 s per model
+#   day in the performance tests, so 5-year legs of about 2.3 h; icebergs may add to that.
+# NEVER RUN TOGETHER BEFORE THIS: icebergs with REcoM, and icebergs on 2688 ranks.
+
+general:
+    user: !ENV ${USER}
+    install_esm_tools_branch: 'feat/awiesm3-v3.4-co2'
+    setup_name: "awiesm3"
+    version: "develop-cc"
+    account: !ENV ${ESM_ACCOUNT}   # best fair-share project, picked per leg in pre_run_commands (export it before the first submit)
+    compute_time: "01:15:00"
+    initial_date: "1850-01-01"
+    final_date: "1851-01-01"
+    base_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/runtime/awiesm3-v3.4/"
+    nday: 0
+    nmonth: 0
+    nyear: 1
+    use_venv: False
+    pre_run_commands: "ulimit -n 262144 || ulimit -n 65535 || true; export ESM_ACCOUNT=$(sshare -U -n -P -u $USER -o FairShare,Account | sort -t'|' -k1,1nr | head -1 | cut -d'|' -f2)"
+    with_co2_concdriven: true
+    with_mslp_oce_coupling: true
+    with_icb: true                # icebergs = calving minus basal melt (couplings/fesom/iceberg_budget.py)
+    ism_freshwater_return: true
+    icb_from_budget: true
+
+computer:
+    taskset: true
+
+awiesm3:
+    postprocessing: false
+    model_dir: "/albedo/scratch/user/jstreffi/model_codes_v350/${general.setup_name}-${general.version}/"
+
+fesom:
+    resolution: "CORE3"
+    # the mesh directory carries levante's partitions (dist_2688 made 2026-10-03); the OASIS weights match them.
+    mesh_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/core3/"
+    time_step: 1800
+    nproc: 2688   # dist_2688 (21 x 128); 36-node layout of the cc performance tests (TEST_ccZ1, TEST_ccP1)
+    omp_num_threads: 1
+    ranks_per_node: 96
+    # FESOM 01182d69 (no source difference to main d9ae3988 = merge of PR #1115), built with the setup's flags:
+    # OIFS_COUPLED FESOM_COUPLED RECOM_COUPLED FESOM_WITH_XIOS, USE_SINGLE_PRECISION=OFF.
+    lresume: false   # COLD: temperature and salinity from PHC3 (phc3.0_winter.nc in climate_data_dir), ocean at rest, no ice
+    bin_sources:
+        bin: "/albedo/scratch/user/jstreffi/model_codes_v350/awiesm3-develop-cc/fesom-bin/mslp_01182d69/fesom.x"
+        lib: "/albedo/scratch/user/jstreffi/model_codes_v350/awiesm3-develop-cc/fesom-bin/mslp_01182d69/libfesom.so"
+    restart_rate: 1
+    restart_unit: 'y'
+    restart_first: 1
+    tar_binary_restarts: false
+    with_cavity: true
+    vis_sync: false
+    cmip7_cmor_output: True
+    # PHC3 (pool, symlinks) + the REcoM 3D initial fields copied from levante, in one directory,
+    # because tracer_init3d reads every file from ClimateDataPath.
+    climate_data_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/hydrography_recom/"
+    recom_input_path: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/recom/"
+    add_namelist_changes:
+        namelist.ice:
+            ice_therm:
+                albsn: 0.82
+        namelist.oce:
+            oce_dyn:
+                mix_scheme: 'cvmix_TKE'   # no IDEMIX, as PICAL_crunveg_tke_albsn082
+                k_gm_max: 2500
+                k_gm_max_nh: 1000.0
+                k_gm_hemi_trans: 10.0
+        namelist.cvmix:
+            param_idemix:
+                idemix_botforc_file: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/forcing/idemix/forcing_idemix_final_bin/FIN_STORMTIDE2_M2_plus_NYCANDER_CnoM2_bin_0.40deg.nc"
+        namelist.tra:
+            tracer_phys:
+                # the REcoM bin_2p3z2d namelist.tra ships 1.929e-6; SSS restoring is excluded by policy
+                surf_relax_s: 0.0
+        namelist.recom:
+            pavariables:
+                recom_restart: "${fesom.recom_restart_flag}"
+        namelist.io:
+            # production output (gmhemi1800 namelist.io, 66 entries, same frequencies) + the 32 REcoM-only
+            # entries of config/bin_2p3z2d/namelist.io; the bin file alone drops 37 production fields
+            # (ice budget tendencies, stresses, ponds, heat/salt tendencies) and switches CMOR diags off.
+            diag_list:
+                ldiag_cmor: true
+                ldiag_trflx: true
+            nml_general:
+                io_listsize: 200
+                vec_autorotate: true
+            nml_list:
+                io_list:
+                    - 'sst       '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'sss       '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'ssh       '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'uice      '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'vice      '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'a_ice     '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'm_snow    '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'ist       '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'MLD3      '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'unod      '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'vnod      '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'm_ice     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'h_ice     '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'h_snow    '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'MLD1      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'MLD2      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'tx_sur    '
+                    - 3
+                    - 'h'
+                    - 4
+                    - 'ty_sur    '
+                    - 3
+                    - 'h'
+                    - 4
+                    - 'temp      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'salt      '
+                    - 1
+                    - 'm'
+                    - 8
+                    - 'N2        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'Kv        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'u         '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'v         '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'w         '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'hnode     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'Av        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'bolus_u   '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'bolus_v   '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'bolus_w   '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'fw        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'fh        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'otracers  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'thdgrarea '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'dyngrarea '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'thdgrice  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'dyngrice  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'thdgrsnw  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'atmice_x  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'atmice_y  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'iceoce_x  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'iceoce_y  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'fw_ice    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'fw_snw    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'virtsalt  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'qcon      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'alb       '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'apnd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'hpnd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'ipnd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'evap      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'prec      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'snow      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'runoff    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'sgm11     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'sgm12     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'sgm22     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'osalttend '
+                    - 1
+                    - 'm'
+                    - 8
+                    - 'opottemprmadvect'
+                    - 1
+                    - 'm'
+                    - 8
+                    - 'opottempdiff'
+                    - 1
+                    - 'm'
+                    - 8
+                    - 'osaltrmadvect'
+                    - 1
+                    - 'm'
+                    - 8
+                    - 'osaltdiff '
+                    - 1
+                    - 'm'
+                    - 8
+                    - 'rsdoabsorb'
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'utemp     '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'vtemp     '
+                    - 1
+                    - 'd'
+                    - 4
+                    - 'icb       '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'dpCO2s    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'pCO2s     '
+                    - 6
+                    - 'h'
+                    - 4
+                    - 'CO2f      '
+                    - 6
+                    - 'h'
+                    - 4
+                    - 'Hp        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'aFe       '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'aN        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'denb      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'benN      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'benC      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'benSi     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'benCalc   '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'Chldegd   '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'Chldegn   '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'NNAd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'NNAn      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'GPPd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'GPPn      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'NPPd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'NPPn      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'PAR       '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'respmeso  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'respmacro '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'respmicro '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'calcdiss  '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'calcif    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'aggn      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'aggd      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'docexn    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'docexd    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'respn     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'respd     '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'xCO2atm   '
+                    - 6
+                    - 'h'
+                    - 4
+                    # added 2026-10-03 for leg 2 on: carbonate system and 3D production, needed by the BGC XIOS files
+                    - 'O2f       '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'NPPn3D    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'NPPd3D    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'CO2_aq    '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'pH        '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'pCO2      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'HCO3      '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'CO3       '
+                    - 1
+                    - 'm'
+                    - 4
+                    - 'OmegaC    '
+                    - 1
+                    - 'm'
+                    - 4
+    icb_init_rate_file: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/icebergs_ini/CORE3/iceberg_rate_init.json"   # 1105 Gt/yr, PICAL_crunveg_icb 2200-2209
+    ini_restart_dir: "/nonexistent/"   # only so that the iceberg seed finds no parent bergs on leg 1
+    choose_general.run_number:
+        1:
+            # REcoM cold start: no bio restart to read or stage
+            recom_restart_flag: false
+            remove_restart_in_files: [par_bio_restart]
+            remove_restart_in_in_work: [par_bio_restart]
+            remove_restart_in_sources: [par_bio_restart]
+        "*":
+            recom_restart_flag: true
+
+lpj_guess:
+    resolution: "TCO95"
+    mip: cmip7
+    scenario: piControl
+    daily_output: true
+    nproc: 64
+    omp_num_threads: 2   # one node instead of four, no slowdown (TEST_ccP)
+    lresume: true
+    ini_parent_exp_id: "LPJG-SPINUP_2000Y_TCO95_CORE3_PICALforcing_ndep1850"
+    ini_parent_date: "3900-12-31"
+    ini_restart_dir: "/albedo/scratch/projects/p_awiesm3_cmip7/jstreffi/runtime/lpjg-spinup/LPJG-SPINUP_2000Y_TCO95_CORE3_PICALforcing_ndep1850/run_19000101-38991231/work/"
+    choose_general.run_number:
+        1:
+            restart_in_sources:
+                state: /${ini_restart_dir}/lpjg_state_3901/*   # 1280 rank files + meta.bin; the reader takes the rank count from meta.bin
+            restart_in_in_work:
+                state: lpjg_state_${initial_date!syear}/*
+    fixed_CO2: 1850
+    fixed_ndep: 1850
+    fixed_LU: 1850
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    time_step: 3600
+    nproc: 192    # 36-node layout
+    omp_num_threads: 4
+    mip: cmip7
+    scenario: piControl
+    lresume: false
+    cmip7_cmor_output: True
+    add_namelist_changes:
+        fort.4:
+            NAMGFL:
+                # INIUA carries present-day CO2 (~403 ppm, paramId 210061); start the diagnostic
+                # tracer at 1850 instead: 4.3144e-4 kg/kg ~ 284 ppm.
+                YGHG_NL(1)%NREQIN: -1
+                YGHG_NL(1)%REFVALI: 4.3144e-4
+                # proportional mass fixer; the additive one (2) divides by ~0 for a uniform field
+                YGHG_NL(1)%BETAMFBC: -1
+
+oasis3mct:
+    use_lucia: false
+    lresume: true
+    time_step: 3600
+    # trailing slash required (oasis.py builds f"{ini_restart_dir}{file}*{date}")
+    ini_parent_exp_id: "coldstart"
+    ini_parent_date: "1849-12-31"
+    ini_restart_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/oasis_ini/cc_mslp_coldstart_dist2688/"   # README.txt there
+
+xios:
+    with_model:
+        - oifs
+        - fesom
+    nproc: 16
+    omp_num_threads: 4
+    interleave_into: [oifs]
+    ranks_per_node: 3
+    compression_level: 3
+
+rnfmap:
+    version: "v1.4"   # IgnoreCalvingBasins: Antarctic calving goes to the icebergs, not to the mapper
+    bin_sources:
+        bin: "/albedo/scratch/user/jstreffi/model_codes_v350/awiesm3-develop-is/bin/rnfma"
+    omp_num_threads: 4
+    interleave_into: [oifs]

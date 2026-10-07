@@ -1,0 +1,56 @@
+Runs from the 2169 restart against PICAL_crunveg_tke_albsn082 (control). Period means; the other columns are run minus control;
+* marks a difference beyond 2 standard errors of the difference (interannual spread of both runs).
+
+2171-2179
+quantity                  unit       control       ctl2      z0def
+NH ice volume April       1e3 km3     32.961    -0.552     +0.439 
+NH ice volume September   1e3 km3     14.409    -1.448*    +0.275 
+SH ice volume September   1e3 km3     13.417    -0.489     -1.153*
+SH ice volume February    1e3 km3      1.288    -0.148     -0.168 
+NH ice extent March       1e6 km2     16.490    +0.183     -0.072 
+NH ice extent September   1e6 km2      7.310    -0.061     -0.184 
+SH ice extent September   1e6 km2     19.470    -0.448*    -0.792*
+SH ice extent February    1e6 km2      1.753    -0.052     -0.124 
+T2m global                C           13.929    -0.021     -0.029 
+T2m 60-90N                C           -9.036    -0.155     +0.031 
+T2m 60-90S                C          -16.933    +0.004     +0.076 
+net TOA                   W/m2         0.106    +0.041     +0.055 
+net surface               W/m2         0.251    +0.060     +0.044 
+AMOC 26.5N                Sv          13.269    -0.011     +0.220 
+AMOC max 20-60N           Sv          16.296    +0.285     +0.548 
+
+2180-2189
+quantity                  unit       control       ctl2      z0def
+NH ice volume April       1e3 km3     31.532    +1.930*    +0.447 
+NH ice volume September   1e3 km3     11.892    +2.743*    +0.534 
+SH ice volume September   1e3 km3     13.375    -1.261*    -0.179 
+SH ice volume February    1e3 km3      1.176    -0.396*    -0.104 
+NH ice extent March       1e6 km2     16.488    +0.043     -0.098 
+NH ice extent September   1e6 km2      6.711    +0.634*    +0.562*
+SH ice extent September   1e6 km2     19.022    -0.406*    +0.192 
+SH ice extent February    1e6 km2      1.767    -0.489*    -0.285 
+T2m global                C           13.882    +0.103*    +0.047 
+T2m 60-90N                C           -8.840    -0.341*    -0.164 
+T2m 60-90S                C          -16.828    +0.340*    +0.100 
+net TOA                   W/m2         0.333    -0.194     -0.082 
+net surface               W/m2         0.456    -0.172     -0.084 
+AMOC 26.5N                Sv          13.293    +0.035     +0.053 
+AMOC max 20-60N           Sv          16.880    -0.846*    -0.629 
+
+Global-mean ocean temperature: trend 2171-2189, mK/decade (+- 2 s.e.)
+band                   control            ctl2           z0def
+0-100 m           +26.7+- 59.3    +18.2+- 42.1    +32.1+- 55.5
+100-300 m          -1.4+- 19.4    -35.4+- 20.8    -18.6+- 25.3
+300-700 m          -3.9+-  4.9     -1.3+-  3.3     -4.3+-  4.8
+700-1500 m         +5.0+-  0.8     +9.7+-  1.3     +5.1+-  0.4
+1500-2500 m        -0.0+-  0.4     +1.5+-  0.3     +0.6+-  0.4
+2500-6000 m       +12.6+-  0.1    +13.5+-  0.2    +12.9+-  0.1
+
+Band mean 2180-2189, run minus control, mK
+band                 ctl2      z0def
+0-100 m             +53.2      +38.3
+100-300 m           -27.0       -0.7
+300-700 m            +4.2       -2.6
+700-1500 m           +3.4       -2.3
+1500-2500 m          +1.5       +0.3
+2500-6000 m          +1.1       +0.4

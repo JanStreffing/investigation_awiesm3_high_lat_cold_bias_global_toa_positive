@@ -1,0 +1,12 @@
+PICAL_crunveg_tke_albsn082: potential temperature by basin and depth. bias = 2205-2209 minus PHC3 annual [K];
+trend = (2205-2209 minus 2171-2175) per decade [mK]; share = part of the global heat gain of the band [%].
+
+basin                              200-500 m              500-1500 m             1500-2500 m             2500-4000 m             4000-7000 m
+                           bias  trend share       bias  trend share       bias  trend share       bias  trend share       bias  trend share
+Antarctic <60S           +0.90   -2.1     +1     +0.38   -8.1     -6     +0.46   -4.7    -22     +0.72   +9.7     +4     +0.88  +17.8     +5
+Southern 60-35S          +1.51   -1.8     +4     +0.99   -4.5    -14     +0.36   +6.6   +123     +0.50  +17.7    +32     +0.72  +24.6    +29
+Atlantic                 +0.40  -11.4    +20     +1.53  +22.5    +59     +1.04   -1.8    -28     +1.20  +27.9    +40     +0.54  +35.1    +40
+Indian                   -0.10  -15.2    +18     -0.30   +4.5     +8     -0.14   +4.6    +49     +0.21  +14.4    +14     +0.44  +18.5    +12
+Pacific                  -0.66  -15.3    +56     +0.35   +8.9    +51     -0.27   -0.7    -24     -0.10   +2.8     +9     +0.05   +4.7    +14
+Arctic+Nordic >65N       +0.66   -6.4     +1     +1.35   +5.0     +1     +1.90   +2.4     +3     +2.02   +9.3     +1     +2.14  +49.5     +0
+global                   +0.19  -10.8   +100     +0.64   +6.9   +100     +0.19   +1.2   +100     +0.37  +12.4   +100     +0.35  +16.1   +100

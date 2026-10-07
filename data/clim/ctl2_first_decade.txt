@@ -1,0 +1,38 @@
+Runs from the 2169 restart against PICAL_crunveg_tke_albsn082 (control). Period means; the other columns are run minus control;
+* marks a difference beyond 2 standard errors of the difference (interannual spread of both runs).
+
+2171-2179
+quantity                  unit       control       ctl2        icb      wamz0     cdoi10    cpres15
+NH ice volume April       1e3 km3     32.961    -0.552     -0.410     -0.436     +0.931     -1.343*
+NH ice volume September   1e3 km3     14.409    -1.448*    -0.849     -0.122     +1.441     -1.544*
+SH ice volume September   1e3 km3     13.417    -0.489     -0.110     +0.451     +2.027*    -0.805*
+SH ice volume February    1e3 km3      1.288    -0.148     +0.149     +0.203     +1.730*    -0.185 
+NH ice extent March       1e6 km2     16.490    +0.183     +0.094     -0.455*    -0.259     -0.114 
+NH ice extent September   1e6 km2      7.310    -0.061     -0.067     -0.143     +0.134     -0.110 
+SH ice extent September   1e6 km2     19.470    -0.448*    -0.278     -0.021     +0.507*    -0.537*
+SH ice extent February    1e6 km2      1.753    -0.052     +0.268     +0.456     +1.821*    -0.081 
+T2m global                C           13.929    -0.021     -0.022     +0.015     -0.123*    +0.085 
+T2m 60-90N                C           -9.036    -0.155     +0.030     +0.066     -0.291*    +0.249 
+T2m 60-90S                C          -16.933    +0.004     +0.102     +0.077     -0.556*    +0.044 
+net TOA                   W/m2         0.106    +0.041     -0.005     -0.041     -0.006     -0.020 
+net surface               W/m2         0.251    +0.060     +0.001     -0.025     -0.007     -0.006 
+AMOC 26.5N                Sv          13.269    -0.011     -0.112     +0.236     +0.165     +0.343 
+AMOC max 20-60N           Sv          16.296    +0.285     -0.152     +0.018     +0.130     +0.760*
+
+Global-mean ocean temperature: trend 2171-2179, mK/decade (+- 2 s.e.)
+band                   control            ctl2             icb           wamz0          cdoi10         cpres15
+0-100 m          +125.1+-126.2   -132.8+- 52.8   -216.6+-129.5    -90.0+-149.4    -92.1+-126.8    +39.1+- 87.0
+100-300 m         -57.7+- 35.3    +46.1+- 24.6   +104.1+- 49.3    -25.1+- 56.2    -59.6+- 52.2     -7.5+- 23.1
+300-700 m         -25.1+-  7.4     +5.2+-  8.3     +1.9+-  4.2     -3.0+-  9.5     -1.2+-  7.2    -24.3+-  9.8
+700-1500 m         +3.7+-  1.4     +3.4+-  2.8     +7.8+-  1.4     +8.2+-  2.4    +10.0+-  1.9     -2.2+-  3.7
+1500-2500 m        +1.3+-  0.6     +2.5+-  0.5     +2.1+-  0.6     +3.7+-  0.7     +4.1+-  1.0     +0.5+-  0.4
+2500-6000 m       +12.7+-  0.2    +12.9+-  0.4    +12.3+-  0.3    +12.6+-  0.1    +13.0+-  0.2    +13.6+-  0.4
+
+Band mean 2171-2179, run minus control, mK
+band                 ctl2        icb      wamz0     cdoi10    cpres15
+0-100 m              +0.2      +13.3      +14.9      -43.4      +50.1
+100-300 m           +24.2      +16.1       -4.6      +21.0      +18.4
+300-700 m            +2.7       -2.9       +1.6       +4.1       -4.3
+700-1500 m           -1.7       -2.1       +0.3       +0.5       -4.7
+1500-2500 m          -0.2       -0.2       +0.9       +0.7       -1.0
+2500-6000 m          -0.0       -0.2       -0.1       -0.2       +0.1

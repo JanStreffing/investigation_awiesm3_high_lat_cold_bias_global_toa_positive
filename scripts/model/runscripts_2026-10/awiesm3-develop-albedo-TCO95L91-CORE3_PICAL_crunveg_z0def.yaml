@@ -1,0 +1,463 @@
+# Sea-ice roughness in OpenIFS, three runs from the PICAL_crunveg_tke_albsn082 restart of 2169-12-31,
+# 2170-2189 in two 10-year legs. 2026-10-07.
+#
+# WHY. The wind-driven export of Antarctic ice controls the summer ice (ice-ocean drag 0.0055 -> 0.010
+# doubled February volume, PICAL_crunveg_cdoi10), but the ice-ocean drag is already five times the
+# value measured for winter Weddell pack (1.13e-3, Wamser and Martinson 1993), so raising it is a
+# compensation. The air-ice drag is the term that is high: OpenIFS gives 1.89e-3 (neutral, 10 m) for
+# compact ice and more as the pack opens (2.3e-3 at 0.74 concentration, 3.0e-3 at 0.5), against
+# 1.44-1.68e-3 measured. Its roughness formula z0m = MAX(floor, (1-ci)*C + A*EXP(-B*(ci-0.5)**2)) is
+# now settable through NAMSURFTUNE (OpenIFS commit "Expose the sea-ice momentum roughness constants").
+#
+#   PICAL_crunveg_z0def    released values: the control for the build (floor 1e-3, A 6.05e-3)
+#   PICAL_crunveg_z0floor  floor 1e-3 -> 0.5e-3: 1.63e-3 for compact ice, unchanged below 0.84
+#   PICAL_crunveg_z0form   floor 0.5e-3 and A 6.05e-3 -> 3.0e-3: also about half the open-pack rise
+#                          (2.0e-3 at 0.74, 2.5e-3 at 0.5)
+#
+# BUILD. model_dir is the scratch tag tree with OpenIFS rebuilt from awiesm3-develop 7513fd3 plus the
+# roughness commit; LPJ-GUESS 4.1.13, XIOS and the mapper from that tree; FESOM pinned to the tuning
+# binary gmhemi_636b26aa as in the control. So against tke_albsn082 and ctl2 these runs also differ in
+# the OpenIFS and LPJ-GUESS versions (validated within noise by PICAL_v350val): compare the two
+# changed runs with z0def first, and z0def with ctl2 for the build.
+# READ: air-ice stress and the effective drag (scripts/analysis/ice_drag_effective.py), Antarctic
+# drift, February and September ice volume and area in both hemispheres, T2m 60-90N and 60-90S.
+# OpenIFS is cold-started: DISCARD 2170.
+#
+# The idemix_albsn082 header (the runscript this file is derived from) follows.
+#
+# PICAL_crunveg_idemix_albsn082: DIAGNOSTIC parallel arm of PICAL_crunveg_tke_albsn082 with IDEMIX back on.
+# 2170-2209 in two 20-year legs, branched from tke_albsn082 at 2169-12-31. 2026-10-05.
+#
+# WHY. tke_albsn082 (TKE only, albsn 0.82) loses Antarctic sea ice late in its 50 years: February extent
+# 1.88 -> 1.13e6 km2 and September volume 13.9 -> 12.0e3 km3 from the 2160s to the 2200s, most of it
+# after 2190, and the clear-sky absorbed solar south of 60S rises with it (+0.045 W/m2 per decade of the
+# global mean). The mixing arms of Round 39 had less Antarctic summer ice with TKE alone than with
+# TKE+IDEMIX (Feb volume 1.31 against 1.62), but there is no IDEMIX run for these years, so the decline
+# cannot be told from a slow Southern Ocean swing. This arm is that control.
+#
+# ONE variable against tke_albsn082: mix_scheme 'cvmix_TKE' -> 'cvmix_TKE+cvmix_IDEMIX' (as gmhemi1800).
+# albsn stays 0.82. Same binaries, layout and setup. Compare decade by decade against tke_albsn082
+# 2170-2209: Antarctic ice (Feb/Sep extent and volume), 60-90S T2m, clear-sky absorbed solar, MLD and
+# ocean-ice heat flux under the pack. Expect the 700-1500 m warming to return: not a candidate configuration.
+# OpenIFS is cold-started, as in every branch: DISCARD 2170.
+#
+# The tke_albsn082 header follows.
+#
+# PICAL_crunveg_tke_albsn082: PICAL_crunveg_gmhemi_tke continued for one decade with albsn 0.80 -> 0.82.
+# 2160-2169, branched from gmhemi_tke at 2159-12-31. 2026-10-04.
+#
+# WHY. TKE alone stopped the 300-1500 m heat gain and halved the imbalance (net TOA +0.53 -> +0.21 W/m2,
+# data/clim/tke_vs_idemix_branch_score.txt), but the surface warms (+0.19 K/decade) and both hemispheres
+# lose ice, in a model already +0.46 K too warm for PI. Against GIOMAS 1989-1999 the Antarctic has 65 %
+# of the September volume (12.9 against 19.9) and under half the February extent; the Arctic is at the
+# 1990s volume. albsn is the knob the Antarctic pack responds to (d(alb)/d(albsn) 0.95 in SH DJF).
+#
+# KNOWN RISK, the reason this is one decade. albsn 0.83 over 1970-79 did not equilibrate in the Arctic:
+# its effective NH forcing grew 2.1 -> 7.3 W/m2 as the pack stopped clearing its snow, past the 5.5 at
+# which the Arctic ran away (table below, under final_date). 0.80 was adopted as the bracket. The Arctic
+# now loses volume under TKE alone (-1.5e3 km3/decade in April), which is the only new room. WATCH the NH
+# melt-season snow-free fraction (healthy ~6 %, runaway 1.2 %) and the NH April volume trend.
+#
+# ONE variable against gmhemi_tke: namelist.ice ice_therm albsn 0.80 -> 0.82. Same binaries, layout and
+# setup. No same-years control: compare against gmhemi_tke 2140-2159 and its trends.
+# OpenIFS is cold-started, as in every branch: DISCARD 2160.
+#
+# The gmhemi_tke header follows.
+#
+# PICAL_crunveg_gmhemi_tke: the adopted line (PICAL_crunveg_gmhemi1800) continued for 20 years with
+# cvmix_TKE alone, IDEMIX off. 2140-2159, branched from gmhemi1800 at 2139-12-31. 2026-10-03.
+#
+# WHY. The four mixing arms of Round 39 (2020-2039, one restart), scored on global-mean temperature
+# by depth (data/clim/mixing_arms_temp_trend_by_depth.txt): IDEMIX is what warms 700-1500 m,
+# +31 mK/decade against +9 for cvmix_TKE alone and +11 for KPP, and the critical-path Hovmoeller
+# shows that layer warming since IDEMIX came in at 2080 (+27 to +42 mK/decade). TKE alone kept most
+# of the Antarctic summer ice gain (SH Feb volume 1.31 against 1.62, obs ~2.07) with NH April volume
+# flat at 35.2 where TKE+IDEMIX had 38.0 and rising. Its cost on the production line was the whole
+# system losing energy (net TOA -0.47 W/m2 over 2060-2079) and the strongest upper-ocean cooling.
+# This run measures the same switch on today's configuration (hemispheric GM, 1800 s).
+#
+# ONE variable against gmhemi1800: mix_scheme 'cvmix_TKE+cvmix_IDEMIX' -> 'cvmix_TKE'. Same FESOM
+# binary (gmhemi_636b26aa), same 768 @ 96 layout, same OpenIFS, LPJ-GUESS and OASIS setup. There is
+# no same-years control with IDEMIX on: compare against gmhemi1800 2120-2139 for the state and
+# against its trends, and read the first decade with the 2140 atmosphere cold start in mind.
+# OpenIFS is cold-started, as in every branch: DISCARD 2140. The restart's iwe field is unused.
+# REcoM is off: this is the physics-only develop configuration, not PICAL_cc.
+#
+# The gmhemi1800 header follows.
+# ---------------------------------------------------------------------------------
+# PICAL_crunveg_gmhemi1800: hemispheric GM, K_GM_max 2500 SH / 1000 NH, linear over 10 deg at the equator
+# (FESOM feat/gm-hemispheric 636b26aa, libfesom 9e9dca79, a rebuild of the ob1800 source + the option).
+# Arm of the GM test at the PRODUCTION step (1800 s, 768 @ 96, 25 nodes), 2026-10-02. Reference is
+# PICAL_crunveg_ob1800 (GM 2500, same old build, same branch, same years); this file is ob1800 with
+# only the GM change below (+ 20 years, + the local IDEMIX forcing path). Moved from 1200 s because
+# the step/IDEMIX hypothesis was rejected as the main Labrador cause; GM is (see
+# data/clim/heat_pathways_compare.txt and plots/labrador_ice_gm_history.png).
+#
+# PICAL_crunveg_ob1800: old-build cell of the build x time-step test, 2026-09-30.
+# The Labrador Sea stopped convecting after the 2120 branch, when two things changed at once:
+# FESOM build (leadclose 766020ec -> main+#1060) and FESOM step (1200 -> 1800 s).
+#     new build 1800 s : PICAL_crunveg_ihf0 (done, collapsed 2128) and ihf1 (collapsed 2127)
+#     new build 1200 s : PICAL_crunveg_ts1200
+#     old build 1800 s : THIS RUN (PICAL_crunveg_ob1800)
+#     old build 1200 s : PICAL_crunveg_ob1200
+# Why the old-build cells are needed in the SAME decade: Labrador convection is intermittent
+# in the old configuration too (PICAL_ccnice, old build 1200 s: single-winter collapses to
+# ~100 m in 2108, 2112, 2117, 2121, 2126, 2129, each recovering), so crunveg's 2100s are not
+# a control for 2120-2129 in a drifting, marginal system. Read the result on persistence
+# and recovery, not single weak winters.
+# FESOM: crunveg's own 2100-2119 library (leadclose 766020ec, libfesom md5 4c76f03d),
+# pinned in fesom-bin/leadclose_766020ec. That build's /ice_therm/ has NO use_ustar_ocnice,
+# and the ice namelist read swallows errors, so the line must not be in namelist.ice.
+# Layout identical to PICAL_crunveg_ihf0 (768 @ 96/node, 25 nodes, OASIS from crunveg restart dir in dist_768 order) so the pair differs in the FESOM build only.
+# OpenIFS is cold-started, as in every branch: DISCARD 2120.
+#
+# PICAL_crunveg_ihf1: ocean-to-ice heat flux test, 2026-09-29.
+# STOPPED AT 2130, 2026-09-30: not continued. Over 2121-2129 against ihf0 the McPhee flux
+# lowered Antarctic volume (September -1.4e3 km3, February -0.4e3 km3; the Antarctic is the
+# hemisphere furthest below GIOMAS) while raising the Arctic (September +0.9e3 km3). A 2130
+# leg with albsn 0.82 was staged and cancelled before it ran (staged_unused_20260930_run_2130).
+# Paired 10-year branches of PICAL_crunveg at 2119-12-31 (the forested land state),
+# identical except fesom namelist.ice ice_therm use_ustar_ocnice:
+#     ihf0  .false.  constant exchange velocity gamma_t = 10 m/day (current physics)
+#     ihf1  .true.   McPhee (1992, 2008) St* u*: St* = 0.0057 (SHEBA), u*_min 0.005 m/s
+# Both run FESOM branch feat/ice-ocean-heat-ustar 1e6cb53a (53e095ec + the option),
+# libfesom.so md5 de85c407, so the control carries the same binary as the arm.
+# OpenIFS is cold-started, as in every branch of this campaign: DISCARD 2120 in both.
+# Why: the ocean-to-ice flux at 10 m/day implies u* ~ 20 mm/s, above the observed
+# 5-15 mm/s; it is largest in both summers (NH 190-360, SH 315-750 W/m2 per m2 of ice,
+# crunveg 2110-19). Score on NH Sep/Apr and SH Feb/Sep volume, NH melt-season snow-free
+# fraction, 60-90N T2m, net TOA.
+#
+# The original PICAL_crunveg header follows.
+# ---------------------------------------------------------------------------------
+# PICAL_crunveg: 50-year branch of PICAL_ccnice at 2100 whose ONLY difference from the
+# 2100-2150 continuation is the land it starts from. FESOM, OpenIFS and OASIS come from
+# PICAL_ccnice 2099-12-31; LPJ-GUESS starts from lpjg_state_3850, the offline CRUNCEP
+# spin-up end state, instead of PICAL_ccnice's own land.
+#
+# WHY. The merged canopy work (stem area index via ltos, shrubs to low IFS vegetation,
+# iftreefracca 1) acts on the tree side of the tile. Laszlo Hajdu measured +0.46 K
+# global T2m from it, concentrated in the boreal zone, in a run that has a boreal
+# forest. PICAL_ccnice does not: in the Siberian box 55-75N/60-180E at 2099 it carries
+# BNS 0.001, TREEFPC 0.050, GRASSFPC 0.216, and grass beats tree on 84.9% of cells,
+# against 0.227 / 0.415 / 29.2% in the CRUNCEP state. So the continuation measures what
+# the canopy change does to a grassland. This run measures what it does to a forest.
+#
+# The forest is lost to competition with C3 grass, not to a climate gate: every BNS
+# establishment gate stays open while it disappears. Starting from CRUNCEP does not fix
+# that; it restores the initial condition so the canopy work can be seen before the
+# competition dismantles the forest again. Expect the tree cover to decline over the
+# 50 years, and read the early years accordingly.
+#
+# CAVEAT, UNRESOLVED AT SUBMIT TIME: the CRUNCEP state was written on an 11538-cell
+# gridlist from L096.msk, while this run uses TCO95-land. LPJ-GUESS will meet cells the
+# spin-up never simulated. HANDOFF_lpjg_respin_core3.md records that as fatal with
+# peatland on, but the code has changed since. Check the first leg's log before
+# trusting the run.
+# ---------------------------------------------------------------------------------
+
+general:
+    user: !ENV ${USER}
+    install_esm_tools_branch: 'feat/awiesm3-v3.4-co2'
+    setup_name: "awiesm3"
+    version: "develop"
+    # the account with the best fairshare, picked again for every leg by pre_run_commands below.
+    # Before submitting, run the export line of pre_run_commands once in the shell. Was "clidyn.clidyn".
+    account: !ENV ${ESM_ACCOUNT}   # best fair-share project, picked per leg in pre_run_commands (export it before the first submit)
+    compute_time: "04:30:00"   # 10-year legs, about 2.7 h at 1800 s
+    initial_date: "2170-01-01"
+    # STOP AT 1990 on purpose, 2026-09-22.  albsn 0.83 -> 0.78 goes in at 1980; the
+    # decade 1980-1989 tests whether the fmelt amplifier comes back DOWN.  Evaluate at
+    # 1990, then continue to 2050 or adjust again.
+    #
+    # 1970-79 under albsn 0.83 did not equilibrate.  Tracked inside that decade:
+    #     window     d(alb)/d(albsn) NH   snow-free   effective NH forcing
+    #     1960-69          0.149            8.0 %          2.1 W/m2
+    #     1970-72          0.272            7.8 %          3.8
+    #     1973-75          0.380            5.7 %          5.4
+    #     1977-79          0.504            2.6 %          7.3
+    #     momixoff runaway 0.765            1.2 %
+    # No plateau, and the NH annual volume increment trend over 1971-79 was
+    # +0.136 +- 0.241 per yr2, i.e. NOT a decaying transient.  An unchanged namelist
+    # value had grown its own forcing past the 5.5 W/m2 that destabilised momixoff.
+    # STOP AT 2000.  The 1990-1999 leg is the last one: the Antarctic pack is dispersive
+    # for a reason that albsn cannot reach - FESOM closes leads at the thickness of the
+    # ice already there, h0cur = clamp(hold, h0min=0.5, h0max=1.5), and the SH sits in
+    # the free-tracking band (63 % of the pack between the clamps) while the NH is
+    # pinned at the top (81 % above 1.5 m).  The SH therefore makes 1.26 units of area
+    # per unit volume frozen against the NH's 0.72, and cannot thicken out of it.
+    # Raising h0min needs a FESOM rebuild, so the run stops here rather than spending
+    # 50 more years on a configuration that is known to have the wrong lever.
+    final_date: "2190-01-01"   # two 10-year legs
+                               # Earlier note, kept because it still applies to the
+                               # aerosol provenance of this run:
+                               # Restarted at 2020-01-01
+                               # (run 11) on a rebuilt OpenIFS carrying the MACv2-SP
+                               # fixed-year fix (pr9/macv2sp-fixed-year, bcf90c5 here).
+                               # Until that fix the anthropogenic aerosol plumes followed
+                               # the model calendar year rather than NCMIPFIXYR, so
+                               # 1850-2019 of this run carry a transient aerosol ramp and
+                               # 2020 onwards are constant 1850.  The three legs after 2020
+                               # died at the 2023 scenario-file switch and are in
+                               # QUARANTINE_post2020_20260920.  Earlier note:
+                               # EXTENDED 2026-09-18.  The 10-year screen (1920-1929, against
+                               # PICAL over the same years) cut the JJA 55-80S ocean T2m bias
+                               # from +1.49 to +0.98 K, so momix-off becomes the production
+                               # line.  PICAL itself ends after its 1930-1939 leg.  2050 is
+                               # 200 years from PICAL's start at 1850; PICAL's 1850-1919 are
+                               # symlinked into this run's outdata by
+                               # scripts/model/link_parent_years.sh so the folder reads as one
+                               # continuous record.  Years 1920+ are momix-off's own.
+    base_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/runtime/${general.setup_name}-v3.4/"
+    nday: 0
+    nmonth: 0
+    nyear: 10
+                       # 1h30 of the 8h limit, so a 10-year leg fits with margin and
+                       # halves the number of chain handovers.
+    # CONTAINED RUN from the 2020 leg.  esm_runscripts builds <exp>/.venv_esmtools once,
+    # pip-installs esm_tools into it and restarts the job inside it; every later leg
+    # REUSES that venv instead of rebuilding, so the experiment is frozen against its
+    # own copy and no longer re-reads ~/esm_tools at each leg.
+    #
+    # install_esm_tools_branch above is LOAD-BEARING here: the venv clones
+    # github.com/esm-tools/esm_tools with -b <that branch>
+    # (virtual_env_builder.py:_install_tools_general).  Without it the clone takes the
+    # repository default, which is release, and release does not carry the v3.5 CORE3
+    # defaults this run depends on - it would not fail loudly, it would quietly run
+    # different physics.
+    use_venv: False
+    pre_run_commands: "ulimit -n 262144 || ulimit -n 65535 || true; export ESM_ACCOUNT=$(sshare -U -n -P -u $USER -o FairShare,Account | sort -t'|' -k1,1nr | head -1 | cut -d'|' -f2)"
+
+computer:
+    taskset: true
+
+awiesm3:
+    postprocessing: false
+    model_dir: "/albedo/scratch/user/jstreffi/model_codes_v350/${general.setup_name}-${general.version}/"   # tag tree + OpenIFS awiesm3-develop 7513fd3 + fc271eb (sea-ice roughness in NAMSURFTUNE)
+
+fesom:
+    resolution: "CORE3"
+    # PARTITION MUST BE LEVANTE'S. The OASIS rmp_*.nc weights, grids.nc, masks.nc and
+    # areas.nc this run carries in restart/oasis3mct index FESOM nodes in the
+    # PE-contiguous order of the dist_1792 they were generated against, which is
+    # levante's. Albedo's pool dist_1792 (/albedo/pool/fesom2/core3/dist_1792) is a
+    # different METIS partition of the same mesh: every rpart.out/my_list*.out differs.
+    # Run against it and every coupled flux lands on the wrong node -- 2026-09-26 that
+    # gave 60 C SST over the deep South Pacific (node 55507) and a -5 C shelf node at
+    # the Fly mouth (164137) within 1.2 years, identically on two FESOM binaries. This
+    # directory mirrors the pool mesh (symlinks) with levante's dist_1792 copied in.
+    mesh_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/core3/"
+    # 1200 -> 1800 on 2026-09-28: FESOM limits the coupled model (LUCIA) and the 1200 s
+    # step doubled its cost per model day against the August setup. OASIS lags are 3600 s,
+    # independent of this.
+    time_step: 1800
+    nproc: 768          # 1792 x 1 until 2026-09-29
+    # 96 RANKS PER NODE, ONE THREAD (2026-09-29): esm_tools placement spreads the ranks
+    # over 3 of every 4 cores (one idle core per L3 group, 8 nodes; needs esm_tools
+    # feat/awiesm3-v3.4-co2 >= 322f0ed1f in the venv). Idle neighbours let the busy cores
+    # boost: FESOM runs at 2.55 GHz here, 2.84 GHz at 64 per node, 2.33 GHz packed 128 per
+    # node. FESOM stays faster than OIFS, so the whole model runs as fast as with 12 FESOM
+    # nodes: TEST_best25 2.40 s per model day on 25 nodes, TEST_prodlayout (64 per node,
+    # 2 cores reserved per rank) 2.39 on 29. Do NOT drop ranks_per_node: omp_num_threads 1
+    # alone packs 128 ranks per node (TEST_pmcP, 3.3 s per model day). No OpenMP threads:
+    # a second thread costs more than it gains (TEST_nolockB1 vs nolockB4).
+    omp_num_threads: 1
+    ranks_per_node: 96
+    # FESOM MAIN + PR #1060 FROM 2026-09-29 (ccnice leg 2130, crunveg leg 2120). Build
+    # 53e095ec = #1060 with main merged in, incl. the OpenMP stack #1081-#1085,
+    # #1093-#1095 and the lock-free gathers #1097-#1099. Pinned copies: md5 fesom.x
+    # 6fcd9e44, libfesom.so 18087062; check the library md5 in work/lib/fesom and
+    # "FESOM2 git SHA: 53e095ec" in the compute log. Results are not bit-identical to the
+    # leadclose line, and differ with the FESOM thread count (keep it fixed). dist_768 is a
+    # node-aware METIS partition (n_part 12, 64) in the project mesh dir;
+    # restart/oasis3mct was reordered from dist_1792 to dist_768 (see its
+    # README_partition_order.txt). dist_768 was cut for 64 ranks per node; it works at 96.
+    # Whole model: 25 nodes, 2.40 s per model day (~99 SYPD steady); OIFS limits.
+    bin_sources:
+        bin: "/albedo/work/user/jstreffi/model_codes/awiesm3-develop/fesom-bin/gmhemi_636b26aa/fesom.x"
+        lib: "/albedo/work/user/jstreffi/model_codes/awiesm3-develop/fesom-bin/gmhemi_636b26aa/libfesom.so"
+    lresume: true
+    restart_rate: 10
+    restart_unit: 'y'
+    restart_first: 10
+    tar_binary_restarts: false
+    with_cavity: true
+    vis_sync: false
+    # FESOM SWAPPED AT 2000 to the lead-closing branch, feat/leadclose-h0min
+    # (04d1539f = 28f407ff + cherry-picked d3d958f3), built with the same flags as the
+    # production tree: OIFS_COUPLED, FESOM_COUPLED, USE_SINGLE_PRECISION, FESOM_WITH_XIOS.
+    # The experiment's own bin/fesom was replaced in place; the previous cavgamma copy is
+    # kept as bin/fesom_PRE_leadclose_cavgamma_20260923 (md5 23cf9538130b).
+    # (Until 2026-09-29, see the pin above.) No bin_sources pin on albedo: model_dir's own fesom-2.7 is branch "integration"
+    # = FESOM main + PR #1060 + PR #1087, so the IDEMIX fixes md5 f4b5579a carried are
+    # in the tree itself.
+    # The albedos, meltpond albedo and use_momix are v3.5 CORE3 defaults in awiesm3.yaml,
+    # including albsn 0.80.  This run's history of that knob, for reading its own output:
+    # 0.75 to 1970, 0.83 for 1970-1979, 0.80 from 1980.  The 0.78 attempt covers 1980-1986
+    # only and is in PARTIAL_run_19800101-19891231_albsn078_killed_20260922, not in outdata.
+    #
+    # h0min 0.5 -> 1.0 from 2000.  FESOM closes leads at the thickness of the ice already
+    # present, h0cur = clamp(hold, h0min, h0max), so new ice area = frozen volume / h0cur.
+    # Measured on 1985-89: the NH is pinned at the h0max ceiling (81 % of the pack above
+    # 1.5 m, effective h0cur 1.39) while the SH sits in the free-tracking band (63 %
+    # between the clamps, h0cur 0.79).  The SH therefore makes 1.71 units of area per unit
+    # volume frozen against the NH's 0.85, and cannot thicken out of it because the closing
+    # thickness follows the ice down.
+    #
+    # h0min 1.0 was tried for 2000-2009 and FAILED.  Back to 0.5 from 2010.
+    #
+    # The flux response was exactly as designed: SH thermodynamic area per unit volume
+    # frozen fell 1.71 -> 1.10, a 36 % reduction, with freezing itself up 8 %.  The STATE
+    # did not follow.  SH September thickness went 0.61 -> 0.62 m against a ~1.10 target,
+    # September ice AREA fell 14 % while extent fell only 4 % - so the pack got LESS
+    # concentrated, not thicker - and the 60-90S warm bias nearly doubled, +0.82 -> +1.45 K.
+    #
+    # The mechanism is why it cannot work: making less area from the same freezing leaves
+    # more open ocean, which absorbs more sunlight, warms, and melts the gain back.  The
+    # Antarctic pack is not thin because it is spread too thin; spreading is the symptom.
+    # It is thin because there is too little ice, and suppressing the spreading only
+    # removes cover.  The missing physics is rafting and a thickness distribution, i.e.
+    # Icepack - which src/CMakeLists.txt refuses to build against the IFS interface.
+    #
+    # h0min is 0.5, the fesom2 default, and is NOT set here: on albedo the binary is
+    # main + PR #1060 + PR #1087, where h0min is a plain local in ice_thermo_cpl.F90
+    # rather than a member of namelist /ice_therm/ (ice_init.F90:53).  A namelist read
+    # aborts on any name the reading module does not declare.
+    add_namelist_changes:
+        namelist.ice:
+            ice_therm:
+                # as tke_albsn082 (awiesm3.yaml v3.5: 0.80)
+                albsn: 0.82
+        namelist.oce:
+            oce_dyn:
+                # MIXING EXPERIMENT: prognostic turbulent kinetic energy closure (CVMix).  Genuinely different physics
+    # from KPP rather than a reimplementation: TKE carries a prognostic budget where
+    # KPP diagnoses a boundary layer depth.
+                # Matches PICAL_ccnice from 2080. The ocean is deliberately identical;
+                # the only intended difference between the two runs is the land state.
+                # IDEMIX back on, as gmhemi1800
+                mix_scheme: 'cvmix_TKE'   # as tke_albsn082
+                # HEMISPHERIC GM
+                k_gm_max: 2500
+                k_gm_max_nh: 1000.0
+                k_gm_hemi_trans: 10.0
+        namelist.cvmix:
+            param_idemix:
+                # pool copy unreadable since 2026-10-01 (p_pool_fesom1 locked to root);
+                # project-local copy, md5 08887ab2 = levante's.
+                idemix_botforc_file: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/fesom2/forcing/idemix/forcing_idemix_final_bin/FIN_STORMTIDE2_M2_plus_NYCANDER_CnoM2_bin_0.40deg.nc"
+    ini_parent_exp_id: "PICAL_crunveg_tke_albsn082"
+    ini_parent_date: "2169-12-31"
+    ini_restart_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/runtime/awiesm3-v3.4/PICAL_crunveg_tke_albsn082/restart/fesom/"
+    further_reading:
+        - fesom.tripyview.yaml
+    cmip7_cmor_output: True
+
+lpj_guess:
+    # NEW LAND LINEAGE, 2026-09-21. Three things that only work together:
+    # the capped peat map (v3.5 default, nothing set here), LPJ-GUESS line A at
+    # 13a4a06 with the LUH3 crop mix, and an LPJ-GUESS state corrected to both.
+    # Runs from before that day use the uncapped map, an equal split of cropland
+    # over ten stand types (50% irrigated against 5.5% in LUH3 1850) and the
+    # binary guess.4111_softinit_gssmar_20260908. They are not comparable with
+    # this one over land. See notes/LPJG_PEAT_INVARIANT_20260921_REPLY.md.
+    resolution: "TCO95"
+    mip: cmip7
+    scenario: piControl
+    daily_output: true
+    nproc: 64
+    # 4 -> 8 on 2026-09-19: leg 1970 (job 27549347) lost rank 2216 to an OOM kill
+    # during LPJ-GUESS startup, the first in this run's history. Doubling the
+    # threads per task halves the tasks packed onto each node, which doubles the
+    # memory each rank gets. Task count is unchanged, so the decomposition and
+    # the results are not affected.
+    omp_num_threads: 8
+    lresume: true
+    ini_parent_exp_id: "PICAL_crunveg_tke_albsn082"
+    ini_parent_date: "2169-12-31"
+    # PICAL_momixoff lpjg_state_1940 corrected to LUH3 1850 crop mix and the capped
+    # peat map. a270270's correction chain, validator PASS for all 10157 cells.
+    # THE POINT OF THIS RUN: the land does NOT come from PICAL_ccnice. It comes
+    # from the offline CRUNCEP spin-up end state, which still has a boreal forest.
+    ini_restart_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/runtime/awiesm3-v3.4/PICAL_crunveg_tke_albsn082/restart/lpj_guess/"
+    choose_general.run_number:
+        1:
+            restart_in_sources:
+                # a270270's CRUNCEP spin-up END state (3901) migrated to the active
+                # TCO95-land grid (10157 cells: 10046 retained, 111 initialised bare;
+                # lpjg_state_3850 on the old L096 grid cannot load, the restart cell set
+                # must equal the active set). _CFT: crop stand types repartitioned to the
+                # LUH3 3-1-2 / 1850 target with corrected Lund peat, same table as the
+                # momixoff 1940 state, run 2026-09-27 on levante (lpjg_peat_migration_LR,
+                # job 27736804). Without it the fixed-LU startup check aborts.
+                state: /${ini_restart_dir}/lpjg_state_2170/*
+            restart_in_in_work:
+                state: lpjg_state_${initial_date!syear}/*
+    fixed_CO2: 1850
+    fixed_ndep: 1850
+    fixed_LU: 1850
+
+oifs:
+    resolution: "TCO95"
+    levels: "L91"
+    prepifs_expid: ab45
+    input_expid: awi3
+    wam: true
+    time_step: 3600
+    nproc: 384
+    omp_num_threads: 4
+    mip: cmip7
+    scenario: piControl
+    lresume: false
+    cmip7_cmor_output: True
+    # RCCNSEAICE removed 2026-09-21: it is now a TCO95 default in awiesm3.yaml.
+    # NO PIN.  This arm takes RCL_INPPMIN and RSNOWLIN2 from awiesm3.yaml v3.5,
+    # i.e. 70000 and the code default 0.030.  That difference from PICAL_momixoff
+    # is the entire reason this run exists; do not add a namelist override here.
+
+oasis3mct:
+    use_lucia: false
+    lresume: true
+    time_step: 3600
+    # Branch-off source for rstas.nc / rstos.nc / vegin.nc.  Without these three
+    # keys oasis.py has no ini_restart_dir to build its glob from and the run 1
+    # branch-off cannot find the parent's coupler restarts: it looks only in this
+    # experiment's own (empty) restart folder.  fesom and lpj_guess carry the same
+    # keys in their own sections; prepare.py only fans a setup-level ini_parent_dir
+    # out to the models, and there is none here.
+    #
+    # The trailing slash is REQUIRED: oasis.py builds the search as
+    # f"{ini_restart_dir}{restart_file}*{YYYY}{MM}{DD}" with no separator, so
+    # without it the glob is malformed.  The date 2099-12-31 matches the parent's
+    # rstas.nc_20900101-20991231 and its two siblings.
+    #
+    # This directory deliberately holds no rmp_*.nc.  A parent restart/oasis3mct
+    # carrying them would stage them too and shadow the nproc-keyed weight lookup,
+    # silently putting every coupled field on the wrong node.
+    ini_parent_exp_id: "PICAL_crunveg_tke_albsn082"
+    ini_parent_date: "2169-12-31"
+    # gmhemi1800's end-of-2139 rstas/rstos/vegin under dated names, with the dist_768 weights it ran with
+    # (README.txt there; the two rst_co2_* files in it belong to PICAL_cc and are not read here).
+    ini_restart_dir: "/albedo/work/projects/p_awiesm3_cmip7/jstreffi/input/oasis_ini/from_tke_albsn082_2169/"
+
+xios:
+    # xios.x from the scratch tree, under the xios_dbg.sh wrapper that xios.yaml sets on albedo (as in the control)
+    with_model:
+        - oifs
+        - fesom
+    nproc: 16
+    # INTERLEAVED INTO THE OIFS NODES from 2026-09-29 (esm_tools taskset placement,
+    # feat/awiesm3-v3.4-co2 >= 03ddec946, needs a venv built from it): 4 cores per
+    # server at the end of an OIFS node, 2 servers per node. Not 4 per node: the
+    # largest server peaked at 44-46 GB per 10-year leg, and 4 of them next to 28
+    # OIFS ranks (~3 GB each) would exceed the 256 GB of a node late in a leg.
+    omp_num_threads: 4
+    interleave_into: [oifs]
+    ranks_per_node: 2
+    compression_level: 3
+
+rnfmap:
+    # One rank, interleaved into an OIFS node (4 cores) instead of a node of its own,
+    # from 2026-09-29 (esm_tools taskset placement, as for xios).
+    omp_num_threads: 4
+    interleave_into: [oifs]

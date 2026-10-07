@@ -1,0 +1,16 @@
+Pack ice (concentration >= 0.8): drift speed and northward drift [cm/s], air-ice and ice-ocean stress magnitude [mN/m2];
+SH south of 55S in JJA, NH north of 70N in JFM. conv area: open ocean south of 55S with September MLD2 > 1000 m [1e6 km2].
+In brackets: standard deviation of the annual values of control.
+
+2190-2199
+run           SH speed   SH vnorth   SH tau_ai   SH tau_io    NH speed   NH tau_ai   NH tau_io   conv area
+control          19.07        4.46       94.85       86.34        8.29       52.64       33.27        4.15
+                (0.54)      (0.48)      (6.00)      (5.75)      (0.61)      (7.46)      (4.35)      (0.58)
+icb              19.18        4.08       92.35       83.67        8.16       53.34       31.98        4.20
+
+2200-2209
+run           SH speed   SH vnorth   SH tau_ai   SH tau_io    NH speed   NH tau_ai   NH tau_io   conv area
+control          18.88        4.51       94.15       85.91        8.52       53.27       34.12        4.41
+                (0.76)      (0.81)      (7.45)      (7.22)      (0.78)      (7.46)      (5.17)      (0.56)
+icb              18.83        4.18       92.37       83.42        8.09       50.81       31.21        4.20
+

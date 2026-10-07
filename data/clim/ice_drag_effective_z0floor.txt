@@ -1,0 +1,8 @@
+SH JJA 2175-2189, pack a_ice >= 0.8, 55-80S.  Cd_oce_ice = 0.0055
+sector      |tau| N/m2 |<|U|U>| m2/s2 Cd_ai x1e3 free-drift factor % strength N/m  m_ice m
+all              0.092           38.0       1.86                2.07        10024     0.80
+Weddell          0.078           33.6       1.79                2.03        11074     0.87
+Indian           0.097           40.1       1.86                2.07         7160     0.65
+Pacific          0.117           47.3       1.90                2.09         7614     0.76
+Ross             0.101           40.8       1.90                2.09        10088     0.77
+Amund-Bell       0.084           33.7       1.91                2.10        12866     0.91

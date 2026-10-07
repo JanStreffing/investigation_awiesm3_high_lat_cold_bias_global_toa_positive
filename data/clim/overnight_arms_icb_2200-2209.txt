@@ -1,0 +1,15 @@
+Arms from the 2169 restart against PICAL_crunveg_tke_albsn082 (control). Ice, fluxes, atmosphere: 2200-2209; cap: last five Septembers.
+PHC3 September: NEW step 0.320, S 0-50 34.04, T 50-150 -1.12; OLD (Weddell) step 0.238, S 34.22, T -1.10.
+
+cap, September                      SO55                     NEW                     OLD   years
+                   step   S0-50  T50-150   step   S0-50  T50-150   step   S0-50  T50-150
+control              0.235  33.953  1.16     0.246  34.199  0.07     0.077  34.429 -0.47   5
+icb                  0.236  33.938  1.11     0.258  34.177  0.16     0.093  34.406 -0.34   5
+
+sea-ice area 1e6 km2    SH Sep  SH Feb  NH Mar  NH Sep  runoff S of 50S  iceberg melt  [Gt/yr]
+control                  15.66    0.74   15.09    5.45             2621             0
+icb                      16.19    1.16   15.56    6.24              186           939
+
+atmosphere       u10 50-65S tau 50-65S tau/u2 e3 evap 50-65S u10 20S-20N T2m glob net TOA yrs   (ERA5: u10 5.51, tau 0.145, tau/u2 4.78)
+control                6.28      0.156      3.96        1.29       -3.34    13.96    0.31  10
+icb                    5.98      0.148      4.15        1.29       -3.34    13.84    0.05  10
