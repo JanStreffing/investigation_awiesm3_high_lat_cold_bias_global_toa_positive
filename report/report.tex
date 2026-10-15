@@ -26,7 +26,7 @@
 \title{\vspace{-1.5cm}\textbf{AWI--ESM3 (v3.4, CORE3 / TCO95) PI--control tuning campaign}\\[2pt]
 \large \texttt{Tuning\_test\_06*} --- progress report}
 \author{Evaluation via \texttt{release\_evaluation\_tool2} (part2 / part8 / part4)}
-\date{2026--06--30\ \ (rev.\ \textbf{2026--10--06})}
+\date{2026--06--30\ \ (rev.\ \textbf{2026--10--15})}
 
 \begin{document}
 \maketitle
@@ -39,7 +39,15 @@ and a NH high-latitude boreal-summer cold bias severe enough to lose the boreal 
 AMIP testbed (\S\ref{sec:amip}) runs the atmosphere alone so the vegetation--albedo feedback
 is open and the root cause can be hunted without the coupled runaway closing over it.
 
-\medskip\noindent\textbf{Where we are (2026--10--06).} AWI-ESM3 v3.5.0 is tagged in every
+\medskip\noindent\textbf{Where we are (2026--10--15).} The CMIP7 spin-up runs on the tagged carbon-cycle
+build from PHC3 with icebergs from the model's own mass budget; after 160 years it is 0.4--0.5\,K colder
+than the tuning line at the same age and its carbon drift is 0.41\,GtC\,yr$^{-1}$ against a target of 0.1
+(\S\ref{sec:round58}). Five freshwater and sea-ice levers left the Southern Ocean cap where it was, and a
+second control showed that single-run decadal differences are twice as noisy as our test assumed
+(\S\ref{sec:round53}--\S\ref{sec:round55}). The deep drift was located and judged unstoppable by run
+length, which decided the restart (\S\ref{sec:round56}, \S\ref{sec:round57}).
+
+\medskip\noindent\textbf{As of 2026--10--06.} AWI-ESM3 v3.5.0 is tagged in every
 component (\S\ref{sec:round48}) and the line has two stable candidates on hemispheric GM:
 \texttt{cvmix\_TKE} alone, with a nearly still deep ocean and a slowly eroding Antarctic summer pack,
 and TKE + IDEMIX, which holds the Antarctic and buries heat at 700--1500\,m (\S\ref{sec:round47}). An
@@ -9903,6 +9911,337 @@ CVMix scheme warms the abyss twice as fast is open.
 stable, evaluated configurations (\S\ref{sec:round47}).
 \end{enumerate}
 
+\section{Round 53 (2026--10--06$\to$07): four one-change arms for the Southern Ocean cap}\label{sec:round53}
+
+Round 52's first item, a southern \texttt{K\_GM\_max} of 4000, was withdrawn before it ran: more eddy
+compensation means less upwelled deep water, which is what closes the Atlantic overturning, and at
+13--14\,Sv there is no room (GM 2500 was 1\,Sv weaker at 26.5\,N than GM 1500). The cap was attacked
+through freshwater and sea ice instead. Four arms from the 2169 restart of
+\textbf{PICAL\_crunveg\_tke\_albsn082} (TKE only, hemispheric GM, \texttt{albsn} 0.82, 1800\,s), each
+one change against it; OpenIFS is cold-started in every arm, so 2170 is discarded.
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+run & the one change & years \\
+\midrule
+\textbf{PICAL\_crunveg\_icb} & Antarctic calving through the mapper off; (calving $-$ basal melt) as icebergs & 2170--2209 \\
+\textbf{PICAL\_crunveg\_wamz0} & wave model on ECWAM default roughness (\texttt{LLGCBZ0}, \texttt{LLNORMAGAM} on) & 2170--2189 \\
+\textbf{PICAL\_crunveg\_cdoi10} & ice--ocean drag \texttt{Cd\_oce\_ice} $0.0055\to0.010$ & 2170--2189 \\
+\textbf{PICAL\_crunveg\_cpres15} & ice strength \texttt{c\_pressure} $20\to15$ (4$\times$ the strength at concentration 0.74) & 2170--2189 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The iceberg scheme}\label{sub:r53icb}
+
+Item 3 of the plan, built without Fortran and without a change to the \texttt{esm\_tools} Python core:
+two workflow jobs declared in \texttt{awiesm3.yaml} call a standalone script
+(\texttt{couplings/fesom/iceberg\_budget.py}). At the end of a leg the job measures the OpenIFS calving
+and the cavity basal melt of that leg and keeps a ledger; before the next leg the seeding job writes
+FESOM's iceberg seed files for the owed mass, split between sectors by the observed present-day
+calving (Rignot et al.\ 2013), so that accumulation $=$ basal melt $+$ icebergs. The runoff mapper 1.4
+drops the Antarctic basin (\texttt{IgnoreCalvingBasins}). The first leg starts from a rate of
+1100\,Gt\,yr$^{-1}$, or from a rate file in the pool.
+
+It works: runoff south of 50\,S falls from 2557 to 188\,Gt\,yr$^{-1}$, the budget stays at 1105--1161
+across four legs, seeded mass closes to 0.5\,\% (45\,264 against 45\,024\,Gt owed), the restart carries
+the population (917, 1347, 1639 model bergs) and the run time is unchanged. The population spins up
+slowly: melt is 417, 692, 848 and 939\,Gt\,yr$^{-1}$ by decade against about 1120 seeded, so for the
+first two decades the Southern Ocean gets \emph{less} land-ice freshwater than the control.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/arms_2169_ice.png}
+\caption{The arms against the control (black) and its second realisation (grey, \S\ref{sec:round54}),
+3-year running means. (a, b) Only the ice--ocean drag (red) moves the Antarctic clearly; the iceberg run
+(blue) stays above a control that keeps losing summer ice after 2190. (c, d) The iceberg, wave and drag
+arms gain Arctic ice and cool north of 60\,N in the 2180s; the second control moves half as far the same
+way with no change at all. The air--ice roughness run (orange, \S\ref{sec:round55}) is on the newer build.}
+\end{figure}
+
+\subsection{Results}\label{sub:r53res}
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+2180--2189, arm $-$ control & icb & wamz0 & cdoi10 & cpres15 & control \\
+\midrule
+Antarctic volume, February ($10^3$\,km$^3$) & $+0.29$ & $-0.03$ & $+1.15^*$ & $-0.12$ & 1.18 \\
+Antarctic volume, September & $-0.15$ & $-1.23^*$ & $+0.62$ & $-0.70$ & 13.4 \\
+Arctic volume, September & $+4.41^*$ & $+5.01^*$ & $+6.50^*$ & $+0.25$ & 11.9 \\
+T2m 60--90\,N (K) & $-0.84^*$ & $-0.92^*$ & $-0.99^*$ & $-0.13$ & $-8.84$ \\
+net TOA (W\,m$^{-2}$) & $-0.26^*$ & $+0.02$ & $-0.24$ & $-0.10$ & 0.33 \\
+September cap, newly convecting region (kg\,m$^{-3}$; PHC3 0.32) & 0.233 & 0.234 & 0.213 & 0.238 & 0.234 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent $^*$ beyond two standard errors of the interannual spread; \S\ref{sec:round54} shows that this
+test is too generous. Tables: \path{data/clim/overnight_arms_volumes_drift.txt},
+\path{data/clim/overnight_arms_2180-2189.txt}, \path{data/clim/icb_four_decades.txt}.
+
+\begin{itemize}\itemsep2pt
+\item \textbf{No arm strengthens the cap.} The best is the iceberg run in its last decade, 0.258 against
+0.246 (Weddell 0.093 against 0.077), small against 0.32 and 0.24.
+\item \textbf{Ice--ocean drag} is the only robust Antarctic lever: February volume 1.3$\to$3.0 and
+1.2$\to$2.3, drift 18.9$\to$15.3\,cm\,s$^{-1}$ ($-18$\,\%). It is a compensation: the coefficient is
+already five times the value measured under winter Weddell pack ($1.13\times10^{-3}$, Wamser and
+Martinson 1993), and the cap gets weaker, not stronger. Not adopted.
+\item \textbf{Wave-model roughness does nothing.} The first decade's 10\,m wind over 50--65\,S was
+0.3\,m\,s$^{-1}$ below the control, the second's 0.4 above; $\tau/u_{10}^2$ 4.10 and 3.83 against the
+control's 4.01--4.12 and ERA5's 4.78.
+\item \textbf{Ice strength} loses a little Antarctic winter volume in the first decade and nothing after.
+\item \textbf{Icebergs, 40 years.} February Antarctic volume is above the control in all four decades
+($+0.15$, $+0.29$, $+0.15$, $+0.48$) and September gains $+1.40$ by the 2200s, while the control's
+summer pack falls 1.29$\to$0.81. AMOC within $\pm0.8$\,Sv with no trend, abyss $+12.2$ against $+12.5$\,mK
+per decade, Southern Ocean convection area 4.2 against 4.2--4.4$\times10^6$\,km$^2$; 700--1500\,m warms a
+third faster ($+9.9$ against $+7.3$). The Labrador Sea keeps convecting (March mixed layer 1720 against
+1890--2020\,m) with more ice (0.14--0.15 against 0.09), which goes with the larger Arctic ice.
+\end{itemize}
+
+\section{Round 54 (2026--10--07): a second control, and the noise is twice the test}\label{sec:round54}
+
+Three of the four arms grew Arctic ice through the 2180s, two of them by a change with no route to the
+Arctic. \textbf{PICAL\_crunveg\_ctl2} repeats the control from the same restart with no change, differing
+only in what every arm differs in: a cold-started atmosphere at 2170 and 10-year legs.
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+ctl2 $-$ control & 2171--2179 & 2180--2189 \\
+\midrule
+Arctic volume, September ($10^3$\,km$^3$) & $-1.45^*$ & $+2.74^*$ \\
+Antarctic volume, September & $-0.49$ & $-1.26^*$ \\
+Antarctic volume, February & $-0.15$ & $-0.40^*$ \\
+T2m 60--90\,N (K) & $-0.16$ & $-0.34^*$ \\
+T2m global (K) & $-0.02$ & $+0.10^*$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A run that changes nothing passes the two-standard-error test on eleven of fifteen quantities in its second decade: the interannual spread
+does not contain the decadal spread between realisations. Read against ctl2 as the yardstick (about 2.7
+in Arctic September volume, 1.3 and 0.4 in Antarctic September and February volume, 0.35\,K at
+60--90\,N):
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Stands:} the ice--ocean drag arm in the Antarctic ($+1.73$ and $+1.15$ in February).
+\item \textbf{At the edge:} the iceberg run's fourth-decade Antarctic gain; what speaks for it is that
+the sign holds in every decade.
+\item \textbf{Above the noise, not by enough to claim:} the Arctic growth of $+4.4$ to $+6.5$ in three
+arms. The iceberg run has held at about $+4$ for three decades, so it is not a runaway. The likely
+reading is an Arctic that is only marginally stable at \texttt{albsn} 0.82, so the outcome depends on
+the weather a realisation gets after the atmosphere restart.
+\item \textbf{Does not stand:} every first-decade difference of the wave and ice-strength arms.
+\end{itemize}
+
+\noindent \texttt{z0def}, the control on the newer build (\S\ref{sec:round55}), sits inside the ctl2
+noise on every quantity, which validates that build (\path{data/clim/z0def_build_check.txt}). Earlier
+single-realisation Arctic comparisons, the IDEMIX arm's included (\S\ref{sub:r47idemix}), carry the same
+caveat.
+
+\section{Round 55 (2026--10--07): the air--ice drag, and why the atmosphere gives it back}\label{sec:round55}
+
+The drag arm worked by raising a coefficient that is already too high. The term that is high is on the
+air side: OpenIFS gives a neutral 10\,m air--ice drag of $1.89\times10^{-3}$ for compact ice, rising to
+2.3 at concentration 0.74 and 3.0 at 0.5, against 1.44--1.68 measured. The roughness
+$z_{0m}=\max(z_\mathrm{floor},\,(1-c)\,C+A\,e^{-B(c-0.5)^2})$ was hard-coded; its constants are now
+\texttt{NAMSURFTUNE} entries (\texttt{ECE\_TUNE\_RZ0ICEM}, \texttt{ECE\_TUNE\_RAZ0ICE}; OpenIFS
+\texttt{pr12/seaice-roughness}, MR !26, follow-up to !23). With the namelist silent the released values
+apply. Three runs from 2169 on the tag tree with the newer OpenIFS and LPJ-GUESS:
+\textbf{PICAL\_crunveg\_z0def} (released values), \textbf{z0floor} (floor $10^{-3}\to0.5\times10^{-3}$,
+compact-ice drag 1.63) and \textbf{z0form} (floor halved and $A$ $6.05\to3.0\times10^{-3}$).
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+Antarctic pack, JJA & z0def & z0floor & z0form & cdoi10 \\
+\midrule
+air--ice drag ($10^{-3}$) & 2.09 & 1.86 & 1.82 & --- \\
+wind forcing $\langle|U|U\rangle$ (m$^2$\,s$^{-2}$) & 35.5 & 38.0 & 39.5 & --- \\
+air--ice stress, 2180--2189 (mN\,m$^{-2}$) & 93.7 & 92.9 & 92.6 & 93.1 \\
+drift speed, 2180--2189 (cm\,s$^{-1}$) & 18.9 & 18.6 & 18.4 & 15.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two reasons it delivers little (\path{data/clim/ice_drag_effective_z0*.txt},
+\path{data/clim/z0_ice_speed_so_convection.txt}):
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Size.} Free drift goes as the square root of the drag ratio. The ocean arm raised its
+coefficient by 82\,\% ($-26$\,\% drift expected, $-18$ measured); the observations allow the air side
+only 13--30\,\% ($-7$\,\% expected, $-2$ to $-5$ measured).
+\item \textbf{Compensation.} The momentum the atmosphere hands down is set by the large-scale pressure
+gradient. A smoother surface removes less momentum, so the 10\,m wind over the pack speeds up by
+7--11\,\% until nearly the same stress arrives (1--7\,\% less). The ocean has no such compensation.
+Buoy wind factors are quoted against the geostrophic wind for this reason.
+\end{itemize}
+
+z0form has more Antarctic ice in both decades (February $+0.47$, $+0.53$; September $+1.9$, $+1.3$), at
+the ctl2 noise limit, and is 0.56 and 0.23\,K colder at 60--90\,N on top of a cold Arctic winter. z0floor
+changes sign between decades. \textbf{Decision:} the code is on the OpenIFS tag \texttt{48r1v6} with the
+released values as default; the entries are not set in the spin-up.
+
+\section{Round 56 (2026--10--07): where the abyss warms, and the decision to restart from PHC3}\label{sec:round56}
+
+No arm touched the abyssal drift (12.2--13.1\,mK per decade below 2500\,m in all of them). In the
+control, by basin (bias 2205--2209 against PHC3, trend 2171--2209;
+\path{data/clim/deep_warming_where.txt}):
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+K / mK per decade & 200--500\,m & 500--1500\,m & 2500--4000\,m & below 4000\,m \\
+\midrule
+Antarctic, south of 60\,S & $+0.90$ / $-2$ & $+0.38$ / $-8$ & $+0.72$ / $+10$ & $+0.88$ / $+18$ \\
+Southern Ocean 60--35\,S & $+1.51$ / $-2$ & $+0.99$ / $-5$ & $+0.50$ / $+18$ & $+0.72$ / $+25$ \\
+Atlantic & $+0.40$ / $-11$ & $+1.53$ / $+23$ & $+1.20$ / $+28$ & $+0.54$ / $+35$ \\
+Pacific & $-0.66$ / $-15$ & $+0.35$ / $+9$ & $-0.10$ / $+3$ & $+0.05$ / $+5$ \\
+Arctic and Nordic Seas & $+0.66$ / $-6$ & $+1.35$ / $+5$ & $+2.02$ / $+9$ & $+2.14$ / $+50$ \\
+global & $+0.19$ / $-11$ & $+0.64$ / $+7$ & $+0.37$ / $+12$ & $+0.35$ / $+16$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The Atlantic takes 40\,\% of the heat gained below 2500\,m and the Southern Ocean north of 60\,S about
+30\,\%; the Pacific is almost still. The warm layer at 200--500\,m around Antarctica is an established
+bias that is cooling slightly, not the drift. The Atlantic at 500--1500\,m, the source of the deep
+Atlantic, is 1.5\,K too warm and still warming (a reading of the pattern, not a budget). Below 2500\,m
+the global rate shows no curvature over 360 years: $+4$ to $+9$\,mK per decade under KPP (1850--2089),
+$+11$ to $+13$ since the CVMix schemes came in. No affordable spin-up length ends it.
+
+\textbf{Decision} (Jan): a fresh spin-up from PHC3 with the final settings, and only as long as the
+carbon fluxes need to meet the drift thresholds, ``because the longer the spinup runs, the worse the deep
+ocean gets''. A restart does not lower the rate but starts the deep Atlantic 1.2\,K and the deep Arctic
+2\,K closer to observations, and that gap takes centuries to rebuild. The assistant's advice went from
+restart to continue and back within the hour; the case for continuing (known circulation, time) was
+real but weaker than first presented.
+
+\section{Round 57 (2026--10--07$\to$08): the spin-up configuration and the final v3.5.0 tags}\label{sec:round57}
+
+\textbf{Configuration} of the CMIP7 spin-up (\path{notes/v3.5.0_final_tag_round.md}), on the
+carbon-cycle variant \texttt{v3.5.0-cc}:
+\begin{itemize}\itemsep2pt
+\item FESOM cold from PHC3, REcoM cold (GLODAP pre-industrial, WOA, PISCES iron) and concentration-driven
+at 1850 CO$_2$, receiving the OpenIFS sea-level pressure (Bug XIII fixed); LPJ-GUESS from the 2000-year
+offline spin-up with 1850 nitrogen deposition (state of year 3901).
+\item \texttt{cvmix\_TKE} without IDEMIX; \texttt{K\_GM\_max} 2500 south / 1000 north; 1800\,s;
+\texttt{albsn} 0.82; icebergs on (start rate 1105\,Gt\,yr$^{-1}$, mapper calving off); everything else as
+in the control: ice--ocean drag 0.0055, \texttt{c\_pressure} 20, wave and air--ice roughness released.
+\item Light output (monthly OpenIFS, FESOM and LPJ-GUESS), 5-year legs, 36 nodes.
+\end{itemize}
+
+\textbf{Tags.} FESOM \texttt{2.8.2} (adds the pressure coupling, PR \#1115), OpenIFS \texttt{48r1v6}
+(\texttt{fc271eb}: the pressure coupling, the DMS namelist fix and the roughness entries);
+\texttt{esm\_tools} \texttt{v3.5.0} updated in place, its tag set last. LPJ-GUESS 4.1.13, OASIS 5.3,
+XIOS 2.5.4 and mapper 1.4 unchanged.
+
+\textbf{Smoke test} (\textbf{TEST\_ccspin\_1y}, 1850): icebergs with REcoM on 2688 ocean ranks from a cold
+start, all components through 365 days, restarts written. 37 minutes per year, 6.1\,s per model day
+against 4.55 without icebergs. First-year basal melt is 903\,Gt\,yr$^{-1}$ (cold cavities, 1323 in the
+warm 2209 state), so the owed iceberg rate rises to 1464. A 50-year test spin-up
+(\textbf{SPIN\_cc\_test1}) ran on \texttt{develop-cc}; the production run,
+\textbf{AWI-ESM3-CC-LR-CMIP7-Spinup}, is run by a colleague on the tagged build from 2026--10--08.
+
+\section{Round 58 (2026--10--08$\to$15): the CMIP7 spin-up, the first 160 years}\label{sec:round58}
+
+\subsection{A crash in 1902: an iceberg pinned to one cell}\label{sub:r58crash}
+
+The leg 1900--1904 died in model year 1902: a cell at 102\,W, 73.5\,S was cooled to $-5.6\,^\circ$C. The
+iceberg on it (12.4\,km long, 19.5\,m thick) had a basal heat flux of $3.0\times10^{10}$\,W, about
+200\,W\,m$^{-2}$ over its own footprint, but FESOM drew all of it from one cell of about 3\,km$^2$, giving
+$-9645$\,W\,m$^{-2}$. With grounding mode 2 a grounded berg stands still and keeps hitting the same
+cell; 1922 of 4498 bergs were grounded at the end of 1899 (1584 of 3926 in 1889).
+
+\textbf{Fix}, from the 1900 restart: \texttt{l\_allowgrounding} 1 (grounded bergs creep) and
+\texttt{l\_cap\_ibhf\_n} (no iceberg may cool a cell below $-1.85\,^\circ$C). Both were set because the
+crashed berg could not be shown to be grounded. The cap is a numerical safeguard: it removes the heat
+flux and keeps the melt, so the latent heat comes from nowhere. It acts every step and discards
+$2.1\times10^{14}$\,J per step, 0.0003\,W\,m$^{-2}$ over the ocean or about 1\,\% of the iceberg melt
+heat. The physical fix, spreading a large berg's melt over the cells it covers, is open.
+
+\subsection{State}\label{sub:r58state}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{plots/spinup_v350cc_series.png}
+\caption{The CMIP7 spin-up, 1850--1984. (a) T2m dips by 0.6\,K in the first 15 years and recovers only to
+its starting value, 0.5\,K below the tuning line at the same age. (b) The imbalance settles at
+$+0.5$--$0.7$\,W\,m$^{-2}$. (c) Arctic ice is within the control noise of the tuning line; the Antarctic
+summer pack declines. (d) Iceberg melt levels at about 1300\,Gt\,yr$^{-1}$ after the 1900 restart while
+Southern Ocean deep convection keeps spreading.}
+\end{figure}
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+& 1850--59 & 1890--99 & 1930--39 & 1975--84 & tuning line, same age \\
+\midrule
+T2m global ($^\circ$C) & 13.44 & 13.20 & 13.31 & 13.44 & 13.98 \\
+T2m 60--90\,N ($^\circ$C) & $-10.9$ & $-11.3$ & $-10.9$ & $-10.2$ & $-9.1$ \\
+net TOA (W\,m$^{-2}$) & $-0.31$ & $+0.62$ & $+0.70$ & $+0.55$ & $-0.04$ \\
+AMOC 26.5\,N (Sv) & 13.6 & 14.8 & 14.4 & 15.0 & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Colder than the tuned state.} Against the tuning line's equilibrated 2195--2209, 0.42\,K
+colder (land 0.58, ocean 0.35); the northern mid-latitudes absorb 0.85\,W\,m$^{-2}$ less sunlight and land
+albedo at 30--60\,N is 0.272 against 0.261. Tree fraction settled by 1910 at 20\,\% for 30--60\,N (from
+26) and 6\,\% for 60--90\,N (from 9). The forest lost in the first decades is the obvious candidate, and
+on ccnice a lost forest did not regrow in 30 years (\S\ref{sec:round41}); a forest costs about $2\times10^3$\,km$^3$ of NH ice and $+0.24$\,K globally, about half of this gap.
+\item \textbf{The deep ocean drifts at half the tuning line's late rate}: whole ocean $+10$\,mK per decade,
+below 2500\,m $+6$ (tuning line 12--16), bias against PHC3 $+0.12$\,K there by 1984. It sits in the deep
+Atlantic ($+56$ at 1500--2500\,m, $+41$ at 2500--4000\,m) and the Arctic and Nordic Seas; the Antarctic
+abyss warms at $+24$ below 4000\,m. Mid-depth warming is slowing (630\,m: 36$\to$18).
+\item \textbf{Icebergs}: melt about 1300\,Gt\,yr$^{-1}$ against 1360--1440 supplied, ledger closed to
+0.1\,\%.
+\item \textbf{Throughput}: 41--42 simulated years per day running, about 2700 core-hours per year.
+\end{itemize}
+
+\subsection{Carbon: the criterion that ends the spin-up}\label{sub:r58carbon}
+
+The spin-up ends when the carbon drift of ocean and land together is below 0.1\,GtC\,yr$^{-1}$. Pools from
+REcoM's DIC and organic carbon on the mesh and LPJ-GUESS's vegetation, litter and soil carbon (reval part
+27, \S\ref{sub:r58remap}):
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+PgC & 1850--59 & 1910--19 & 1950--59 & 1975--84 & 2000--09 \\
+\midrule
+ocean (DIC $+$ organic) & 36\,200 & 36\,175 & 36\,165 & 36\,158 & 36\,152 \\
+land & 2483 & 2314 & 2273 & 2260 & 2236 \\
+\quad vegetation & 645 & 523 & 503 & 500 & 494 \\
+\quad soil and litter & 1838 & 1792 & 1770 & 1760 & 1743 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.85\textwidth]{plots/reval_spinup_v350cc_1995-2009/carbon_pools_timeseries.png}
+\caption{Carbon pools of the spin-up, 1850--2009. (a) Carbon held by each domain on axes of equal span;
+the atmosphere is prescribed. (b) Rate of change, 10-year running mean, logarithmic on either side of zero
+with the $\pm0.1$\,GtC\,yr$^{-1}$ target. Over 2000--2009 the ocean loses 0.17 and the land 0.24, together
+0.41\,GtC\,yr$^{-1}$.}
+\end{figure}
+
+The ocean outgasses less each decade (air--sea flux $-0.55$ in the 1870s, $-0.22$ in 1975--84); the land
+loss has moved from vegetation to soil and litter, which respond slowly. The criterion is reachable, ocean
+first; on the 1975--2009 trend that is several decades out, not years.
+
+\subsection{Measuring land carbon from the remapped files}\label{sub:r58remap}
+
+LPJ-GUESS output now arrives only on a 1$^\circ$ grid (lpjg2nc \texttt{--remap}). A conservative remap of
+land-only values gives a coast cell the mean over its land part and does not keep how large that part is,
+so the 1$^\circ$ files cover $1.457\times10^{14}$\,m$^2$ against $1.304\times10^{14}$ of model land and
+their totals are 12\,\% high. Scaling by the global area ratio left a 20\,PgC step where two legs had
+kept the native table. The land fraction of each 1$^\circ$ cell is now rebuilt from the model's own land
+points (octahedral cell boxes intersected with the 1$^\circ$ boxes, $1.3038\times10^{14}$\,m$^2$, equal
+to the native total); the step shrinks to 2--8\,PgC, a residual of 0.3\,\%. The post-processing now keeps
+the native file as well (\texttt{--nc\_keep\_unstruc}, \texttt{esm\_tools} \texttt{cabf48221}).
+
 \section{Synthesis: the causal web, and what is still dark}\label{sec:causal}
 This section is the campaign's current best account of \emph{why} the boreal cold bias
 exists, assembled from every round. It is written to be falsifiable: each link carries a
@@ -10130,10 +10469,34 @@ effective is to make skipping it require effort.
   tenths of Siberian warming.
 \end{enumerate}
 
-\section{State of the campaign (2026--10--06)}\label{sec:state}
+\section{State of the campaign (2026--10--15)}\label{sec:state}
 A snapshot, not a story. Numbers are 44-year means over 1872--1915 unless stated.
 
 \subsection{Proven}\label{sub:proven}
+\textbf{Added 2026--10--15 (rounds 53--58, \S\ref{sec:round53}--\S\ref{sec:round58}).}
+\begin{itemize}\itemsep2pt
+\item \textbf{Two realisations of one configuration differ by $2.7\times10^3$\,km$^3$ of Arctic September
+ice and 0.35\,K at 60--90\,N over a decade}, and pass the two-standard-error test on eleven of fifteen
+quantities: decadal differences between single runs need a second realisation to be read
+(\S\ref{sec:round54}).
+\item \textbf{Icebergs from the model's own mass budget work} with no change to the \texttt{esm\_tools}
+core: ledger closed to 0.5\,\%, Antarctic summer ice above the control in all four decades, nothing
+degraded; the cap barely moves (0.258 against 0.246) (\S\ref{sub:r53res}).
+\item \textbf{No freshwater or sea-ice lever strengthens the Southern Ocean cap}: icebergs, wave roughness,
+ice--ocean drag, ice strength and air--ice roughness all leave it at 0.21--0.26 against 0.32
+(\S\ref{sec:round53}, \S\ref{sec:round55}).
+\item \textbf{The ice--ocean drag is the one strong Antarctic lever and a compensation}: February volume
+doubles at 0.010, five times the measured value (\S\ref{sub:r53res}).
+\item \textbf{The air--ice drag is not a lever on ice export in a coupled model}: the 10\,m wind over the
+pack speeds up until nearly the same stress arrives (\S\ref{sec:round55}).
+\item \textbf{The abyssal drift sits in the deep Atlantic and Southern Ocean and has not slowed in 360
+years}; only the mixing scheme ever changed its rate (\S\ref{sec:round56}).
+\item \textbf{The CMIP7 spin-up from PHC3 runs on tagged components} (FESOM 2.8.2, OpenIFS 48r1v6) with
+icebergs and REcoM at 41 simulated years per day; after 160 years it is 0.4--0.5\,K colder than the tuning
+line at the same age, with a deep drift half the tuning line's late rate and a carbon drift of
+0.41\,GtC\,yr$^{-1}$ (\S\ref{sec:round58}).
+\end{itemize}
+
 \textbf{Added 2026--10--06 (rounds 47--52, \S\ref{sec:round47}--\S\ref{sec:round52}).}
 \begin{itemize}\itemsep2pt
 \item \textbf{Dropping IDEMIX is what erodes the Antarctic summer pack}: February extent
@@ -10648,6 +11011,20 @@ measured rather than inferred, and the two reflection columns are not separable
 \end{itemize}
 
 \subsection{Open, in priority order}\label{sub:open}
+\textbf{Added 2026--10--15 (rounds 53--58).}
+\begin{enumerate}\itemsep2pt
+\item \textbf{When does the spin-up meet the carbon criterion?} 0.41\,GtC\,yr$^{-1}$ over 2000--2009
+(ocean 0.17, land 0.24) against 0.1; the land loss is now in soil and litter (\S\ref{sub:r58carbon}).
+\item \textbf{Is a spin-up 0.4--0.5\,K colder than the tuned state acceptable?} The lost forest and its
+higher land albedo are the candidate; continuing will not close it (\S\ref{sub:r58state}).
+\item \textbf{The Southern Ocean cap is still at 70--80\,\% of observed}, and the levers that do not
+weaken the AMOC are exhausted. GM 4000 was withdrawn for the AMOC (\S\ref{sec:round53}).
+\item \textbf{Icebergs}: a large berg's melt is drawn from one cell; the heat-flux cap discards about
+1\,\% of the melt heat and is not physical. Changing leg lengths are untested (\S\ref{sub:r58crash}).
+\item \textbf{Is the Arctic at \texttt{albsn} 0.82 only marginally stable?} Three of four arms gained
+4--6.5$\times10^3$\,km$^3$ (\S\ref{sec:round54}).
+\end{enumerate}
+
 \textbf{Added 2026--10--06 (rounds 47--52).} The plan is \S\ref{sec:round52}.
 \begin{enumerate}\itemsep2pt
 \item \textbf{How much of the missing cap is GM and how much freshwater placement?} Two measured
@@ -11309,6 +11686,43 @@ ${\sim}16\,\%$ of the length scale over this box (\S\ref{sub:scfcaveat}).
       \texttt{\textasciitilde/.conda/envs/esm-tools\_auto\_tripyview}; its editable-install
       \texttt{egg-link} points at a path that no longer exists, so the import fails
       misleadingly. \texttt{PYTHONPATH=/work/ab0246/a270092/software/tripyview} fixes it.
+
+\end{itemize}
+
+\subsection{Round 53--58 (2026--10--06$\to$15)}\label{sub:fals5358}
+
+\begin{itemize}
+
+\item \dead{More effective GM in the south (southern \texttt{K\_GM\_max} 4000) is the first lever for the
+      cap.} \\ Withdrawn before it ran: less upwelled deep water weakens the AMOC, which is at 13--14\,Sv;
+      GM 2500 was already 1\,Sv weaker at 26.5\,N than GM 1500 (\S\ref{sec:round53}).
+
+\item \dead{Icebergs, wave roughness and ice--ocean drag grow Arctic ice: $+4.4$ to $+6.5\times10^3$\,km$^3$
+      in September, all significant.} \\ A second realisation of the control with no change moves
+      $+2.7$ the same way and passes the same test on eleven of fifteen quantities
+      (\S\ref{sec:round54}).
+
+\item \dead{The wave model's default roughness slows the Southern Ocean 10\,m wind (0.3\,m\,s$^{-1}$ in
+      the first decade).} \\ The second decade is 0.4 faster than the control; the iceberg run, which
+      changes nothing in the atmosphere, moved as much in the first (\S\ref{sub:r53res}).
+
+\item \dead{The iceberg run's fourth-decade Antarctic gain ($+0.48$ February, $+1.40$ September) is
+      outside the noise.} \\ It is at the edge of the ctl2 yardstick (0.4 and 1.3); only the constant
+      sign speaks for it (\S\ref{sec:round54}).
+
+\item \dead{Lowering the air--ice roughness slows the Antarctic drift the physical way, as the higher
+      ocean drag did by compensation.} \\ A 13\,\% lower coefficient sped the wind over the pack up by
+      7--11\,\%; the stress fell 1--7\,\% and the drift 2--5\,\% (\S\ref{sec:round55}).
+
+\item \dead{A fresh start from PHC3 only resets the clock on the abyssal drift, so continuing the
+      350-year state is the better spin-up.} \\ The rate is the same either way, but the restart begins
+      the deep Atlantic 1.2\,K and the deep Arctic 2\,K closer to observations, a gap that takes
+      centuries to rebuild (\S\ref{sec:round56}). Reversed by decision the same evening.
+
+\item \dead{Spin-up land carbon is 2553\,PgC in 1975--84 and the 1890s legs show a 20\,PgC dip.} \\ The
+      1$^\circ$ LPJ-GUESS files count whole coast cells as land, 12\,\% too much area; with the land
+      fraction rebuilt from the native points it is 2260\,PgC and the dip is 2--8\,PgC
+      (\S\ref{sub:r58remap}).
 
 \end{itemize}
 

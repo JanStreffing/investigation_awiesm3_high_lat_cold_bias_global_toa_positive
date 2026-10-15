@@ -1,0 +1,16 @@
+same model age, pentads from 1850: tuning line start (PICAL_momixoff) | v3.5.0-cc spin-up
+pentad     T2m glob        T2m 60-90N      net TOA W/m2
+1850-1854   13.15  13.50    -11.08  -10.80   -0.89 -0.52
+1855-1859   12.70  13.37    -12.24  -11.01   +0.10 -0.10
+1860-1864   12.66  12.96    -11.96  -11.96   +0.57 +0.43
+1865-1869   12.72  12.86    -11.75  -12.10   +0.61 +0.54
+1870-1874   12.87  13.01    -11.10  -11.64   +0.74 +0.75
+1875-1879   12.92  13.07    -11.00  -11.46   +0.63 +0.79
+1880-1884   13.08  13.27    -10.32  -11.08   +0.72 +0.70
+1885-1889   13.27    nan    -10.37     nan   +0.60  +nan
+1890-1894   13.36    nan     -9.82     nan   +0.60  +nan
+1895-1899   13.54    nan     -9.62     nan   +0.42  +nan
+co2nbf annual PgC/yr: land cells 52.9, ocean cells 1.04
+co2nbf land by month: 44 44 46 46 47 54 68 76 68 54 45 43
+co2nbf land >30N by month: 3 3 4 6 10 18 29 31 21 11 6 3
+co2nbf min -6.063e-09 max 1.410e-06; fraction of land cells negative 0.038
